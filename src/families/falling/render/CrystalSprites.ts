@@ -1,37 +1,11 @@
-import { Tone } from '../pieces/PieceType';
-import { MOTIFS } from '@/render/motifs';
-import { luminance, shade, type TonePalette } from '@/render/TonePalette';
+import { shade, type Rgb } from '@/render/TonePalette';
+import type { Tone } from '../pieces/PieceType';
+import { BlockSprites } from './BlockSprites';
 
-/**
- * Faceted crystal blocks, pre-drawn once per tone at the current cell size.
- * Drawing a frame is then one `drawImage` per block.
- */
-export class CrystalSprites {
-  private readonly sprites = new Map<Tone, HTMLCanvasElement>();
-
-  constructor(
-    readonly size: number,
-    private readonly palette: TonePalette,
-  ) {}
-
-  get(tone: Tone): HTMLCanvasElement {
-    let sprite = this.sprites.get(tone);
-    if (!sprite) {
-      sprite = this.draw(tone);
-      this.sprites.set(tone, sprite);
-    }
-    return sprite;
-  }
-
-  private draw(tone: Tone): HTMLCanvasElement {
+/** Faceted crystal blocks: the falling family's own material. */
+export class CrystalSprites extends BlockSprites {
+  protected paint(ctx: CanvasRenderingContext2D, tone: Tone, rgb: Rgb): void {
     const s = this.size;
-    const canvas = document.createElement('canvas');
-    canvas.width = s;
-    canvas.height = s;
-    const ctx = canvas.getContext('2d');
-    if (!ctx || tone === Tone.Empty) return canvas;
-
-    const rgb = this.palette.color(tone);
     const gap = Math.max(1, Math.round(s * 0.04));
     const outer = s - gap;
     const bevel = Math.round(s * 0.2);
@@ -91,14 +65,6 @@ export class CrystalSprites {
     ctx.lineTo(outer - bevel - s * 0.12, bevel + s * 0.06);
     ctx.stroke();
 
-    // Engraved motif.
-    const ink = luminance(rgb) > 0.35 ? 'rgb(0 0 0 / 0.38)' : 'rgb(255 255 255 / 0.5)';
-    ctx.strokeStyle = ink;
-    ctx.fillStyle = ink;
-    ctx.lineWidth = Math.max(1.5, s * 0.07);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    MOTIFS[tone](ctx, outer / 2, (outer - bevel * 2) * 0.32);
-    return canvas;
+    this.engrave(ctx, tone as Exclude<Tone, 0>, rgb, outer / 2, (outer - bevel * 2) * 0.32);
   }
 }

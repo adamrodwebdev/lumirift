@@ -1,7 +1,7 @@
 import { ParticleKind } from '@/fx/ParticlePool';
 import { Tone } from '../pieces/PieceType';
 import { CRACK_MS, EFFECT_TIMINGS, type FallingEffects } from '../fx/FallingEffects';
-import type { CrystalSprites } from './CrystalSprites';
+import type { BlockSprites } from './BlockSprites';
 import type { TonePalette } from '@/render/TonePalette';
 
 const { TRAIL_MS, FLASH_MS, POPUP_MS, WAVE_MS } = EFFECT_TIMINGS;
@@ -14,12 +14,7 @@ export class EffectsPainter {
   constructor(private readonly ctx: CanvasRenderingContext2D) {}
 
   /** Rows that are cracking: still whole, with the crack spreading across. */
-  cracks(
-    effects: FallingEffects,
-    sprites: CrystalSprites,
-    palette: TonePalette,
-    cell: number,
-  ): void {
+  cracks(effects: FallingEffects, sprites: BlockSprites, palette: TonePalette, cell: number): void {
     const { ctx } = this;
     for (const crack of effects.cracks) {
       const top = crack.row * cell;

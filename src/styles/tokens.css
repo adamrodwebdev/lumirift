@@ -31,6 +31,12 @@
   --fx-ash: #786e64;
   --fx-clay: #f5eee1;
   --fx-steam: #c9d4de;
+  /* Cosmetics: gold and petals (shatter signatures, gold material). */
+  --fx-gold-light: #f6dc8c;
+  --fx-gold: #c99a2e;
+  --fx-gold-dark: #8a6414;
+  --fx-petal: #f3a6c4;
+  --fx-petal-dark: #c95b87;
 
   --well-bg: #e3ddd1;
   --well-grid: rgb(28 26 23 / 0.07);
@@ -86,6 +92,12 @@
   --fx-ash: #8a8076;
   --fx-clay: #f5eee1;
   --fx-steam: #e3ebf2;
+  /* Cosmetics: gold and petals (shatter signatures, gold material). */
+  --fx-gold-light: #ffe8a3;
+  --fx-gold: #e6b53c;
+  --fx-gold-dark: #a8741a;
+  --fx-petal: #ffc4dd;
+  --fx-petal-dark: #e77fa9;
 
   --well-bg: #0e131b;
   --well-grid: rgb(255 255 255 / 0.05);

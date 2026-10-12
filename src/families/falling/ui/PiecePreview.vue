@@ -2,6 +2,7 @@
 import { onMounted, ref, watch } from 'vue';
 import type { PieceSpec } from '../game/Game';
 import { PieceRenderer } from '../render/PieceRenderer';
+import type { MaterialId } from '@/progression/Cosmetics';
 import type { TonePalette } from '@/render/TonePalette';
 
 const props = defineProps<{
@@ -9,6 +10,8 @@ const props = defineProps<{
   palette: TonePalette | null;
   size: number;
   dimmed?: boolean;
+  /** The player's block material (crystal by default). */
+  material?: MaterialId;
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -16,7 +19,12 @@ let renderer: PieceRenderer | null = null;
 
 const draw = () => {
   if (!renderer || !props.palette) return;
-  renderer.layout(props.size, Math.min(2, window.devicePixelRatio || 1), props.palette);
+  renderer.layout(
+    props.size,
+    Math.min(2, window.devicePixelRatio || 1),
+    props.palette,
+    props.material,
+  );
   renderer.render(props.spec, props.dimmed);
 };
 
@@ -25,7 +33,7 @@ onMounted(() => {
   draw();
 });
 
-watch(() => [props.spec, props.palette, props.size, props.dimmed] as const, draw);
+watch(() => [props.spec, props.palette, props.size, props.dimmed, props.material] as const, draw);
 </script>
 
 <template>

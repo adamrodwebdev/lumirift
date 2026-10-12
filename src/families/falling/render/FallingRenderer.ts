@@ -1,7 +1,9 @@
 import type { FallingView } from '../FallingSession';
 import type { FallingEffects } from '../fx/FallingEffects';
 import type { Piece } from '../pieces/Piece';
-import { CrystalSprites } from './CrystalSprites';
+import type { MaterialId } from '@/progression/Cosmetics';
+import type { BlockSprites } from './BlockSprites';
+import { blockSprites } from './materials';
 import { EffectsPainter } from './EffectsPainter';
 import type { TonePalette } from '@/render/TonePalette';
 import type { WellDecor } from './WellDecor';
@@ -17,7 +19,8 @@ const DANGER_HEIGHT = 0.7;
 export class FallingRenderer {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly painter: EffectsPainter;
-  private sprites: CrystalSprites | null = null;
+  private sprites: BlockSprites | null = null;
+  private material: MaterialId = 'crystal';
   private palette: TonePalette | null = null;
   private effects: FallingEffects | null = null;
   private decor: WellDecor | null = null;
@@ -63,6 +66,13 @@ export class FallingRenderer {
   setPalette(palette: TonePalette, dark: boolean): void {
     this.palette = palette;
     this.dark = dark;
+    this.rebuildSprites();
+  }
+
+  /** The player's block material. */
+  setMaterial(material: MaterialId): void {
+    if (material === this.material) return;
+    this.material = material;
     this.rebuildSprites();
   }
 
@@ -190,6 +200,6 @@ export class FallingRenderer {
 
   private rebuildSprites(): void {
     this.sprites =
-      this.palette && this.cell > 0 ? new CrystalSprites(this.cell, this.palette) : null;
+      this.palette && this.cell > 0 ? blockSprites(this.material, this.cell, this.palette) : null;
   }
 }
