@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                 |
-| ------- | ---------- | ---------------------- |
-| 0.11    | 12/10/2026 | Lot 8 livré : le Sable |
+| Version | Date       | Statut                |
+| ------- | ---------- | --------------------- |
+| 0.12    | 12/10/2026 | Lot 9 livré : la Tour |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -278,13 +278,26 @@ Règles détaillées :
 
 #### Famille Volume
 
-- **Tour** : le puits s'enroule en **cylindre** de **20 colonnes** sur 16 rangées : la
-  colonne 19 touche la colonne 0. La caméra tourne autour de la tour pour garder la pièce de
-  face ; environ 10 colonnes sont visibles à la fois. Une ligne est un **anneau** complet de
-  20 cases. Logique 2D (le moteur Chute avec un bord qui boucle), rendu en pseudo-3D sur
-  canvas 2D (projection cylindrique, faces ombrées selon l'angle), sans bibliothèque 3D.
-- Commandes identiques à la famille Chute ; la caméra suit automatiquement, ou se tourne à la
-  main (A / E en AZERTY, Q / E en QWERTY, ou glisser à deux doigts).
+- **Tour** : le puits s'enroule en **cylindre de verre** de **20 colonnes** sur 16 rangées :
+  la colonne 19 touche la colonne 0, il n'y a plus de murs. Une ligne est un **anneau**
+  complet de 20 cases. Les règles sont celles de la famille Chute (mêmes pièces, rotation,
+  réserve, vitesse, points, pièce fantôme).
+- **Caméra** : elle suit la pièce et la garde de face, en tournant par le chemin le plus
+  court. Environ 10 colonnes sont visibles ; elles s'amincissent vers les bords. Le joueur
+  la tourne à la main avec **A / E** (AZERTY) ou **Q / E** (QWERTY), ou en **glissant à
+  deux doigts** ; la caméra revient sur la pièce à l'arrivée de la suivante. Avec les effets
+  réduits, elle se place sans glisser.
+- **Rendu** : pseudo-3D sur canvas 2D, sans bibliothèque 3D. La tour est vue un peu
+  au-dessus ; chaque case est un parallélogramme, dessiné par une transformation affine.
+  Les faces sont ombrées selon leur angle à la lumière, avec un reflet vertical. **Le dos
+  de la tour se voit à travers le verre**, atténué.
+- **Matière** : verre teinté (corps translucide, arête claire, reflet), avec le motif gravé
+  de chaque couleur. Les éclats de la famille Chute font le tour du cylindre ; ceux qui
+  passent derrière se voient en transparence. Les points s'affichent au centre de l'écran,
+  lisibles quel que soit l'angle.
+- La Tour peut être le mode du **défi du jour**.
+- **Mesures** (navigateur intégré) : l'animation tient la cadence de l'écran (165 images/s)
+  avec une pile sur toute la hauteur.
 
 ### 3.3 Commandes
 
@@ -804,6 +817,42 @@ src/families/sand/
   par le build ; le Sable ne dépend d'aucune partie de jeu de la Chute.
 - Nouveaux tons du socle partagé : **eau** et **feu** (couleurs et motifs dans les deux thèmes).
 
+### 5.13 Famille Volume (livrée au lot 9)
+
+```
+src/families/volume/
+  index.ts              Point d'entrée : une FallingSession de la famille « volume »
+  TowerMode             Mode du moteur Chute : puits de 20 × 16 qui boucle
+  camera/TowerCamera    Position de la caméra en colonnes : suit la pièce, rotation à la
+                        main, chemin le plus court
+  camera/CylinderProjection  Projection du cylindre (pure, testée) : angle, écran,
+                        profondeur, ombre, reflet, transformation affine d'une face
+  render/GlassSprites   Blocs de verre teinté précalculés par couleur
+  render/TowerRenderer  Dos de la tour, gravure, pile, pièce, effets projetés
+  ui/TowerStage         Plateau : commandes de la Chute, caméra au clavier et à deux doigts
+```
+
+- **Le moteur ne connaît pas le cylindre** au-delà d'une option : `WellSize.wraps`. Le
+  `Board` replie alors les colonnes (`column(x)`), sans murs ; tout le reste (rotation,
+  lignes, points, réserve, fantôme) est celui de la Chute. Les particules font le tour
+  (`ParticleWorld.wraps`).
+- **Effets et sons réutilisés** : `FallingEffects` calcule en cases, `TowerRenderer` les
+  projette. Seul le rendu change d'une famille à l'autre.
+- Le délai d'effacement des lignes vit dans `rules/Timings`, pour que le module de la Tour
+  ne charge pas tous les modes de la Chute.
+
+### 5.14 Séparation du rendu et des règles
+
+- Les règles (`engine`, `board`, `game`, `modes`, `session`) n'importent jamais le rendu,
+  les effets, les sons ni Vue : vérifié sur tout le code au lot 9.
+- **Toutes les couleurs de matière viennent des jetons CSS** (`tokens.css`, thèmes clair et
+  sombre), lues par `TonePalette` : tons des pièces, puits, accents, braises et cendre du
+  feu, argile de la Mosaïque. Seules restent dans le code la lumière et l'ombre neutres
+  (blanc et noir translucides) des matières.
+- Retoucher l'esthétique se fait donc à trois endroits, sans toucher aux règles : les
+  jetons, les sprites d'une famille (`CrystalSprites`, `CeramicSprites`, `GlassSprites`,
+  textures du Sable) et ses effets (`*Effects`, `*Soundscape`).
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
@@ -850,7 +899,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 6   | Duel contre l'IA                                                                                           | Livré     |
 | 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré     |
 | 8   | Sable (grains) et ses éléments                                                                             | Livré     |
-| 9   | Volume : Tour (verre courbé)                                                                               | À faire   |
+| 9   | Volume : Tour (verre courbé)                                                                               | Livré     |
 | 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | À faire   |
 | 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | À faire   |
 | 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Après 1.0 |
@@ -885,3 +934,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.9     | 12/10/2026 | Lot 6 : règles et niveaux du Duel (§ 3.2), architecture du duel et de l'IA (§ 5.10).                                                                     |
 | 0.10    | 12/10/2026 | Lot 7 : règles complètes de la Mosaïque et de ses jokers (§ 3.2), famille Placement et socle de couleurs partagé (§ 5.11).                               |
 | 0.11    | 12/10/2026 | Lot 8 : règles complètes du Sable et de ses éléments (§ 3.2), famille Sable (§ 5.12).                                                                    |
+| 0.12    | 12/10/2026 | Lot 9 : règles et caméra de la Tour (§ 3.2), famille Volume (§ 5.13), séparation du rendu et des règles (§ 5.14).                                        |
