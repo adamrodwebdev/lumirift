@@ -9,6 +9,8 @@ import type { LinesClearedEvent } from '../game/GameEvents';
 import type { Piece } from '../pieces/Piece';
 import { CHROMA_TONES, Tone } from '../pieces/PieceType';
 import { shade, type TonePalette } from '@/render/TonePalette';
+import type { ShatterId } from '@/progression/Cosmetics';
+import { SHATTER_STYLES, type ShatterStyle } from './ShatterStyles';
 
 /** How long a full row shows its crack before it shatters. */
 export const CRACK_MS = 130;
@@ -93,6 +95,7 @@ export class FallingEffects {
   private readonly flashLimiter = new FlashLimiter();
   private readonly pending = new Map<CrackingRow, PendingShatter>();
   private readonly world: ParticleWorld;
+  private shatterStyle: ShatterStyle = SHATTER_STYLES.shards;
   private slowMotion = 0;
   private clock = 0;
 
@@ -115,6 +118,11 @@ export class FallingEffects {
       wraps: board.wraps,
       solidTop: (x, y) => this.solidTop(x, y),
     };
+  }
+
+  /** The player's shatter signature. */
+  setShatter(id: ShatterId): void {
+    this.shatterStyle = SHATTER_STYLES[id];
   }
 
   /** Subscribes to the session's engine events; returns the unsubscribe function. */
@@ -394,7 +402,7 @@ export class FallingEffects {
   ): void {
     const palette = this.palette();
     if (!palette) return;
-    const rgb = palette.color(tone);
+    const style = this.shatterStyle;
     // Perimeter of the cell, cut into fans around a random inner point.
     const px = x + random(0.3, 0.7);
     const py = y + random(0.3, 0.7);
@@ -425,9 +433,9 @@ export class FallingEffects {
       const by = rim[j + 1]!;
       const cx = (px + ax + bx) / 3;
       const cy = (py + ay + by) / 3;
-      const color = this.color(shade(rgb, random(-0.28, 0.32)));
+      const color = this.color(style.colour(tone, palette));
       const vx = ((cx - centre) / centre) * random(4, 9) * power + random(-1.5, 1.5);
-      const vy = -random(5, 11) * power;
+      const vy = -random(5, 11) * power * style.lift;
       const index = this.pool.spawn(
         ParticleKind.Shard,
         cx,
@@ -439,7 +447,7 @@ export class FallingEffects {
         color,
       );
       if (index < 0) return;
-      this.pool.spin[index] = random(-11, 11);
+      this.pool.spin[index] = random(-11, 11) * style.spin;
       this.pool.setTriangle(index, px - cx, py - cy, ax - cx, ay - cy, bx - cx, by - cy);
     }
   }

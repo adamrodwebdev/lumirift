@@ -1,25 +1,32 @@
 import type { PieceSpec } from '../game/Game';
 import { shapeCells } from '../pieces/Shapes';
-import { CrystalSprites } from './CrystalSprites';
+import type { MaterialId } from '@/progression/Cosmetics';
 import type { TonePalette } from '@/render/TonePalette';
+import type { BlockSprites } from './BlockSprites';
+import { blockSprites } from './materials';
 
 /** Draws a single piece, centred, for the hold slot and the preview queue. */
 export class PieceRenderer {
   private readonly ctx: CanvasRenderingContext2D | null;
-  private sprites: CrystalSprites | null = null;
+  private sprites: BlockSprites | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d');
   }
 
   /** `size` is the side of the square box in CSS pixels. */
-  layout(size: number, pixelRatio: number, palette: TonePalette): void {
+  layout(
+    size: number,
+    pixelRatio: number,
+    palette: TonePalette,
+    material: MaterialId = 'crystal',
+  ): void {
     const px = Math.round(size * pixelRatio);
     this.canvas.width = px;
     this.canvas.height = px;
     this.canvas.style.width = `${size}px`;
     this.canvas.style.height = `${size}px`;
-    this.sprites = new CrystalSprites(Math.floor(px / 4.4), palette);
+    this.sprites = blockSprites(material, Math.floor(px / 4.4), palette);
   }
 
   render(spec: PieceSpec | null, dimmed = false): void {

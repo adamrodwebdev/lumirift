@@ -32,7 +32,9 @@ if (!(props.session instanceof FallingSession))
 const session: FallingSession = props.session;
 
 const { t } = useI18n();
-const { theme, settings, audio, haptics } = useServices();
+const { theme, settings, audio, haptics, profile: progression } = useServices();
+/** The cosmetics the player wears. */
+const equipment = computed(() => progression.current.equipment);
 const format = useFormat();
 
 const wellArea = ref<HTMLElement | null>(null);
@@ -56,6 +58,11 @@ const effects = new FallingEffects(
   (points) => format.number(points),
 );
 const detachEffects = effects.attach(session);
+watch(
+  () => equipment.value.shatter,
+  (shatter) => effects.setShatter(shatter),
+  { immediate: true },
+);
 const detachSounds = new FallingSoundscape(audio, haptics).attach(session);
 
 /** Whole-well moments (flip, mirror) are CSS animations of the canvas. */
@@ -106,6 +113,13 @@ watch(
 watch(
   () => props.ghost,
   (enabled) => renderer?.setGhost(enabled),
+);
+watch(
+  () => equipment.value.material,
+  (material) => {
+    renderer?.setMaterial(material);
+    renderer?.render();
+  },
 );
 watch(
   () => props.active,
@@ -165,6 +179,7 @@ const onPointerCancel = () => gestures.cancel();
 onMounted(() => {
   if (canvas.value) renderer = new FallingRenderer(canvas.value, session.view);
   renderer?.setGhost(props.ghost);
+  renderer?.setMaterial(equipment.value.material);
   renderer?.setEffects(effects);
   renderer?.setDecor(decorFor(session.modeId), profile.value.motion);
   if (wellArea.value) observer.observe(wellArea.value);
@@ -189,7 +204,13 @@ onBeforeUnmount(() => {
   <div class="stage">
     <section class="stage__side stage__side--hold" :aria-label="t('hud.hold')">
       <p class="stage__label">{{ t('hud.hold') }}</p>
-      <PiecePreview :spec="held" :palette="palette" :size="previewSize" :dimmed="!canHold" />
+      <PiecePreview
+        :spec="held"
+        :palette="palette"
+        :material="equipment.material"
+        :size="previewSize"
+        :dimmed="!canHold"
+      />
       <!-- Extra panels of a mode (the opponent of a duel). -->
       <slot name="side" />
     </section>
@@ -215,6 +236,7 @@ onBeforeUnmount(() => {
         :key="index"
         :spec="spec"
         :palette="palette"
+        :material="equipment.material"
         :size="index === 0 ? previewSize : Math.round(previewSize * 0.75)"
       />
     </section>

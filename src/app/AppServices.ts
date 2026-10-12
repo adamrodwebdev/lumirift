@@ -1,9 +1,11 @@
 import { inject, type InjectionKey } from 'vue';
 import { detectLocale } from '@/i18n/locales';
 import { ModeCatalog } from '@/session/ModeCatalog';
+import { AmbianceController } from '@/services/AmbianceController';
 import { AudioEngine } from '@/services/audio/AudioEngine';
 import { Haptics } from '@/services/Haptics';
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
+import { ProfileService } from '@/services/ProfileService';
 import { ScoreBoard } from '@/services/ScoreBoard';
 import { SettingsService } from '@/services/SettingsService';
 import { ShareService } from '@/services/ShareService';
@@ -14,6 +16,8 @@ export interface AppServices {
   readonly settings: SettingsService;
   readonly theme: ThemeController;
   readonly scores: ScoreBoard;
+  /** Experience, objectives, streak and cosmetics. */
+  readonly profile: ProfileService;
   readonly share: ShareService;
   readonly catalog: ModeCatalog;
   readonly audio: AudioEngine;
@@ -37,14 +41,18 @@ export function createBrowserServices(
     volume: 0.7,
     muted: false,
   });
+  const catalog = new ModeCatalog();
+  const profile = new ProfileService(storage, () => catalog.list().map((mode) => mode.id));
+  new AmbianceController(profile, settings, document.documentElement);
   return {
     settings,
     theme: new ThemeController(settings, document.documentElement, (query) =>
       window.matchMedia(query),
     ),
     scores: new ScoreBoard(storage),
+    profile,
     share: new ShareService(navigator),
-    catalog: new ModeCatalog(),
+    catalog,
     audio: AudioEngine.browser(),
     haptics: new Haptics(navigator, () => settings.current.haptics),
     clock: () => new Date(),

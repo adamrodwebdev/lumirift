@@ -311,5 +311,90 @@
     "well": "Menara kaca",
     "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Ctrl untuk memutar ke arah lain, C untuk simpan, Q dan E (A dan E pada AZERTY) untuk memutar menara, Esc untuk jeda. Satu baris adalah cincin penuh 20 kotak.",
     "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung, geser dengan dua jari untuk memutar menara. Kamera mengikuti kepingan."
+  },
+  "profile": {
+    "level": "Level {n}",
+    "xp": "{into} / {needed} XP",
+    "xpLabel": "Kemajuan ke level berikutnya",
+    "maxLevel": "Level tertinggi tercapai",
+    "streak": "Beruntun: {n} hari",
+    "objectives": "Tujuan hari ini",
+    "done": "Selesai",
+    "reward": "+{n} XP"
+  },
+  "objectives": {
+    "play": "Mainkan {n} permainan",
+    "playMode": "Mainkan satu permainan {mode}",
+    "lines": "Hapus {n} baris",
+    "bigClear": "Hapus {size} baris sekaligus",
+    "combo": "Rangkai {size} penghapusan",
+    "survive": "Bertahan {size} menit dalam satu permainan",
+    "daily": "Selesaikan tantangan harian",
+    "duel": "Kalahkan AI normal atau yang lebih kuat"
+  },
+  "progress": {
+    "title": "Kemajuan",
+    "gained": "+{n} XP",
+    "levelUp": "Level {n} tercapai!",
+    "objectiveDone": "Tujuan selesai: {text}",
+    "unlocked": "Terbuka: {name} ({kind})",
+    "source": {
+      "game": "Permainan dimainkan",
+      "time": "Waktu bermain",
+      "clears": "Penghapusan",
+      "daily": "Tantangan harian",
+      "victory": "Kemenangan",
+      "objective": "Tujuan"
+    },
+    "tooShort": "Bermainlah minimal 20 detik untuk mendapat pengalaman."
+  },
+  "cosmetics": {
+    "title": "Atelier",
+    "intro": "Semuanya kosmetik: tidak ada yang mengubah permainan. Bermainlah untuk membuka lebih banyak.",
+    "scope": {
+      "material": "Untuk mode jatuh (Menara tetap kaca).",
+      "shatter": "Untuk mode jatuh dan Menara."
+    },
+    "worn": "Dipakai",
+    "wear": "Pakai",
+    "close": "Tutup",
+    "kinds": {
+      "material": "Material",
+      "ambiance": "Suasana",
+      "shatter": "Gaya pecahan"
+    },
+    "one": {
+      "material": "material",
+      "ambiance": "suasana",
+      "shatter": "pecahan"
+    },
+    "material": {
+      "crystal": "Kristal",
+      "neon": "Neon",
+      "paper": "Kertas",
+      "pixel": "Piksel",
+      "obsidian": "Obsidian",
+      "gold": "Emas"
+    },
+    "ambiance": {
+      "night": "Malam",
+      "aurora": "Aurora",
+      "abyss": "Palung",
+      "forge": "Tempa",
+      "cosmos": "Kosmos",
+      "sakura": "Sakura"
+    },
+    "shatter": {
+      "shards": "Serpihan",
+      "confetti": "Konfeti",
+      "petals": "Kelopak",
+      "gold": "Daun emas"
+    },
+    "unlock": {
+      "default": "Gratis",
+      "level": "Level {n}",
+      "streak": "Beruntun {n} hari di tantangan",
+      "objectives": "{n} tujuan selesai"
+    }
   }
 }

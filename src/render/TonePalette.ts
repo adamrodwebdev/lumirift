@@ -19,10 +19,16 @@ export function parseHex(value: string): Rgb {
 }
 
 /** Lightens (amount > 0) towards white or darkens (amount < 0) towards black. */
-export function shade({ r, g, b }: Rgb, amount: number): string {
+export function mixRgb({ r, g, b }: Rgb, amount: number): Rgb {
   const mix = (channel: number) =>
     Math.round(amount >= 0 ? channel + (255 - channel) * amount : channel * (1 + amount));
-  return `rgb(${mix(r)} ${mix(g)} ${mix(b)})`;
+  return { r: mix(r), g: mix(g), b: mix(b) };
+}
+
+/** `mixRgb` as a CSS colour. */
+export function shade(rgb: Rgb, amount: number): string {
+  const { r, g, b } = mixRgb(rgb, amount);
+  return `rgb(${r} ${g} ${b})`;
 }
 
 /** Relative luminance (WCAG), to pick a motif colour that stands out. */
@@ -40,6 +46,10 @@ export interface EffectColors {
   readonly clay: string;
   /** Steam of water putting fire out. */
   readonly steam: string;
+  /** Light, middle and dark gold (gold material and shatter). */
+  readonly gold: readonly string[];
+  /** Petals of the petal shatter. */
+  readonly petals: readonly string[];
 }
 
 /** Colours of the current theme, read from the CSS tokens (`--tone-N`, `--well-*`). */
@@ -73,6 +83,8 @@ export class TonePalette {
         embers: [read('--fx-ember-hot'), read('--fx-ember'), read('--fx-ash')],
         clay: read('--fx-clay'),
         steam: read('--fx-steam'),
+        gold: [read('--fx-gold-light'), read('--fx-gold'), read('--fx-gold-dark')],
+        petals: [read('--fx-petal'), read('--fx-petal-dark')],
       },
     );
   }

@@ -311,5 +311,90 @@
     "well": "Glass tower",
     "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Ctrl to rotate the other way, C to hold, Q and E (A and E on AZERTY) to turn the tower, Esc to pause. A line is a full ring of 20 cells.",
     "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop, drag with two fingers to turn the tower. The camera follows the piece."
+  },
+  "profile": {
+    "level": "Level {n}",
+    "xp": "{into} / {needed} XP",
+    "xpLabel": "Progress to the next level",
+    "maxLevel": "Top level reached",
+    "streak": "Streak: {n} day | Streak: {n} days",
+    "objectives": "Today’s objectives",
+    "done": "Done",
+    "reward": "+{n} XP"
+  },
+  "objectives": {
+    "play": "Play a game | Play {n} games",
+    "playMode": "Play a game of {mode}",
+    "lines": "Clear {n} line | Clear {n} lines",
+    "bigClear": "Clear {size} lines at once",
+    "combo": "Chain {size} clears",
+    "survive": "Last {size} minutes in one game",
+    "daily": "Finish the daily challenge",
+    "duel": "Beat the normal AI or a stronger one"
+  },
+  "progress": {
+    "title": "Progress",
+    "gained": "+{n} XP",
+    "levelUp": "Level {n} reached!",
+    "objectiveDone": "Objective done: {text}",
+    "unlocked": "Unlocked: {name} ({kind})",
+    "source": {
+      "game": "Game played",
+      "time": "Time played",
+      "clears": "Clears",
+      "daily": "Daily challenge",
+      "victory": "Victory",
+      "objective": "Objective"
+    },
+    "tooShort": "Play for at least 20 seconds to earn experience."
+  },
+  "cosmetics": {
+    "title": "Atelier",
+    "intro": "Everything here is cosmetic: none of it changes the game. Play to unlock more.",
+    "scope": {
+      "material": "For the falling modes (the Tower keeps its glass).",
+      "shatter": "For the falling modes and the Tower."
+    },
+    "worn": "Worn",
+    "wear": "Wear",
+    "close": "Close",
+    "kinds": {
+      "material": "Materials",
+      "ambiance": "Ambiances",
+      "shatter": "Shatter signatures"
+    },
+    "one": {
+      "material": "material",
+      "ambiance": "ambiance",
+      "shatter": "shatter"
+    },
+    "material": {
+      "crystal": "Crystal",
+      "neon": "Neon",
+      "paper": "Paper",
+      "pixel": "Pixel",
+      "obsidian": "Obsidian",
+      "gold": "Gold"
+    },
+    "ambiance": {
+      "night": "Night",
+      "aurora": "Aurora",
+      "abyss": "Abyss",
+      "forge": "Forge",
+      "cosmos": "Cosmos",
+      "sakura": "Sakura"
+    },
+    "shatter": {
+      "shards": "Shards",
+      "confetti": "Confetti",
+      "petals": "Petals",
+      "gold": "Gold leaf"
+    },
+    "unlock": {
+      "default": "Free",
+      "level": "Level {n}",
+      "streak": "{n}-day daily streak",
+      "objectives": "{n} objectives done"
+    }
   }
 }
