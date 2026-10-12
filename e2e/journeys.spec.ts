@@ -162,3 +162,19 @@ test('keyboard users skip to the content and land on each new screen', async ({ 
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: 'Pause' })).toBeVisible();
 });
+
+test('no horizontal scroll from 320 to 1920 px, at home and in every family', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'One sweep is enough');
+  for (const width of [320, 360, 640, 768, 1024, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/');
+    await expectNoHorizontalScroll(page);
+    for (const name of ['Classique', 'Duel', 'Sable', 'Mosaïque', 'Tour']) {
+      await openMode(page, name);
+      await expectNoHorizontalScroll(page);
+      await page.getByRole('button', { name: 'Accueil' }).click();
+    }
+  }
+});
