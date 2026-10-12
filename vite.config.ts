@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
+import { seoPlugin } from './scripts/seoPlugin';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
   version: string;
@@ -23,6 +24,8 @@ export default defineConfig({
       fullInstall: false,
       strictMessage: false,
     }),
+    // Canonical URL and sitemap, when the site's address is known (SITE_URL).
+    seoPlugin(process.env.SITE_URL),
   ],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

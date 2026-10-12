@@ -11,6 +11,42 @@
     <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0b0e13" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Stackrift" />
+    <meta property="og:title" content="Stackrift — le jeu de blocs réinventé" />
+    <meta
+      property="og:description"
+      content="13 modes de jeu inédits, un défi du jour, des destructions de cristal. Gratuit, sans inscription, en français, anglais et indonésien."
+    />
+    <meta property="og:image" content="./og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Stackrift : des blocs de couleur qui se fendent en éclats"
+    />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="id_ID" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Stackrift",
+        "description": "Jeu de blocs qui tombent réinventé : 13 modes inédits en quatre familles (chute, sable, mosaïque, tour), un défi du jour, des duels contre l’IA.",
+        "genre": ["Puzzle", "Arcade"],
+        "gamePlatform": ["Web browser", "Mobile", "Desktop"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "inLanguage": ["fr", "en", "id"],
+        "playMode": "SinglePlayer",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+      }
+    </script>
     <script>
       // Applies the saved theme before the first paint: no flash of the wrong theme.
       (function () {
@@ -28,6 +64,15 @@
   </head>
   <body>
     <div id="app"></div>
+    <noscript>
+      <h1>Stackrift — le jeu de blocs réinventé</h1>
+      <p>
+        Stackrift réinvente le jeu de blocs qui tombent : 13 modes en quatre familles (Classique,
+        Marée, Renversement, Chroma, Miroir, Fusion, Bascule, Silhouette, Rythme, Duel contre l’IA,
+        Sable, Mosaïque, Tour), un défi du jour, en français, anglais et indonésien. Activez
+        JavaScript pour jouer.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
