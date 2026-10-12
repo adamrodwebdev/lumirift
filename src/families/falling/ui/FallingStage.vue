@@ -3,13 +3,18 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch 
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import type { FrameClock } from '@/app/FrameClock';
+import { useFormat } from '@/app/useFormat';
+import { effectsProfile } from '@/fx/EffectsProfile';
 import type { GameSession } from '@/session/GameSession';
 import { FallingSession, type FallingCommand } from '../FallingSession';
+import { FallingEffects } from '../fx/FallingEffects';
+import { FallingSoundscape } from '../fx/FallingSoundscape';
 import type { PieceSpec } from '../game/Game';
 import { FallingInput, KEY_BINDINGS } from '../input/FallingInput';
 import { WellGestures } from '../input/WellGestures';
 import { FallingRenderer } from '../render/FallingRenderer';
 import { TonePalette } from '../render/TonePalette';
+import { decorFor } from '../render/WellDecor';
 import PiecePreview from './PiecePreview.vue';
 import TouchControls from './TouchControls.vue';
 
@@ -27,7 +32,8 @@ if (!(props.session instanceof FallingSession))
 const session: FallingSession = props.session;
 
 const { t } = useI18n();
-const { theme } = useServices();
+const { theme, settings, audio, haptics } = useServices();
+const format = useFormat();
 
 const wellArea = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -41,6 +47,32 @@ const wellLabel = computed(() => `${t('game.well')} · ${t(`modes.${session.mode
 let renderer: FallingRenderer | null = null;
 let cellCss = 24;
 
+/** Visual effects and sounds, driven by the engine's events. */
+const profile = computed(() => effectsProfile(settings.current.effects, settings.current.shake));
+const effects = new FallingEffects(
+  session.view,
+  () => profile.value,
+  () => palette.value,
+  (points) => format.number(points),
+);
+const detachEffects = effects.attach(session);
+const detachSounds = new FallingSoundscape(audio, haptics).attach(session);
+
+/** Whole-well moments (flip, mirror) are CSS animations of the canvas. */
+const moment = ref<'flip' | 'mirror' | null>(null);
+let momentTimer: ReturnType<typeof setTimeout> | undefined;
+const playMoment = (name: 'flip' | 'mirror') => {
+  if (!profile.value.motion) return;
+  moment.value = null;
+  clearTimeout(momentTimer);
+  requestAnimationFrame(() => (moment.value = name));
+  momentTimer = setTimeout(() => (moment.value = null), 700);
+};
+const detachMoments = [
+  session.onGame('flip', () => playMoment('flip')),
+  session.onGame('mirror', () => playMoment('mirror')),
+];
+
 const execute = (command: FallingCommand) => {
   if (props.active) session.execute(command);
 };
@@ -53,8 +85,7 @@ const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
   // Minus the 2 px frame on each side.
-  renderer.layout(width - 4, height - 4, Math.min(2, window.devicePixelRatio || 1));
-  cellCss = Math.floor(Math.min(width / renderer.columns, height / renderer.rows));
+  cellCss = renderer.layout(width - 4, height - 4, Math.min(2, window.devicePixelRatio || 1));
   previewSize.value = Math.round(Math.min(84, Math.max(36, cellCss * 2.6)));
   renderer.render();
 });
@@ -62,11 +93,15 @@ const observer = new ResizeObserver(([entry]) => {
 const refreshPalette = async () => {
   await nextTick(); // <html data-theme> is updated first
   palette.value = TonePalette.fromElement(document.documentElement);
-  renderer?.setPalette(palette.value);
+  renderer?.setPalette(palette.value, theme.resolved.value === 'dark');
   renderer?.render();
 };
 
 watch(theme.resolved, refreshPalette);
+watch(
+  () => profile.value.motion,
+  (motion) => renderer?.setDecor(decorFor(session.modeId), motion),
+);
 watch(
   () => props.ghost,
   (enabled) => renderer?.setGhost(enabled),
@@ -93,6 +128,8 @@ const syncPreviews = () => {
 
 const offFrame = props.clock.subscribe((delta) => {
   input.update(props.active ? delta : 0);
+  // Effects freeze with the pause, but the final collapse plays after game over.
+  if (props.active || session.state === 'over') effects.update(delta);
   syncPreviews();
   renderer?.render();
 });
@@ -127,6 +164,8 @@ const onPointerCancel = () => gestures.cancel();
 onMounted(() => {
   if (canvas.value) renderer = new FallingRenderer(canvas.value, session.view);
   renderer?.setGhost(props.ghost);
+  renderer?.setEffects(effects);
+  renderer?.setDecor(decorFor(session.modeId), profile.value.motion);
   if (wellArea.value) observer.observe(wellArea.value);
   void refreshPalette();
   window.addEventListener('keydown', onKeyDown);
@@ -135,6 +174,10 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   offFrame();
+  detachEffects();
+  detachSounds();
+  detachMoments.forEach((off) => off());
+  clearTimeout(momentTimer);
   observer.disconnect();
   window.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('keyup', onKeyUp);
@@ -152,6 +195,7 @@ onBeforeUnmount(() => {
       <canvas
         ref="canvas"
         class="stage__canvas"
+        :class="moment && `stage__canvas--${moment}`"
         role="img"
         :aria-label="wellLabel"
         @pointerdown="onPointerDown"
@@ -231,6 +275,26 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-sm);
   touch-action: none;
   cursor: pointer;
+}
+
+.stage__canvas--flip {
+  animation: well-flip 560ms cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+.stage__canvas--mirror {
+  animation: well-mirror 460ms cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+
+@keyframes well-flip {
+  from {
+    transform: perspective(60rem) rotateX(180deg);
+  }
+}
+
+@keyframes well-mirror {
+  from {
+    transform: perspective(60rem) rotateY(180deg);
+  }
 }
 
 .stage__controls {

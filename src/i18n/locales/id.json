@@ -14,7 +14,9 @@
     "home": "Kembali ke beranda",
     "settings": "Pengaturan",
     "toLight": "Ganti ke tema terang",
-    "toDark": "Ganti ke tema gelap"
+    "toDark": "Ganti ke tema gelap",
+    "mute": "Matikan suara",
+    "unmute": "Nyalakan suara"
   },
   "home": {
     "play": "Main",
@@ -31,7 +33,10 @@
     "best": "Rekormu hari ini: {value}"
   },
   "modes": {
-    "classic": { "name": "Klasik", "pitch": "Acuannya: sedikit lebih cepat setiap 10 baris." },
+    "classic": {
+      "name": "Klasik",
+      "pitch": "Acuannya: sedikit lebih cepat setiap 10 baris."
+    },
     "tide": {
       "name": "Pasang",
       "pitch": "Baris naik dari bawah, makin lama makin cepat. Bertahanlah."
@@ -40,8 +45,14 @@
       "name": "Terbalik",
       "pitch": "Balikkan sumur: tumpukan jatuh kembali dan lubang menghilang."
     },
-    "chroma": { "name": "Chroma", "pitch": "Baris dengan satu warna bernilai empat kali lipat." },
-    "mirror": { "name": "Cermin", "pitch": "Setiap 10 baris, sumur dicerminkan. Beradaptasilah." }
+    "chroma": {
+      "name": "Chroma",
+      "pitch": "Baris dengan satu warna bernilai empat kali lipat."
+    },
+    "mirror": {
+      "name": "Cermin",
+      "pitch": "Setiap 10 baris, sumur dicerminkan. Beradaptasilah."
+    }
   },
   "result": {
     "score": "Peringkat berdasarkan poin",
@@ -125,6 +136,13 @@
     "light": "Terang",
     "dark": "Gelap",
     "ghost": "Tampilkan kepingan bayangan",
+    "effects": "Efek visual",
+    "effectsFull": "Lengkap",
+    "effectsReduced": "Tenang",
+    "effectsOff": "Tidak ada",
+    "shake": "Guncangan layar",
+    "haptics": "Getaran",
+    "volume": "Volume efek suara",
     "close": "Tutup"
   },
   "game": {

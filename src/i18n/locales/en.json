@@ -14,7 +14,9 @@
     "home": "Back to home",
     "settings": "Settings",
     "toLight": "Switch to light theme",
-    "toDark": "Switch to dark theme"
+    "toDark": "Switch to dark theme",
+    "mute": "Mute",
+    "unmute": "Unmute"
   },
   "home": {
     "play": "Play",
@@ -31,8 +33,14 @@
     "best": "Your best today: {value}"
   },
   "modes": {
-    "classic": { "name": "Classic", "pitch": "The reference: a little faster every 10 lines." },
-    "tide": { "name": "Tide", "pitch": "Rows rise from the bottom, faster and faster. Hold on." },
+    "classic": {
+      "name": "Classic",
+      "pitch": "The reference: a little faster every 10 lines."
+    },
+    "tide": {
+      "name": "Tide",
+      "pitch": "Rows rise from the bottom, faster and faster. Hold on."
+    },
     "flip": {
       "name": "Flip",
       "pitch": "Turn the well upside down: the stack falls back and holes vanish."
@@ -41,7 +49,10 @@
       "name": "Chroma",
       "pitch": "A line of a single colour is worth four times as much."
     },
-    "mirror": { "name": "Mirror", "pitch": "Every 10 lines, the well is mirrored. Adapt." }
+    "mirror": {
+      "name": "Mirror",
+      "pitch": "Every 10 lines, the well is mirrored. Adapt."
+    }
   },
   "result": {
     "score": "Ranked on points",
@@ -125,6 +136,13 @@
     "light": "Light",
     "dark": "Dark",
     "ghost": "Show the ghost piece",
+    "effects": "Visual effects",
+    "effectsFull": "Full",
+    "effectsReduced": "Calm",
+    "effectsOff": "None",
+    "shake": "Screen shake",
+    "haptics": "Vibration",
+    "volume": "Sound effects volume",
     "close": "Close"
   },
   "game": {

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { FrameClock } from '@/app/FrameClock';
 import { useFormat } from '@/app/useFormat';
+import { effectsProfile } from '@/fx/EffectsProfile';
 import { SeededRandom } from '@/core/Random';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
@@ -35,6 +36,11 @@ const stage = stageFor(descriptor.family);
 const modeName = computed(() => t(`modes.${props.modeId}.name`));
 
 const clock = new FrameClock();
+/** One per game: the stage is rebuilt for each new session. */
+const round = ref(0);
+/** The game-over dialog waits for the stack to finish collapsing. */
+const showOutcome = ref(false);
+let outcomeTimer: ReturnType<typeof setTimeout> | undefined;
 let unsubscribe: (() => void)[] = [];
 let toastKey = 0;
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
@@ -102,6 +108,8 @@ const finish = (reason: string) => {
   };
   shareStatus.value = '';
   phase.value = 'over';
+  const { gameOverDelayMs } = effectsProfile(settings.current.effects, settings.current.shake);
+  outcomeTimer = setTimeout(() => (showOutcome.value = true), gameOverDelayMs);
 };
 
 const start = async () => {
@@ -109,6 +117,8 @@ const start = async () => {
   phase.value = 'loading';
   const created = await catalog.create(props.modeId, sessionOptions());
   listen(created);
+  showOutcome.value = false;
+  round.value++;
   session.value = created;
   indicators.value = created.indicators();
   created.start();
@@ -117,6 +127,7 @@ const start = async () => {
 };
 
 const dispose = () => {
+  clearTimeout(outcomeTimer);
   unsubscribe.forEach((off) => off());
   unsubscribe = [];
   session.value?.dispose();
@@ -165,6 +176,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisibility);
   window.removeEventListener('blur', pause);
   clearTimeout(toastTimer);
+  clearTimeout(outcomeTimer);
   clock.stop();
   dispose();
 });
@@ -183,6 +195,7 @@ onBeforeUnmount(() => {
       <component
         :is="stage"
         v-if="session"
+        :key="round"
         :session="session"
         :clock="clock"
         :active="phase === 'playing'"
@@ -205,7 +218,7 @@ onBeforeUnmount(() => {
       @quit="emit('home')"
     />
     <GameOverDialog
-      :open="phase === 'over'"
+      :open="phase === 'over' && showOutcome"
       :outcome="outcome"
       :share-status="shareStatus"
       @again="start"

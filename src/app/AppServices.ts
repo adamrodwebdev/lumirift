@@ -1,6 +1,8 @@
 import { inject, type InjectionKey } from 'vue';
 import { detectLocale } from '@/i18n/locales';
 import { ModeCatalog } from '@/session/ModeCatalog';
+import { AudioEngine } from '@/services/audio/AudioEngine';
+import { Haptics } from '@/services/Haptics';
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
 import { ScoreBoard } from '@/services/ScoreBoard';
 import { SettingsService } from '@/services/SettingsService';
@@ -14,6 +16,8 @@ export interface AppServices {
   readonly scores: ScoreBoard;
   readonly share: ShareService;
   readonly catalog: ModeCatalog;
+  readonly audio: AudioEngine;
+  readonly haptics: Haptics;
   readonly clock: () => Date;
 }
 
@@ -26,6 +30,12 @@ export function createBrowserServices(
     locale: detectLocale(navigator.languages),
     theme: 'system',
     ghost: true,
+    // Players who ask their system for less motion start with calmer effects.
+    effects: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full',
+    shake: true,
+    haptics: true,
+    volume: 0.7,
+    muted: false,
   });
   return {
     settings,
@@ -35,6 +45,8 @@ export function createBrowserServices(
     scores: new ScoreBoard(storage),
     share: new ShareService(navigator),
     catalog: new ModeCatalog(),
+    audio: AudioEngine.browser(),
+    haptics: new Haptics(navigator, () => settings.current.haptics),
     clock: () => new Date(),
   };
 }

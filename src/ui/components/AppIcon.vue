@@ -18,6 +18,8 @@ const PATHS = {
   play: 'M8 5l11 7-11 7z',
   back: 'M10 6l-6 6 6 6M4 12h16',
   restart: 'M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5',
+  sound: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11',
+  mute: 'M4 9v6h4l5 4V5L8 9zM16 9l5 6M21 9l-5 6',
 } as const;
 
 export type IconName = keyof typeof PATHS;

@@ -14,7 +14,9 @@
     "home": "Retour à l'accueil",
     "settings": "Réglages",
     "toLight": "Passer au thème clair",
-    "toDark": "Passer au thème sombre"
+    "toDark": "Passer au thème sombre",
+    "mute": "Couper le son",
+    "unmute": "Activer le son"
   },
   "home": {
     "play": "Jouer",
@@ -43,7 +45,10 @@
       "name": "Renversement",
       "pitch": "Retournez le puits : la pile retombe et les trous disparaissent."
     },
-    "chroma": { "name": "Chroma", "pitch": "Une ligne d'une seule couleur vaut quatre fois plus." },
+    "chroma": {
+      "name": "Chroma",
+      "pitch": "Une ligne d'une seule couleur vaut quatre fois plus."
+    },
     "mirror": {
       "name": "Miroir",
       "pitch": "Toutes les 10 lignes, le puits se reflète. Adaptez-vous."
@@ -131,6 +136,13 @@
     "light": "Clair",
     "dark": "Sombre",
     "ghost": "Afficher la pièce fantôme",
+    "effects": "Effets visuels",
+    "effectsFull": "Complets",
+    "effectsReduced": "Sobres",
+    "effectsOff": "Aucun",
+    "shake": "Secousses de l'écran",
+    "haptics": "Vibrations",
+    "volume": "Volume des effets sonores",
     "close": "Fermer"
   },
   "game": {
