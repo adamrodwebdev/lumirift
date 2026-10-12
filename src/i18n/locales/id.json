@@ -23,7 +23,7 @@
     "modes": "Mode permainan",
     "best": "Rekor: {value}",
     "noBest": "Belum ada rekor",
-    "comingSoon": "Segera hadir: Fusi, Miring, Siluet, Ritme, Duel, Pasir, Mozaik, dan Menara."
+    "comingSoon": "Segera hadir: Duel, Pasir, Mozaik, dan Menara."
   },
   "daily": {
     "title": "Tantangan Harian",
@@ -52,6 +52,22 @@
     "mirror": {
       "name": "Cermin",
       "pitch": "Setiap 10 baris, sumur dicerminkan. Beradaptasilah."
+    },
+    "fusion": {
+      "name": "Fusi",
+      "pitch": "Enam balok sewarna menyatu: picu reaksi berantai."
+    },
+    "tilt": {
+      "name": "Miring",
+      "pitch": "Setiap 10 baris sumur berputar: dinding kiri menjadi lantai."
+    },
+    "silhouette": {
+      "name": "Siluet",
+      "pitch": "Satu teka-teki setiap hari: isi bentuknya dengan kepingan terbatas."
+    },
+    "rhythm": {
+      "name": "Ritme",
+      "pitch": "Jatuhkan kepingan tepat pada ketukan untuk melipatgandakan poin."
     }
   },
   "result": {
@@ -73,7 +89,17 @@
     "mirrorIn": "Cermin dalam",
     "reflex": "Bonus refleks",
     "hold": "Simpan",
-    "next": "Berikutnya"
+    "next": "Berikutnya",
+    "fused": "Balok menyatu",
+    "bestChain": "Rantai terbaik",
+    "nextTilt": "Baris menuju miring",
+    "tiltIn": "Miring dalam",
+    "piecesLeft": "Sisa kepingan",
+    "filled": "Bentuk terisi",
+    "outside": "Balok di luar",
+    "groove": "Pengali",
+    "onBeat": "Kepingan tepat ketukan",
+    "bpm": "Tempo"
   },
   "notice": {
     "lines": "{n} baris dihapus",
@@ -84,7 +110,12 @@
     "mirrorSoon": "Sumur akan segera dicerminkan",
     "mirror": "Dicerminkan",
     "reflexBonus": "Bonus refleks: + {value}",
-    "flip": "Dibalik"
+    "flip": "Dibalik",
+    "chain": "Rantai × {value}",
+    "tiltSoon": "Sumur akan segera miring",
+    "tilt": "Miring",
+    "grooveMax": "Groove maksimum",
+    "perfect": "Siluet sempurna: + {value}"
   },
   "controls": {
     "label": "Kontrol sentuh",
@@ -114,7 +145,9 @@
       "blockOut": "Sumur sudah penuh.",
       "lockOut": "Sumur sudah penuh.",
       "topOut": "Tumpukan meluap.",
-      "timeUp": "Waktu habis."
+      "timeUp": "Waktu habis.",
+      "outOfPieces": "Kepingan habis.",
+      "shapeComplete": "Siluet lengkap."
     },
     "result": "Hasil",
     "newBest": "Rekor baru",
@@ -154,5 +187,37 @@
     "fr": "Français",
     "en": "English",
     "id": "Bahasa Indonesia"
+  },
+  "silhouettes": {
+    "heart": "Hati",
+    "cat": "Kucing",
+    "house": "Rumah",
+    "rocket": "Roket",
+    "tree": "Pohon cemara",
+    "fish": "Ikan",
+    "star": "Bintang",
+    "arrow": "Panah",
+    "mushroom": "Jamur",
+    "cup": "Cangkir",
+    "key": "Kunci",
+    "crown": "Mahkota",
+    "ghost": "Hantu",
+    "robot": "Robot",
+    "boat": "Perahu layar",
+    "apple": "Apel",
+    "umbrella": "Payung",
+    "bell": "Lonceng",
+    "duck": "Bebek",
+    "anchor": "Jangkar",
+    "castle": "Kastel",
+    "cactus": "Kaktus",
+    "diamond": "Berlian",
+    "lightning": "Petir",
+    "moon": "Bulan",
+    "sword": "Pedang",
+    "bottle": "Botol",
+    "chair": "Kursi",
+    "pyramid": "Piramida",
+    "spaceship": "Pesawat luar angkasa"
   }
 }

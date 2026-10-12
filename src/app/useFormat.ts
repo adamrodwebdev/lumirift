@@ -9,6 +9,9 @@ export function useFormat() {
   const twoDigits = computed(
     () => new Intl.NumberFormat(locale.value, { minimumIntegerDigits: 2 }),
   );
+  const percents = computed(
+    () => new Intl.NumberFormat(locale.value, { style: 'percent', maximumFractionDigits: 0 }),
+  );
   const dates = computed(() => new Intl.DateTimeFormat(locale.value, { dateStyle: 'long' }));
 
   const number = (value: number): string => numbers.value.format(Math.round(value));
@@ -19,8 +22,11 @@ export function useFormat() {
     return `${numbers.value.format(Math.floor(seconds / 60))}:${twoDigits.value.format(seconds % 60)}`;
   };
 
-  const indicator = (item: Indicator): string =>
-    item.format === 'duration' ? duration(item.value) : number(item.value);
+  const indicator = (item: Indicator): string => {
+    if (item.format === 'duration') return duration(item.value);
+    if (item.format === 'percent') return percents.value.format(Math.floor(item.value) / 100);
+    return number(item.value);
+  };
 
   const result = (kind: ResultKind, value: number): string =>
     kind === 'time' ? duration(value) : number(value);

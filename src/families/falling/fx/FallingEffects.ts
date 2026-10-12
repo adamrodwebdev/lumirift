@@ -3,7 +3,7 @@ import type { EffectsProfile } from '@/fx/EffectsProfile';
 import { FlashLimiter } from '@/fx/FlashLimiter';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
 import { ScreenShake } from '@/fx/ScreenShake';
-import type { ClearedRow } from '../board/Board';
+import type { ClearedRow, RemovedCell } from '../board/Board';
 import type { FallingSession, FallingView } from '../FallingSession';
 import type { LinesClearedEvent } from '../game/GameEvents';
 import type { Piece } from '../pieces/Piece';
@@ -82,6 +82,8 @@ export class FallingEffects {
   /** Colours of the particles; `pool.color` holds indexes into this table. */
   readonly colors: string[] = [];
   wellFlash = 0;
+  /** Pulse of the well frame on a beat (Rhythm), from 1 down to 0. */
+  beatGlow = 0;
   stackHidden = false;
 
   private readonly rowVelocity: Float32Array;
@@ -124,6 +126,10 @@ export class FallingEffects {
       session.onGame('levelUp', () => this.addWave('level')),
       session.onGame('mirror', () => this.addWave('sweep')),
       session.onGame('flip', () => this.kick(0.3)),
+      session.onGame('tilt', () => this.kick(0.3)),
+      session.onGame('fusion', ({ cells, points }) => this.onFusion(cells, points)),
+      session.onGame('beat', ({ count }) => this.onBeat(count)),
+      session.onGame('groove', ({ level, onBeat }) => this.onGroove(level, onBeat)),
       session.onGame('over', () => this.collapse()),
     ];
     return () => offs.forEach((off) => off());
@@ -136,6 +142,7 @@ export class FallingEffects {
       this.cracks.length > 0 ||
       this.shake.active ||
       this.trails.length + this.flashes.length + this.popups.length + this.waves.length > 0 ||
+      this.beatGlow > 0 ||
       this.rowOffset.some((offset) => offset !== 0)
     );
   }
@@ -145,6 +152,7 @@ export class FallingEffects {
     this.quality.sample(deltaMs);
     this.shake.update(deltaMs);
     this.wellFlash = Math.max(0, this.wellFlash - deltaMs / 260);
+    this.beatGlow = Math.max(0, this.beatGlow - deltaMs / 240);
 
     for (const crack of [...this.cracks]) {
       crack.age += deltaMs;
@@ -255,6 +263,41 @@ export class FallingEffects {
     } else {
       this.kick(0.05 + 0.04 * event.lines + 0.03 * event.combo);
     }
+  }
+
+  /** Fused blocks shatter where they were; their points fly up. */
+  private onFusion(cells: readonly RemovedCell[], points: number): void {
+    const profile = this.profile();
+    if (!profile.destruction || cells.length === 0) return;
+    const hidden = this.view.board.hiddenRows;
+    const perCell = Math.max(
+      1,
+      Math.round(SHARDS_PER_CELL[this.quality.detail]! * profile.particles),
+    );
+    let sumX = 0;
+    let sumY = 0;
+    for (const cell of cells) {
+      this.shardsFor(cell.x, cell.y - hidden, cell.tone, perCell, cell.x + 0.5, 0.8);
+      sumX += cell.x + 0.5;
+      sumY += cell.y - hidden;
+    }
+    this.popups.push({
+      text: `+${this.formatPoints(points)}`,
+      x: sumX / cells.length,
+      y: sumY / cells.length,
+      age: 0,
+    });
+    this.kick(0.06);
+  }
+
+  private onBeat(count: number): void {
+    // The first beat of each bar is stronger.
+    this.beatGlow = count % 4 === 1 ? 1 : 0.6;
+  }
+
+  private onGroove(level: number, onBeat: boolean): void {
+    if (!onBeat || level < 2) return;
+    this.popups.push({ text: `× ${level}`, x: this.view.board.width / 2, y: 2, age: 0 });
   }
 
   private onGarbage(rows: number): void {

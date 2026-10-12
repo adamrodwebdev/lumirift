@@ -118,6 +118,19 @@ export class FallingRenderer {
     if (effects) this.painter.overlays(effects, palette, cell, this.dark);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.drawDanger(palette);
+    if (effects && effects.beatGlow > 0) {
+      // The visual metronome: the frame of the well pulses on each beat.
+      ctx.globalAlpha = 0.55 * effects.beatGlow;
+      ctx.strokeStyle = palette.accent;
+      ctx.lineWidth = Math.max(2, cell * 0.16);
+      ctx.strokeRect(
+        ctx.lineWidth / 2,
+        ctx.lineWidth / 2,
+        width - ctx.lineWidth,
+        height - ctx.lineWidth,
+      );
+      ctx.globalAlpha = 1;
+    }
     if (effects && effects.wellFlash > 0) {
       ctx.fillStyle = `rgb(255 255 255 / ${effects.wellFlash})`;
       ctx.fillRect(0, 0, width, height);

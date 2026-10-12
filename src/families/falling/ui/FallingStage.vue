@@ -59,9 +59,9 @@ const detachEffects = effects.attach(session);
 const detachSounds = new FallingSoundscape(audio, haptics).attach(session);
 
 /** Whole-well moments (flip, mirror) are CSS animations of the canvas. */
-const moment = ref<'flip' | 'mirror' | null>(null);
+const moment = ref<'flip' | 'mirror' | 'tilt' | null>(null);
 let momentTimer: ReturnType<typeof setTimeout> | undefined;
-const playMoment = (name: 'flip' | 'mirror') => {
+const playMoment = (name: 'flip' | 'mirror' | 'tilt') => {
   if (!profile.value.motion) return;
   moment.value = null;
   clearTimeout(momentTimer);
@@ -71,6 +71,7 @@ const playMoment = (name: 'flip' | 'mirror') => {
 const detachMoments = [
   session.onGame('flip', () => playMoment('flip')),
   session.onGame('mirror', () => playMoment('mirror')),
+  session.onGame('tilt', () => playMoment('tilt')),
 ];
 
 const execute = (command: FallingCommand) => {
@@ -283,6 +284,16 @@ onBeforeUnmount(() => {
 
 .stage__canvas--mirror {
   animation: well-mirror 460ms cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+
+.stage__canvas--tilt {
+  animation: well-tilt 520ms cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+
+@keyframes well-tilt {
+  from {
+    transform: rotate(90deg) scale(0.85);
+  }
 }
 
 @keyframes well-flip {

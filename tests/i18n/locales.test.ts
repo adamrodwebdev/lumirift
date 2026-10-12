@@ -58,16 +58,45 @@ describe('translations', () => {
       'nextMirror',
       'mirrorIn',
       'reflex',
+      'fused',
+      'bestChain',
+      'nextTilt',
+      'tiltIn',
+      'piecesLeft',
+      'filled',
+      'outside',
+      'groove',
+      'onBeat',
+      'bpm',
     ];
     for (const indicator of indicators)
       expect(leaf(fr, `hud.${indicator}`), indicator).toBeTypeOf('string');
-    const notices = ['chargeGained', 'pureLine', 'mirrorSoon', 'mirror', 'reflexBonus', 'flip'];
+    const notices = [
+      'chargeGained',
+      'pureLine',
+      'mirrorSoon',
+      'mirror',
+      'reflexBonus',
+      'flip',
+      'chain',
+      'tiltSoon',
+      'tilt',
+      'grooveMax',
+      'perfect',
+    ];
     for (const notice of notices) expect(leaf(fr, `notice.${notice}`), notice).toBeTypeOf('string');
     expect(FALLING_MODE_IDS.length).toBeGreaterThan(0);
   });
 
   it('explains every way a game can end', () => {
-    for (const reason of ['blockOut', 'lockOut', 'topOut', 'timeUp']) {
+    for (const reason of [
+      'blockOut',
+      'lockOut',
+      'topOut',
+      'timeUp',
+      'outOfPieces',
+      'shapeComplete',
+    ]) {
       expect(leaf(fr, `over.reason.${reason}`), reason).toBeTypeOf('string');
     }
   });

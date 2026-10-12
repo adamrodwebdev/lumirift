@@ -10,7 +10,7 @@ import type { FallingModeId } from '@/session/ModeId';
 import type { Board } from './board/Board';
 import type { Game, PieceSpec } from './game/Game';
 import type { GameEventMap } from './game/GameEvents';
-import type { AbilityId } from './modes/GameMode';
+import type { AbilityId, GameMode } from './modes/GameMode';
 import type { Piece } from './pieces/Piece';
 import type { RotationDirection } from './pieces/PieceType';
 
@@ -32,6 +32,8 @@ type CommandHandlers = {
 /** Read-only view of a game, for the renderer: it can look, never act. */
 export interface FallingView {
   readonly board: Board;
+  /** The mode, for scenery that depends on its state (the silhouette to fill). */
+  readonly mode: GameMode;
   readonly active: Piece | null;
   readonly held: PieceSpec | null;
   readonly canHold: boolean;
@@ -122,6 +124,10 @@ export class FallingSession implements GameSession<FallingCommand> {
     return { modeId: this.modeId, kind: mode.result, value: mode.resultValue(this.game) };
   }
 
+  subtitleKey(): string | null {
+    return this.game.mode.subtitleKey();
+  }
+
   dispose(): void {
     this.game.events.clear();
     this.events.clear();
@@ -138,6 +144,7 @@ export class FallingSession implements GameSession<FallingCommand> {
     events.on('notice', (event) => this.events.emit('notice', event));
     events.on('flip', ({ lines }) => this.events.emit('notice', { id: 'flip', value: lines }));
     events.on('mirror', () => this.events.emit('notice', { id: 'mirror' }));
+    events.on('tilt', () => this.events.emit('notice', { id: 'tilt' }));
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));
   }
 }

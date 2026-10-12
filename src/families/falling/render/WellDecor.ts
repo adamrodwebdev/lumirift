@@ -1,5 +1,6 @@
 import type { FallingModeId } from '@/session/ModeId';
 import type { FallingView } from '../FallingSession';
+import { SilhouetteMode } from '../modes/SilhouetteMode';
 import { Tone } from '../pieces/PieceType';
 import type { TonePalette } from './TonePalette';
 
@@ -53,8 +54,51 @@ class TideWater implements WellDecor {
   }
 }
 
+/** Silhouette: the outline of the shape to fill, and a faint fill where it is still empty. */
+class SilhouetteTarget implements WellDecor {
+  draw(ctx: CanvasRenderingContext2D, view: FallingView, palette: TonePalette, cell: number): void {
+    const mode = view.mode;
+    if (!(mode instanceof SilhouetteMode) || cell === 0) return;
+    const { board } = view;
+    const { target } = mode;
+    const hidden = board.hiddenRows;
+    const inside = (x: number, y: number) =>
+      x >= 0 && x < board.width && y >= 0 && y < board.height && target.has(y * board.width + x);
+
+    ctx.fillStyle = palette.accent;
+    ctx.globalAlpha = 0.14;
+    for (const index of target) {
+      const x = index % board.width;
+      const y = Math.floor(index / board.width);
+      if (board.get(x, y) === Tone.Empty) ctx.fillRect(x * cell, (y - hidden) * cell, cell, cell);
+    }
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = palette.accent;
+    ctx.lineWidth = Math.max(2, cell * 0.08);
+    ctx.lineCap = 'round';
+    const edge = (x1: number, y1: number, x2: number, y2: number) => {
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+    };
+    ctx.beginPath();
+    for (const index of target) {
+      const x = index % board.width;
+      const y = Math.floor(index / board.width);
+      const left = x * cell;
+      const top = (y - hidden) * cell;
+      if (!inside(x, y - 1)) edge(left, top, left + cell, top);
+      if (!inside(x, y + 1)) edge(left, top + cell, left + cell, top + cell);
+      if (!inside(x - 1, y)) edge(left, top, left, top + cell);
+      if (!inside(x + 1, y)) edge(left + cell, top, left + cell, top + cell);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
 const DECORS: Readonly<Partial<Record<FallingModeId, WellDecor>>> = {
   tide: new TideWater(),
+  silhouette: new SilhouetteTarget(),
 };
 
 export const decorFor = (mode: FallingModeId): WellDecor | null => DECORS[mode] ?? null;

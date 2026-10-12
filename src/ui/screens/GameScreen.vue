@@ -34,6 +34,11 @@ const announcement = ref('');
 const toast = ref<{ text: string; key: number } | null>(null);
 const stage = stageFor(descriptor.family);
 const modeName = computed(() => t(`modes.${props.modeId}.name`));
+/** The game's own subtitle, such as the name of the silhouette of the day. */
+const subtitle = computed(() => {
+  const key = session.value?.subtitleKey();
+  return key ? t(key) : null;
+});
 
 const clock = new FrameClock();
 /** One per game: the stage is rebuilt for each new session. */
@@ -45,11 +50,13 @@ let unsubscribe: (() => void)[] = [];
 let toastKey = 0;
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
-const sessionOptions = (): SessionOptions =>
-  props.daily?.sessionOptions() ?? {
+const sessionOptions = (): SessionOptions => ({
+  ...(props.daily?.sessionOptions() ?? {
     random: new SeededRandom(Math.floor(Math.random() * 2 ** 32)),
     timeLimitMs: null,
-  };
+  }),
+  today: today(),
+});
 
 const sameIndicators = (a: readonly Indicator[], b: readonly Indicator[]) =>
   a.length === b.length &&
@@ -187,6 +194,8 @@ onBeforeUnmount(() => {
     <h1 class="sr-only">{{ daily ? `${t('daily.title')} · ${modeName}` : modeName }}</h1>
     <aside class="game__hud">
       <p class="game__mode">{{ modeName }}</p>
+      <!-- Part of the game (the shape to fill): shown at every screen size. -->
+      <p v-if="subtitle" class="game__subtitle">{{ subtitle }}</p>
       <HudPanel :indicators="indicators" />
     </aside>
 
@@ -243,6 +252,16 @@ onBeforeUnmount(() => {
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
   overflow: hidden;
+}
+
+.game__subtitle {
+  flex: none;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .game__mode {
