@@ -1,5 +1,6 @@
 import type { FallingModeId } from '@/session/ModeId';
 import type { FallingView } from '../FallingSession';
+import { DuelMode } from '../modes/DuelMode';
 import { SilhouetteMode } from '../modes/SilhouetteMode';
 import { Tone } from '../pieces/PieceType';
 import type { TonePalette } from './TonePalette';
@@ -96,7 +97,30 @@ class SilhouetteTarget implements WellDecor {
   }
 }
 
+/** Duel: a red gauge on the left edge shows the rows about to rise. */
+class IncomingGauge implements WellDecor {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    view: FallingView,
+    palette: TonePalette,
+    cell: number,
+    time: number,
+  ): void {
+    const mode = view.mode;
+    if (!(mode instanceof DuelMode)) return;
+    const rows = Math.min(mode.incomingRows, view.board.height - view.board.hiddenRows);
+    if (rows === 0) return;
+    const bottom = (view.board.height - view.board.hiddenRows) * cell;
+    const width = Math.max(3, cell * 0.22);
+    ctx.globalAlpha = 0.7 + 0.3 * Math.sin(time / 120);
+    ctx.fillStyle = palette.danger;
+    ctx.fillRect(0, bottom - rows * cell, width, rows * cell);
+    ctx.globalAlpha = 1;
+  }
+}
+
 const DECORS: Readonly<Partial<Record<FallingModeId, WellDecor>>> = {
+  duel: new IncomingGauge(),
   tide: new TideWater(),
   silhouette: new SilhouetteTarget(),
 };

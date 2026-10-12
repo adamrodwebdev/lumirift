@@ -24,6 +24,7 @@ type Screen =
       readonly kind: 'game';
       readonly modeId: ModeId;
       readonly daily: DailyChallenge | null;
+      readonly variant: string | null;
       readonly id: number;
     };
 
@@ -34,8 +35,12 @@ const screen = shallowRef<Screen>({ kind: 'home' });
 const settingsOpen = ref(false);
 let gameId = 0;
 
-const play = (modeId: ModeId, daily: DailyChallenge | null = null) => {
-  screen.value = { kind: 'game', modeId, daily, id: ++gameId };
+const play = (
+  modeId: ModeId,
+  daily: DailyChallenge | null = null,
+  variant: string | null = null,
+) => {
+  screen.value = { kind: 'game', modeId, daily, variant, id: ++gameId };
   window.scrollTo(0, 0);
 };
 const home = () => {
@@ -77,7 +82,7 @@ onBeforeUnmount(() => {
   <main id="main" tabindex="-1">
     <HomeScreen
       v-if="screen.kind === 'home'"
-      @play="play"
+      @play="(modeId, variant) => play(modeId, null, variant ?? null)"
       @daily="(challenge) => play(challenge.modeId, challenge)"
     />
     <GameScreen
@@ -85,6 +90,7 @@ onBeforeUnmount(() => {
       :key="screen.id"
       :mode-id="screen.modeId"
       :daily="screen.daily"
+      :variant="screen.variant"
       @home="home"
     />
   </main>

@@ -23,7 +23,7 @@
     "modes": "Game modes",
     "best": "Best: {value}",
     "noBest": "No record yet",
-    "comingSoon": "Coming soon: Duel, Sand, Mosaic and Tower."
+    "comingSoon": "Coming soon: Sand, Mosaic and Tower."
   },
   "daily": {
     "title": "Daily Challenge",
@@ -68,6 +68,10 @@
     "rhythm": {
       "name": "Rhythm",
       "pitch": "Land your pieces on the beat to multiply your points."
+    },
+    "duel": {
+      "name": "Duel",
+      "pitch": "Face an AI: every line you clear sends rows to your opponent."
     }
   },
   "result": {
@@ -99,7 +103,10 @@
     "outside": "Blocks outside",
     "groove": "Multiplier",
     "onBeat": "Pieces on the beat",
-    "bpm": "Tempo"
+    "bpm": "Tempo",
+    "incoming": "Rows incoming",
+    "sent": "Rows sent",
+    "opponentLines": "AI lines"
   },
   "notice": {
     "lines": "One line cleared | {n} lines cleared",
@@ -115,7 +122,8 @@
     "tiltSoon": "The well is about to tilt",
     "tilt": "Tilted",
     "grooveMax": "Maximum groove",
-    "perfect": "Perfect silhouette: + {value}"
+    "perfect": "Perfect silhouette: + {value}",
+    "sent": "Rows sent: {value}"
   },
   "controls": {
     "label": "Touch controls",
@@ -141,13 +149,16 @@
   },
   "over": {
     "title": "Game over",
+    "victory": "Victory",
     "reason": {
       "blockOut": "The well is full.",
       "lockOut": "The well is full.",
       "topOut": "The stack overflowed.",
       "timeUp": "Time's up.",
       "outOfPieces": "No pieces left.",
-      "shapeComplete": "Silhouette complete."
+      "shapeComplete": "Silhouette complete.",
+      "victory": "Victory: the AI’s stack overflowed.",
+      "defeat": "Defeat: your stack overflowed."
     },
     "result": "Result",
     "newBest": "New record",
@@ -181,7 +192,8 @@
   "game": {
     "loading": "Loading the game…",
     "well": "Playing well",
-    "stats": "Dashboard"
+    "stats": "Dashboard",
+    "opponent": "Opponent’s well"
   },
   "languages": {
     "fr": "Français",
@@ -219,5 +231,19 @@
     "chair": "Chair",
     "pyramid": "Pyramid",
     "spaceship": "Spaceship"
+  },
+  "variants": {
+    "title": "Choose your opponent",
+    "cancel": "Cancel",
+    "duel": {
+      "easy": "Easy AI",
+      "normal": "Normal AI",
+      "expert": "Expert AI"
+    },
+    "duelHint": {
+      "easy": "It hesitates and often makes mistakes.",
+      "normal": "Solid, with a few mistakes.",
+      "expert": "Fast, and it never makes a mistake."
+    }
   }
 }

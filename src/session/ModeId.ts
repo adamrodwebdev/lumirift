@@ -13,6 +13,7 @@ export const FALLING_MODE_IDS = [
   'tilt',
   'silhouette',
   'rhythm',
+  'duel',
 ] as const;
 export type FallingModeId = (typeof FALLING_MODE_IDS)[number];
 

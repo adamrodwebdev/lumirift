@@ -23,7 +23,7 @@
     "modes": "Modes de jeu",
     "best": "Record : {value}",
     "noBest": "Pas encore de record",
-    "comingSoon": "Bientôt : Duel, Sable, Mosaïque et Tour."
+    "comingSoon": "Bientôt : Sable, Mosaïque et Tour."
   },
   "daily": {
     "title": "Défi du jour",
@@ -68,6 +68,10 @@
     "rhythm": {
       "name": "Rythme",
       "pitch": "Posez vos pièces sur le temps pour multiplier vos points."
+    },
+    "duel": {
+      "name": "Duel",
+      "pitch": "Affrontez une IA : chaque ligne effacée envoie des rangées chez l’adversaire."
     }
   },
   "result": {
@@ -99,7 +103,10 @@
     "outside": "Blocs hors forme",
     "groove": "Multiplicateur",
     "onBeat": "Pièces dans le temps",
-    "bpm": "Tempo"
+    "bpm": "Tempo",
+    "incoming": "Rangées en approche",
+    "sent": "Rangées envoyées",
+    "opponentLines": "Lignes de l’IA"
   },
   "notice": {
     "lines": "Une ligne effacée | {n} lignes effacées",
@@ -115,7 +122,8 @@
     "tiltSoon": "Le puits va basculer",
     "tilt": "Bascule",
     "grooveMax": "Groove maximal",
-    "perfect": "Silhouette parfaite : + {value}"
+    "perfect": "Silhouette parfaite : + {value}",
+    "sent": "Rangées envoyées : {value}"
   },
   "controls": {
     "label": "Commandes tactiles",
@@ -141,13 +149,16 @@
   },
   "over": {
     "title": "Partie terminée",
+    "victory": "Victoire",
     "reason": {
       "blockOut": "Le puits est plein.",
       "lockOut": "Le puits est plein.",
       "topOut": "La pile a débordé.",
       "timeUp": "Temps écoulé.",
       "outOfPieces": "Plus de pièces.",
-      "shapeComplete": "Silhouette complète."
+      "shapeComplete": "Silhouette complète.",
+      "victory": "Victoire : la pile de l’IA a débordé.",
+      "defeat": "Défaite : votre pile a débordé."
     },
     "result": "Résultat",
     "newBest": "Nouveau record",
@@ -181,7 +192,8 @@
   "game": {
     "loading": "Chargement de la partie…",
     "well": "Puits de jeu",
-    "stats": "Tableau de bord"
+    "stats": "Tableau de bord",
+    "opponent": "Puits de l’adversaire"
   },
   "languages": {
     "fr": "Français",
@@ -219,5 +231,19 @@
     "chair": "Chaise",
     "pyramid": "Pyramide",
     "spaceship": "Vaisseau"
+  },
+  "variants": {
+    "title": "Choisissez votre adversaire",
+    "cancel": "Annuler",
+    "duel": {
+      "easy": "IA facile",
+      "normal": "IA normale",
+      "expert": "IA experte"
+    },
+    "duelHint": {
+      "easy": "Elle hésite et se trompe souvent.",
+      "normal": "Solide, avec quelques erreurs.",
+      "expert": "Rapide, elle ne se trompe jamais."
+    }
   }
 }

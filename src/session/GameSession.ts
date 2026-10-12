@@ -42,6 +42,8 @@ export interface SessionOptions {
   readonly timeLimitMs: number | null;
   /** Date of play, for modes that change every day (the silhouette of the day). */
   readonly today?: Date;
+  /** A variant chosen before the game (the AI level of a duel), or none. */
+  readonly variant?: string;
 }
 
 /**

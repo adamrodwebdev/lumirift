@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, shallowRef } from 'vue';
+import type { ModeDescriptor } from '@/session/ModeCatalog';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
@@ -8,8 +9,12 @@ import type { ModeId } from '@/session/ModeId';
 import { ScoreBoard } from '@/services/ScoreBoard';
 import AppIcon from '../components/AppIcon.vue';
 import BrandMark from '../components/BrandMark.vue';
+import VariantDialog from '../components/VariantDialog.vue';
 
-const emit = defineEmits<{ play: [modeId: ModeId]; daily: [challenge: DailyChallenge] }>();
+const emit = defineEmits<{
+  play: [modeId: ModeId, variant?: string];
+  daily: [challenge: DailyChallenge];
+}>();
 
 const { t } = useI18n();
 const format = useFormat();
@@ -20,6 +25,18 @@ const daily = new DailyChallenge(today, catalog.dailyEligible());
 const appVersion = __APP_VERSION__;
 const dailyResult = catalog.get(daily.modeId).result;
 const dailyBest = computed(() => scores.best(ScoreBoard.dailyKey(daily.key)));
+/** A mode with variants (the duel) asks which one before starting. */
+const choosing = shallowRef<ModeDescriptor | null>(null);
+const choose = (mode: ModeDescriptor) => {
+  if (mode.variants) choosing.value = mode;
+  else emit('play', mode.id);
+};
+const onVariant = (variant: string) => {
+  const mode = choosing.value;
+  choosing.value = null;
+  if (mode) emit('play', mode.id, variant);
+};
+
 const modes = computed(() =>
   catalog.list().map((mode) => ({ ...mode, best: scores.best(mode.id) })),
 );
@@ -55,12 +72,7 @@ const modes = computed(() =>
       <h2 id="modes-title" class="modes__title">{{ t('home.modes') }}</h2>
       <ul class="modes__grid">
         <li v-for="mode in modes" :key="mode.id">
-          <button
-            type="button"
-            class="mode"
-            :class="`mode--${mode.id}`"
-            @click="emit('play', mode.id)"
-          >
+          <button type="button" class="mode" :class="`mode--${mode.id}`" @click="choose(mode)">
             <span class="mode__name">{{ t(`modes.${mode.id}.name`) }}</span>
             <span class="mode__pitch">{{ t(`modes.${mode.id}.pitch`) }}</span>
             <span class="mode__meta">
@@ -75,6 +87,8 @@ const modes = computed(() =>
       </ul>
       <p class="modes__soon">{{ t('home.comingSoon') }}</p>
     </section>
+
+    <VariantDialog :mode="choosing" @choose="onVariant" @close="choosing = null" />
 
     <footer class="footer">
       <p>{{ t('app.privacy') }}</p>
@@ -216,6 +230,9 @@ const modes = computed(() =>
 }
 .mode--rhythm {
   --mode-color: var(--tone-8);
+}
+.mode--duel {
+  --mode-color: var(--tone-1);
 }
 
 .mode__name {
