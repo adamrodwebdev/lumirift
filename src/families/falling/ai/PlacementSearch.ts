@@ -11,6 +11,8 @@ export interface Placement {
   readonly x: number;
   readonly lines: number;
   readonly features: BoardFeatures;
+  /** The well after the placement and its line clears (to look one piece ahead). */
+  readonly after: Board;
 }
 
 /**
@@ -47,6 +49,7 @@ export function searchPlacements(board: Board, piece: Piece): Placement[] {
         x: landed.x,
         lines,
         features: measure(after),
+        after,
       });
     }
   }

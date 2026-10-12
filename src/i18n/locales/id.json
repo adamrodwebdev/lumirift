@@ -265,14 +265,18 @@
     "title": "Pilih lawanmu",
     "cancel": "Batal",
     "duel": {
+      "rookie": "AI pemula",
       "easy": "AI mudah",
       "normal": "AI normal",
+      "hard": "AI sulit",
       "expert": "AI ahli"
     },
     "duelHint": {
+      "rookie": "Lambat, masih belajar dan sering salah.",
       "easy": "Ragu-ragu dan sering salah.",
-      "normal": "Tangguh, dengan sedikit kesalahan.",
-      "expert": "Cepat, dan tidak pernah salah."
+      "normal": "Tangguh: menyimpan kepingan dan menyiapkan serangan.",
+      "hard": "Cepat, memperhitungkan kepingan berikutnya dan jarang salah.",
+      "expert": "Setara pemain terbaik: tidak pernah salah."
     }
   },
   "jokers": {

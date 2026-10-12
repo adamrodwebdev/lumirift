@@ -265,14 +265,18 @@
     "title": "Choose your opponent",
     "cancel": "Cancel",
     "duel": {
+      "rookie": "Rookie AI",
       "easy": "Easy AI",
       "normal": "Normal AI",
+      "hard": "Hard AI",
       "expert": "Expert AI"
     },
     "duelHint": {
-      "easy": "It hesitates and often makes mistakes.",
-      "normal": "Solid, with a few mistakes.",
-      "expert": "Fast, and it never makes a mistake."
+      "rookie": "Slow, still learning the game, often wrong.",
+      "easy": "It hesitates and makes mistakes.",
+      "normal": "Solid: it holds pieces and builds up its attacks.",
+      "hard": "Fast, it plans for the next piece and rarely errs.",
+      "expert": "As good as the best players: it never errs."
     }
   },
   "jokers": {

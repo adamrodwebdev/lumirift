@@ -265,14 +265,18 @@
     "title": "Choisissez votre adversaire",
     "cancel": "Annuler",
     "duel": {
+      "rookie": "IA débutante",
       "easy": "IA facile",
       "normal": "IA normale",
+      "hard": "IA difficile",
       "expert": "IA experte"
     },
     "duelHint": {
-      "easy": "Elle hésite et se trompe souvent.",
-      "normal": "Solide, avec quelques erreurs.",
-      "expert": "Rapide, elle ne se trompe jamais."
+      "rookie": "Lente, elle découvre le jeu et se trompe souvent.",
+      "easy": "Elle hésite et fait des erreurs.",
+      "normal": "Solide : elle garde une pièce en réserve et prépare ses attaques.",
+      "hard": "Rapide, elle prévoit la pièce suivante et se trompe rarement.",
+      "expert": "Au niveau des meilleurs joueurs : elle ne se trompe jamais."
     }
   },
   "jokers": {
