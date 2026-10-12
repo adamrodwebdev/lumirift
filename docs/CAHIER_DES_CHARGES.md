@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                     |
-| ------- | ---------- | -------------------------- |
-| 0.14    | 12/10/2026 | Lot 10 livré : progression |
+| Version | Date       | Statut             |
+| ------- | ---------- | ------------------ |
+| 1.0     | 12/10/2026 | Version 1.0 livrée |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -558,14 +558,24 @@ l'appareil** (`stackrift:profile`), comme les records.
 - Le puits occupe la hauteur disponible (`dvh`) en gardant son rapport 1:2.
 - Cibles tactiles ≥ 44 × 44 px ; aucune action réservée au survol.
 
-### 4.3 Accessibilité
+### 4.3 Accessibilité (complétée au lot 11)
 
-- Navigation complète au clavier, focus visible, contrastes WCAG AA dans les deux thèmes.
-- Le puits est décrit (`role="img"` + libellé) ; score, niveau et événements (lignes, fin de
-  partie) annoncés via une région `aria-live` polie.
-- Respect de `prefers-reduced-motion` (effets « sobres ») et `prefers-color-scheme`.
+- Navigation complète au clavier : **lien d'évitement** vers le contenu, focus visible, et
+  **focus déplacé sur la région principale** à chaque changement d'écran (le bouton qui y
+  menait disparaît). Fenêtres modales natives : focus piégé, Échap, arrière-plan inerte.
+- Le puits est décrit (`role="img"` + libellé) ; chaque écran a son titre de niveau 1 ;
+  score, niveau et événements (lignes, éléments, jokers, fin de partie) annoncés via une
+  région `aria-live` polie.
+- La couleur ne porte jamais seule l'information : motif gravé par ton, textures du Sable.
+- Contrastes WCAG AA dans les deux thèmes ; cibles tactiles ≥ 44 px.
+- Respect de `prefers-reduced-motion` (effets « sobres », ambiances figées) et
+  `prefers-color-scheme`.
 - Effets réglables (complets, sobres, aucun), secousse et vibrations désactivables, jamais
   plus de 3 flashs par seconde (§ 3.5).
+- **Vérification** : audits axe-core **WCAG 2.2 AA** de chaque écran et fenêtre (accueil,
+  réglages, Atelier, choix de l'IA, jeu de chaque famille, pause, fin de partie), dans les
+  deux thèmes, sur téléphone et ordinateur : aucune violation. Parcours au clavier seul
+  testé de bout en bout.
 
 ### 4.4 Internationalisation
 
@@ -594,6 +604,18 @@ l'appareil** (`stackrift:profile`), comme les records.
 
 Navigateurs evergreen des deux dernières années (Chrome, Edge, Firefox, Safari iOS 16+,
 Chrome Android). Cible de compilation ES2022.
+
+### 4.8 Référencement et partage (livrés au lot 11)
+
+- Titre et description traduits suivant la langue ; `<html lang>` suit le réglage.
+- **Open Graph** et carte Twitter (image 1200 × 630, `public/og-image.png`, langues de
+  partage), **données structurées** schema.org `VideoGame` (gratuit, trois langues), contenu
+  `<noscript>` décrivant le jeu, manifeste web et icônes 180 / 192 / 512 px.
+- L'adresse du site n'est connue qu'au déploiement : `SITE_URL` au build ajoute le lien
+  canonique, les adresses absolues de partage, `sitemap.xml` et sa mention dans
+  `robots.txt`. Sans elle, le build reste portable (portails, sous-dossiers).
+- Une seule adresse pour les trois langues (langue choisie sur l'appareil) : pas de
+  `hreflang`, le français est la langue de référence pour les robots.
 
 ## 5. Architecture technique
 
@@ -963,14 +985,20 @@ src/ui/  ProfileCard, AtelierDialog (chargé à la demande), bilan dans GameOver
 
 ## 6. Qualité et tests
 
-- Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
-  lignes, sac de 7, score, chaque mode.
-- Test de parité des clés de traduction (fichiers lus bruts : le plugin i18n les compile à
-  l'import), et présence d'un libellé pour chaque mode, indicateur, annonce et fin de partie.
-- Tests des services (réglages, records, stockage, partage), des commandes (répétition,
-  gestes) et de l'horloge de jeu.
-- Tests de bout en bout Playwright en mobile (390 × 844) et bureau (1280 × 800).
-- `npm run verify` (lint, format, types, tests, build) doit passer avant chaque commit.
+- **Tests unitaires** (Vitest, plus de 280) : moteurs et règles de chaque famille, chaque
+  mode, IA (vitesses et comportements par niveau), effets, services, progression, parité des
+  clés de traduction (fichiers lus bruts) et présence d'un libellé pour chaque mode,
+  indicateur, annonce et fin de partie.
+- **Tests de bout en bout** (Playwright, `e2e/`) sur le build de production, Chrome
+  installé, en **mobile (390 × 844) et bureau (1280 × 800)** : accueil, ouverture, pause,
+  reprise et sortie des 13 modes, partie complète au clavier jusqu'au record, défi du jour,
+  Mosaïque au clavier, langue et thème retenus, Atelier, console sans erreur, navigation au
+  clavier seul, aucun défilement horizontal de 320 à 1920 px.
+- **Audits d'accessibilité** axe-core WCAG 2.2 AA (§ 4.3).
+- **Lighthouse** mobile et bureau : 100 dans les quatre catégories (`npm run lighthouse`).
+- `npm run verify` (lint, format, types y compris des tests e2e, tests, build) avant
+  chaque commit ; l'intégration continue (`.github/workflows/ci.yml`) rejoue `verify`,
+  `test:e2e` et `lighthouse` à chaque envoi.
 
 ## 7. Conventions Git
 
@@ -991,6 +1019,11 @@ src/ui/  ProfileCard, AtelierDialog (chargé à la demande), bilan dans GameOver
    gamme (qualité adaptative comprise).
 7. `npm run verify` et `npm run test:e2e` passent.
 
+**État à la 1.0** : critères 1 à 5 et 7 vérifiés par les tests automatiques (le tactile, en
+plus, dans le navigateur à 375 px). Critère 6 : mesuré sur ordinateur (Sable chargé :
+6,2 ms par image ; Tour à la cadence de l'écran) ; la mesure sur un téléphone d'entrée de
+gamme reste à faire sur un appareil réel.
+
 ## 9. Lots et planning
 
 Tous les modes sortent ensemble en **version 1.0** (décision du 12/10/2026). Les lots sont
@@ -1009,7 +1042,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 8   | Sable (grains) et ses éléments                                                                             | Livré     |
 | 9   | Volume : Tour (verre courbé)                                                                               | Livré     |
 | 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | Livré     |
-| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | À faire   |
+| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | Livré     |
 | 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Après 1.0 |
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | Après 1.0 |
 
@@ -1033,19 +1066,20 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 
 ## 12. Journal des versions du document
 
-| Version | Date       | Changements                                                                                                                                              |
-| ------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                                                                       |
-| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations.                                                      |
-| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9.                                                      |
-| 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5).                                                  |
-| 0.5     | 12/10/2026 | Direction artistique et son (§ 3.5), personnalisation commerciale (§ 3.6), distribution : démo portfolio et portails après la 1.0 (§ 3.7) ; lots 3 à 13. |
-| 0.6     | 12/10/2026 | Lot 3 : interface (§ 5.6), mesures Lighthouse et budget (§ 5.7), tests de l'interface (§ 6).                                                             |
-| 0.7     | 12/10/2026 | Lot 4 : effets réalisés et profils (§ 3.5), délai après effacement (§ 3.1), architecture des effets (§ 5.8), mesures (§ 5.7).                            |
-| 0.8     | 12/10/2026 | Lot 5 : règles détaillées de Fusion (seuil porté à 6), Bascule (sens corrigé), Silhouette, Rythme ; architecture des modes avancés (§ 5.9).              |
-| 0.9     | 12/10/2026 | Lot 6 : règles et niveaux du Duel (§ 3.2), architecture du duel et de l'IA (§ 5.10).                                                                     |
-| 0.10    | 12/10/2026 | Lot 7 : règles complètes de la Mosaïque et de ses jokers (§ 3.2), famille Placement et socle de couleurs partagé (§ 5.11).                               |
-| 0.11    | 12/10/2026 | Lot 8 : règles complètes du Sable et de ses éléments (§ 3.2), famille Sable (§ 5.12).                                                                    |
-| 0.12    | 12/10/2026 | Lot 9 : règles et caméra de la Tour (§ 3.2), famille Volume (§ 5.13), séparation du rendu et des règles (§ 5.14).                                        |
-| 0.13    | 12/10/2026 | Règles des éléments du Sable, de la Mosaïque et cinq niveaux d'IA, fondés sur une recherche des jeux du genre (§ 3.2).                                   |
-| 0.14    | 12/10/2026 | Lot 10 : progression et personnalisation (§ 3.6), architecture (§ 5.15) ; musique d'ambiance non retenue pour la 1.0.                                    |
+| Version | Date       | Changements                                                                                                                                                       |
+| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                                                                                |
+| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations.                                                               |
+| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9.                                                               |
+| 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5).                                                           |
+| 0.5     | 12/10/2026 | Direction artistique et son (§ 3.5), personnalisation commerciale (§ 3.6), distribution : démo portfolio et portails après la 1.0 (§ 3.7) ; lots 3 à 13.          |
+| 0.6     | 12/10/2026 | Lot 3 : interface (§ 5.6), mesures Lighthouse et budget (§ 5.7), tests de l'interface (§ 6).                                                                      |
+| 0.7     | 12/10/2026 | Lot 4 : effets réalisés et profils (§ 3.5), délai après effacement (§ 3.1), architecture des effets (§ 5.8), mesures (§ 5.7).                                     |
+| 0.8     | 12/10/2026 | Lot 5 : règles détaillées de Fusion (seuil porté à 6), Bascule (sens corrigé), Silhouette, Rythme ; architecture des modes avancés (§ 5.9).                       |
+| 0.9     | 12/10/2026 | Lot 6 : règles et niveaux du Duel (§ 3.2), architecture du duel et de l'IA (§ 5.10).                                                                              |
+| 0.10    | 12/10/2026 | Lot 7 : règles complètes de la Mosaïque et de ses jokers (§ 3.2), famille Placement et socle de couleurs partagé (§ 5.11).                                        |
+| 0.11    | 12/10/2026 | Lot 8 : règles complètes du Sable et de ses éléments (§ 3.2), famille Sable (§ 5.12).                                                                             |
+| 0.12    | 12/10/2026 | Lot 9 : règles et caméra de la Tour (§ 3.2), famille Volume (§ 5.13), séparation du rendu et des règles (§ 5.14).                                                 |
+| 0.13    | 12/10/2026 | Règles des éléments du Sable, de la Mosaïque et cinq niveaux d'IA, fondés sur une recherche des jeux du genre (§ 3.2).                                            |
+| 0.14    | 12/10/2026 | Lot 10 : progression et personnalisation (§ 3.6), architecture (§ 5.15) ; musique d'ambiance non retenue pour la 1.0.                                             |
+| 1.0     | 12/10/2026 | Lot 11 : accessibilité vérifiée (§ 4.3), référencement et partage (§ 4.8), tests de bout en bout et CI (§ 6), état des critères d'acceptation (§ 8). Version 1.0. |

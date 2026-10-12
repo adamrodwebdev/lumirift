@@ -3,6 +3,26 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.0.0] — 12/10/2026
+
+Première version complète : 13 modes en quatre familles, défi du jour, duel contre l'IA,
+progression et Atelier, en français, anglais et indonésien.
+
+### Ajouté
+
+- Tests de bout en bout (Playwright) sur téléphone et ordinateur : les 13 modes, une partie
+  complète, défi du jour, réglages retenus, Atelier, clavier seul, aucun défilement
+  horizontal de 320 à 1920 px.
+- Audits d'accessibilité axe-core WCAG 2.2 AA de chaque écran et fenêtre, dans les deux
+  thèmes ; intégration continue (vérifications, parcours, Lighthouse).
+- Partage : carte Open Graph, données structurées, manifeste et icônes ; lien canonique et
+  plan du site quand l'adresse du site est fournie (`SITE_URL`).
+- README complet : le jeu, les commandes, l'accessibilité, la mise en ligne.
+
+### Modifié
+
+- Le focus passe à la région principale à chaque changement d'écran.
+
 ## [0.9.0] — 12/10/2026
 
 La progression.
