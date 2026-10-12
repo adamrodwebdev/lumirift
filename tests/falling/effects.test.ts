@@ -3,7 +3,7 @@ import { effectsProfile, type EffectsLevel } from '@/fx/EffectsProfile';
 import { createSoloSession, type FallingSession } from '@/families/falling';
 import { CRACK_MS, FallingEffects } from '@/families/falling/fx/FallingEffects';
 import { FallingSoundscape } from '@/families/falling/fx/FallingSoundscape';
-import type { TonePalette } from '@/families/falling/render/TonePalette';
+import type { TonePalette } from '@/render/TonePalette';
 import type { AudioEngine } from '@/services/audio/AudioEngine';
 import { Haptics } from '@/services/Haptics';
 import { ConstantRandom } from './helpers';

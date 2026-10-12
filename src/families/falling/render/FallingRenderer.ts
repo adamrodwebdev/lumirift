@@ -3,7 +3,7 @@ import type { FallingEffects } from '../fx/FallingEffects';
 import type { Piece } from '../pieces/Piece';
 import { CrystalSprites } from './CrystalSprites';
 import { EffectsPainter } from './EffectsPainter';
-import type { TonePalette } from './TonePalette';
+import type { TonePalette } from '@/render/TonePalette';
 import type { WellDecor } from './WellDecor';
 
 /** Share of the visible height above which the well glows with danger. */

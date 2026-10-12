@@ -3,7 +3,7 @@ import type { FallingView } from '../FallingSession';
 import { DuelMode } from '../modes/DuelMode';
 import { SilhouetteMode } from '../modes/SilhouetteMode';
 import { Tone } from '../pieces/PieceType';
-import type { TonePalette } from './TonePalette';
+import type { TonePalette } from '@/render/TonePalette';
 
 /** A mode's own scenery, drawn over the stack and under the falling piece. */
 export interface WellDecor {
