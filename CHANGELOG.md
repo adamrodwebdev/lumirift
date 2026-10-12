@@ -3,6 +3,24 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [0.6.0] — 12/10/2026
+
+Le Sable.
+
+### Ajouté
+
+- Sable : les pièces se désagrègent en 6 × 6 grains par case ; une zone d'une seule couleur
+  qui relie les deux murs s'efface, même sinueuse.
+- Éléments : eau qui s'infiltre puis se fige dans la couleur voisine, feu qui consume la
+  zone de la couleur qu'il touche, coups de vent annoncés qui poussent le sable.
+- Rendu au pixel avec une texture par couleur ; paillettes, braises, poussière, traînées de
+  vent ; sons d'écoulement, de balayage, de crépitement et de rafale.
+- Le Sable peut être le mode du défi du jour.
+
+### Modifié
+
+- Les boutons tactiles de la famille Chute peuvent masquer la réserve.
+
 ## [0.5.0] — 12/10/2026
 
 La Mosaïque, première famille hors chute.
