@@ -1,4 +1,4 @@
-import type { RandomSource } from '../core/Random';
+import type { RandomSource } from '@/core/Random';
 import { PIECE_TYPES, type PieceType } from './PieceType';
 
 /**

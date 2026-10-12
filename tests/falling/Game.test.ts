@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Game } from '@/engine/game/Game';
-import { ClassicMode } from '@/engine/modes/ClassicMode';
+import { Game } from '@/families/falling/game/Game';
+import { ClassicMode } from '@/families/falling/modes/ClassicMode';
 import { ConstantRandom, startedGame } from './helpers';
 
 const row = (pattern: string, count: number): string[] => Array<string>(count).fill(pattern);

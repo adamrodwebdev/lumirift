@@ -1,6 +1,6 @@
 import { Board, type ClearedRow } from '../board/Board';
-import { Emitter } from '../core/Emitter';
-import type { RandomSource } from '../core/Random';
+import { Emitter } from '@/core/Emitter';
+import type { RandomSource } from '@/core/Random';
 import type { GameMode } from '../modes/GameMode';
 import { Bag } from '../pieces/Bag';
 import { Piece } from '../pieces/Piece';
@@ -226,6 +226,26 @@ export class Game {
     this.scoreClear(cleared, true);
     this.events.emit('flip', { lines: cleared.length });
     if (!this.liftActiveUntilItFits()) this.finish('topOut');
+  }
+
+  /** Reflects the well and the falling piece left to right (no collision can appear). */
+  mirrorWell(): void {
+    if (this._state === 'over') return;
+    this.board.mirror();
+    if (this._active) this._active = this._active.mirrored(this.board.width);
+    this.events.emit('mirror', {});
+  }
+
+  /** Adds bonus points granted by a mode rule, and announces them. */
+  awardPoints(points: number, reason: string): void {
+    if (this._state === 'over' || points <= 0) return;
+    this._score += points;
+    this.notify(reason, points);
+  }
+
+  /** Publishes a mode-specific announcement (`notice.<id>` in translations). */
+  notify(id: string, value?: number): void {
+    this.events.emit('notice', value === undefined ? { id } : { id, value });
   }
 
   // --- Internals ------------------------------------------------------------

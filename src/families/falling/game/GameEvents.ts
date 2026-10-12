@@ -28,5 +28,8 @@ export interface GameEventMap {
   levelUp: { readonly level: number };
   garbage: { readonly rows: number };
   flip: { readonly lines: number };
+  mirror: Readonly<Record<string, never>>;
+  /** Mode-specific announcement; `id` is a translation key suffix. */
+  notice: { readonly id: string; readonly value?: number };
   over: { readonly reason: GameOverReason };
 }

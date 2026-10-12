@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SeededRandom } from '@/engine/core/Random';
+import { SeededRandom } from '@/core/Random';
 
 describe('SeededRandom', () => {
   it('replays the same sequence for the same seed', () => {

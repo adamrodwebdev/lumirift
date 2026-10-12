@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Board } from '@/engine/board/Board';
-import { Piece } from '@/engine/pieces/Piece';
-import { Tone } from '@/engine/pieces/PieceType';
+import { Board } from '@/families/falling/board/Board';
+import { Piece } from '@/families/falling/pieces/Piece';
+import { Tone } from '@/families/falling/pieces/PieceType';
 
 const EMPTY = '..........';
 
@@ -69,6 +69,12 @@ describe('Board', () => {
     expect(board.blockCount()).toBe(before);
     // Columns 0 and 1 each hold two blocks (column 1 had a hole): both settle flat.
     expect(board.toRows().slice(-3)).toEqual([EMPTY, '##........', '##........']);
+  });
+
+  it('reflects the well left to right', () => {
+    const board = Board.fromRows(['##........', '#....#....']);
+    board.mirror();
+    expect(board.toRows().slice(-2)).toEqual(['........##', '....#....#']);
   });
 
   it('measures the stack height', () => {

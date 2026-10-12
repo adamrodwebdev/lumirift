@@ -130,6 +130,13 @@ export class Board {
     }
   }
 
+  /** Reflects the well left to right. */
+  mirror(): void {
+    for (let y = 0; y < this.height; y++) {
+      this.cells.subarray(y * this.width, (y + 1) * this.width).reverse();
+    }
+  }
+
   /** Height of the stack, in rows from the floor (0 = empty board). */
   stackHeight(): number {
     for (let y = 0; y < this.height; y++) {
