@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "title": "Stackrift — game balok jatuh yang diciptakan ulang",
+    "description": "Game balok jatuh yang diciptakan ulang: mode baru, tantangan harian, kristal yang pecah berkeping-keping. Gratis, tanpa daftar, di ponsel dan komputer."
+  },
+  "app": {
+    "name": "Stackrift",
+    "tagline": "Aturan yang sudah kamu kenal. Permainan yang belum pernah kamu mainkan.",
+    "privacy": "Tanpa akun, tanpa pelacak: rekormu tetap di perangkatmu.",
+    "version": "Versi {version}"
+  },
+  "nav": {
+    "skip": "Langsung ke konten",
+    "home": "Kembali ke beranda",
+    "settings": "Pengaturan",
+    "toLight": "Ganti ke tema terang",
+    "toDark": "Ganti ke tema gelap"
+  },
+  "home": {
+    "play": "Main",
+    "modes": "Mode permainan",
+    "best": "Rekor: {value}",
+    "noBest": "Belum ada rekor",
+    "comingSoon": "Segera hadir: Fusi, Miring, Siluet, Ritme, Duel, Pasir, Mozaik, dan Menara."
+  },
+  "daily": {
+    "title": "Tantangan Harian",
+    "mode": "Mode hari ini: {mode}",
+    "rules": "Dua menit, kepingan yang sama untuk semua orang.",
+    "start": "Terima tantangan",
+    "best": "Rekormu hari ini: {value}"
+  },
+  "modes": {
+    "classic": { "name": "Klasik", "pitch": "Acuannya: sedikit lebih cepat setiap 10 baris." },
+    "tide": {
+      "name": "Pasang",
+      "pitch": "Baris naik dari bawah, makin lama makin cepat. Bertahanlah."
+    },
+    "flip": {
+      "name": "Terbalik",
+      "pitch": "Balikkan sumur: tumpukan jatuh kembali dan lubang menghilang."
+    },
+    "chroma": { "name": "Chroma", "pitch": "Baris dengan satu warna bernilai empat kali lipat." },
+    "mirror": { "name": "Cermin", "pitch": "Setiap 10 baris, sumur dicerminkan. Beradaptasilah." }
+  },
+  "result": {
+    "score": "Peringkat berdasarkan poin",
+    "time": "Peringkat berdasarkan waktu"
+  },
+  "hud": {
+    "score": "Skor",
+    "lines": "Baris",
+    "level": "Level",
+    "time": "Waktu",
+    "timeLeft": "Sisa waktu",
+    "nextRise": "Pasang berikutnya",
+    "rowsRisen": "Baris naik",
+    "charges": "Pembalikan",
+    "nextCharge": "Baris menuju muatan",
+    "pureLines": "Baris murni",
+    "nextMirror": "Baris menuju cermin",
+    "mirrorIn": "Cermin dalam",
+    "reflex": "Bonus refleks",
+    "hold": "Simpan",
+    "next": "Berikutnya"
+  },
+  "notice": {
+    "lines": "{n} baris dihapus",
+    "combo": "Kombo × {n}",
+    "levelUp": "Level {level}",
+    "chargeGained": "Muatan pembalikan baru",
+    "pureLine": "Baris murni",
+    "mirrorSoon": "Sumur akan segera dicerminkan",
+    "mirror": "Dicerminkan",
+    "reflexBonus": "Bonus refleks: + {value}",
+    "flip": "Dibalik"
+  },
+  "controls": {
+    "label": "Kontrol sentuh",
+    "left": "Kiri",
+    "right": "Kanan",
+    "softDrop": "Turunkan",
+    "hardDrop": "Jatuhkan langsung",
+    "rotateCw": "Putar",
+    "rotateCcw": "Putar ke arah lain",
+    "hold": "Simpan",
+    "pause": "Jeda",
+    "ability": {
+      "flip": "Balikkan sumur"
+    },
+    "keyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Ctrl untuk memutar ke arah lain, C untuk menyimpan, F untuk kemampuan, Esc untuk jeda.",
+    "touch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung."
+  },
+  "pause": {
+    "title": "Jeda",
+    "resume": "Lanjutkan",
+    "restart": "Mulai ulang",
+    "quit": "Keluar"
+  },
+  "over": {
+    "title": "Permainan selesai",
+    "reason": {
+      "blockOut": "Sumur sudah penuh.",
+      "lockOut": "Sumur sudah penuh.",
+      "topOut": "Tumpukan meluap.",
+      "timeUp": "Waktu habis."
+    },
+    "result": "Hasil",
+    "newBest": "Rekor baru",
+    "best": "Rekor: {value}",
+    "again": "Main lagi",
+    "home": "Beranda",
+    "share": "Bagikan",
+    "copied": "Hasil disalin ke papan klip"
+  },
+  "share": {
+    "daily": "Stackrift · Tantangan {date} ({mode}): {value}. Giliranmu: {url}",
+    "mode": "Stackrift · {mode}: {value}. Giliranmu: {url}"
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "language": "Bahasa",
+    "theme": "Tema",
+    "system": "Sistem",
+    "light": "Terang",
+    "dark": "Gelap",
+    "ghost": "Tampilkan kepingan bayangan",
+    "close": "Tutup"
+  },
+  "game": {
+    "loading": "Memuat permainan…",
+    "well": "Sumur permainan",
+    "stats": "Papan skor"
+  },
+  "languages": {
+    "fr": "Français",
+    "en": "English",
+    "id": "Bahasa Indonesia"
+  }
+}

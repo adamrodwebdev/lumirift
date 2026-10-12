@@ -1,0 +1,146 @@
+{
+  "meta": {
+    "title": "Stackrift — le jeu de blocs réinventé",
+    "description": "Jeu de blocs qui tombent réinventé : modes inédits, défi du jour, destructions de cristal. Gratuit, sans inscription, sur mobile et ordinateur."
+  },
+  "app": {
+    "name": "Stackrift",
+    "tagline": "Les règles que vous connaissez. Des parties que vous n'avez jamais jouées.",
+    "privacy": "Aucun compte, aucun traceur : vos records restent sur votre appareil.",
+    "version": "Version {version}"
+  },
+  "nav": {
+    "skip": "Aller au contenu",
+    "home": "Retour à l'accueil",
+    "settings": "Réglages",
+    "toLight": "Passer au thème clair",
+    "toDark": "Passer au thème sombre"
+  },
+  "home": {
+    "play": "Jouer",
+    "modes": "Modes de jeu",
+    "best": "Record : {value}",
+    "noBest": "Pas encore de record",
+    "comingSoon": "Bientôt : Fusion, Bascule, Silhouette, Rythme, Duel, Sable, Mosaïque et Tour."
+  },
+  "daily": {
+    "title": "Défi du jour",
+    "mode": "Mode du jour : {mode}",
+    "rules": "Deux minutes, les mêmes pièces pour tout le monde.",
+    "start": "Relever le défi",
+    "best": "Votre record du jour : {value}"
+  },
+  "modes": {
+    "classic": {
+      "name": "Classique",
+      "pitch": "La référence : un peu plus vite toutes les 10 lignes."
+    },
+    "tide": {
+      "name": "Marée",
+      "pitch": "Des rangées montent du fond, de plus en plus vite. Tenez bon."
+    },
+    "flip": {
+      "name": "Renversement",
+      "pitch": "Retournez le puits : la pile retombe et les trous disparaissent."
+    },
+    "chroma": { "name": "Chroma", "pitch": "Une ligne d'une seule couleur vaut quatre fois plus." },
+    "mirror": {
+      "name": "Miroir",
+      "pitch": "Toutes les 10 lignes, le puits se reflète. Adaptez-vous."
+    }
+  },
+  "result": {
+    "score": "Classé aux points",
+    "time": "Classé au temps"
+  },
+  "hud": {
+    "score": "Score",
+    "lines": "Lignes",
+    "level": "Niveau",
+    "time": "Temps",
+    "timeLeft": "Temps restant",
+    "nextRise": "Prochaine marée",
+    "rowsRisen": "Rangées montées",
+    "charges": "Renversements",
+    "nextCharge": "Lignes avant charge",
+    "pureLines": "Lignes pures",
+    "nextMirror": "Lignes avant reflet",
+    "mirrorIn": "Reflet dans",
+    "reflex": "Bonus réflexe",
+    "hold": "Réserve",
+    "next": "Suivantes"
+  },
+  "notice": {
+    "lines": "Une ligne effacée | {n} lignes effacées",
+    "combo": "Combo × {n}",
+    "levelUp": "Niveau {level}",
+    "chargeGained": "Nouvelle charge de renversement",
+    "pureLine": "Ligne pure",
+    "mirrorSoon": "Le puits va se refléter",
+    "mirror": "Reflet",
+    "reflexBonus": "Bonus réflexe : + {value}",
+    "flip": "Renversement"
+  },
+  "controls": {
+    "label": "Commandes tactiles",
+    "left": "Gauche",
+    "right": "Droite",
+    "softDrop": "Descendre",
+    "hardDrop": "Chute instantanée",
+    "rotateCw": "Tourner",
+    "rotateCcw": "Tourner dans l'autre sens",
+    "hold": "Réserve",
+    "pause": "Pause",
+    "ability": {
+      "flip": "Renverser le puits"
+    },
+    "keyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, Ctrl pour tourner dans l'autre sens, C pour la réserve, F pour la capacité, Échap pour la pause.",
+    "touch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée."
+  },
+  "pause": {
+    "title": "Pause",
+    "resume": "Reprendre",
+    "restart": "Recommencer",
+    "quit": "Quitter"
+  },
+  "over": {
+    "title": "Partie terminée",
+    "reason": {
+      "blockOut": "Le puits est plein.",
+      "lockOut": "Le puits est plein.",
+      "topOut": "La pile a débordé.",
+      "timeUp": "Temps écoulé."
+    },
+    "result": "Résultat",
+    "newBest": "Nouveau record",
+    "best": "Record : {value}",
+    "again": "Rejouer",
+    "home": "Accueil",
+    "share": "Partager",
+    "copied": "Résultat copié dans le presse-papiers"
+  },
+  "share": {
+    "daily": "Stackrift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",
+    "mode": "Stackrift · {mode} : {value}. À vous de jouer : {url}"
+  },
+  "settings": {
+    "title": "Réglages",
+    "language": "Langue",
+    "theme": "Thème",
+    "system": "Système",
+    "light": "Clair",
+    "dark": "Sombre",
+    "ghost": "Afficher la pièce fantôme",
+    "close": "Fermer"
+  },
+  "game": {
+    "loading": "Chargement de la partie…",
+    "well": "Puits de jeu",
+    "stats": "Tableau de bord"
+  },
+  "languages": {
+    "fr": "Français",
+    "en": "English",
+    "id": "Bahasa Indonesia"
+  }
+}
