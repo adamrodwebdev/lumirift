@@ -130,7 +130,10 @@ export class Game {
   }
 
   pause(): void {
-    if (this._state === 'running') this.setState('paused');
+    if (this._state !== 'running') return;
+    // A key held when the game paused must not keep the piece dropping on resume.
+    this.softDropping = false;
+    this.setState('paused');
   }
 
   resume(): void {
