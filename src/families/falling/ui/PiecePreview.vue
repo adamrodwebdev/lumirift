@@ -2,7 +2,7 @@
 import { onMounted, ref, watch } from 'vue';
 import type { PieceSpec } from '../game/Game';
 import { PieceRenderer } from '../render/PieceRenderer';
-import type { TonePalette } from '../render/TonePalette';
+import type { TonePalette } from '@/render/TonePalette';
 
 const props = defineProps<{
   spec: PieceSpec | null;

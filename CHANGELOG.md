@@ -3,6 +3,30 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [0.5.0] — 12/10/2026
+
+La Mosaïque, première famille hors chute.
+
+### Ajouté
+
+- Mosaïque : grille de 8 × 8 sans gravité, trois pièces de céramique de 1 à 9 cases, lignes
+  et colonnes, séries, grille nette ; jokers gagnés en jouant (Rotation, Relance, Bombe,
+  Retour, Cube), jamais payants.
+- Aperçu de la pose avec les lignes qui vont s'effacer, pièces impossibles grisées.
+- Glisser-déposer (la pièce flotte au-dessus du doigt), toucher puis viser, clavier complet.
+- Rendu céramique : carreaux émaillés, rebond à la pose, fissure puis tessons, bombe ; sons de
+  céramique.
+- La Mosaïque peut être le mode du défi du jour ; aide de la pause propre à chaque famille.
+
+### Modifié
+
+- Tons, palette et motifs gravés deviennent un socle partagé par toutes les familles.
+
+### Corrigé
+
+- Le plateau de la Mosaïque débordait de l'écran sur téléphone (taille par défaut du canvas).
+- L'aperçu de la bombe restait accroché au curseur clavier quand on reprenait la souris.
+
 ## [0.4.0] — 12/10/2026
 
 Duel contre l'IA.

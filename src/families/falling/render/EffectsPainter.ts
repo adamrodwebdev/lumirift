@@ -2,7 +2,7 @@ import { ParticleKind } from '@/fx/ParticlePool';
 import { Tone } from '../pieces/PieceType';
 import { CRACK_MS, EFFECT_TIMINGS, type FallingEffects } from '../fx/FallingEffects';
 import type { CrystalSprites } from './CrystalSprites';
-import type { TonePalette } from './TonePalette';
+import type { TonePalette } from '@/render/TonePalette';
 
 const { TRAIL_MS, FLASH_MS, POPUP_MS, WAVE_MS } = EFFECT_TIMINGS;
 

@@ -8,7 +8,7 @@ import type { FallingSession, FallingView } from '../FallingSession';
 import type { LinesClearedEvent } from '../game/GameEvents';
 import type { Piece } from '../pieces/Piece';
 import { CHROMA_TONES, Tone } from '../pieces/PieceType';
-import { shade, type TonePalette } from '../render/TonePalette';
+import { shade, type TonePalette } from '@/render/TonePalette';
 
 /** How long a full row shows its crack before it shatters. */
 export const CRACK_MS = 130;

@@ -23,7 +23,7 @@
     "modes": "Mode permainan",
     "best": "Rekor: {value}",
     "noBest": "Belum ada rekor",
-    "comingSoon": "Segera hadir: Pasir, Mozaik, dan Menara."
+    "comingSoon": "Segera hadir: Pasir dan Menara."
   },
   "daily": {
     "title": "Tantangan Harian",
@@ -72,6 +72,10 @@
     "duel": {
       "name": "Duel",
       "pitch": "Lawan AI: setiap baris yang kamu hapus mengirim baris ke lawan."
+    },
+    "mosaic": {
+      "name": "Mozaik",
+      "pitch": "Pasang kepingan keramik, lengkapi baris dan kolom, dapatkan joker."
     }
   },
   "result": {
@@ -106,7 +110,8 @@
     "bpm": "Tempo",
     "incoming": "Baris datang",
     "sent": "Baris terkirim",
-    "opponentLines": "Baris AI"
+    "opponentLines": "Baris AI",
+    "streak": "Beruntun"
   },
   "notice": {
     "lines": "{n} baris dihapus",
@@ -123,7 +128,15 @@
     "tilt": "Miring",
     "grooveMax": "Groove maksimum",
     "perfect": "Siluet sempurna: + {value}",
-    "sent": "Baris terkirim: {value}"
+    "sent": "Baris terkirim: {value}",
+    "perfectGrid": "Papan bersih: + {value}",
+    "jokerGained": {
+      "rotate": "Joker didapat: Putar",
+      "reroll": "Joker didapat: Kocok ulang",
+      "bomb": "Joker didapat: Bom",
+      "undo": "Joker didapat: Batal",
+      "cube": "Joker didapat: Kubus"
+    }
   },
   "controls": {
     "label": "Kontrol sentuh",
@@ -158,7 +171,8 @@
       "outOfPieces": "Kepingan habis.",
       "shapeComplete": "Siluet lengkap.",
       "victory": "Menang: tumpukan AI meluap.",
-      "defeat": "Kalah: tumpukanmu meluap."
+      "defeat": "Kalah: tumpukanmu meluap.",
+      "noMoves": "Tidak ada kepingan yang muat lagi."
     },
     "result": "Hasil",
     "newBest": "Rekor baru",
@@ -245,5 +259,27 @@
       "normal": "Tangguh, dengan sedikit kesalahan.",
       "expert": "Cepat, dan tidak pernah salah."
     }
+  },
+  "jokers": {
+    "rotate": "Putar",
+    "reroll": "Kocok ulang",
+    "bomb": "Bom",
+    "undo": "Batal",
+    "cube": "Kubus"
+  },
+  "mosaic": {
+    "board": "Papan Mozaik",
+    "hand": "Kepingan untuk dipasang",
+    "jokers": "Joker",
+    "noJoker": "Hapus beberapa baris sekaligus untuk mendapatkan joker.",
+    "piece": "Kepingan {n}",
+    "bonus": "Kubus bonus",
+    "cells": "{n} kotak",
+    "stuck": "tidak muat di mana pun",
+    "empty": "Slot kosong",
+    "pickPiece": "Ketuk kepingan yang akan diputar",
+    "pickCell": "Ketuk kotak untuk dibom",
+    "helpKeyboard": "Keyboard: 1, 2, 3 untuk memilih kepingan (4 untuk kubus), panah untuk memindahkan, Enter untuk memasang, J untuk joker, Esc untuk membatalkan atau jeda.",
+    "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak."
   }
 }

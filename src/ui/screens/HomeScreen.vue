@@ -234,6 +234,9 @@ const modes = computed(() =>
 .mode--duel {
   --mode-color: var(--tone-1);
 }
+.mode--mosaic {
+  --mode-color: var(--tone-7);
+}
 
 .mode__name {
   font-family: var(--font-display);

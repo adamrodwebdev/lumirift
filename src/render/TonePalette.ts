@@ -1,4 +1,4 @@
-import { Tone } from '../pieces/PieceType';
+import { Tone } from '@/core/Tone';
 
 export interface Rgb {
   readonly r: number;

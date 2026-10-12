@@ -13,7 +13,7 @@ import type { PieceSpec } from '../game/Game';
 import { FallingInput, KEY_BINDINGS } from '../input/FallingInput';
 import { WellGestures } from '../input/WellGestures';
 import { FallingRenderer } from '../render/FallingRenderer';
-import { TonePalette } from '../render/TonePalette';
+import { TonePalette } from '@/render/TonePalette';
 import { decorFor } from '../render/WellDecor';
 import PiecePreview from './PiecePreview.vue';
 import TouchControls from './TouchControls.vue';

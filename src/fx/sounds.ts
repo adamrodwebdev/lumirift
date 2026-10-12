@@ -149,6 +149,60 @@ export const onBeat =
       gain: 0.07,
     });
 
+/** Mosaic: a glazed tile set down on the tray. */
+export const tile: SoundRecipe = (s) => {
+  s.tone({ type: 'triangle', frequency: 520, to: 380, duration: 0.07, gain: 0.07 });
+  s.noise({ filter: 'bandpass', frequency: 2400, q: 4, duration: 0.03, gain: 0.05 });
+};
+
+/** Mosaic: ceramic breaking, lower and duller than glass, richer with the streak. */
+export const ceramicBreak =
+  (lines: number, streak: number): SoundRecipe =>
+  (s) => {
+    s.noise({
+      filter: 'bandpass',
+      frequency: 1600,
+      q: 1.5,
+      duration: 0.22 + 0.05 * lines,
+      gain: 0.2,
+    });
+    s.noise({ filter: 'highpass', frequency: 4500, duration: 0.12, gain: 0.07, start: 0.02 });
+    const base = semitone(392, Math.min(streak - 1, 6) * 2);
+    for (let i = 0; i < 2 + lines; i++) {
+      const step = PENTATONIC[i % PENTATONIC.length]!;
+      s.tone({
+        type: 'triangle',
+        frequency: semitone(base, step),
+        duration: 0.22,
+        gain: 0.05,
+        start: i * 0.04,
+      });
+    }
+  };
+
+/** Mosaic: the bomb joker. */
+export const bomb: SoundRecipe = (s) => {
+  s.tone({ frequency: 90, to: 30, duration: 0.6, gain: 0.35 });
+  s.noise({ filter: 'lowpass', frequency: 1800, to: 200, duration: 0.5, gain: 0.25 });
+};
+
+/** Mosaic: three new pieces shuffled in (reroll joker). */
+export const shuffle: SoundRecipe = (s) => {
+  for (let i = 0; i < 3; i++)
+    s.noise({
+      filter: 'bandpass',
+      frequency: 2600,
+      q: 2,
+      duration: 0.05,
+      gain: 0.06,
+      start: i * 0.07,
+    });
+};
+
+/** Mosaic: the last move taken back (undo joker). */
+export const rewind: SoundRecipe = (s) =>
+  s.tone({ type: 'triangle', frequency: 880, to: 330, duration: 0.25, gain: 0.07 });
+
 export const gameOver: SoundRecipe = (s) => {
   s.tone({ type: 'sawtooth', frequency: 330, to: 55, duration: 1.2, gain: 0.05 });
   s.noise({ filter: 'lowpass', frequency: 500, to: 120, duration: 1.1, gain: 0.16 });

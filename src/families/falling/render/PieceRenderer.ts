@@ -1,7 +1,7 @@
 import type { PieceSpec } from '../game/Game';
 import { shapeCells } from '../pieces/Shapes';
 import { CrystalSprites } from './CrystalSprites';
-import type { TonePalette } from './TonePalette';
+import type { TonePalette } from '@/render/TonePalette';
 
 /** Draws a single piece, centred, for the hold slot and the preview queue. */
 export class PieceRenderer {

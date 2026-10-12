@@ -10,6 +10,7 @@ import type { FamilyId, ModeId } from '@/session/ModeId';
  */
 const FAMILY_STAGES: Readonly<Partial<Record<FamilyId, Component>>> = {
   falling: defineAsyncComponent(() => import('@/families/falling/ui/FallingStage.vue')),
+  placement: defineAsyncComponent(() => import('@/families/placement/ui/MosaicStage.vue')),
 };
 
 const MODE_STAGES: Readonly<Partial<Record<ModeId, Component>>> = {

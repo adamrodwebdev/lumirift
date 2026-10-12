@@ -23,7 +23,7 @@
     "modes": "Modes de jeu",
     "best": "Record : {value}",
     "noBest": "Pas encore de record",
-    "comingSoon": "Bientôt : Sable, Mosaïque et Tour."
+    "comingSoon": "Bientôt : Sable et Tour."
   },
   "daily": {
     "title": "Défi du jour",
@@ -72,6 +72,10 @@
     "duel": {
       "name": "Duel",
       "pitch": "Affrontez une IA : chaque ligne effacée envoie des rangées chez l’adversaire."
+    },
+    "mosaic": {
+      "name": "Mosaïque",
+      "pitch": "Posez des pièces de céramique, complétez lignes et colonnes, gagnez des jokers."
     }
   },
   "result": {
@@ -106,7 +110,8 @@
     "bpm": "Tempo",
     "incoming": "Rangées en approche",
     "sent": "Rangées envoyées",
-    "opponentLines": "Lignes de l’IA"
+    "opponentLines": "Lignes de l’IA",
+    "streak": "Série"
   },
   "notice": {
     "lines": "Une ligne effacée | {n} lignes effacées",
@@ -123,7 +128,15 @@
     "tilt": "Bascule",
     "grooveMax": "Groove maximal",
     "perfect": "Silhouette parfaite : + {value}",
-    "sent": "Rangées envoyées : {value}"
+    "sent": "Rangées envoyées : {value}",
+    "perfectGrid": "Grille nette : + {value}",
+    "jokerGained": {
+      "rotate": "Joker gagné : Rotation",
+      "reroll": "Joker gagné : Relance",
+      "bomb": "Joker gagné : Bombe",
+      "undo": "Joker gagné : Retour",
+      "cube": "Joker gagné : Cube"
+    }
   },
   "controls": {
     "label": "Commandes tactiles",
@@ -158,7 +171,8 @@
       "outOfPieces": "Plus de pièces.",
       "shapeComplete": "Silhouette complète.",
       "victory": "Victoire : la pile de l’IA a débordé.",
-      "defeat": "Défaite : votre pile a débordé."
+      "defeat": "Défaite : votre pile a débordé.",
+      "noMoves": "Plus aucune pièce ne rentre."
     },
     "result": "Résultat",
     "newBest": "Nouveau record",
@@ -245,5 +259,27 @@
       "normal": "Solide, avec quelques erreurs.",
       "expert": "Rapide, elle ne se trompe jamais."
     }
+  },
+  "jokers": {
+    "rotate": "Rotation",
+    "reroll": "Relance",
+    "bomb": "Bombe",
+    "undo": "Retour",
+    "cube": "Cube"
+  },
+  "mosaic": {
+    "board": "Plateau de la Mosaïque",
+    "hand": "Pièces à poser",
+    "jokers": "Jokers",
+    "noJoker": "Effacez plusieurs lignes d’un coup pour gagner des jokers.",
+    "piece": "Pièce {n}",
+    "bonus": "Cube bonus",
+    "cells": "{n} cases",
+    "stuck": "ne rentre nulle part",
+    "empty": "Emplacement vide",
+    "pickPiece": "Touchez la pièce à tourner",
+    "pickCell": "Touchez la case où lancer la bombe",
+    "helpKeyboard": "Clavier : 1, 2, 3 pour choisir une pièce (4 pour le cube), flèches pour la placer, Entrée pour la poser, J pour les jokers, Échap pour annuler ou mettre en pause.",
+    "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case."
   }
 }

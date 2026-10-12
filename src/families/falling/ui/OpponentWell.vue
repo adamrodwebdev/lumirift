@@ -5,7 +5,7 @@ import { useServices } from '@/app/AppServices';
 import type { FrameClock } from '@/app/FrameClock';
 import type { FallingSession } from '../FallingSession';
 import { FallingRenderer } from '../render/FallingRenderer';
-import { TonePalette } from '../render/TonePalette';
+import { TonePalette } from '@/render/TonePalette';
 
 /** The opponent's well, as a live thumbnail: watched, never played. */
 const props = defineProps<{ session: FallingSession; clock: FrameClock; label: string }>();

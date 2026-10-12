@@ -23,7 +23,7 @@
     "modes": "Game modes",
     "best": "Best: {value}",
     "noBest": "No record yet",
-    "comingSoon": "Coming soon: Sand, Mosaic and Tower."
+    "comingSoon": "Coming soon: Sand and Tower."
   },
   "daily": {
     "title": "Daily Challenge",
@@ -72,6 +72,10 @@
     "duel": {
       "name": "Duel",
       "pitch": "Face an AI: every line you clear sends rows to your opponent."
+    },
+    "mosaic": {
+      "name": "Mosaic",
+      "pitch": "Place ceramic pieces, complete rows and columns, earn jokers."
     }
   },
   "result": {
@@ -106,7 +110,8 @@
     "bpm": "Tempo",
     "incoming": "Rows incoming",
     "sent": "Rows sent",
-    "opponentLines": "AI lines"
+    "opponentLines": "AI lines",
+    "streak": "Streak"
   },
   "notice": {
     "lines": "One line cleared | {n} lines cleared",
@@ -123,7 +128,15 @@
     "tilt": "Tilted",
     "grooveMax": "Maximum groove",
     "perfect": "Perfect silhouette: + {value}",
-    "sent": "Rows sent: {value}"
+    "sent": "Rows sent: {value}",
+    "perfectGrid": "Clean board: + {value}",
+    "jokerGained": {
+      "rotate": "Joker earned: Rotate",
+      "reroll": "Joker earned: Reroll",
+      "bomb": "Joker earned: Bomb",
+      "undo": "Joker earned: Undo",
+      "cube": "Joker earned: Cube"
+    }
   },
   "controls": {
     "label": "Touch controls",
@@ -158,7 +171,8 @@
       "outOfPieces": "No pieces left.",
       "shapeComplete": "Silhouette complete.",
       "victory": "Victory: the AI’s stack overflowed.",
-      "defeat": "Defeat: your stack overflowed."
+      "defeat": "Defeat: your stack overflowed.",
+      "noMoves": "No piece fits any more."
     },
     "result": "Result",
     "newBest": "New record",
@@ -245,5 +259,27 @@
       "normal": "Solid, with a few mistakes.",
       "expert": "Fast, and it never makes a mistake."
     }
+  },
+  "jokers": {
+    "rotate": "Rotate",
+    "reroll": "Reroll",
+    "bomb": "Bomb",
+    "undo": "Undo",
+    "cube": "Cube"
+  },
+  "mosaic": {
+    "board": "Mosaic board",
+    "hand": "Pieces to place",
+    "jokers": "Jokers",
+    "noJoker": "Clear several lines at once to earn jokers.",
+    "piece": "Piece {n}",
+    "bonus": "Bonus cube",
+    "cells": "{n} cells",
+    "stuck": "fits nowhere",
+    "empty": "Empty slot",
+    "pickPiece": "Tap the piece to rotate",
+    "pickCell": "Tap the cell to bomb",
+    "helpKeyboard": "Keyboard: 1, 2, 3 to pick a piece (4 for the cube), arrows to move it, Enter to place it, J for the jokers, Esc to cancel or pause.",
+    "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell."
   }
 }
