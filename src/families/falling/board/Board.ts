@@ -225,6 +225,13 @@ export class Board {
     }
   }
 
+  /** An independent copy, to try a move without touching the real well. */
+  clone(): Board {
+    const copy = new Board(this.width, this.height - this.hiddenRows, this.hiddenRows);
+    copy.cells.set(this.cells);
+    return copy;
+  }
+
   /** Height of the stack, in rows from the floor (0 = empty board). */
   stackHeight(): number {
     for (let y = 0; y < this.height; y++) {
