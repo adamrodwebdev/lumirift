@@ -43,6 +43,8 @@
   --tone-10: #1f8f7f;
   --tone-11: #5a52e0;
   --tone-12: #7b7f87;
+  --tone-13: #2f7fd0;
+  --tone-14: #e0571b;
 
   --radius: 0.75rem;
   --radius-sm: 0.5rem;
@@ -91,6 +93,8 @@
   --tone-10: #33c2ad;
   --tone-11: #8a84ff;
   --tone-12: #8b919c;
+  --tone-13: #5aa9f0;
+  --tone-14: #ff7a3d;
 
   --shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.45);
 }

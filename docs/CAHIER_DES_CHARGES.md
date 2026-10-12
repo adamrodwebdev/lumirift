@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                    |
-| ------- | ---------- | ------------------------- |
-| 0.10    | 12/10/2026 | Lot 7 livré : la Mosaïque |
+| Version | Date       | Statut                 |
+| ------- | ---------- | ---------------------- |
+| 0.11    | 12/10/2026 | Lot 8 livré : le Sable |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -215,18 +215,33 @@ Règles détaillées :
 
 #### Famille Sable
 
-- **Sable** : les pièces tombent et se manipulent comme d'habitude, puis se **désagrègent
-  en grains** au contact (6 × 6 grains par case, soit un puits de 60 × 120 grains). Chaque
-  grain tombe, puis glisse en diagonale s'il est bloqué.
-- Chaque pièce porte l'une de 4 couleurs. Une **zone de grains d'une même couleur, continue,
-  qui relie le mur gauche au mur droit** est effacée, même si elle serpente. Points : 1 par
-  grain effacé, multipliés par le nombre de zones effacées d'un coup.
-- **Éléments** (pour se démarquer des jeux de sable existants) : de temps en temps, une
-  pièce d'**eau** (ses grains s'infiltrent dans les creux puis se figent dans la couleur
-  voisine), une pièce de **feu** (consume la couleur qu'elle touche), et des coups de
-  **vent** annoncés qui poussent le sable d'un côté.
-- Chaque couleur a sa **texture de grain** propre, pour rester lisible par les daltoniens.
-- Fin de partie quand le sable atteint le haut du puits.
+- **Sable** : les pièces tombent et se manipulent comme dans la famille Chute (mêmes formes,
+  même rotation, sac de 7, même vitesse par niveau), mais **sans réserve**. Elles glissent
+  d'une case sur les côtés et tombent **grain par grain**, ce qui les pose en douceur sur un
+  sable irrégulier. Contour de la pièce et de son point d'arrivée (désactivable avec la pièce
+  fantôme). Délai de pose : 300 ms, relancé 10 fois au plus.
+- À la pose, chaque case devient **6 × 6 grains** (puits de 60 × 120 grains). Chaque grain
+  tombe, puis glisse en diagonale s'il est bloqué ; la pièce s'effondre en pente. Physique à
+  pas fixe de 16 ms ; le sens de balayage alterne pour que le sable ne penche pas.
+- Chaque pièce porte l'une de **4 couleurs**. Une **zone d'une même couleur, continue, qui
+  relie le mur gauche au mur droit** est effacée, même si elle serpente. Points : 1 par grain
+  effacé, multiplié par le nombre de zones effacées d'un coup. Niveau + 1 toutes les 5 zones.
+- **Éléments** (à partir de la 6ᵉ pièce : eau 10 %, feu 7 %), annoncés à leur arrivée :
+  - **eau** : ses grains coulent aussi sur les côtés, puis se figent au bout d'environ 2 s
+    dans la couleur d'un grain voisin (au hasard s'il n'y en a pas) ;
+  - **feu** : au contact d'un grain de sable, il **consume toute la zone de cette couleur**
+    qui le touche (1 point par grain) et s'éteint ; sans contact, il s'éteint seul après
+    environ 3,5 s ;
+  - **vent** : un coup de vent toutes les 20 à 40 s, **annoncé 3 s avant** avec sa direction,
+    souffle 2,5 s et pousse les grains d'un côté (traînées à l'écran, rafale sonore).
+- **Textures par couleur** (lisibles par les daltoniens) : damier, rayures horizontales,
+  rayures verticales, points ; l'eau miroite, le feu vacille.
+- **Effets** : poussière à la pose, paillettes de la couleur effacée, braises du feu, nuage
+  de sable en fin de partie ; sons d'écoulement, de balayage, de crépitement et de rafale.
+- Fin de partie quand une pièce ne peut plus apparaître. Le Sable peut être le mode du
+  **défi du jour**.
+- **Mesures** (navigateur intégré) : avec 6 444 grains dans le puits, 6,2 ms par image en
+  moyenne ; un pas de physique et la recherche des zones : 0,23 ms.
 
 #### Famille Placement
 
@@ -767,6 +782,28 @@ src/families/placement/
   conteneur de canvas dimensionné par mesure reçoit `min-width: 0` et le canvas
   `max-width: 100%`.
 
+### 5.12 Famille Sable (livrée au lot 8)
+
+```
+src/families/sand/
+  engine/SandGrid     Grains en tableaux typés : chute, glissement, eau, feu, vent ; zones
+                      reliant les murs (parcours en largeur sans allocation par grain)
+  engine/SandPiece    Pièce rigide en grains, formes de la famille Chute
+  engine/SandGame     Partie : gravité, pose, désagrégation, pas fixe, brûlures, zones,
+                      éléments, vent annoncé, niveaux
+  SandSession         Contrat commun ; parle les commandes de la famille Chute
+  render/SandRenderer Rendu au pixel : une image de 60 × 120 agrandie sans lissage, couleurs
+                      précalculées (ton × nuance × texture) écrites dans un Uint32Array
+  fx/                 SandEffects (paillettes, braises, poussière, vent), SandSoundscape
+  ui/                 SandStage, SandPreview
+```
+
+- **Réutilisation assumée** de la famille Chute : formes, rotations et sac de pièces,
+  courbe de vitesse, clavier (`FallingInput`), gestes (`WellGestures`) et boutons tactiles
+  (`TouchControls`, dont la réserve devient optionnelle). Ce sont des modules purs, partagés
+  par le build ; le Sable ne dépend d'aucune partie de jeu de la Chute.
+- Nouveaux tons du socle partagé : **eau** et **feu** (couleurs et motifs dans les deux thèmes).
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
@@ -812,7 +849,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré     |
 | 6   | Duel contre l'IA                                                                                           | Livré     |
 | 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré     |
-| 8   | Sable (grains) et ses éléments                                                                             | À faire   |
+| 8   | Sable (grains) et ses éléments                                                                             | Livré     |
 | 9   | Volume : Tour (verre courbé)                                                                               | À faire   |
 | 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | À faire   |
 | 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | À faire   |
@@ -847,3 +884,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.8     | 12/10/2026 | Lot 5 : règles détaillées de Fusion (seuil porté à 6), Bascule (sens corrigé), Silhouette, Rythme ; architecture des modes avancés (§ 5.9).              |
 | 0.9     | 12/10/2026 | Lot 6 : règles et niveaux du Duel (§ 3.2), architecture du duel et de l'IA (§ 5.10).                                                                     |
 | 0.10    | 12/10/2026 | Lot 7 : règles complètes de la Mosaïque et de ses jokers (§ 3.2), famille Placement et socle de couleurs partagé (§ 5.11).                               |
+| 0.11    | 12/10/2026 | Lot 8 : règles complètes du Sable et de ses éléments (§ 3.2), famille Sable (§ 5.12).                                                                    |

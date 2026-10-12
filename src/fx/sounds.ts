@@ -203,6 +203,78 @@ export const shuffle: SoundRecipe = (s) => {
 export const rewind: SoundRecipe = (s) =>
   s.tone({ type: 'triangle', frequency: 880, to: 330, duration: 0.25, gain: 0.07 });
 
+/** Sand: a piece crumbling into grains. */
+export const pour: SoundRecipe = (s) =>
+  s.noise({
+    filter: 'bandpass',
+    frequency: 3000,
+    to: 1200,
+    q: 0.8,
+    duration: 0.35,
+    gain: 0.09,
+    attack: 0.03,
+  });
+
+/** Sand: water poured in. */
+export const splash: SoundRecipe = (s) => {
+  s.noise({ filter: 'lowpass', frequency: 1400, to: 500, duration: 0.3, gain: 0.12 });
+  for (let i = 0; i < 4; i++)
+    s.tone({
+      frequency: 700 + i * 180,
+      to: 1100 + i * 200,
+      duration: 0.06,
+      gain: 0.03,
+      start: i * 0.05,
+    });
+};
+
+/** Sand: a region swept away, brighter with more regions at once. */
+export const sweep =
+  (regions: number): SoundRecipe =>
+  (s) => {
+    s.noise({
+      filter: 'highpass',
+      frequency: 2000,
+      to: 7000,
+      duration: 0.5,
+      gain: 0.12,
+      attack: 0.05,
+    });
+    [0, 4, 7, 12].slice(0, 1 + regions).forEach((step, i) =>
+      s.tone({
+        frequency: semitone(784, step),
+        duration: 0.45,
+        gain: 0.05,
+        start: 0.05 + i * 0.06,
+      }),
+    );
+  };
+
+/** Sand: fire burning a region. */
+export const crackle: SoundRecipe = (s) => {
+  s.noise({ filter: 'bandpass', frequency: 900, q: 0.7, duration: 0.6, gain: 0.14 });
+  for (let i = 0; i < 6; i++)
+    s.noise({
+      filter: 'highpass',
+      frequency: 4000,
+      duration: 0.02,
+      gain: 0.09,
+      start: Math.random() * 0.5,
+    });
+};
+
+/** Sand: a gust of wind. */
+export const gust: SoundRecipe = (s) =>
+  s.noise({
+    filter: 'bandpass',
+    frequency: 400,
+    to: 1600,
+    q: 0.6,
+    duration: 2.5,
+    gain: 0.09,
+    attack: 0.5,
+  });
+
 export const gameOver: SoundRecipe = (s) => {
   s.tone({ type: 'sawtooth', frequency: 330, to: 55, duration: 1.2, gain: 0.05 });
   s.noise({ filter: 'lowpass', frequency: 500, to: 120, duration: 1.1, gain: 0.16 });

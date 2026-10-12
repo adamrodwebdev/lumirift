@@ -4,7 +4,10 @@ import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
 import type { FallingAction } from '../input/FallingInput';
 import type { AbilityId } from '../modes/GameMode';
 
-const props = defineProps<{ ability: AbilityId | null }>();
+/** `canHold`: false for families without a hold slot (Sand). */
+const props = withDefaults(defineProps<{ ability: AbilityId | null; canHold?: boolean }>(), {
+  canHold: true,
+});
 const emit = defineEmits<{ press: [action: FallingAction]; release: [action: FallingAction] }>();
 
 const { t } = useI18n();
@@ -19,7 +22,9 @@ const ABILITY_ICONS: Readonly<Record<AbilityId, IconName>> = { flip: 'flip' };
 
 const rows = (): Control[][] => [
   [
-    { action: 'hold', icon: 'hold', label: t('controls.hold') },
+    ...(props.canHold
+      ? [{ action: 'hold', icon: 'hold', label: t('controls.hold') } as const]
+      : []),
     { action: 'rotateCcw', icon: 'rotateCcw', label: t('controls.rotateCcw') },
     { action: 'rotateCw', icon: 'rotateCw', label: t('controls.rotateCw') },
     ...(props.ability

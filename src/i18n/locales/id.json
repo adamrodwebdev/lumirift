@@ -23,7 +23,7 @@
     "modes": "Mode permainan",
     "best": "Rekor: {value}",
     "noBest": "Belum ada rekor",
-    "comingSoon": "Segera hadir: Pasir dan Menara."
+    "comingSoon": "Segera hadir: Menara."
   },
   "daily": {
     "title": "Tantangan Harian",
@@ -76,6 +76,10 @@
     "mosaic": {
       "name": "Mozaik",
       "pitch": "Pasang kepingan keramik, lengkapi baris dan kolom, dapatkan joker."
+    },
+    "sand": {
+      "name": "Pasir",
+      "pitch": "Kepingan hancur menjadi butiran: hubungkan kedua dinding dengan satu warna."
     }
   },
   "result": {
@@ -111,7 +115,9 @@
     "incoming": "Baris datang",
     "sent": "Baris terkirim",
     "opponentLines": "Baris AI",
-    "streak": "Beruntun"
+    "streak": "Beruntun",
+    "regions": "Area dihapus",
+    "windIn": "Embusan angin berikutnya"
   },
   "notice": {
     "lines": "{n} baris dihapus",
@@ -136,7 +142,12 @@
       "bomb": "Joker didapat: Bom",
       "undo": "Joker didapat: Batal",
       "cube": "Joker didapat: Kubus"
-    }
+    },
+    "windSoonLeft": "Angin bertiup ke kiri",
+    "windSoonRight": "Angin bertiup ke kanan",
+    "elementWater": "Kepingan air",
+    "elementFire": "Kepingan api",
+    "burn": "Api membakar {value} butir"
   },
   "controls": {
     "label": "Kontrol sentuh",
@@ -281,5 +292,10 @@
     "pickCell": "Ketuk kotak untuk dibom",
     "helpKeyboard": "Keyboard: 1, 2, 3 untuk memilih kepingan (4 untuk kubus), panah untuk memindahkan, Enter untuk memasang, J untuk joker, Esc untuk membatalkan atau jeda.",
     "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak."
+  },
+  "sand": {
+    "well": "Sumur pasir",
+    "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Ctrl untuk memutar ke arah lain, Esc untuk jeda. Area satu warna yang menghubungkan kedua dinding akan dihapus.",
+    "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung. Air mengambil warna di sekitarnya, api membakar warna yang disentuhnya."
   }
 }

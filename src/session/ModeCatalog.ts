@@ -36,12 +36,14 @@ const DESCRIPTORS: readonly ModeDescriptor[] = [
     variants: ['easy', 'normal', 'expert'],
     defaultVariant: 'normal',
   },
+  { id: 'sand', family: 'sand', result: 'score', dailyEligible: true },
   { id: 'mosaic', family: 'placement', result: 'score', dailyEligible: true },
 ];
 
 /** Each family is a separate chunk, downloaded the first time one of its modes is played. */
 const LOADERS = new Map<FamilyId, FamilyLoader>([
   ['falling', () => import('@/families/falling').then((family) => family.createFallingSession)],
+  ['sand', () => import('@/families/sand').then((family) => family.createSandSession)],
   [
     'placement',
     () => import('@/families/placement').then((family) => family.createPlacementSession),

@@ -23,7 +23,7 @@
     "modes": "Game modes",
     "best": "Best: {value}",
     "noBest": "No record yet",
-    "comingSoon": "Coming soon: Sand and Tower."
+    "comingSoon": "Coming soon: the Tower."
   },
   "daily": {
     "title": "Daily Challenge",
@@ -76,6 +76,10 @@
     "mosaic": {
       "name": "Mosaic",
       "pitch": "Place ceramic pieces, complete rows and columns, earn jokers."
+    },
+    "sand": {
+      "name": "Sand",
+      "pitch": "Pieces crumble into grains: link both walls with a single colour."
     }
   },
   "result": {
@@ -111,7 +115,9 @@
     "incoming": "Rows incoming",
     "sent": "Rows sent",
     "opponentLines": "AI lines",
-    "streak": "Streak"
+    "streak": "Streak",
+    "regions": "Regions cleared",
+    "windIn": "Next gust of wind"
   },
   "notice": {
     "lines": "One line cleared | {n} lines cleared",
@@ -136,7 +142,12 @@
       "bomb": "Joker earned: Bomb",
       "undo": "Joker earned: Undo",
       "cube": "Joker earned: Cube"
-    }
+    },
+    "windSoonLeft": "Wind blowing to the left",
+    "windSoonRight": "Wind blowing to the right",
+    "elementWater": "Water piece",
+    "elementFire": "Fire piece",
+    "burn": "Fire burnt {value} grains"
   },
   "controls": {
     "label": "Touch controls",
@@ -281,5 +292,10 @@
     "pickCell": "Tap the cell to bomb",
     "helpKeyboard": "Keyboard: 1, 2, 3 to pick a piece (4 for the cube), arrows to move it, Enter to place it, J for the jokers, Esc to cancel or pause.",
     "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell."
+  },
+  "sand": {
+    "well": "Sand well",
+    "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Ctrl to rotate the other way, Esc to pause. A single-colour region linking both walls is cleared.",
+    "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop. Water takes the colour around it, fire burns the colour it touches."
   }
 }
