@@ -38,6 +38,12 @@ const shareStatus = ref('');
 const announcement = ref('');
 const toast = ref<{ text: string; key: number } | null>(null);
 const stage = stageFor(descriptor);
+/** Controls help shown in the pause dialog, by family. */
+const HELP: Readonly<Partial<Record<string, readonly string[]>>> = {
+  falling: ['controls.keyboard', 'controls.touch'],
+  placement: ['mosaic.helpKeyboard', 'mosaic.helpTouch'],
+};
+const help = HELP[descriptor.family] ?? [];
 const modeName = computed(() => t(`modes.${props.modeId}.name`));
 /** The game's own subtitle, such as the name of the silhouette of the day. */
 const subtitle = computed(() => {
@@ -227,6 +233,7 @@ onBeforeUnmount(() => {
     <p class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
 
     <PauseDialog
+      :help="help"
       :open="phase === 'paused'"
       @resume="resume"
       @restart="start"

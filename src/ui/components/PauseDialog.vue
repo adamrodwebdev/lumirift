@@ -3,7 +3,8 @@ import { useI18n } from 'vue-i18n';
 import AppIcon from './AppIcon.vue';
 import ModalDialog from './ModalDialog.vue';
 
-defineProps<{ open: boolean }>();
+/** `help`: translation keys of the controls help of the current family. */
+defineProps<{ open: boolean; help: readonly string[] }>();
 const emit = defineEmits<{ resume: []; restart: []; quit: [] }>();
 
 const { t } = useI18n();
@@ -22,8 +23,7 @@ const { t } = useI18n();
         <AppIcon name="back" :size="20" />{{ t('pause.quit') }}
       </button>
     </div>
-    <p class="help">{{ t('controls.keyboard') }}</p>
-    <p class="help">{{ t('controls.touch') }}</p>
+    <p v-for="key in help" :key="key" class="help">{{ t(key) }}</p>
   </ModalDialog>
 </template>
 

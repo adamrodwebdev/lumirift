@@ -18,6 +18,9 @@ const PATHS = {
   play: 'M8 5l11 7-11 7z',
   back: 'M10 6l-6 6 6 6M4 12h16',
   restart: 'M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5',
+  bomb: 'M11 21a7 7 0 1 1 0-14 7 7 0 0 1 0 14zM15.5 8.5L18 6M17 3l1 2M20 6l2-1M19 9l2 1',
+  undo: 'M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',
+  cube: 'M5 5h14v14H5z',
   sound: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11',
   mute: 'M4 9v6h4l5 4V5L8 9zM16 9l5 6M21 9l-5 6',
 } as const;

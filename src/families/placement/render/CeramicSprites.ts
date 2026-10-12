@@ -1,0 +1,108 @@
+import { Tone } from '@/core/Tone';
+import { MOTIFS } from '@/render/motifs';
+import { luminance, shade, type Rgb, type TonePalette } from '@/render/TonePalette';
+
+const rgba = ({ r, g, b }: Rgb, alpha: number) => `rgb(${r} ${g} ${b} / ${alpha})`;
+
+/**
+ * Glazed ceramic tiles, pre-drawn once per tone at the current cell size:
+ * a rounded tile, a glossy glaze, a darker rim, fine crackle lines and the
+ * tone's engraved motif (for colour-blind players).
+ */
+export class CeramicSprites {
+  private readonly sprites = new Map<Tone, HTMLCanvasElement>();
+
+  constructor(
+    readonly size: number,
+    private readonly palette: TonePalette,
+  ) {}
+
+  get(tone: Tone): HTMLCanvasElement {
+    let sprite = this.sprites.get(tone);
+    if (!sprite) {
+      sprite = this.draw(tone);
+      this.sprites.set(tone, sprite);
+    }
+    return sprite;
+  }
+
+  private draw(tone: Tone): HTMLCanvasElement {
+    const s = this.size;
+    const canvas = document.createElement('canvas');
+    canvas.width = s;
+    canvas.height = s;
+    const ctx = canvas.getContext('2d');
+    if (!ctx || tone === Tone.Empty) return canvas;
+
+    const rgb = this.palette.color(tone);
+    const inset = Math.max(1, Math.round(s * 0.06));
+    const side = s - inset * 2;
+    const radius = s * 0.2;
+
+    // Body.
+    ctx.beginPath();
+    ctx.roundRect(inset, inset, side, side, radius);
+    ctx.fillStyle = shade(rgb, -0.04);
+    ctx.fill();
+
+    // Glaze: light pooling towards the top left.
+    const glaze = ctx.createRadialGradient(
+      s * 0.32,
+      s * 0.28,
+      s * 0.05,
+      s * 0.45,
+      s * 0.45,
+      s * 0.75,
+    );
+    glaze.addColorStop(0, rgba({ r: 255, g: 255, b: 255 }, 0.42));
+    glaze.addColorStop(0.45, rgba(rgb, 0));
+    glaze.addColorStop(1, rgba({ r: 0, g: 0, b: 0 }, 0.22));
+    ctx.fillStyle = glaze;
+    ctx.fill();
+
+    // Rim.
+    ctx.lineWidth = Math.max(1, s * 0.05);
+    ctx.strokeStyle = shade(rgb, -0.35);
+    ctx.stroke();
+
+    // Crackle of the glaze: fixed per tone, so a tone always looks the same.
+    ctx.save();
+    ctx.clip();
+    ctx.strokeStyle = rgba({ r: 0, g: 0, b: 0 }, 0.13);
+    ctx.lineWidth = Math.max(0.6, s * 0.02);
+    let seed = tone * 9301 + 49297;
+    const next = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      let x = inset + next() * side;
+      let y = inset + next() * side;
+      ctx.moveTo(x, y);
+      for (let j = 0; j < 3; j++) {
+        x += (next() - 0.5) * s * 0.45;
+        y += (next() - 0.5) * s * 0.45;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Specular highlight.
+    ctx.fillStyle = rgba({ r: 255, g: 255, b: 255 }, 0.4);
+    ctx.beginPath();
+    ctx.ellipse(s * 0.33, s * 0.24, s * 0.16, s * 0.07, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Engraved motif.
+    const ink = luminance(rgb) > 0.35 ? 'rgb(0 0 0 / 0.38)' : 'rgb(255 255 255 / 0.55)';
+    ctx.strokeStyle = ink;
+    ctx.fillStyle = ink;
+    ctx.lineWidth = Math.max(1.5, s * 0.07);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    MOTIFS[tone](ctx, s / 2, side * 0.2);
+    return canvas;
+  }
+}

@@ -15,7 +15,14 @@ describe('ModeCatalog', () => {
   });
 
   it('lists the modes the daily challenge can draw', () => {
-    expect(catalog.dailyEligible()).toEqual(['classic', 'chroma', 'mirror', 'fusion', 'rhythm']);
+    expect(catalog.dailyEligible()).toEqual([
+      'classic',
+      'chroma',
+      'mirror',
+      'fusion',
+      'rhythm',
+      'mosaic',
+    ]);
   });
 
   it('loads the family on demand and creates a session', async () => {
