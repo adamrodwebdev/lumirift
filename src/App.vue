@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref, shallowRef, watchEffect } from 'vue';
+import {
+  defineAsyncComponent,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+  watchEffect,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import type { DailyChallenge } from '@/session/DailyChallenge';
@@ -21,7 +28,7 @@ type Screen =
     };
 
 const { t, locale } = useI18n();
-const { settings } = useServices();
+const { settings, audio } = useServices();
 
 const screen = shallowRef<Screen>({ kind: 'home' });
 const settingsOpen = ref(false);
@@ -43,6 +50,24 @@ watchEffect(() => {
   document
     .querySelector('meta[name="description"]')
     ?.setAttribute('content', t('meta.description'));
+});
+
+// Sound: browsers allow audio only after a gesture; volume and mute follow the settings.
+const unlockAudio = () => audio.unlock();
+const onVisibility = () => (document.hidden ? audio.suspend() : audio.resume());
+watchEffect(() => {
+  audio.setVolume(settings.current.volume);
+  audio.setMuted(settings.current.muted);
+});
+onMounted(() => {
+  window.addEventListener('pointerdown', unlockAudio, { capture: true });
+  window.addEventListener('keydown', unlockAudio, { capture: true });
+  document.addEventListener('visibilitychange', onVisibility);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('pointerdown', unlockAudio, { capture: true });
+  window.removeEventListener('keydown', unlockAudio, { capture: true });
+  document.removeEventListener('visibilitychange', onVisibility);
 });
 </script>
 

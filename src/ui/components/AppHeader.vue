@@ -9,7 +9,8 @@ defineProps<{ inGame: boolean }>();
 const emit = defineEmits<{ home: []; settings: [] }>();
 
 const { t } = useI18n();
-const { theme } = useServices();
+const { theme, settings } = useServices();
+const muted = computed(() => settings.current.muted);
 const isDark = computed(() => theme.resolved.value === 'dark');
 </script>
 
@@ -26,6 +27,15 @@ const isDark = computed(() => theme.resolved.value === 'dark');
     </button>
     <BrandMark class="header__brand" />
     <div class="header__actions">
+      <button
+        type="button"
+        class="btn btn--ghost btn--icon"
+        :aria-label="muted ? t('nav.unmute') : t('nav.mute')"
+        :aria-pressed="muted"
+        @click="settings.update({ muted: !muted })"
+      >
+        <AppIcon :name="muted ? 'mute' : 'sound'" />
+      </button>
       <button
         type="button"
         class="btn btn--ghost btn--icon"

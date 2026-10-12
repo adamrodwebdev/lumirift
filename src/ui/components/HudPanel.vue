@@ -56,6 +56,29 @@ const format = useFormat();
   color: var(--accent);
 }
 
+/* Small phones: a denser dashboard leaves more height to the well. */
+@media (max-width: 479px) {
+  .hud {
+    gap: var(--space-1) var(--space-3);
+  }
+
+  .hud__item {
+    min-width: 3.25rem;
+  }
+
+  .hud__label {
+    font-size: 0.65rem;
+  }
+
+  .hud__value {
+    font-size: 1rem;
+  }
+
+  .hud__item--main .hud__value {
+    font-size: 1.25rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .hud {
     flex-direction: column;

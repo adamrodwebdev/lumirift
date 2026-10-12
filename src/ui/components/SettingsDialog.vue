@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
+import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { THEME_PREFERENCES, type ThemePreference } from '@/services/SettingsService';
 import ModalDialog from './ModalDialog.vue';
@@ -9,15 +10,26 @@ defineProps<{ open: boolean }>();
 const emit = defineEmits<{ close: [] }>();
 
 const { t } = useI18n();
-const { settings } = useServices();
+const { settings, haptics } = useServices();
+
+const EFFECT_LABELS: Readonly<Record<EffectsLevel, string>> = {
+  full: 'settings.effectsFull',
+  reduced: 'settings.effectsReduced',
+  off: 'settings.effectsOff',
+};
 
 const onLocale = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
   if (isLocale(value)) settings.update({ locale: value });
 };
 const onTheme = (value: ThemePreference) => settings.update({ theme: value });
-const onGhost = (event: Event) =>
-  settings.update({ ghost: (event.target as HTMLInputElement).checked });
+const checked = (event: Event) => (event.target as HTMLInputElement).checked;
+const onGhost = (event: Event) => settings.update({ ghost: checked(event) });
+const onEffects = (value: EffectsLevel) => settings.update({ effects: value });
+const onShake = (event: Event) => settings.update({ shake: checked(event) });
+const onHaptics = (event: Event) => settings.update({ haptics: checked(event) });
+const onVolume = (event: Event) =>
+  settings.update({ volume: Number((event.target as HTMLInputElement).value) / 100, muted: false });
 </script>
 
 <template>
@@ -51,6 +63,50 @@ const onGhost = (event: Event) =>
       <label class="toggle">
         <input type="checkbox" :checked="settings.current.ghost" @change="onGhost" />
         <span>{{ t('settings.ghost') }}</span>
+      </label>
+
+      <fieldset class="field">
+        <legend class="field__label">{{ t('settings.effects') }}</legend>
+        <div class="segmented">
+          <label v-for="level in EFFECT_LEVELS" :key="level" class="segmented__option">
+            <input
+              type="radio"
+              name="effects"
+              :value="level"
+              :checked="settings.current.effects === level"
+              @change="onEffects(level)"
+            />
+            <span>{{ t(EFFECT_LABELS[level]) }}</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <label class="toggle">
+        <input
+          type="checkbox"
+          :checked="settings.current.shake"
+          :disabled="settings.current.effects !== 'full'"
+          @change="onShake"
+        />
+        <span>{{ t('settings.shake') }}</span>
+      </label>
+
+      <label v-if="haptics.supported" class="toggle">
+        <input type="checkbox" :checked="settings.current.haptics" @change="onHaptics" />
+        <span>{{ t('settings.haptics') }}</span>
+      </label>
+
+      <label class="field">
+        <span class="field__label">{{ t('settings.volume') }}</span>
+        <input
+          class="range"
+          type="range"
+          min="0"
+          max="100"
+          step="5"
+          :value="Math.round(settings.current.volume * 100)"
+          @input="onVolume"
+        />
       </label>
 
       <button type="button" class="btn btn--primary" @click="emit('close')">
@@ -133,6 +189,16 @@ const onGhost = (event: Event) =>
   gap: var(--space-3);
   min-height: var(--touch);
   cursor: pointer;
+}
+
+.range {
+  width: 100%;
+  min-height: var(--touch);
+  accent-color: var(--accent-fill);
+}
+
+.toggle input:disabled + span {
+  color: var(--text-muted);
 }
 
 .toggle input {

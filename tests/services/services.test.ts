@@ -4,7 +4,16 @@ import { SCORES_KEY, ScoreBoard } from '@/services/ScoreBoard';
 import { SETTINGS_KEY, SettingsService } from '@/services/SettingsService';
 import { ShareService } from '@/services/ShareService';
 
-const DEFAULTS = { locale: 'fr', theme: 'system', ghost: true } as const;
+const DEFAULTS = {
+  locale: 'fr',
+  theme: 'system',
+  ghost: true,
+  effects: 'full',
+  shake: true,
+  haptics: true,
+  volume: 0.7,
+  muted: false,
+} as const;
 
 describe('SettingsService', () => {
   it('starts from the defaults and saves every change', () => {
@@ -14,7 +23,7 @@ describe('SettingsService', () => {
     settings.update({ theme: 'dark', ghost: false });
     expect(settings.current.theme).toBe('dark');
     expect(JSON.parse(storage.get(SETTINGS_KEY)!)).toEqual({
-      locale: 'fr',
+      ...DEFAULTS,
       theme: 'dark',
       ghost: false,
     });
@@ -22,9 +31,12 @@ describe('SettingsService', () => {
 
   it('restores saved settings and ignores invalid fields', () => {
     const storage = new MemoryStorage();
-    storage.set(SETTINGS_KEY, JSON.stringify({ locale: 'id', theme: 'neon', ghost: 'yes' }));
+    storage.set(
+      SETTINGS_KEY,
+      JSON.stringify({ locale: 'id', theme: 'neon', ghost: 'yes', effects: 'reduced', volume: 3 }),
+    );
     const settings = new SettingsService(storage, DEFAULTS);
-    expect(settings.current).toEqual({ locale: 'id', theme: 'system', ghost: true });
+    expect(settings.current).toEqual({ ...DEFAULTS, locale: 'id', effects: 'reduced' });
   });
 
   it('survives corrupt storage', () => {

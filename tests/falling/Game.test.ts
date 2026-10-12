@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { Board } from '@/families/falling/board/Board';
 import { Game } from '@/families/falling/game/Game';
 import { ClassicMode } from '@/families/falling/modes/ClassicMode';
 import { ConstantRandom, startedGame } from './helpers';
@@ -167,5 +168,72 @@ describe('Game', () => {
     expect(game.lines).toBe(10);
     expect(game.level).toBe(2);
     expect(onLevelUp).toHaveBeenCalledWith({ level: 2 });
+  });
+});
+
+describe('Game events and timing for the effects', () => {
+  it('reports the cleared rows with their tones', () => {
+    const game = startedGame({ rows: ['###....###'] });
+    const onClear = vi.fn();
+    game.events.on('clear', onClear);
+    game.hardDrop();
+    const { rows } = onClear.mock.calls[0]![0] as { rows: { index: number; tones: Uint8Array }[] };
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.index).toBe(21);
+    expect([...rows[0]!.tones].every((tone) => tone !== 0)).toBe(true);
+  });
+
+  it('reports a hard drop with its distance, before the lock', () => {
+    const game = startedGame();
+    const order: string[] = [];
+    game.events.on('hardDrop', ({ distance }) => order.push(`drop ${distance}`));
+    game.events.on('lock', () => order.push('lock'));
+    game.hardDrop();
+    expect(order).toEqual(['drop 19', 'lock']);
+  });
+
+  it('reports moves and rotations, and whether a rotation was kicked', () => {
+    const game = startedGame();
+    const onMove = vi.fn();
+    const onRotate = vi.fn();
+    game.events.on('move', onMove);
+    game.events.on('rotate', onRotate);
+    game.moveLeft();
+    game.rotate(1);
+    while (game.moveLeft()) {
+      /* against the wall */
+    }
+    game.rotate(1);
+    expect(onMove).toHaveBeenCalled();
+    expect(onRotate.mock.calls.map(([event]) => (event as { kicked: boolean }).kicked)).toEqual([
+      false,
+      true,
+    ]);
+  });
+
+  it('waits for the line clear delay before the next piece', () => {
+    const game = new Game(new ClassicMode(), {
+      random: new ConstantRandom(),
+      board: Board.fromRows(['###....###']),
+      lineClearDelayMs: 280,
+    });
+    game.start();
+    game.hardDrop();
+    expect(game.active).toBeNull();
+    expect(game.hold()).toBe(false);
+    game.update(279);
+    expect(game.active).toBeNull();
+    game.update(1);
+    expect(game.active?.type).toBe('O');
+  });
+
+  it('spawns at once when nothing was cleared', () => {
+    const game = new Game(new ClassicMode(), {
+      random: new ConstantRandom(),
+      lineClearDelayMs: 280,
+    });
+    game.start();
+    game.hardDrop();
+    expect(game.active?.type).toBe('O');
   });
 });

@@ -40,6 +40,10 @@ export class TonePalette {
     private readonly tones: ReadonlyMap<Tone, Rgb>,
     readonly wellBackground: string,
     readonly wellGrid: string,
+    /** Crack lines, accents (points, waves) and the danger glow. */
+    readonly crack: string,
+    readonly accent: string,
+    readonly danger: string,
   ) {}
 
   static fromElement(element: Element): TonePalette {
@@ -49,7 +53,14 @@ export class TonePalette {
     for (const tone of Object.values(Tone)) {
       if (tone !== Tone.Empty) tones.set(tone, parseHex(read(`--tone-${tone}`)));
     }
-    return new TonePalette(tones, read('--well-bg'), read('--well-grid'));
+    return new TonePalette(
+      tones,
+      read('--well-bg'),
+      read('--well-grid'),
+      read('--crack'),
+      read('--accent-fill'),
+      read('--danger'),
+    );
   }
 
   color(tone: Tone): Rgb {

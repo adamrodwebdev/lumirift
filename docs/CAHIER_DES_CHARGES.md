@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                        |
-| ------- | ---------- | ----------------------------- |
-| 0.6     | 12/10/2026 | Lot 3 livré : version jouable |
+| Version | Date       | Statut                          |
+| ------- | ---------- | ------------------------------- |
+| 0.7     | 12/10/2026 | Lot 4 livré : matière et effets |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -84,6 +84,8 @@ Différenciation :
 - **Délai de verrouillage** de 500 ms, réinitialisé par un mouvement ou une rotation
   (15 fois au plus), pour garder le contrôle à grande vitesse.
 - Chute douce (+1 point par case) et chute instantanée (+2 points par case).
+- Après un effacement, la pièce suivante apparaît **280 ms** plus tard (temps de la
+  destruction, § 3.5).
 - Score des lignes, multiplié par le niveau : 1 ligne 100, 2 lignes 300, 3 lignes 500,
   4 lignes 800. **Combo** : +50 × combo × niveau par verrouillage consécutif qui efface.
 - Niveau + 1 toutes les 10 lignes ; la gravité suit la courbe standard du genre.
@@ -254,6 +256,7 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
 - Langue (FR, EN, ID ; détection de la langue du navigateur au premier lancement).
 - Thème : système, clair ou sombre.
 - Pièce fantôme : oui / non.
+- Coupure du son en un geste depuis l'en-tête.
 - Effets : complets / sobres / aucun ; secousse : oui / non ; vibrations : oui / non.
 - Volumes séparés des effets sonores et de l'ambiance ; coupure du son.
 - Meilleurs scores par mode, stockés **uniquement sur l'appareil** (`localStorage`, avec repli
@@ -317,6 +320,45 @@ désactivables.
   `prefers-reduced-motion` active « sobres » au premier lancement.
 - **Jamais plus de 3 flashs par seconde** (WCAG 2.3.1) ; les éclats ne masquent jamais la
   pièce en cours.
+
+#### Réalisé au lot 4 (famille Chute)
+
+| Moment                | Ce que voit et entend le joueur                                                                                                                                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Déplacement, rotation | Petit clic ; rotation plus aiguë                                                                                                                                                                                                                                                                                    |
+| Chute instantanée     | Traînée colorée (190 ms), poussière à l'impact, choc sourd, secousse si la chute est longue                                                                                                                                                                                                                         |
+| Verrouillage          | Éclair blanc sur les cases posées (110 ms), choc léger                                                                                                                                                                                                                                                              |
+| Ligne effacée         | Fissure qui traverse la ligne (130 ms), puis éclats facettés (4 à 8 par case) qui tournent, rebondissent sur la pile et s'estompent ; rangées du dessus retenues puis effondrées avec rebond ; « +points » qui s'envole ; craquement puis bris de verre en carillon (gamme pentatonique, plus aiguë à chaque combo) |
+| 4 lignes d'un coup    | Plus d'éclats, projetés plus haut, secousse forte, ralenti de 120 ms, éclair du puits (limité), grondement grave                                                                                                                                                                                                    |
+| Ligne pure (Chroma)   | Gerbe d'étincelles aux quatre couleurs, accord cristallin                                                                                                                                                                                                                                                           |
+| Changement de niveau  | Onde lumineuse qui remonte le puits, arpège                                                                                                                                                                                                                                                                         |
+| Marée                 | Rangées qui glissent depuis le fond, poussière, grondement ; **surface d'eau** qui ondule au-dessus des rangées montées                                                                                                                                                                                             |
+| Renversement          | Le puits bascule en 3D (560 ms), la pile retombe, secousse, souffle et impact                                                                                                                                                                                                                                       |
+| Miroir                | Le puits pivote sur son axe vertical (460 ms), balayage lumineux, scintillement ; double bip d'avertissement 3 s avant                                                                                                                                                                                              |
+| Pile haute (> 70 %)   | Lueur de danger pulsée sur les bords du puits                                                                                                                                                                                                                                                                       |
+| Fin de partie         | Toute la pile vole en éclats ; la fenêtre de résultat attend 1,1 s (0,6 s en effets sobres)                                                                                                                                                                                                                         |
+
+**Délai après effacement** : 280 ms entre l'effacement et la pièce suivante, le temps de la
+fissure et de l'effondrement. C'est une **règle du jeu**, identique quel que soit le réglage
+des effets (le défi du jour reste équitable).
+
+**Profils d'effets** (réglage « Effets visuels ») :
+
+| Profil   | Particules | Fissure et effondrement | Secousse      | Mouvements du puits | Attente fin |
+| -------- | ---------- | ----------------------- | ------------- | ------------------- | ----------- |
+| Complets | 100 %      | oui                     | selon réglage | oui                 | 1,1 s       |
+| Sobres   | 35 %       | oui                     | non           | non (décor figé)    | 0,6 s       |
+| Aucun    | 0          | non                     | non           | non                 | aucune      |
+
+**Qualité adaptative** : budget de 1 600, 800 puis 300 particules. Le niveau baisse après
+**deux fenêtres consécutives de 2 s** à plus de 18,5 ms par image en moyenne ; les images de
+plus de 50 ms (chargement, changement d'onglet) sont ignorées. Il ne remonte pas en cours de
+partie (stable plutôt que clignotant).
+
+**Sons** : 16 recettes synthétisées (`src/fx/sounds.ts`), aucun fichier. Le contexte audio
+naît au premier geste du joueur (exigence des navigateurs) et se met en veille quand la page
+est masquée. **Vibrations** : impact 6 à 14 ms, ligne 26 à 50 ms, 4 lignes [30, 40, 80],
+renversement [20, 30, 50], fin de partie [60, 40, 120].
 
 ### 3.6 Personnalisation commerciale (décidé en v0.5, détaillé au lot 10)
 
@@ -554,7 +596,7 @@ src/
   chaud ; `lang`, titre et description de la page suivent.
 - **Records** arrondis (points ou millisecondes entiers), clés `mode` ou `daily:AAAAMMJJ`.
 
-### 5.7 Mesures du lot 3
+### 5.7 Mesures
 
 | Mesure (build de production)               | Mobile  | Bureau  |
 | ------------------------------------------ | ------- | ------- |
@@ -565,6 +607,11 @@ src/
 | JavaScript initial (compressé)             | 54,5 Ko | 54,5 Ko |
 | Module de jeu (écran + famille, compressé) | 13,4 Ko | 13,4 Ko |
 
+Après le lot 4 (effets, son, vibrations) : Lighthouse toujours **100** dans les quatre
+catégories, mobile et bureau ; JavaScript initial **56,5 Ko** compressés ; module de jeu
+**18,3 Ko** compressés. Pendant une destruction de 4 lignes avec renversement, dans le
+navigateur intégré : **12,1 ms** par image en moyenne, **12,4 ms** au pire.
+
 - Lighthouse 13 ajoute une catégorie expérimentale, « Agentic Browsing » (50) : hors des
   quatre catégories exigées, elle est affichée à titre indicatif par `npm run lighthouse`.
 - Sur ce poste, le Chromium de Playwright ne peut pas être lancé par Node (`spawn UNKNOWN`) ;
@@ -572,6 +619,37 @@ src/
 - Vérifié dans le navigateur : 320, 375 et 853 px de large sans défilement horizontal,
   boutons ≥ 44 px, thèmes clair et sombre à chaud, passage en français à chaud, pause,
   fin de partie et record, commandes tactiles (Marée).
+
+### 5.8 Effets, son et vibrations (livrés au lot 4)
+
+```
+src/fx/                 Socle partagé par toutes les familles
+  ParticlePool          Particules en tableaux typés (structure de tableaux), aucune allocation
+  AdaptiveQuality       Budget de particules selon la fluidité mesurée
+  ScreenShake, FlashLimiter, EffectsProfile, sounds (recettes synthétisées)
+src/services/audio/     AudioEngine (contexte, volume, veille), Synth (oscillateurs, bruit filtré)
+src/services/Haptics    Vibrations, absentes sans erreur là où l'API n'existe pas
+src/families/falling/
+  fx/FallingEffects     Metteur en scène : écoute le moteur, simule les effets en cases
+  fx/FallingSoundscape  Sons et vibrations, en phase avec l'image
+  render/EffectsPainter Dessine l'état des effets
+  render/WellDecor      Décors propres à un mode (eau de la Marée), par polymorphisme
+```
+
+- **Séparation stricte** : le moteur publie des événements (`hardDrop`, `move`, `rotate`,
+  `clear` avec les rangées et leurs tons…) ; `FallingEffects` les transforme en état
+  (fissures, décalages de rangées, particules) ; `FallingRenderer` et `EffectsPainter` ne
+  font que dessiner. Le plateau n'accède au moteur qu'en **lecture** (`onGame`).
+- **Unités** : tous les effets sont simulés **en cases**, pas en pixels : un redimensionnement
+  ou un écran haute densité ne déforme rien.
+- **Rangées pondérées** : à l'effacement, le moteur a déjà tassé la pile ; les effets
+  redessinent chaque rangée à sa place d'origine (décalage négatif), la retiennent le temps
+  de la fissure, puis la laissent tomber sous gravité avec un rebond amorti.
+- **Collisions des éclats** avec la pile réelle (cases occupées et immobiles) et le fond.
+- **Moments du puits** (renversement, miroir) en animations CSS du canvas, coupées hors du
+  profil « Complets ».
+- Correctif du lot 3 : le plateau est désormais **recréé à chaque partie** (clé par partie) ;
+  avant, « Rejouer » gardait l'affichage de la partie précédente.
 
 ## 6. Qualité et tests
 
@@ -614,7 +692,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                | Livré     |
 | 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré     |
 | 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré     |
-| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | À faire   |
+| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré     |
 | 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | À faire   |
 | 6   | Duel contre l'IA                                                                                           | À faire   |
 | 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | À faire   |
@@ -649,3 +727,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5).                                                  |
 | 0.5     | 12/10/2026 | Direction artistique et son (§ 3.5), personnalisation commerciale (§ 3.6), distribution : démo portfolio et portails après la 1.0 (§ 3.7) ; lots 3 à 13. |
 | 0.6     | 12/10/2026 | Lot 3 : interface (§ 5.6), mesures Lighthouse et budget (§ 5.7), tests de l'interface (§ 6).                                                             |
+| 0.7     | 12/10/2026 | Lot 4 : effets réalisés et profils (§ 3.5), délai après effacement (§ 3.1), architecture des effets (§ 5.8), mesures (§ 5.7).                            |

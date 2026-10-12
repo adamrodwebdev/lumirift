@@ -3,6 +3,28 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [0.2.0] — 12/10/2026
+
+Matière et effets : la destruction devient spectaculaire.
+
+### Ajouté
+
+- Destructions de cristal : fissure, éclats physiques qui rebondissent sur la pile,
+  effondrement pondéré des rangées, points qui s'envolent, secousse et ralenti sur
+  4 lignes, effondrement de toute la pile en fin de partie.
+- Moments des modes : bascule 3D du Renversement, pivot du Miroir, surface d'eau de la
+  Marée, gerbe prismatique des lignes pures, onde de niveau, lueur de danger.
+- Son entièrement synthétisé (16 recettes, aucun fichier) et vibrations sur mobile.
+- Réglages : effets complets, sobres ou aucun ; secousses ; vibrations ; volume ; coupure du
+  son depuis l'en-tête.
+- Qualité adaptative des particules et limiteur de flashs (WCAG 2.3.1).
+- Délai de 280 ms après un effacement, identique quels que soient les effets.
+
+### Corrigé
+
+- « Rejouer » et « Recommencer » affichaient encore la partie précédente.
+- Tableau de bord plus compact sur les petits téléphones.
+
 ## [0.1.0] — 12/10/2026
 
 Première version jouable.
