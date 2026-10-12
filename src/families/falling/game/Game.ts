@@ -75,7 +75,9 @@ export class Game {
     options: GameOptions,
   ) {
     this.random = options.random;
-    this.board = options.board ?? new Board(mode.well.width, mode.well.height);
+    this.board =
+      options.board ??
+      new Board(mode.well.width, mode.well.height, Board.HIDDEN_ROWS, mode.well.wraps ?? false);
     this.bag = new Bag(this.random);
     this.scoring = new Scoring(mode.scoresPureLines);
     this.startLevel = options.startLevel ?? 1;

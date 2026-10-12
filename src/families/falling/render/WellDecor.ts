@@ -1,4 +1,4 @@
-import type { FallingModeId } from '@/session/ModeId';
+import type { EngineModeId } from '@/session/ModeId';
 import type { FallingView } from '../FallingSession';
 import { DuelMode } from '../modes/DuelMode';
 import { SilhouetteMode } from '../modes/SilhouetteMode';
@@ -119,10 +119,10 @@ class IncomingGauge implements WellDecor {
   }
 }
 
-const DECORS: Readonly<Partial<Record<FallingModeId, WellDecor>>> = {
+const DECORS: Readonly<Partial<Record<EngineModeId, WellDecor>>> = {
   duel: new IncomingGauge(),
   tide: new TideWater(),
   silhouette: new SilhouetteTarget(),
 };
 
-export const decorFor = (mode: FallingModeId): WellDecor | null => DECORS[mode] ?? null;
+export const decorFor = (mode: EngineModeId): WellDecor | null => DECORS[mode] ?? null;

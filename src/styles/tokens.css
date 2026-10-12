@@ -25,6 +25,11 @@
   --on-accent-fill: #241800;
   --focus: #1f5fbf;
   --danger: #b3261e;
+  /* Materials of the effects: embers and ash of the fire, clay body of the tiles. */
+  --fx-ember-hot: #f5b82e;
+  --fx-ember: #e8622a;
+  --fx-ash: #786e64;
+  --fx-clay: #f5eee1;
 
   --well-bg: #e3ddd1;
   --well-grid: rgb(28 26 23 / 0.07);
@@ -75,6 +80,10 @@
   --on-accent-fill: #1b1300;
   --focus: #8cb8ff;
   --danger: #ff8a80;
+  --fx-ember-hot: #ffc43c;
+  --fx-ember: #ff6e28;
+  --fx-ash: #8a8076;
+  --fx-clay: #f5eee1;
 
   --well-bg: #0e131b;
   --well-grid: rgb(255 255 255 / 0.05);

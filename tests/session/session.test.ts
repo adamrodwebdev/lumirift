@@ -23,6 +23,7 @@ describe('ModeCatalog', () => {
       'rhythm',
       'sand',
       'mosaic',
+      'tower',
     ]);
   });
 

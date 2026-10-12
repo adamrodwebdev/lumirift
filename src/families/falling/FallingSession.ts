@@ -6,7 +6,7 @@ import type {
   SessionResult,
   SessionState,
 } from '@/session/GameSession';
-import type { FallingModeId } from '@/session/ModeId';
+import type { EngineModeId, FamilyId } from '@/session/ModeId';
 import type { Board } from './board/Board';
 import type { Game, PieceSpec } from './game/Game';
 import type { GameEventMap } from './game/GameEvents';
@@ -43,7 +43,6 @@ export interface FallingView {
 
 /** Adapts a falling-family `Game` to the common `GameSession` contract. */
 export class FallingSession implements GameSession<FallingCommand> {
-  readonly family = 'falling';
   readonly events = new Emitter<SessionEventMap>();
   readonly view: FallingView;
   readonly ability: AbilityId | null;
@@ -64,8 +63,10 @@ export class FallingSession implements GameSession<FallingCommand> {
   };
 
   constructor(
-    readonly modeId: FallingModeId,
+    readonly modeId: EngineModeId,
     private readonly game: Game,
+    /** The volume family plays the same engine on a cylinder. */
+    readonly family: FamilyId = 'falling',
   ) {
     this.view = game;
     this.ability = game.mode.ability;

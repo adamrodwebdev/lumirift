@@ -27,14 +27,18 @@ export class Board {
   readonly width: number;
   readonly height: number;
   readonly hiddenRows: number;
+  /** The last column touches the first one: the well is a cylinder, without side walls. */
+  readonly wraps: boolean;
   private readonly cells: Uint8Array;
 
   constructor(
     width = Board.WIDTH,
     visibleHeight = Board.VISIBLE_HEIGHT,
     hiddenRows = Board.HIDDEN_ROWS,
+    wraps = false,
   ) {
     this.width = width;
+    this.wraps = wraps;
     this.height = visibleHeight + hiddenRows;
     this.hiddenRows = hiddenRows;
     this.cells = new Uint8Array(this.width * this.height);
@@ -57,11 +61,18 @@ export class Board {
   }
 
   isInside(x: number, y: number): boolean {
-    return x >= 0 && x < this.width && y >= 0 && y < this.height;
+    return (this.wraps || (x >= 0 && x < this.width)) && y >= 0 && y < this.height;
   }
 
   isFree(x: number, y: number): boolean {
-    return this.isInside(x, y) && this.get(x, y) === Tone.Empty;
+    return this.isInside(x, y) && this.get(this.column(x), y) === Tone.Empty;
+  }
+
+  /** The column a horizontal position falls in: around the cylinder when the well wraps. */
+  column(x: number): number {
+    if (!this.wraps) return x;
+    const column = x % this.width;
+    return column < 0 ? column + this.width : column;
   }
 
   /**
@@ -80,7 +91,7 @@ export class Board {
     let visible = false;
     for (const cell of piece.localCells) {
       const y = cell.y + piece.y;
-      this.set(cell.x + piece.x, y, piece.tone);
+      this.set(this.column(cell.x + piece.x), y, piece.tone);
       if (y >= this.hiddenRows) visible = true;
     }
     return visible;
@@ -197,7 +208,7 @@ export class Board {
           [x, y + 1],
         ] as const) {
           if (!this.isInside(nx, ny)) continue;
-          const next = ny * this.width + nx;
+          const next = ny * this.width + this.column(nx);
           if (!seen[next] && this.cells[next] === tone) {
             seen[next] = 1;
             stack.push(next);
@@ -227,7 +238,7 @@ export class Board {
 
   /** An independent copy, to try a move without touching the real well. */
   clone(): Board {
-    const copy = new Board(this.width, this.height - this.hiddenRows, this.hiddenRows);
+    const copy = new Board(this.width, this.height - this.hiddenRows, this.hiddenRows, this.wraps);
     copy.cells.set(this.cells);
     return copy;
   }

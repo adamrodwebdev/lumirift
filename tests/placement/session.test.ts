@@ -11,7 +11,10 @@ import { MosaicController } from '@/families/placement/MosaicController';
 import type { TonePalette } from '@/render/TonePalette';
 
 const EMPTY = '........';
-const PALETTE = { color: () => ({ r: 180, g: 90, b: 60 }) } as unknown as TonePalette;
+const PALETTE = {
+  color: () => ({ r: 180, g: 90, b: 60 }),
+  effects: { embers: ['#ffc43c', '#ff6e28', '#8a8076'], clay: '#f5eee1' },
+} as unknown as TonePalette;
 
 /** A started session whose board and hand are set by the test. */
 function setup(rows: string[] | null, shapes: string[]) {

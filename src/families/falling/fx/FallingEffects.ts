@@ -112,6 +112,7 @@ export class FallingEffects {
       gravity: GRAVITY,
       width: board.width,
       floor: board.height - board.hiddenRows,
+      wraps: board.wraps,
       solidTop: (x, y) => this.solidTop(x, y),
     };
   }
@@ -507,7 +508,7 @@ export class FallingEffects {
   /** Lets debris land on the stack (rows that are still moving are ignored). */
   private solidTop(x: number, y: number): number | null {
     const { board } = this.view;
-    const column = Math.floor(x);
+    const column = board.column(Math.floor(x));
     const row = Math.floor(y);
     const boardRow = row + board.hiddenRows;
     if (column < 0 || column >= board.width || boardRow < 0 || boardRow >= board.height)

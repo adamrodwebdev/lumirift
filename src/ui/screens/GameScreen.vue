@@ -43,6 +43,7 @@ const HELP: Readonly<Partial<Record<string, readonly string[]>>> = {
   falling: ['controls.keyboard', 'controls.touch'],
   sand: ['sand.helpKeyboard', 'sand.helpTouch'],
   placement: ['mosaic.helpKeyboard', 'mosaic.helpTouch'],
+  volume: ['tower.helpKeyboard', 'tower.helpTouch'],
 };
 const help = HELP[descriptor.family] ?? [];
 const modeName = computed(() => t(`modes.${props.modeId}.name`));

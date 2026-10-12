@@ -3,6 +3,25 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [0.7.0] — 12/10/2026
+
+La Tour : les 14 modes de la version 1.0 sont jouables.
+
+### Ajouté
+
+- Tour : le puits s'enroule en cylindre de verre de 20 colonnes ; une ligne fait le tour
+  complet. Caméra qui suit la pièce, tournée à la main (A / E, ou Q / E en QWERTY, ou deux
+  doigts).
+- Rendu en pseudo-3D sur canvas 2D : faces ombrées selon l'angle, reflet, dos de la tour
+  visible à travers le verre, éclats qui font le tour du cylindre.
+- La Tour peut être le mode du défi du jour.
+
+### Modifié
+
+- Les couleurs des braises, de la cendre et de l'argile passent dans les jetons CSS : toute
+  l'esthétique se règle depuis `tokens.css`.
+- L'accueil n'annonce plus de mode à venir.
+
 ## [0.6.0] — 12/10/2026
 
 Le Sable.

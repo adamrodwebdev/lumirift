@@ -22,8 +22,7 @@
     "play": "Play",
     "modes": "Game modes",
     "best": "Best: {value}",
-    "noBest": "No record yet",
-    "comingSoon": "Coming soon: the Tower."
+    "noBest": "No record yet"
   },
   "daily": {
     "title": "Daily Challenge",
@@ -80,6 +79,10 @@
     "sand": {
       "name": "Sand",
       "pitch": "Pieces crumble into grains: link both walls with a single colour."
+    },
+    "tower": {
+      "name": "Tower",
+      "pitch": "The well rolls into a glass cylinder: a line goes all the way round."
     }
   },
   "result": {
@@ -297,5 +300,10 @@
     "well": "Sand well",
     "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Ctrl to rotate the other way, Esc to pause. A single-colour region linking both walls is cleared.",
     "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop. Water takes the colour around it, fire burns the colour it touches."
+  },
+  "tower": {
+    "well": "Glass tower",
+    "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Ctrl to rotate the other way, C to hold, Q and E (A and E on AZERTY) to turn the tower, Esc to pause. A line is a full ring of 20 cells.",
+    "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop, drag with two fingers to turn the tower. The camera follows the piece."
   }
 }

@@ -13,6 +13,8 @@ export interface ParticleWorld {
   readonly gravity: number;
   readonly width: number;
   readonly floor: number;
+  /** No side walls: particles leaving one side come back on the other (a cylinder). */
+  readonly wraps?: boolean;
   /** Top edge of the solid cell containing (x, y), or null when that point is free. */
   readonly solidTop?: (x: number, y: number) => number | null;
 }
@@ -166,7 +168,9 @@ export class ParticlePool {
         this.bounce(i);
       }
     }
-    if (this.x[i]! < half || this.x[i]! > world.width - half) {
+    if (world.wraps) {
+      this.x[i] = ((this.x[i]! % world.width) + world.width) % world.width;
+    } else if (this.x[i]! < half || this.x[i]! > world.width - half) {
       this.x[i] = Math.min(world.width - half, Math.max(half, this.x[i]!));
       this.vx[i]! *= -0.5;
     }

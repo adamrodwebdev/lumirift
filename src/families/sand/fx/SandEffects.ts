@@ -110,11 +110,9 @@ export class SandEffects {
     const profile = this.profile();
     if (profile.shake) this.shake.kick(1.5);
     if (profile.particles === 0) return;
-    const embers = [
-      this.color('rgb(255 196 60)'),
-      this.color('rgb(255 110 40)'),
-      this.color('rgb(120 110 100)'),
-    ];
+    const palette = this.palette();
+    if (!palette) return;
+    const embers = palette.effects.embers.map((css) => this.color(css));
     for (const sample of this.thin(samples)) {
       const color = embers[Math.floor(Math.random() * embers.length)]!;
       this.pool.spawn(

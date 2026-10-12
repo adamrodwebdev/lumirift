@@ -34,6 +34,12 @@ export function luminance({ r, g, b }: Rgb): number {
   return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
 }
 
+/** Materials of the effects that are not a tone: fire embers and ash, clay chips. */
+export interface EffectColors {
+  readonly embers: readonly string[];
+  readonly clay: string;
+}
+
 /** Colours of the current theme, read from the CSS tokens (`--tone-N`, `--well-*`). */
 export class TonePalette {
   private constructor(
@@ -44,6 +50,7 @@ export class TonePalette {
     readonly crack: string,
     readonly accent: string,
     readonly danger: string,
+    readonly effects: EffectColors,
   ) {}
 
   static fromElement(element: Element): TonePalette {
@@ -60,6 +67,10 @@ export class TonePalette {
       read('--crack'),
       read('--accent-fill'),
       read('--danger'),
+      {
+        embers: [read('--fx-ember-hot'), read('--fx-ember'), read('--fx-ash')],
+        clay: read('--fx-clay'),
+      },
     );
   }
 

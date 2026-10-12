@@ -1,6 +1,6 @@
 import type { RandomSource } from '@/core/Random';
 import type { Indicator, ResultKind } from '@/session/GameSession';
-import type { FallingModeId } from '@/session/ModeId';
+import type { EngineModeId } from '@/session/ModeId';
 import type { Game } from '../game/Game';
 import { shapeTone, type PieceType, type Tone } from '../pieces/PieceType';
 import type { AbilityId, GameMode, WellSize } from './GameMode';
@@ -21,7 +21,7 @@ export interface ModeOptions {
  * through the `tick` and `ownIndicators` template hooks.
  */
 export abstract class AbstractMode implements GameMode {
-  abstract readonly id: FallingModeId;
+  abstract readonly id: EngineModeId;
   readonly result: ResultKind = 'score';
   readonly well: WellSize = STANDARD_WELL;
   readonly clearsLines: boolean = true;
