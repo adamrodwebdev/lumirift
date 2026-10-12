@@ -25,5 +25,5 @@ npm run dev
 | `npm run test:e2e`   | Tests de bout en bout (Playwright, mobile et bureau) |
 | `npm run lint`       | ESLint (règles TypeScript strictes, typées)          |
 | `npm run format`     | Prettier                                             |
-| `npm run lighthouse` | Audit Lighthouse du build de production              |
+| `npm run lighthouse` | Audit Lighthouse du build (après `npm run build`)    |
 | `npm run verify`     | Lint, format, types, tests et build, comme la CI     |

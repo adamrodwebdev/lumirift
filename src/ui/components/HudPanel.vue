@@ -1,0 +1,65 @@
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { useFormat } from '@/app/useFormat';
+import type { Indicator } from '@/session/GameSession';
+
+defineProps<{ indicators: readonly Indicator[] }>();
+
+const { t } = useI18n();
+const format = useFormat();
+</script>
+
+<template>
+  <dl class="hud" :aria-label="t('game.stats')">
+    <div
+      v-for="(item, index) in indicators"
+      :key="item.id"
+      class="hud__item"
+      :class="{ 'hud__item--main': index === 0 }"
+    >
+      <dt class="hud__label">{{ t(`hud.${item.id}`) }}</dt>
+      <dd class="hud__value">{{ format.indicator(item) }}</dd>
+    </div>
+  </dl>
+</template>
+
+<style scoped>
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.hud__item {
+  display: grid;
+  min-width: 4.5rem;
+}
+
+.hud__label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hud__value {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud__item--main .hud__value {
+  font-size: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
+  color: var(--accent);
+}
+
+@media (min-width: 1024px) {
+  .hud {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+}
+</style>

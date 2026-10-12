@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "title": "Stackrift — the falling-blocks game, reinvented",
+    "description": "The falling-blocks game reinvented: brand-new modes, a daily challenge, shattering crystal. Free, no sign-up, on mobile and desktop."
+  },
+  "app": {
+    "name": "Stackrift",
+    "tagline": "The rules you know. Games you have never played.",
+    "privacy": "No account, no tracking: your records stay on your device.",
+    "version": "Version {version}"
+  },
+  "nav": {
+    "skip": "Skip to content",
+    "home": "Back to home",
+    "settings": "Settings",
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
+  },
+  "home": {
+    "play": "Play",
+    "modes": "Game modes",
+    "best": "Best: {value}",
+    "noBest": "No record yet",
+    "comingSoon": "Coming soon: Fusion, Tilt, Silhouette, Rhythm, Duel, Sand, Mosaic and Tower."
+  },
+  "daily": {
+    "title": "Daily Challenge",
+    "mode": "Today's mode: {mode}",
+    "rules": "Two minutes, the same pieces for everyone.",
+    "start": "Take the challenge",
+    "best": "Your best today: {value}"
+  },
+  "modes": {
+    "classic": { "name": "Classic", "pitch": "The reference: a little faster every 10 lines." },
+    "tide": { "name": "Tide", "pitch": "Rows rise from the bottom, faster and faster. Hold on." },
+    "flip": {
+      "name": "Flip",
+      "pitch": "Turn the well upside down: the stack falls back and holes vanish."
+    },
+    "chroma": {
+      "name": "Chroma",
+      "pitch": "A line of a single colour is worth four times as much."
+    },
+    "mirror": { "name": "Mirror", "pitch": "Every 10 lines, the well is mirrored. Adapt." }
+  },
+  "result": {
+    "score": "Ranked on points",
+    "time": "Ranked on time"
+  },
+  "hud": {
+    "score": "Score",
+    "lines": "Lines",
+    "level": "Level",
+    "time": "Time",
+    "timeLeft": "Time left",
+    "nextRise": "Next tide",
+    "rowsRisen": "Rows risen",
+    "charges": "Flips",
+    "nextCharge": "Lines to next flip",
+    "pureLines": "Pure lines",
+    "nextMirror": "Lines to mirror",
+    "mirrorIn": "Mirror in",
+    "reflex": "Reflex bonus",
+    "hold": "Hold",
+    "next": "Next"
+  },
+  "notice": {
+    "lines": "One line cleared | {n} lines cleared",
+    "combo": "Combo × {n}",
+    "levelUp": "Level {level}",
+    "chargeGained": "New flip charge",
+    "pureLine": "Pure line",
+    "mirrorSoon": "The well is about to be mirrored",
+    "mirror": "Mirrored",
+    "reflexBonus": "Reflex bonus: + {value}",
+    "flip": "Flipped"
+  },
+  "controls": {
+    "label": "Touch controls",
+    "left": "Left",
+    "right": "Right",
+    "softDrop": "Soft drop",
+    "hardDrop": "Hard drop",
+    "rotateCw": "Rotate",
+    "rotateCcw": "Rotate the other way",
+    "hold": "Hold",
+    "pause": "Pause",
+    "ability": {
+      "flip": "Flip the well"
+    },
+    "keyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Ctrl to rotate the other way, C to hold, F for the ability, Esc to pause.",
+    "touch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop."
+  },
+  "pause": {
+    "title": "Paused",
+    "resume": "Resume",
+    "restart": "Restart",
+    "quit": "Quit"
+  },
+  "over": {
+    "title": "Game over",
+    "reason": {
+      "blockOut": "The well is full.",
+      "lockOut": "The well is full.",
+      "topOut": "The stack overflowed.",
+      "timeUp": "Time's up."
+    },
+    "result": "Result",
+    "newBest": "New record",
+    "best": "Best: {value}",
+    "again": "Play again",
+    "home": "Home",
+    "share": "Share",
+    "copied": "Result copied to the clipboard"
+  },
+  "share": {
+    "daily": "Stackrift · Challenge of {date} ({mode}): {value}. Your turn: {url}",
+    "mode": "Stackrift · {mode}: {value}. Your turn: {url}"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "ghost": "Show the ghost piece",
+    "close": "Close"
+  },
+  "game": {
+    "loading": "Loading the game…",
+    "well": "Playing well",
+    "stats": "Dashboard"
+  },
+  "languages": {
+    "fr": "Français",
+    "en": "English",
+    "id": "Bahasa Indonesia"
+  }
+}

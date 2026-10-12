@@ -1,0 +1,96 @@
+/*
+ * Design tokens. Colours are only ever used through these variables.
+ * `data-theme` is set on <html> before the first paint (see index.html),
+ * so the dark theme never flashes.
+ *
+ * Piece tones (--tone-N) match `Tone` in the engine. The palette is Stackrift's
+ * own: no piece wears the colour the genre's standard gives it.
+ */
+:root {
+  color-scheme: light;
+
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  --font-display: ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+
+  --bg: #f4f1ea;
+  --surface: #fffdf8;
+  --surface-2: #ebe6db;
+  --border: #d6cfc1;
+  --text: #1c1a17;
+  --text-muted: #57524a;
+  --accent: #8a5a00;
+  --accent-strong: #6b4500;
+  --on-accent: #fffaf0;
+  --accent-fill: #e8b04b;
+  --on-accent-fill: #241800;
+  --focus: #1f5fbf;
+  --danger: #b3261e;
+
+  --well-bg: #e3ddd1;
+  --well-grid: rgb(28 26 23 / 0.07);
+  --well-frame: #c9c0ae;
+  --crack: #1c1a17;
+
+  --tone-1: #c4532f;
+  --tone-2: #3f74c2;
+  --tone-3: #c99a2e;
+  --tone-4: #c4567f;
+  --tone-5: #4f8f62;
+  --tone-6: #8b62b0;
+  --tone-7: #2f8f8a;
+  --tone-8: #d4471f;
+  --tone-9: #d9a400;
+  --tone-10: #1f8f7f;
+  --tone-11: #5a52e0;
+  --tone-12: #7b7f87;
+
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --shadow: 0 0.5rem 1.5rem rgb(28 26 23 / 0.12);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --header-h: 3.25rem;
+  --touch: 2.75rem;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0b0e13;
+  --surface: #141922;
+  --surface-2: #1c2330;
+  --border: #2b3444;
+  --text: #eef1f6;
+  --text-muted: #a7b0bf;
+  --accent: #f2c35b;
+  --accent-strong: #ffd884;
+  --on-accent: #1b1300;
+  --accent-fill: #f2c35b;
+  --on-accent-fill: #1b1300;
+  --focus: #8cb8ff;
+  --danger: #ff8a80;
+
+  --well-bg: #0e131b;
+  --well-grid: rgb(255 255 255 / 0.05);
+  --well-frame: #2b3444;
+  --crack: #fff3d6;
+
+  --tone-1: #e8795a;
+  --tone-2: #6fa0e6;
+  --tone-3: #e6bd5a;
+  --tone-4: #e77fa6;
+  --tone-5: #74bf8b;
+  --tone-6: #b08ad6;
+  --tone-7: #4fc2bb;
+  --tone-8: #ff6a3d;
+  --tone-9: #ffcc33;
+  --tone-10: #33c2ad;
+  --tone-11: #8a84ff;
+  --tone-12: #8b919c;
+
+  --shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.45);
+}

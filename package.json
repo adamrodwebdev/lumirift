@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit -p tsconfig.app.json && vite build",
-    "preview": "vite preview --port 4173 --strictPort",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.app.json",
+    "preview": "vite preview --strictPort",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && vue-tsc --noEmit -p tsconfig.vitest.json",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -36,6 +36,7 @@
     "eslint": "10.12.0",
     "eslint-plugin-vue": "10.11.1",
     "jiti": "2.7.0",
+    "lighthouse": "13.5.0",
     "prettier": "3.9.10",
     "typescript": "6.0.3",
     "vite": "8.3.4",

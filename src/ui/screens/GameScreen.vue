@@ -1,0 +1,309 @@
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useServices } from '@/app/AppServices';
+import { FrameClock } from '@/app/FrameClock';
+import { useFormat } from '@/app/useFormat';
+import { SeededRandom } from '@/core/Random';
+import type { DailyChallenge } from '@/session/DailyChallenge';
+import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
+import type { ModeId } from '@/session/ModeId';
+import { ScoreBoard } from '@/services/ScoreBoard';
+import GameOverDialog from '../components/GameOverDialog.vue';
+import type { GameOutcome } from '../GameOutcome';
+import HudPanel from '../components/HudPanel.vue';
+import PauseDialog from '../components/PauseDialog.vue';
+import { stageFor } from '../stages';
+
+const props = defineProps<{ modeId: ModeId; daily: DailyChallenge | null }>();
+const emit = defineEmits<{ home: [] }>();
+
+const { t } = useI18n();
+const format = useFormat();
+const { catalog, scores, settings, share, clock: today } = useServices();
+const descriptor = catalog.get(props.modeId);
+
+type Phase = 'loading' | 'playing' | 'paused' | 'over';
+const phase = ref<Phase>('loading');
+const session = shallowRef<GameSession | null>(null);
+const indicators = shallowRef<readonly Indicator[]>([]);
+const outcome = ref<GameOutcome | null>(null);
+const shareStatus = ref('');
+const announcement = ref('');
+const toast = ref<{ text: string; key: number } | null>(null);
+const stage = stageFor(descriptor.family);
+const modeName = computed(() => t(`modes.${props.modeId}.name`));
+
+const clock = new FrameClock();
+let unsubscribe: (() => void)[] = [];
+let toastKey = 0;
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
+
+const sessionOptions = (): SessionOptions =>
+  props.daily?.sessionOptions() ?? {
+    random: new SeededRandom(Math.floor(Math.random() * 2 ** 32)),
+    timeLimitMs: null,
+  };
+
+const sameIndicators = (a: readonly Indicator[], b: readonly Indicator[]) =>
+  a.length === b.length &&
+  a.every((item, i) => {
+    const other = b.at(i);
+    return other?.id === item.id && other.value === item.value;
+  });
+
+clock.subscribe((delta) => {
+  const current = session.value;
+  if (!current) return;
+  current.update(delta);
+  const next = current.indicators();
+  if (!sameIndicators(next, indicators.value)) indicators.value = next;
+});
+
+/** Announced to screen readers, and shown over the well. */
+const announce = (text: string, show = true) => {
+  announcement.value = text;
+  if (!show) return;
+  toast.value = { text, key: ++toastKey };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (toast.value = null), 1400);
+};
+
+const listen = (current: GameSession) => {
+  const { events } = current;
+  unsubscribe = [
+    events.on('clear', ({ lines, combo }) => {
+      const text = t('notice.lines', lines);
+      announce(
+        combo > 0 ? `${text} · ${t('notice.combo', { n: combo + 1 })}` : text,
+        lines >= 2 || combo > 0,
+      );
+    }),
+    events.on('levelUp', ({ level }) => announce(t('notice.levelUp', { level }))),
+    events.on('notice', ({ id, value }) =>
+      announce(t(`notice.${id}`, { value: value === undefined ? '' : format.number(value) })),
+    ),
+    events.on('over', ({ reason }) => finish(reason)),
+  ];
+};
+
+const finish = (reason: string) => {
+  const current = session.value;
+  if (!current) return;
+  const result = current.result();
+  const key = props.daily ? ScoreBoard.dailyKey(props.daily.key) : props.modeId;
+  // Whole points or milliseconds: no float noise in the saved records.
+  const record = scores.record(key, Math.round(result.value));
+  outcome.value = {
+    reason,
+    value: format.result(result.kind, result.value),
+    best: format.result(result.kind, record.best),
+    isNewBest: record.isNewBest,
+  };
+  shareStatus.value = '';
+  phase.value = 'over';
+};
+
+const start = async () => {
+  dispose();
+  phase.value = 'loading';
+  const created = await catalog.create(props.modeId, sessionOptions());
+  listen(created);
+  session.value = created;
+  indicators.value = created.indicators();
+  created.start();
+  phase.value = 'playing';
+  clock.start();
+};
+
+const dispose = () => {
+  unsubscribe.forEach((off) => off());
+  unsubscribe = [];
+  session.value?.dispose();
+  session.value = null;
+};
+
+const pause = () => {
+  if (phase.value !== 'playing') return;
+  session.value?.pause();
+  phase.value = 'paused';
+};
+
+const resume = () => {
+  if (phase.value !== 'paused') return;
+  session.value?.resume();
+  phase.value = 'playing';
+};
+
+const onShare = async () => {
+  const current = session.value;
+  if (!current || !outcome.value) return;
+  const url = `${location.origin}${location.pathname}`;
+  const text = props.daily
+    ? t('share.daily', {
+        date: format.date(today()),
+        mode: modeName.value,
+        value: outcome.value.value,
+        url,
+      })
+    : t('share.mode', { mode: modeName.value, value: outcome.value.value, url });
+  const result = await share.share(text);
+  shareStatus.value = result === 'copied' ? t('over.copied') : '';
+};
+
+const onVisibility = () => {
+  if (document.hidden) pause();
+};
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', onVisibility);
+  window.addEventListener('blur', pause);
+  void start();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', onVisibility);
+  window.removeEventListener('blur', pause);
+  clearTimeout(toastTimer);
+  clock.stop();
+  dispose();
+});
+</script>
+
+<template>
+  <div class="game">
+    <h1 class="sr-only">{{ daily ? `${t('daily.title')} · ${modeName}` : modeName }}</h1>
+    <aside class="game__hud">
+      <p class="game__mode">{{ modeName }}</p>
+      <HudPanel :indicators="indicators" />
+    </aside>
+
+    <div class="game__stage">
+      <p v-if="phase === 'loading'" class="game__loading">{{ t('game.loading') }}</p>
+      <component
+        :is="stage"
+        v-if="session"
+        :session="session"
+        :clock="clock"
+        :active="phase === 'playing'"
+        :ghost="settings.current.ghost"
+        @pause="pause"
+      />
+      <div class="game__toasts" aria-hidden="true">
+        <Transition name="toast">
+          <p v-if="toast" :key="toast.key" class="toast">{{ toast.text }}</p>
+        </Transition>
+      </div>
+    </div>
+
+    <p class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
+
+    <PauseDialog
+      :open="phase === 'paused'"
+      @resume="resume"
+      @restart="start"
+      @quit="emit('home')"
+    />
+    <GameOverDialog
+      :open="phase === 'over'"
+      :outcome="outcome"
+      :share-status="shareStatus"
+      @again="start"
+      @home="emit('home')"
+      @share="onShare"
+    />
+  </div>
+</template>
+
+<style scoped>
+.game {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: calc(100dvh - var(--header-h));
+  overflow: hidden;
+}
+
+.game__hud {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.game__mode {
+  display: none;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.game__stage {
+  position: relative;
+  min-height: 0;
+}
+
+.game__loading {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--text-muted);
+}
+
+.game__toasts {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.toast {
+  padding: var(--space-2) var(--space-4);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 0.9rem + 1.5vw, 1.6rem);
+  font-weight: 800;
+}
+
+.toast-enter-active {
+  animation: toast-in 280ms cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.toast-leave-active {
+  transition: opacity 300ms ease;
+}
+
+.toast-leave-to {
+  opacity: 0;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .game {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
+  }
+
+  .game__hud {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--space-6) var(--space-4);
+    border-bottom: 0;
+    border-right: 1px solid var(--border);
+  }
+
+  .game__mode {
+    display: block;
+  }
+}
+</style>
