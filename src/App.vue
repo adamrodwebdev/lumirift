@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   defineAsyncComponent,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
@@ -33,6 +34,7 @@ const { settings, audio } = useServices();
 
 const screen = shallowRef<Screen>({ kind: 'home' });
 const settingsOpen = ref(false);
+const main = ref<HTMLElement | null>(null);
 let gameId = 0;
 
 const play = (
@@ -42,10 +44,17 @@ const play = (
 ) => {
   screen.value = { kind: 'game', modeId, daily, variant, id: ++gameId };
   window.scrollTo(0, 0);
+  focusMain();
 };
 const home = () => {
   screen.value = { kind: 'home' };
+  focusMain();
 };
+/**
+ * A new screen replaces the button that led to it: focus moves to the main
+ * region, so that keyboard and screen reader users start from the new screen.
+ */
+const focusMain = () => void nextTick(() => main.value?.focus({ preventScroll: true }));
 
 // Language: interface, <html lang>, title and description follow the setting.
 watchEffect(() => {
@@ -79,7 +88,7 @@ onBeforeUnmount(() => {
 <template>
   <a class="skip" href="#main">{{ t('nav.skip') }}</a>
   <AppHeader :in-game="screen.kind === 'game'" @home="home" @settings="settingsOpen = true" />
-  <main id="main" tabindex="-1">
+  <main id="main" ref="main" tabindex="-1">
     <HomeScreen
       v-if="screen.kind === 'home'"
       @play="(modeId, variant) => play(modeId, null, variant ?? null)"

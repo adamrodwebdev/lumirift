@@ -11,7 +11,7 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit -p tsconfig.app.json && vite build",
     "preview": "vite preview --strictPort",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && vue-tsc --noEmit -p tsconfig.vitest.json",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && vue-tsc --noEmit -p tsconfig.vitest.json && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -26,6 +26,7 @@
     "vue-i18n": "11.4.14"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@intlify/unplugin-vue-i18n": "11.2.5",
     "@playwright/test": "1.64.0",
     "@types/node": "24.13.4",
