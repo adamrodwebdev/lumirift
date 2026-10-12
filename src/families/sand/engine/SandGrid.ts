@@ -8,14 +8,16 @@ export const SAND_TONES = CHROMA_TONES;
 /** How long water flows before it sets, and fire burns before it dies out, in steps. */
 export const WATER_LIFE_STEPS = 140;
 export const FIRE_LIFE_STEPS = 220;
-/** Chance per step that wind pushes a grain one step aside. */
+/** Chance per step that wind pushes a loose grain one step aside. */
 const WIND_PUSH = 0.25;
+/** A gust moves a grain one cell at most: it reshapes the surface, it never sweeps the well. */
+export const WIND_MAX_DRIFT = GRAINS_PER_CELL;
 
 const isSand = (tone: number) => tone >= Tone.ChromaA && tone <= Tone.ChromaD;
 
 /**
  * The sand well: one cell per grain. Grains fall, slide down diagonally when
- * blocked, water also spreads sideways; wind pushes everything one way.
+ * blocked, water also spreads sideways; wind pushes the loose surface grains.
  * Typed arrays only: the physics allocates nothing while it runs.
  */
 export class SandGrid {
@@ -26,6 +28,8 @@ export class SandGrid {
   readonly life: Uint16Array;
   /** Direction of the wind blowing now (−1 left, 1 right) or 0. */
   wind: -1 | 0 | 1 = 0;
+  /** Grains each grain has been blown during the current gust. */
+  private readonly drift: Uint8Array;
 
   private readonly movedAt: Uint32Array;
   private readonly visited: Uint8Array;
@@ -40,6 +44,7 @@ export class SandGrid {
     this.tones = new Uint8Array(size);
     this.grain = new Uint8Array(size);
     this.life = new Uint16Array(size);
+    this.drift = new Uint8Array(size);
     this.movedAt = new Uint32Array(size);
     this.visited = new Uint8Array(size);
     this.queue = new Int32Array(size);
@@ -53,6 +58,16 @@ export class SandGrid {
     return (
       x >= 0 && y >= 0 && x < this.width && y < this.height && this.tones[y * this.width + x] === 0
     );
+  }
+
+  /** Physics steps run so far (a grain moved since a given step is not where it was). */
+  get stepCount(): number {
+    return this.steps;
+  }
+
+  /** A new gust: every grain may drift again. */
+  resetDrift(): void {
+    this.drift.fill(0);
   }
 
   /** Puts a grain (a piece turning into sand). */
@@ -97,8 +112,16 @@ export class SandGrid {
             continue;
           }
         }
-        if (this.wind !== 0 && random.next() < WIND_PUSH && this.isFree(x + this.wind, y)) {
+        // Wind only lifts loose grains: those with nothing on top, not yet blown a cell away.
+        if (
+          this.wind !== 0 &&
+          (y === 0 || tones[i - W] === 0) &&
+          this.drift[i]! < WIND_MAX_DRIFT &&
+          random.next() < WIND_PUSH &&
+          this.isFree(x + this.wind, y)
+        ) {
           this.move(i, i + this.wind);
+          this.drift[i + this.wind]!++;
           moved++;
         }
       }
@@ -107,15 +130,17 @@ export class SandGrid {
     return moved;
   }
 
-  /** Fire grains touching sand: the grain of sand they touch, once per touched colour. */
+  /** Fire grains touching sand or water, with the grain they touch. */
   fireContacts(): { fire: number; seed: number }[] {
     const contacts: { fire: number; seed: number }[] = [];
     const { width: W, tones } = this;
     for (let i = 0; i < tones.length; i++) {
       if (tones[i] !== Tone.Fire) continue;
       const x = i % W;
-      for (const n of [i - W, i + W, x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1]) {
-        if (n >= 0 && n < tones.length && isSand(tones[n]!)) {
+      for (const n of [i + W, x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, i - W]) {
+        if (n < 0 || n >= tones.length) continue;
+        const touched = tones[n]!;
+        if (isSand(touched) || touched === Tone.Water) {
           contacts.push({ fire: i, seed: n });
           break;
         }
@@ -124,12 +149,23 @@ export class SandGrid {
     return contacts;
   }
 
-  /** Every grain of the same colour connected to `seed` (by a side). */
+  /** Every grain of the same colour connected to `seed` (by a side), nearest first. */
   region(seed: number): number[] {
     const tone = this.tones[seed]!;
     if (!isSand(tone)) return [];
+    return this.connected(seed);
+  }
+
+  /** Every grain of the same tone connected to `seed`, element or sand, nearest first. */
+  connected(seed: number): number[] {
+    const tone = this.tones[seed]!;
+    if (tone === 0) return [];
     this.visited.fill(0);
     return this.flood(seed, tone);
+  }
+
+  isSand(index: number): boolean {
+    return isSand(this.tones[index]!);
   }
 
   /** Regions of one colour that link the left wall to the right wall. */
@@ -152,6 +188,7 @@ export class SandGrid {
     for (const i of indices) {
       this.tones[i] = 0;
       this.life[i] = 0;
+      this.drift[i] = 0;
     }
   }
 
@@ -205,33 +242,46 @@ export class SandGrid {
     this.tones[to] = this.tones[from]!;
     this.grain[to] = this.grain[from]!;
     this.life[to] = this.life[from]!;
+    this.drift[to] = this.drift[from]!;
     this.movedAt[to] = this.steps;
     this.tones[from] = 0;
     this.life[from] = 0;
+    this.drift[from] = 0;
   }
 
   /** Water sets in the colour around it; fire dies out. */
   private age(random: RandomSource): void {
-    const { width: W, tones, life } = this;
+    const { tones, life } = this;
     for (let i = 0; i < tones.length; i++) {
       const tone = tones[i]!;
       if (tone !== Tone.Water && tone !== Tone.Fire) continue;
       if (--life[i]! > 0) continue;
-      if (tone === Tone.Fire) {
-        tones[i] = 0;
-        continue;
-      }
-      const x = i % W;
-      let set = 0;
-      for (const n of [i + W, i - 1, i + 1, i - W]) {
-        if (n < 0 || n >= tones.length || (n === i - 1 && x === 0) || (n === i + 1 && x === W - 1))
-          continue;
-        if (isSand(tones[n]!)) {
-          set = tones[n]!;
-          break;
-        }
-      }
-      tones[i] = set || SAND_TONES[random.nextInt(SAND_TONES.length)]!;
+      tones[i] = tone === Tone.Fire ? 0 : this.settingColour(i, random);
     }
+  }
+
+  /**
+   * The colour water sets in: the most common sand colour among its 8
+   * neighbours, the one below it on a tie (a random colour when none).
+   */
+  private settingColour(i: number, random: RandomSource): number {
+    const { width: W, height: H, tones } = this;
+    const x = i % W;
+    const y = (i / W) | 0;
+    const counts = [0, 0, 0, 0];
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if ((dx === 0 && dy === 0) || nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const tone = tones[ny * W + nx]!;
+        if (isSand(tone)) counts[tone - Tone.ChromaA]!++;
+      }
+    }
+    const most = Math.max(...counts);
+    if (most === 0) return SAND_TONES[random.nextInt(SAND_TONES.length)]!;
+    const below = y < H - 1 ? tones[i + W]! : 0;
+    if (isSand(below) && counts[below - Tone.ChromaA] === most) return below;
+    return Tone.ChromaA + counts.indexOf(most);
   }
 }

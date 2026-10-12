@@ -20,6 +20,7 @@ describe('BoardFeatures', () => {
       maxHeight: 3,
       holes: 1,
       bumpiness: 1 + 2 + 1, // 3→2, 2→0, then 0→1 at the right wall
+      heights: [3, 2, 0, 0, 0, 0, 0, 0, 0, 1],
     });
   });
 });

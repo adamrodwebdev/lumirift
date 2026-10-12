@@ -24,6 +24,7 @@ export class SandSoundscape {
         audio.play(sounds.sweep(regions));
         haptics.pulse(regions > 1 ? [30, 40, 70] : 30);
       }),
+      session.onGame('quench', () => audio.play(sounds.splash)),
       session.onGame('burn', () => {
         audio.play(sounds.crackle);
         haptics.pulse([20, 20, 40]);

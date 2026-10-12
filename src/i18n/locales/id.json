@@ -150,7 +150,8 @@
     "windSoonRight": "Angin bertiup ke kanan",
     "elementWater": "Kepingan air",
     "elementFire": "Kepingan api",
-    "burn": "Api membakar {value} butir"
+    "burn": "Api membakar {value} butir",
+    "quench": "Air memadamkan api"
   },
   "controls": {
     "label": "Kontrol sentuh",
@@ -264,14 +265,18 @@
     "title": "Pilih lawanmu",
     "cancel": "Batal",
     "duel": {
+      "rookie": "AI pemula",
       "easy": "AI mudah",
       "normal": "AI normal",
+      "hard": "AI sulit",
       "expert": "AI ahli"
     },
     "duelHint": {
+      "rookie": "Lambat, masih belajar dan sering salah.",
       "easy": "Ragu-ragu dan sering salah.",
-      "normal": "Tangguh, dengan sedikit kesalahan.",
-      "expert": "Cepat, dan tidak pernah salah."
+      "normal": "Tangguh: menyimpan kepingan dan menyiapkan serangan.",
+      "hard": "Cepat, memperhitungkan kepingan berikutnya dan jarang salah.",
+      "expert": "Setara pemain terbaik: tidak pernah salah."
     }
   },
   "jokers": {
@@ -294,7 +299,8 @@
     "pickPiece": "Ketuk kepingan yang akan diputar",
     "pickCell": "Ketuk kotak untuk dibom",
     "helpKeyboard": "Keyboard: 1, 2, 3 untuk memilih kepingan (4 untuk kubus), panah untuk memindahkan, Enter untuk memasang, J untuk joker, Esc untuk membatalkan atau jeda.",
-    "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak."
+    "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak.",
+    "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Sumur pasir",

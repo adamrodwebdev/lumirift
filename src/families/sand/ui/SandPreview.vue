@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { shapeCells } from '@/families/falling/pieces/Shapes';
+import { Tone } from '@/core/Tone';
+import { MOTIFS } from '@/render/motifs';
 import { shade, type TonePalette } from '@/render/TonePalette';
 import type { PieceSpec } from '../engine/SandGame';
 
@@ -41,6 +43,20 @@ const draw = () => {
         );
       }
     }
+  }
+  const tone = props.spec.tone;
+  if (tone === Tone.Water || tone === Tone.Fire) {
+    // Water and fire are announced by their motif, not by their colour alone.
+    const radius = cell * 0.9;
+    ctx.save();
+    ctx.translate(px / 2 - radius, px / 2 - radius);
+    ctx.strokeStyle = props.palette.wellBackground;
+    ctx.fillStyle = props.palette.wellBackground;
+    ctx.lineWidth = Math.max(2, cell * 0.22);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    MOTIFS[tone](ctx, radius, radius * 0.75);
+    ctx.restore();
   }
 };
 

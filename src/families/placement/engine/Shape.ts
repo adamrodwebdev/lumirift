@@ -65,21 +65,27 @@ const turns = (text: string, weight: number): ShapeEntry[] => {
   return shapes.map((variant) => ({ shape: variant, weight: weight / shapes.length }));
 };
 
-/** The pieces of the Mosaic, from one to nine cells. */
+/**
+ * The pieces of the Mosaic, from one to nine cells; pieces never turn, so
+ * each orientation is a piece of its own. Small pieces are the lifesavers,
+ * the 3 × 3 square and the big corner the run-killers: they are rarer.
+ * (Weights per orientation: bars of 2 and 3 at 3, small corner at 2, T and
+ * S / Z at 1, L / J at 0.75, big corner at 0.6.)
+ */
 export const SHAPES: readonly ShapeEntry[] = [
   entry('#', 2),
-  ...turns('##', 5),
-  ...turns('###', 5),
-  ...turns('##|#.', 6),
-  entry('##|##', 5),
+  ...turns('##', 6),
+  ...turns('###', 6),
   ...turns('####', 4),
-  ...turns('###|.#.', 4),
-  ...turns('###|#..', 4),
-  ...turns('###|..#', 4),
-  ...turns('.##|##.', 3),
-  ...turns('##.|.##', 3),
   ...turns('#####', 2),
-  ...turns('###|#..|#..', 3),
+  entry('##|##', 4),
   ...turns('###|###', 3),
-  entry('###|###|###', 2),
+  entry('###|###|###', 1.5),
+  ...turns('##|#.', 8),
+  ...turns('###|#..', 3),
+  ...turns('###|..#', 3),
+  ...turns('###|.#.', 4),
+  ...turns('.##|##.', 2),
+  ...turns('##.|.##', 2),
+  ...turns('###|#..|#..', 2.4),
 ];

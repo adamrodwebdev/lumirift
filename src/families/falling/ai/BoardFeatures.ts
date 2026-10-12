@@ -11,6 +11,8 @@ export interface BoardFeatures {
   readonly holes: number;
   /** Sum of the height differences between neighbouring columns. */
   readonly bumpiness: number;
+  /** Height of each column, left to right. */
+  readonly heights: readonly number[];
 }
 
 /** Measures a well (read only). */
@@ -38,5 +40,6 @@ export function measure(board: Board): BoardFeatures {
     maxHeight: Math.max(...heights),
     holes,
     bumpiness,
+    heights,
   };
 }

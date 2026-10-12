@@ -18,6 +18,8 @@ export interface SandView {
   readonly active: SandPiece | null;
   preview(count?: number): readonly PieceSpec[];
   dropDistance(): number;
+  /** Grains the falling fire would burn where it would land, or null. */
+  fireTarget(): readonly number[] | null;
 }
 
 type Handlers = {
@@ -123,6 +125,7 @@ export class SandSession implements GameSession<FallingCommand> {
       this.events.emit('clear', { lines: regions, points, combo: 0 }),
     );
     events.on('burn', ({ grains }) => this.events.emit('notice', { id: 'burn', value: grains }));
+    events.on('quench', () => this.events.emit('notice', { id: 'quench' }));
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));

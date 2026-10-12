@@ -38,6 +38,8 @@ export function luminance({ r, g, b }: Rgb): number {
 export interface EffectColors {
   readonly embers: readonly string[];
   readonly clay: string;
+  /** Steam of water putting fire out. */
+  readonly steam: string;
 }
 
 /** Colours of the current theme, read from the CSS tokens (`--tone-N`, `--well-*`). */
@@ -70,6 +72,7 @@ export class TonePalette {
       {
         embers: [read('--fx-ember-hot'), read('--fx-ember'), read('--fx-ash')],
         clay: read('--fx-clay'),
+        steam: read('--fx-steam'),
       },
     );
   }

@@ -19,6 +19,12 @@ export const PREVIEW_COUNT = 3;
 export const ELEMENTS_AFTER = 5;
 export const WATER_CHANCE = 0.1;
 export const FIRE_CHANCE = 0.07;
+/** At least this many sand pieces between two elements: never a streak of hazards. */
+export const ELEMENT_GAP = 3;
+/** Fire consumes this many grains at most (about 40 cells), nearest first. */
+export const FIRE_MAX_GRAINS = 1500;
+/** Wind holds off while the sand is this close to the top (in grains). */
+export const WIND_SAFE_GRAINS = 3 * GRAINS_PER_CELL;
 /** Wind: first gust after this long, then every this long (ms, ± a third), announced ahead. */
 export const WIND_EVERY_MS = 30_000;
 export const WIND_WARNING_MS = 3_000;
@@ -58,6 +64,8 @@ export interface SandEventMap {
     readonly points: number;
     readonly samples: readonly GrainSample[];
   };
+  /** Water put fire out: both vanish in steam. */
+  quench: { readonly samples: readonly GrainSample[] };
   wind: { readonly phase: 'soon' | 'start' | 'end'; readonly direction: -1 | 1 };
   levelUp: { readonly level: number };
   notice: { readonly id: string; readonly value?: number };
@@ -92,6 +100,13 @@ export class SandGame {
   private _level = 1;
   private _elapsedMs = 0;
   private dealt = 0;
+  /** Sand pieces dealt since the last element. */
+  private sinceElement = 0;
+  /** The region the falling fire would burn, cached for one grid step and one position. */
+  private targetCache: { key: string; region: readonly number[] | null } = {
+    key: '',
+    region: null,
+  };
   private softDropping = false;
   private fallAccumulator = 0;
   private stepAccumulator = 0;
@@ -105,7 +120,11 @@ export class SandGame {
     this.grid = options.grid ?? new SandGrid();
     this.bag = new Bag(this.random);
     this.timeLimitMs = options.timeLimitMs ?? null;
-    this.wind = { direction: 1, at: this.nextGustDelay(), phase: 'waiting' };
+    this.wind = {
+      direction: this.random.next() < 0.5 ? -1 : 1,
+      at: this.nextGustDelay(),
+      phase: 'waiting',
+    };
   }
 
   // --- Read model -----------------------------------------------------------
@@ -154,6 +173,21 @@ export class SandGame {
       }
     }
     return true;
+  }
+
+  /**
+   * Grains the falling fire would burn if it landed now (where its ghost
+   * stands), or null: shown in advance, so that fire is aimed, never a lottery.
+   */
+  fireTarget(): readonly number[] | null {
+    const piece = this._active;
+    if (!piece || piece.tone !== Tone.Fire) return null;
+    const landed = piece.moved(0, this.dropDistance());
+    const key = `${this.grid.stepCount}:${landed.x}:${landed.y}:${landed.rotation}`;
+    if (this.targetCache.key !== key) {
+      this.targetCache = { key, region: this.targetOf(landed) };
+    }
+    return this.targetCache.region;
   }
 
   dropDistance(): number {
@@ -308,11 +342,22 @@ export class SandGame {
     if (this.lockTimer >= LOCK_DELAY_MS || this.lockResets >= MAX_LOCK_RESETS) this.lock();
   }
 
-  /** The piece crumbles: each of its cells becomes GRAINS_PER_CELL² grains. */
+  /**
+   * The piece crumbles: each of its cells becomes GRAINS_PER_CELL² grains. A
+   * fire piece resting on sand burns at once the region it touches most.
+   */
   private lock(): void {
     const piece = this._active;
     if (!piece) return;
     const g = GRAINS_PER_CELL;
+    const target = piece.tone === Tone.Fire ? this.targetOf(piece) : null;
+    if (target) {
+      this._active = null;
+      this.events.emit('lock', { piece });
+      this.burnRegion(target);
+      this.spawnNext();
+      return;
+    }
     for (const cell of piece.localCells) {
       for (let y = 0; y < g; y++) {
         for (let x = 0; x < g; x++) {
@@ -336,19 +381,81 @@ export class SandGame {
     this.clearSpanning();
   }
 
-  /** Fire consumes the region of the colour it touches, and goes out. */
+  /**
+   * Loose fire (it fell where there was no sand): the first sand it touches
+   * burns, then all its flames go out; water puts it out in a puff of steam.
+   */
   private burn(): void {
     for (const { fire, seed } of this.grid.fireContacts()) {
       if (this.grid.tones[fire] !== Tone.Fire) continue;
-      const region = this.grid.region(seed);
-      if (region.length === 0) continue;
-      const samples = this.sample(region);
-      this.grid.remove(region);
-      this.grid.remove([fire]);
-      const points = region.length;
-      this._score += points;
-      this.events.emit('burn', { grains: region.length, points, samples });
+      const flames = this.grid.connected(fire);
+      if (this.grid.tones[seed] === Tone.Water) {
+        const steam = [...flames, ...this.grid.connected(seed)];
+        const samples = this.sample(steam);
+        this.grid.remove(steam);
+        this.events.emit('quench', { samples });
+        continue;
+      }
+      this.grid.remove(flames);
+      this.burnRegion(this.grid.region(seed).slice(0, FIRE_MAX_GRAINS));
     }
+  }
+
+  /** Burning scores half a clear: fire helps, it never beats linking the walls. */
+  private burnRegion(region: readonly number[]): void {
+    if (region.length === 0) return;
+    const samples = this.sample(region);
+    this.grid.remove(region);
+    const points = Math.round(region.length / 2);
+    this._score += points;
+    this.events.emit('burn', { grains: region.length, points, samples });
+  }
+
+  /**
+   * The region a fire piece at this position would burn: among the sand
+   * regions it touches (below or on a side), the one it touches most.
+   */
+  private targetOf(piece: SandPiece): number[] | null {
+    const { grid } = this;
+    const g = GRAINS_PER_CELL;
+    const W = grid.width;
+    const own = new Set<number>();
+    for (const cell of piece.localCells) {
+      for (let y = 0; y < g; y++) {
+        for (let x = 0; x < g; x++) {
+          const gx = piece.x + cell.x * g + x;
+          const gy = piece.y + cell.y * g + y;
+          if (gx >= 0 && gy >= 0 && gx < W && gy < grid.height) own.add(gy * W + gx);
+        }
+      }
+    }
+    const contacts: number[] = [];
+    for (const i of own) {
+      const x = i % W;
+      for (const n of [i + W, x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1]) {
+        if (n >= 0 && n < grid.tones.length && !own.has(n) && grid.isSand(n)) contacts.push(n);
+      }
+    }
+    let best: number[] | null = null;
+    let bestTouches = 0;
+    const seen = new Set<number>();
+    for (const seed of contacts) {
+      if (seen.has(seed)) continue;
+      const region = grid.region(seed);
+      const members = new Set(region);
+      let touches = 0;
+      for (const c of contacts) {
+        if (members.has(c)) {
+          touches++;
+          seen.add(c);
+        }
+      }
+      if (touches > bestTouches) {
+        best = region;
+        bestTouches = touches;
+      }
+    }
+    return best ? best.slice(0, FIRE_MAX_GRAINS) : null;
   }
 
   private clearSpanning(): void {
@@ -386,18 +493,28 @@ export class SandGame {
     const wind = this.wind;
     const now = this._elapsedMs;
     if (wind.phase === 'waiting' && now >= wind.at - WIND_WARNING_MS) {
-      wind.direction = this.random.next() < 0.5 ? -1 : 1;
+      // Never a gust when the sand nears the top: the wind must not decide a game.
+      if (this.grid.sandHeight() > this.grid.height - WIND_SAFE_GRAINS) {
+        wind.at = now + WIND_WARNING_MS + WIND_GUST_MS;
+        return;
+      }
       wind.phase = 'warned';
       this.events.emit('wind', { phase: 'soon', direction: wind.direction });
       this.events.emit('notice', { id: wind.direction < 0 ? 'windSoonLeft' : 'windSoonRight' });
     } else if (wind.phase === 'warned' && now >= wind.at) {
       wind.phase = 'blowing';
+      this.grid.resetDrift();
       this.grid.wind = wind.direction;
       this.events.emit('wind', { phase: 'start', direction: wind.direction });
     } else if (wind.phase === 'blowing' && now >= wind.at + WIND_GUST_MS) {
       this.grid.wind = 0;
       this.events.emit('wind', { phase: 'end', direction: wind.direction });
-      this.wind = { direction: 1, at: now + this.nextGustDelay(), phase: 'waiting' };
+      // Gusts alternate: the sand is never pushed the same way twice in a row.
+      this.wind = {
+        direction: wind.direction === 1 ? -1 : 1,
+        at: now + this.nextGustDelay(),
+        phase: 'waiting',
+      };
     }
   }
 
@@ -429,11 +546,12 @@ export class SandGame {
       const type = this.bag.next();
       this.dealt++;
       let tone = SAND_TONES[this.random.nextInt(SAND_TONES.length)]!;
-      if (this.dealt > ELEMENTS_AFTER) {
+      if (this.dealt > ELEMENTS_AFTER && this.sinceElement >= ELEMENT_GAP) {
         const roll = this.random.next();
         if (roll < WATER_CHANCE) tone = Tone.Water;
         else if (roll < WATER_CHANCE + FIRE_CHANCE) tone = Tone.Fire;
       }
+      this.sinceElement = tone === Tone.Water || tone === Tone.Fire ? 0 : this.sinceElement + 1;
       this.upcoming.push({ type, tone });
     }
   }

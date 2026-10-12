@@ -33,7 +33,7 @@ const DESCRIPTORS: readonly ModeDescriptor[] = [
     family: 'falling',
     result: 'score',
     dailyEligible: false,
-    variants: ['easy', 'normal', 'expert'],
+    variants: ['rookie', 'easy', 'normal', 'hard', 'expert'],
     defaultVariant: 'normal',
   },
   { id: 'sand', family: 'sand', result: 'score', dailyEligible: true },

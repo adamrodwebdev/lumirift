@@ -150,7 +150,8 @@
     "windSoonRight": "Wind blowing to the right",
     "elementWater": "Water piece",
     "elementFire": "Fire piece",
-    "burn": "Fire burnt {value} grains"
+    "burn": "Fire burnt {value} grains",
+    "quench": "Water puts the fire out"
   },
   "controls": {
     "label": "Touch controls",
@@ -264,14 +265,18 @@
     "title": "Choose your opponent",
     "cancel": "Cancel",
     "duel": {
+      "rookie": "Rookie AI",
       "easy": "Easy AI",
       "normal": "Normal AI",
+      "hard": "Hard AI",
       "expert": "Expert AI"
     },
     "duelHint": {
-      "easy": "It hesitates and often makes mistakes.",
-      "normal": "Solid, with a few mistakes.",
-      "expert": "Fast, and it never makes a mistake."
+      "rookie": "Slow, still learning the game, often wrong.",
+      "easy": "It hesitates and makes mistakes.",
+      "normal": "Solid: it holds pieces and builds up its attacks.",
+      "hard": "Fast, it plans for the next piece and rarely errs.",
+      "expert": "As good as the best players: it never errs."
     }
   },
   "jokers": {
@@ -294,7 +299,8 @@
     "pickPiece": "Tap the piece to rotate",
     "pickCell": "Tap the cell to bomb",
     "helpKeyboard": "Keyboard: 1, 2, 3 to pick a piece (4 for the cube), arrows to move it, Enter to place it, J for the jokers, Esc to cancel or pause.",
-    "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell."
+    "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell.",
+    "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Sand well",

@@ -3,6 +3,22 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [0.8.0] — 12/10/2026
+
+Des règles revues d'après les jeux du genre.
+
+### Modifié
+
+- Sable : le feu se vise (la zone qu'il brûlerait scintille), brûle pour la moitié des
+  points et 1 500 grains au plus ; l'eau éteint le feu et prend la couleur la plus présente
+  autour d'elle ; le vent ne soulève que la surface, alterne et se tait près du haut ; au
+  moins 3 pièces de sable entre deux éléments, annoncés dans l'aperçu.
+- Mosaïque : chaque main peut être posée en entier ; barème par lignes d'un coup et combo
+  qui tolère deux poses sans effacement ; jokers selon l'exploit, 2 de chaque, un retour
+  offert au départ.
+- Duel : cinq niveaux d'IA, de Débutante à Experte, calés sur les vitesses de vrais
+  joueurs ; dès la Normale, l'IA utilise la réserve et prépare des effacements de 4 lignes.
+
 ## [0.7.0] — 12/10/2026
 
 La Tour : les 14 modes de la version 1.0 sont jouables.

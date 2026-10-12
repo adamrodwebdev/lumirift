@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                |
-| ------- | ---------- | --------------------- |
-| 0.12    | 12/10/2026 | Lot 9 livré : la Tour |
+| Version | Date       | Statut                                  |
+| ------- | ---------- | --------------------------------------- |
+| 0.13    | 12/10/2026 | Règles revues d'après les jeux du genre |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -192,7 +192,7 @@ Règles détaillées :
   quand une pièce tombe dans le temps ; le multiplicateur maximal est annoncé.
 - **Duel** : le joueur affronte une IA qui joue dans un second puits, affiché en **vignette
   vivante** sous la réserve (à toutes les tailles d'écran). L'adversaire se choisit avant la
-  partie : **IA facile, normale ou experte**. Les deux camps reçoivent **la même suite de
+  partie, parmi **cinq niveaux** (tableau ci-dessous). Les deux camps reçoivent **la même suite de
   pièces** (une seule graine pour les deux).
   - Rangées envoyées : 2 lignes → 1, 3 → 2, 4 → 4, plus 1 par combo en cours.
   - Une attaque **annule d'abord** les rangées en route vers soi ; le reste part chez
@@ -202,16 +202,27 @@ Règles détaillées :
     « Victoire » ou « Partie terminée » (défaite), avec la raison.
   - L'IA cherche tous les placements atteignables (rotation à l'apparition, glissement,
     chute), les évalue (hauteur cumulée, lignes, trous, irrégularité ; pondérations de
-    référence) et joue **par les mêmes commandes qu'un joueur** :
+    référence de Yiyuan Lee) et joue **par les mêmes commandes qu'un joueur**. Les cinq
+    niveaux suivent les vitesses de vrais joueurs (pièces par seconde des joueurs classés
+    en ligne : environ 0,7 au 10ᵉ centile, 1,1 en médiane, 1,7 au 90ᵉ, 2,5 au 99ᵉ) :
 
-    | Niveau  | Réflexion | Entre deux gestes | Erreurs volontaires                |
-    | ------- | --------- | ----------------- | ---------------------------------- |
-    | Facile  | 900 ms    | 170 ms            | 35 % (parmi les 6 meilleurs coups) |
-    | Normale | 450 ms    | 95 ms             | 12 % (parmi les 3 meilleurs)       |
-    | Experte | 160 ms    | 45 ms             | aucune                             |
-
-    Vérifié par les tests : l'IA experte joue seule deux minutes de jeu sans déborder et
-    efface plus de 20 lignes.
+    | Niveau    | Vitesse visée (mesurée) | Erreurs | Réserve | Pièce suivante | Attaque  |
+    | --------- | ----------------------- | ------- | ------- | -------------- | -------- |
+    | Débutante | 0,5 p/s (0,51)          | 30 %    | non     | non            | non      |
+    | Facile    | 0,8 p/s (0,80)          | 18 %    | non     | non            | non      |
+    | Normale   | 1,1 p/s (1,14)          | 8 %     | oui     | non            | 4 lignes |
+    | Difficile | 1,7 p/s (1,69)          | 3 %     | oui     | oui            | 4 lignes |
+    | Experte   | 2,5 p/s (2,42)          | aucune  | oui     | oui            | 4 lignes |
+    - **Erreurs humaines** : une erreur choisit un placement proche du meilleur bien plus
+      souvent qu'un mauvais (parmi les 5, 4, 3, 2 meilleurs selon le niveau).
+    - **Réserve** : l'IA garde une pièce quand l'autre (en réserve ou suivante) se place
+      nettement mieux.
+    - **Attaque** : tant que son puits est bas (moins de 9 rangées), l'IA garde la colonne
+      de droite libre et réserve ses lignes pour un effacement de 4, l'attaque la plus forte
+      du duel ; plus haut, elle efface tout ce qu'elle peut. Sur deux minutes, seule :
+      0, 0, 3, 6 et 12 effacements de 4 lignes selon le niveau.
+    - Ni T-spin ni niveau adaptatif : les jeux du genre proposent des niveaux fixes ; un
+      niveau qui s'adapte au joueur reste une piste (§ 11).
 
 #### Famille Sable
 
@@ -226,14 +237,29 @@ Règles détaillées :
 - Chaque pièce porte l'une de **4 couleurs**. Une **zone d'une même couleur, continue, qui
   relie le mur gauche au mur droit** est effacée, même si elle serpente. Points : 1 par grain
   effacé, multiplié par le nombre de zones effacées d'un coup. Niveau + 1 toutes les 5 zones.
-- **Éléments** (à partir de la 6ᵉ pièce : eau 10 %, feu 7 %), annoncés à leur arrivée :
+- **Éléments** (à partir de la 6ᵉ pièce : eau 10 %, feu 7 %, **au moins 3 pièces de sable
+  entre deux éléments**, jamais deux de suite), annoncés à leur arrivée et **reconnaissables
+  dans l'aperçu** à leur motif (anneau pour l'eau, triangle pour le feu) :
   - **eau** : ses grains coulent aussi sur les côtés, puis se figent au bout d'environ 2 s
-    dans la couleur d'un grain voisin (au hasard s'il n'y en a pas) ;
-  - **feu** : au contact d'un grain de sable, il **consume toute la zone de cette couleur**
-    qui le touche (1 point par grain) et s'éteint ; sans contact, il s'éteint seul après
-    environ 3,5 s ;
+    dans la **couleur la plus présente parmi ses 8 voisins** (celle du dessous en cas
+    d'égalité, au hasard s'il n'y en a aucune). **L'eau éteint le feu** : les deux
+    disparaissent dans un nuage de vapeur ;
+  - **feu** : un feu **se vise**. Pendant la chute, la zone qu'il brûlerait **scintille de
+    flammes** sous la pièce. Posé sur du sable, il consume aussitôt la zone d'une couleur
+    qu'il touche le plus (1 500 grains au plus, les plus proches d'abord), pour **la moitié
+    des points** d'un effacement (1 point pour 2 grains) : il aide, il ne remplace jamais
+    le fait de relier les murs. Tombé sans toucher de sable, il brûle la première zone qu'il
+    touche puis s'éteint, ou s'éteint seul après environ 3,5 s ;
   - **vent** : un coup de vent toutes les 20 à 40 s, **annoncé 3 s avant** avec sa direction,
-    souffle 2,5 s et pousse les grains d'un côté (traînées à l'écran, rafale sonore).
+    souffle 2,5 s. Il ne soulève que les **grains libres en surface**, d'**une case au plus**
+    par rafale ; les rafales **alternent de sens** et **se taisent** quand le sable approche
+    du haut (moins de 3 rangées) : le vent ne décide jamais d'une partie.
+- **Choix fondés sur les jeux du genre** : aucun jeu de sable publié ne propose d'éléments
+  en partie classée (Sandtrix, le plus connu, les réserve à un bac à sable) ; ses joueurs
+  reprochent surtout un hasard mal annoncé (couleur suivante peu lisible). D'où l'annonce
+  dans l'aperçu, le feu visé et l'espacement des éléments. Le feu qui consume toute une
+  couleur s'inspire du « joyau magique » de Columns, rare et accepté comme une récompense ;
+  l'eau qui éteint le feu suit les simulateurs de sable (Powder Toy, Sandspiel, Noita).
 - **Textures par couleur** (lisibles par les daltoniens) : damier, rayures horizontales,
   rayures verticales, points ; l'eau miroite, le feu vacille.
 - **Effets** : poussière à la pose, paillettes de la couleur effacée, braises du feu, nuage
@@ -245,23 +271,42 @@ Règles détaillées :
 
 #### Famille Placement
 
-- **Mosaïque** : grille de **8 × 8**, sans gravité. Trois pièces (formes de 1 à 9 cases,
-  les petites plus fréquentes) sont proposées ; le joueur les pose dans l'ordre qu'il veut.
+- **Mosaïque** : grille de **8 × 8**, sans gravité. Trois pièces sont proposées ; le joueur
+  les pose dans l'ordre qu'il veut, **sans les tourner** (chaque orientation est une pièce).
   Toute ligne ou colonne complète s'efface (une case à un croisement compte une fois). Trois
   nouvelles pièces arrivent quand les trois sont posées.
-- **Points** : 1 par case posée ; 10 par case effacée, multiplié par le nombre de lignes et
-  colonnes effacées d'un coup ; **série** : +50 × (série − 1) pour les effacements
-  consécutifs ; **grille nette** (plateau vide après un effacement) : +300.
-- **Jokers**, gagnés en effaçant **au moins 2 lignes d'un coup** ou à **chaque troisième
-  effacement d'une série**, 3 emplacements au plus, **jamais payants** :
-  - **Rotation** : tourner d'un quart de tour une pièce proposée ;
-  - **Relance** : remplacer les trois pièces proposées ;
-  - **Bombe** : effacer un carré de 3 × 3 (zone surlignée avant de la lancer) ;
-  - **Retour** : annuler la dernière pose. Il rend l'état d'avant la pose, jokers compris :
-    un joker gagné par la pose annulée est perdu (aucune boucle « poser, gagner, annuler ») ;
-  - **Cube** : une pièce d'une seule case dans un emplacement bonus, à poser où l'on veut.
+- **Pièces** (de 1 à 9 cases ; poids par orientation) : barres de 2 et de 3 (3), petit coin
+  de 3 cases (2), carré 2 × 2 (4), cube (2), barres de 4 (2) et de 5 (1), rectangles 2 × 3
+  (1,5), T et S / Z (1), L / J (0,75), grand coin de 5 cases (0,6), carré 3 × 3 (1,5). Les
+  petites pièces sauvent une partie, le 3 × 3 et le grand coin la mettent en danger.
+- **Distribution équitable** : chaque main peut être **posée en entier**, dans un certain
+  ordre, lignes effacées entre deux poses (recherche en profondeur, 4 000 essais au plus par
+  main ; moins de 1 ms mesuré). Douze mains tirées au hasard au plus ; sinon la main est
+  construite pièce par pièce sur un plateau simulé. Les pièces de 5 cases et plus gagnent
+  10 % de fréquence toutes les 15 mains (deux fois plus au plus) ; au-delà de 40 cases
+  occupées, les pièces de 3 cases ou moins sont deux fois plus fréquentes.
+- **Points** : 1 par case posée ; lignes et colonnes effacées d'un coup : 1 → 10, 2 → 30,
+  3 → 60, 4 → 100, 5 → 150, puis +60 par ligne ; **combo** : chaque pose qui efface ajoute
+  1 au combo, qui multiplie ces points par 1 + 0,25 × (combo − 1), × 3 au plus ; le combo
+  **survit à deux poses sans effacement** et retombe à la troisième (une main) ; **grille
+  nette** (plateau vide après un effacement) : +300, hors combo.
+- **Jokers**, **jamais payants**, 2 de chaque au plus, gagnés selon l'exploit — plus il est
+  grand, plus le joker est fort ; chaque partie commence avec un **Retour** :
+  - **Rotation** (2 lignes d'un coup) : tourner d'un quart de tour une pièce proposée ;
+  - **Cube** (3 lignes d'un coup) : une pièce d'une seule case dans un emplacement bonus ;
+  - **Bombe** (4 lignes ou plus d'un coup, ou combo de 6) : effacer un carré de 3 × 3 (zone
+    surlignée avant de la lancer) ;
+  - **Relance** (toutes les 25 lignes) : remplacer les trois pièces proposées ;
+  - **Retour** (grille nette, ou toutes les 10 mains posées) : annuler la dernière pose,
+    une seule fois. Il rend l'état d'avant la pose, jokers compris : un joker gagné par la
+    pose annulée est perdu, et l'usage d'un autre joker ne s'annule pas.
 - **Fin de partie** quand aucune pièce ne rentre **et** qu'aucun joker détenu ne peut
   débloquer la situation (une Bombe ou une Relance gardent la partie en vie).
+- **Choix fondés sur les jeux du genre** (Block Blast, 1010!, Woodoku, Blockudoku) : le
+  reproche le plus fréquent est la **main impossible**, d'où la distribution équitable ;
+  le barème croissant et le combo qui tolère une main sans effacement suivent les jeux du
+  genre (leurs barèmes exacts ne sont pas publiés). La barre des jokers les regroupe par
+  type, avec le nombre détenu.
 - **Aide au jeu** : pendant qu'on vise, l'aperçu montre la pièce à sa place (ou un contour
   rouge si elle ne rentre pas) et **les lignes et colonnes qui vont s'effacer s'illuminent**.
   Une pièce qui ne rentre nulle part est grisée dans la main.
@@ -916,6 +961,10 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 
 - Classement du défi du jour (nécessite un service distant et une politique anti-triche).
 - Duel en ligne (envoi de rangées à l'adversaire).
+- IA du duel au niveau adaptatif (±0,1 pièce par seconde après chaque victoire ou défaite,
+  niveau toujours affiché).
+- Sable : une bombe de sable (effacement d'un rayon d'une case et demie), seul élément
+  éprouvé par les jeux mobiles du genre.
 - Prise en charge de la manette.
 - Application installable (PWA).
 
@@ -935,3 +984,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.10    | 12/10/2026 | Lot 7 : règles complètes de la Mosaïque et de ses jokers (§ 3.2), famille Placement et socle de couleurs partagé (§ 5.11).                               |
 | 0.11    | 12/10/2026 | Lot 8 : règles complètes du Sable et de ses éléments (§ 3.2), famille Sable (§ 5.12).                                                                    |
 | 0.12    | 12/10/2026 | Lot 9 : règles et caméra de la Tour (§ 3.2), famille Volume (§ 5.13), séparation du rendu et des règles (§ 5.14).                                        |
+| 0.13    | 12/10/2026 | Règles des éléments du Sable, de la Mosaïque et cinq niveaux d'IA, fondés sur une recherche des jeux du genre (§ 3.2).                                   |

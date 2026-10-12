@@ -10,15 +10,27 @@ export type MosaicOverReason = 'noMoves' | 'timeUp';
 /** The three pieces of the hand, and the extra slot of the cube joker. */
 export type SlotId = 0 | 1 | 2 | 'bonus';
 
-export const HAND_SIZE = 3;
-export const MAX_JOKERS = 3;
+export { HAND_SIZE } from './Dealer';
 export const POINTS_PER_TILE = 1;
-export const POINTS_PER_CLEARED_TILE = 10;
-export const STREAK_BONUS = 50;
+/** Points of a clear by lines at once: 1 → 10, 2 → 30, 3 → 60, 4 → 100, 5 → 150, then +60 each. */
+export const linePoints = (lines: number): number =>
+  lines <= 0 ? 0 : lines <= 5 ? [0, 10, 30, 60, 100, 150][lines]! : 210 + 60 * (lines - 6);
+/** Each clear in a combo adds a quarter to the line points, up to three times. */
+export const COMBO_STEP = 0.25;
+export const MAX_COMBO_MULTIPLIER = 3;
+/** The combo ends after this many placements in a row without a clear (a hand's worth). */
+export const COMBO_GRACE = 3;
 export const PERFECT_BONUS = 300;
-/** A joker is earned for this many lines at once, or every third clear in a row. */
-export const JOKER_LINES = 2;
-export const JOKER_STREAK = 3;
+/** At most this many jokers of each kind. */
+export const MAX_PER_JOKER = 2;
+/** A reroll every this many lines; an undo every this many hands placed in full. */
+export const REROLL_EVERY_LINES = 25;
+export const UNDO_EVERY_HANDS = 10;
+/** A bomb when the combo reaches this. */
+export const BOMB_COMBO = 6;
+
+export const comboMultiplier = (combo: number): number =>
+  Math.min(MAX_COMBO_MULTIPLIER, 1 + COMBO_STEP * Math.max(0, combo - 1));
 
 export interface MosaicEventMap {
   state: { readonly state: MosaicState };
@@ -49,6 +61,8 @@ interface Snapshot {
   readonly score: number;
   readonly lines: number;
   readonly streak: number;
+  readonly misses: number;
+  readonly handsPlayed: number;
   readonly jokers: readonly JokerId[];
 }
 
@@ -62,6 +76,9 @@ export interface MosaicOptions {
  * A game of Mosaic: place the offered pieces on an 8 × 8 board; full rows and
  * columns clear; three new pieces come once the three are placed. Clearing
  * well earns jokers. The game ends when no piece fits and no joker can help.
+ *
+ * Combo: each placement that clears adds one; it survives up to two
+ * placements without a clear and multiplies the line points.
  */
 export class MosaicGame {
   readonly grid: Grid;
@@ -71,7 +88,8 @@ export class MosaicGame {
   private readonly timeLimitMs: number | null;
   private hand: (OfferedPiece | null)[] = [null, null, null];
   private bonus: OfferedPiece | null = null;
-  private inventory: JokerId[] = [];
+  /** Every game starts with one undo: a first mistake is forgiven. */
+  private inventory: JokerId[] = ['undo'];
   private history: Snapshot | null = null;
   private _state: MosaicState = 'ready';
   private _overReason: MosaicOverReason | null = null;
@@ -79,9 +97,12 @@ export class MosaicGame {
   private _lines = 0;
   private _streak = 0;
   private _bestStreak = 0;
+  /** Placements in a row without a clear. */
+  private misses = 0;
+  private handsPlayed = 0;
   private _elapsedMs = 0;
 
-  constructor(private readonly options: MosaicOptions) {
+  constructor(options: MosaicOptions) {
     this.grid = options.grid ?? new Grid();
     this.dealer = new Dealer(options.random);
     this.timeLimitMs = options.timeLimitMs ?? null;
@@ -186,7 +207,11 @@ export class MosaicGame {
     this.events.emit('place', { piece, cells });
     this.resolveLines();
 
-    if (this.hand.every((held) => held === null)) this.dealHand();
+    if (this.hand.every((held) => held === null)) {
+      this.handsPlayed++;
+      if (this.handsPlayed % UNDO_EVERY_HANDS === 0) this.earnJoker('undo');
+      this.dealHand();
+    }
     this.checkMoves();
     return true;
   }
@@ -237,6 +262,8 @@ export class MosaicGame {
     this._score = snapshot.score;
     this._lines = snapshot.lines;
     this._streak = snapshot.streak;
+    this.misses = snapshot.misses;
+    this.handsPlayed = snapshot.handsPlayed;
     this.inventory = [...snapshot.jokers];
     this.history = null;
     this.events.emit('undo', {});
@@ -253,34 +280,44 @@ export class MosaicGame {
     const lines = this.grid.fullLines();
     const count = lines.rows.length + lines.columns.length;
     if (count === 0) {
-      this._streak = 0;
+      if (++this.misses >= COMBO_GRACE) this._streak = 0;
       return;
     }
     const removed = this.grid.clearLines(lines);
+    this.misses = 0;
     this._streak++;
     this._bestStreak = Math.max(this._bestStreak, this._streak);
-    const points =
-      removed.length * POINTS_PER_CLEARED_TILE * count + STREAK_BONUS * (this._streak - 1);
+    const points = Math.round(linePoints(count) * comboMultiplier(this._streak));
+    const linesBefore = this._lines;
     this._score += points;
     this._lines += count;
     this.events.emit('clear', { lines: count, ...lines, removed, points, streak: this._streak });
 
-    if (this.grid.isEmpty()) {
+    const perfect = this.grid.isEmpty();
+    if (perfect) {
       this._score += PERFECT_BONUS;
       this.events.emit('perfect', { points: PERFECT_BONUS });
     }
-    if (count >= JOKER_LINES || this._streak % JOKER_STREAK === 0) this.earnJoker();
+    // Each feat earns its own joker: the bigger the feat, the stronger the joker.
+    if (count === 2) this.earnJoker('rotate');
+    else if (count === 3) this.earnJoker('cube');
+    else if (count >= 4) this.earnJoker('bomb');
+    if (this._streak === BOMB_COMBO) this.earnJoker('bomb');
+    if (Math.floor(this._lines / REROLL_EVERY_LINES) > Math.floor(linesBefore / REROLL_EVERY_LINES))
+      this.earnJoker('reroll');
+    if (perfect) this.earnJoker('undo');
   }
 
-  private earnJoker(): void {
-    if (this.inventory.length >= MAX_JOKERS) return;
-    const joker = JOKER_IDS[this.options.random.nextInt(JOKER_IDS.length)]!;
+  private earnJoker(joker: JokerId): void {
+    if (this.inventory.filter((held) => held === joker).length >= MAX_PER_JOKER) return;
+    // Kept in a fixed order, so that the bar never reshuffles.
     this.inventory.push(joker);
+    this.inventory.sort((a, b) => JOKER_IDS.indexOf(a) - JOKER_IDS.indexOf(b));
     this.events.emit('jokerGained', { joker });
   }
 
   private dealHand(): void {
-    this.hand = Array.from({ length: HAND_SIZE }, () => this.dealer.deal());
+    this.hand = this.dealer.hand(this.grid, this.handsPlayed);
     this.events.emit('deal', { hand: [...this.hand] });
   }
 
@@ -310,6 +347,8 @@ export class MosaicGame {
       score: this._score,
       lines: this._lines,
       streak: this._streak,
+      misses: this.misses,
+      handsPlayed: this.handsPlayed,
       jokers: [...this.inventory],
     };
   }

@@ -12,7 +12,7 @@ import type { OfferedPiece } from '../engine/Dealer';
 import type { SlotId } from '../engine/MosaicGame';
 import { MosaicEffects } from '../fx/MosaicEffects';
 import { MosaicSoundscape } from '../fx/MosaicSoundscape';
-import { JOKERS, type JokerId } from '../jokers/Joker';
+import { JOKER_IDS, JOKERS, type JokerId } from '../jokers/Joker';
 import { MosaicController, type Preview } from '../MosaicController';
 import { PlacementSession } from '../PlacementSession';
 import { MosaicRenderer } from '../render/MosaicRenderer';
@@ -87,6 +87,15 @@ const refresh = () => {
 const detachRefresh = (
   ['deal', 'place', 'jokerGained', 'jokerUsed', 'turn', 'undo', 'bomb'] as const
 ).map((type) => session.onGame(type, refresh));
+
+/** One button per kind of joker, with how many are held; it uses the first of them. */
+const jokerGroups = computed(() =>
+  JOKER_IDS.filter((id) => jokers.value.includes(id)).map((id) => ({
+    id,
+    index: jokers.value.indexOf(id),
+    count: jokers.value.filter((held) => held === id).length,
+  })),
+);
 
 const prompt = computed(() => {
   const id = pending.value === null ? null : jokers.value[pending.value];
@@ -399,16 +408,19 @@ onBeforeUnmount(() => {
     <div ref="jokerBar" class="mosaic__jokers" role="group" :aria-label="t('mosaic.jokers')">
       <p v-if="jokers.length === 0" class="mosaic__no-joker">{{ t('mosaic.noJoker') }}</p>
       <button
-        v-for="(joker, index) in jokers"
-        :key="`${index}-${joker}`"
+        v-for="group in jokerGroups"
+        :key="group.id"
         type="button"
         class="joker"
-        :class="{ 'joker--pending': pending === index }"
-        :aria-pressed="pending === index"
-        @click="chooseJoker(index)"
+        :class="{ 'joker--pending': pending === group.index }"
+        :aria-pressed="pending === group.index"
+        @click="chooseJoker(group.index)"
       >
-        <AppIcon :name="JOKER_ICONS[joker]" :size="20" />
-        <span>{{ t(`jokers.${joker}`) }}</span>
+        <AppIcon :name="JOKER_ICONS[group.id]" :size="20" />
+        <span>{{ t(`jokers.${group.id}`) }}</span>
+        <span v-if="group.count > 1" class="joker__count">
+          {{ t('mosaic.jokerCount', { n: group.count }) }}
+        </span>
       </button>
     </div>
 
@@ -485,6 +497,11 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: var(--surface);
   font-weight: 700;
+}
+
+.joker__count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
 }
 
 .joker--pending {
