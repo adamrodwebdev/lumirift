@@ -85,7 +85,6 @@ const modes = computed(() =>
           </button>
         </li>
       </ul>
-      <p class="modes__soon">{{ t('home.comingSoon') }}</p>
     </section>
 
     <VariantDialog :mode="choosing" @choose="onVariant" @close="choosing = null" />
@@ -240,6 +239,9 @@ const modes = computed(() =>
 .mode--sand {
   --mode-color: var(--tone-9);
 }
+.mode--tower {
+  --mode-color: var(--tone-13);
+}
 
 .mode__name {
   font-family: var(--font-display);
@@ -264,10 +266,6 @@ const modes = computed(() =>
 .mode__best {
   color: var(--text);
   font-weight: 600;
-}
-
-.modes__soon {
-  color: var(--text-muted);
 }
 
 .footer {

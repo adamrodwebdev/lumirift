@@ -22,8 +22,7 @@
     "play": "Jouer",
     "modes": "Modes de jeu",
     "best": "Record : {value}",
-    "noBest": "Pas encore de record",
-    "comingSoon": "Bientôt : la Tour."
+    "noBest": "Pas encore de record"
   },
   "daily": {
     "title": "Défi du jour",
@@ -80,6 +79,10 @@
     "sand": {
       "name": "Sable",
       "pitch": "Les pièces se désagrègent en grains : reliez les deux murs d’une même couleur."
+    },
+    "tower": {
+      "name": "Tour",
+      "pitch": "Le puits s’enroule en cylindre de verre : une ligne fait le tour complet."
     }
   },
   "result": {
@@ -297,5 +300,10 @@
     "well": "Puits de sable",
     "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour faire tomber, ↑ ou X pour tourner, Ctrl pour tourner dans l’autre sens, Échap pour la pause. Une zone d’une seule couleur qui relie les deux murs s’efface.",
     "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour faire tomber. L’eau prend la couleur voisine, le feu brûle la couleur qu’il touche."
+  },
+  "tower": {
+    "well": "Tour de verre",
+    "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, Ctrl pour tourner dans l’autre sens, C pour la réserve, A et E (Q et E en QWERTY) pour faire pivoter la tour, Échap pour la pause. Une ligne est un anneau complet de 20 cases.",
+    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée, glissez à deux doigts pour faire pivoter la tour. La caméra suit la pièce."
   }
 }

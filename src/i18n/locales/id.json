@@ -22,8 +22,7 @@
     "play": "Main",
     "modes": "Mode permainan",
     "best": "Rekor: {value}",
-    "noBest": "Belum ada rekor",
-    "comingSoon": "Segera hadir: Menara."
+    "noBest": "Belum ada rekor"
   },
   "daily": {
     "title": "Tantangan Harian",
@@ -80,6 +79,10 @@
     "sand": {
       "name": "Pasir",
       "pitch": "Kepingan hancur menjadi butiran: hubungkan kedua dinding dengan satu warna."
+    },
+    "tower": {
+      "name": "Menara",
+      "pitch": "Sumur menggulung menjadi silinder kaca: satu baris mengelilingi seluruhnya."
     }
   },
   "result": {
@@ -297,5 +300,10 @@
     "well": "Sumur pasir",
     "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Ctrl untuk memutar ke arah lain, Esc untuk jeda. Area satu warna yang menghubungkan kedua dinding akan dihapus.",
     "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung. Air mengambil warna di sekitarnya, api membakar warna yang disentuhnya."
+  },
+  "tower": {
+    "well": "Menara kaca",
+    "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Ctrl untuk memutar ke arah lain, C untuk simpan, Q dan E (A dan E pada AZERTY) untuk memutar menara, Esc untuk jeda. Satu baris adalah cincin penuh 20 kotak.",
+    "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung, geser dengan dua jari untuk memutar menara. Kamera mengikuti kepingan."
   }
 }
