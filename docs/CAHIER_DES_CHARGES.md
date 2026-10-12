@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                              |
-| ------- | ---------- | ----------------------------------- |
-| 0.1     | 12/10/2026 | Cadrage : objectifs, périmètre, NFR |
+| Version | Date       | Statut                      |
+| ------- | ---------- | --------------------------- |
+| 0.2     | 12/10/2026 | Lot 1 livré : moteur de jeu |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -101,10 +101,13 @@ Règles détaillées :
 - **Marée** : une rangée de déchets (un seul trou) monte du fond toutes les 10 s au départ ;
   l'intervalle diminue de 0,5 s par rangée, jusqu'à 3 s. Chaque ligne effacée retarde la
   prochaine montée de 1 s. Score principal : temps de survie.
-- **Renversement** : le joueur gagne une **charge de renversement** toutes les 5 lignes
-  (3 au plus). Utiliser une charge retourne le puits tête en bas : chaque colonne de blocs
-  retombe vers le fond, ce qui comble des trous et peut provoquer des **lignes en cascade**,
-  comptées comme un combo. Animation désactivée si l'utilisateur réduit les animations.
+- **Renversement** : le joueur gagne une **charge de renversement** toutes les 10 lignes
+  (2 au plus, 1 au départ). Utiliser une charge retourne le puits tête en bas : chaque
+  colonne de blocs retombe vers le fond, ce qui **supprime tous les trous** et peut
+  provoquer des **lignes en cascade**, comptées comme un combo. Animation désactivée si
+  l'utilisateur réduit les animations.
+  _Équilibrage (v0.2)_ : l'essai du moteur montre que le renversement efface tous les trous
+  d'un coup ; une charge toutes les 5 lignes (3 au plus) le rendait trop puissant.
 - **Chroma** : chaque pièce reçoit l'une de 4 couleurs, indépendamment de sa forme. Une
   ligne effacée dont les 10 blocs sont de la même couleur est une **ligne pure** : son score
   est multiplié par 4.
@@ -142,8 +145,10 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
   build de production en profil mobile. Mesure automatisée : `npm run lighthouse`.
 - Budget : JavaScript initial < 100 Ko compressés, aucune police web (polices système),
   aucune requête tierce.
-- Rendu du puits sur `<canvas>` 2D, boucle `requestAnimationFrame`, aucune allocation par
-  image dans le moteur. 60 images/s visées sur téléphone d'entrée de gamme.
+- Rendu du puits sur `<canvas>` 2D, boucle `requestAnimationFrame`. Dans le moteur, les
+  tests de collision et le calcul de la pièce fantôme n'allouent rien (grille `Uint8Array`,
+  orientations précalculées, sondes par décalage). 60 images/s visées sur téléphone d'entrée
+  de gamme.
 
 ### 4.2 Responsive
 
@@ -205,10 +210,37 @@ Chrome Android). Cible de compilation ES2022.
   l'interface `GameMode` ; un registre les expose à l'interface.
 - **Dépendre d'abstractions** : horloge, aléatoire (`RandomSource` à graine), stockage
   (`KeyValueStorage`), partage (`ShareService`).
-- **Événements typés** : le moteur publie (`linesCleared`, `gameOver`…), l'interface
+- **Événements typés** : le moteur publie (`clear`, `levelUp`, `over`…), l'interface
   s'abonne (annonces, animations, sons).
 - Classes `final` dans l'esprit (non dérivées), champs `private` / `readonly` par défaut.
 - Vue sert à l'**affichage** : composants minces, logique réutilisable en composables.
+
+### 5.3 Moteur (livré au lot 1)
+
+```
+src/engine/
+  core/     Emitter (événements typés), Random (RandomSource, SeededRandom à graine)
+  pieces/   PieceType et Tone, Shapes (orientations SRS, décalages muraux), Piece, Bag
+  board/    Board : grille, collisions, lignes (pureté), déchets, renversement
+  rules/    Scoring, GravityCurve
+  game/     Game (partie), GameEvents
+  modes/    GameMode (contrat), AbstractMode (comportement par défaut), ClassicMode
+```
+
+- `Piece` est un **objet valeur immuable** : un déplacement crée une nouvelle pièce, gardée
+  seulement si le puits l'accepte.
+- Le puits stocke des **tons** (`Tone`), jamais des couleurs : le rendu associe chaque ton
+  à un jeton CSS du thème.
+- `Game` expose des **méthodes d'intention** pour le joueur (`moveLeft`, `rotate`,
+  `hardDrop`, `hold`, `useAbility`) et des **points d'extension** pour les modes
+  (`raiseGarbage`, `flipWell`, `finish`). Un mode ne modifie jamais la grille directement.
+- Contrat `GameMode` : graine (`createRandom`), couleur d'une pièce (`toneFor`),
+  abonnement (`attach`), évolution dans le temps (`update`), capacité spéciale
+  (`useAbility`), indicateurs du HUD (`indicators`), valeur classée (`resultValue`).
+  `AbstractMode` fournit les comportements par défaut : un mode ne surcharge que sa
+  mécanique propre.
+- Délai de verrouillage : il démarre à l'image qui **suit** l'atterrissage, jamais pendant
+  l'image où la pièce touche le sol.
 
 ## 6. Qualité et tests
 
@@ -237,14 +269,14 @@ Chrome Android). Cible de compilation ES2022.
 
 ## 9. Lots et planning
 
-| Lot | Contenu                                               | Statut   |
-| --- | ----------------------------------------------------- | -------- |
-| 0   | Cadrage, outillage, cahier des charges                | En cours |
-| 1   | Moteur : puits, pièces, rotation, sac, score, gravité | À faire  |
-| 2   | Modes de jeu (stratégies)                             | À faire  |
-| 3   | Interface Vue, rendu canvas, clavier et tactile, i18n | À faire  |
-| 4   | Thèmes, accessibilité, SEO, mesure Lighthouse         | À faire  |
-| 5   | Tests de bout en bout, documentation, version 1.0.0   | À faire  |
+| Lot | Contenu                                               | Statut  |
+| --- | ----------------------------------------------------- | ------- |
+| 0   | Cadrage, outillage, cahier des charges                | Livré   |
+| 1   | Moteur : puits, pièces, rotation, sac, score, gravité | Livré   |
+| 2   | Modes de jeu (stratégies)                             | À faire |
+| 3   | Interface Vue, rendu canvas, clavier et tactile, i18n | À faire |
+| 4   | Thèmes, accessibilité, SEO, mesure Lighthouse         | À faire |
+| 5   | Tests de bout en bout, documentation, version 1.0.0   | À faire |
 
 ## 10. Hors périmètre (v1)
 
@@ -259,6 +291,7 @@ Comptes et classements en ligne, multijoueur, manette, musique, monétisation. V
 
 ## 12. Journal des versions du document
 
-| Version | Date       | Changements                        |
-| ------- | ---------- | ---------------------------------- |
-| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0. |
+| Version | Date       | Changements                                                                                         |
+| ------- | ---------- | --------------------------------------------------------------------------------------------------- |
+| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                  |
+| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations. |
