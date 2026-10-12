@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                       |
-| ------- | ---------- | ---------------------------- |
-| 0.5     | 12/10/2026 | Direction artistique validée |
+| Version | Date       | Statut                        |
+| ------- | ---------- | ----------------------------- |
+| 0.6     | 12/10/2026 | Lot 3 livré : version jouable |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -344,7 +344,8 @@ Tout ce qui peut se vendre ou se gagner reste **cosmétique** : aucun avantage d
 ### 4.1 Performance et Lighthouse
 
 - **Lighthouse ≥ 95** en Performance, Accessibilité, Bonnes pratiques et SEO, mesuré sur le
-  build de production en profil mobile. Mesure automatisée : `npm run lighthouse`.
+  build de production en profil mobile. Mesure automatisée : `npm run build` puis
+  `npm run lighthouse` (ajouter `-- --desktop` pour le profil bureau). Résultats : § 5.7.
 - Budget : JavaScript initial < 100 Ko compressés, aucune police web (polices système),
   aucune requête tierce. Chaque famille de jeux (et l'IA du Duel, et le synthétiseur du
   Rythme) est un **module chargé à la demande** : l'accueil ne charge que le nécessaire.
@@ -511,11 +512,75 @@ src/
 - `ModeCatalog` charge la famille par `import()` : le module Chute est un chunk séparé du
   build, téléchargé au premier lancement d'un de ses modes.
 
+### 5.6 Interface (livrée au lot 3)
+
+```
+src/
+  main.ts, App.vue       Création des services, i18n, écran courant (accueil ou partie)
+  app/                   AppServices (conteneur injecté), FrameClock (boucle), useFormat (Intl)
+  services/              KeyValueStorage (navigateur + repli mémoire), SettingsService,
+                         ThemeController, ScoreBoard, ShareService
+  i18n/                  locales.ts (langues, détection), index.ts (instance), locales/*.json
+  ui/                    stages.ts, components/ (en-tête, réglages, HUD, pause, fin), screens/
+  families/falling/
+    render/              TonePalette (jetons CSS), CrystalSprites, FallingRenderer, PieceRenderer
+    input/               FallingInput (clavier et boutons, répétition), WellGestures (gestes)
+    ui/                  FallingStage, PiecePreview, TouchControls
+```
+
+- **Écran de jeu générique** (`GameScreen`) : il crée la session par le registre, fait
+  tourner la boucle, gère pause, reprise, fin de partie, records, partage et annonces. Le
+  **plateau** propre à chaque famille (`FallingStage`) est choisi par `stageFor(famille)` et
+  chargé avec elle ; il reçoit la session, l'horloge, l'état actif et la pièce fantôme.
+- **Une seule boucle** (`FrameClock`) : la simulation avance d'abord, puis la famille traite
+  la répétition des touches et dessine. Un pas est plafonné à 100 ms : après un blocage, le
+  jeu ralentit au lieu de sauter.
+- **Rendu Cristal** : chaque couleur est dessinée une fois en sprite facetté (quatre biseaux
+  éclairés en haut à gauche, reflet, motif gravé), à la taille exacte d'une case en pixels de
+  l'écran ; une image coûte alors un `drawImage` par bloc. Les couleurs viennent des jetons
+  CSS : changer de thème relit la palette et redessine les sprites.
+- **Motifs gravés** par couleur (point, barre, triangle, anneau, croix…), les quatre plus
+  distincts réservés aux couleurs de Chroma : la couleur ne porte jamais seule l'information.
+- **Commandes** : les appareils ne signalent que des **actions** (`left`, `hardDrop`…) ;
+  `FallingInput` les traduit en commandes et gère seul la répétition (170 ms, puis 50 ms).
+  Gestes sur le puits (`WellGestures`) : glisser d'une case par case, toucher pour tourner,
+  balayer vite vers le bas pour la chute instantanée, glisser lentement pour la chute douce.
+  Boutons tactiles affichés seulement sur écran tactile (`hover: none` et `pointer: coarse`).
+- **Pause automatique** quand l'onglet est masqué ou perd le focus ; mettre en pause relâche
+  la chute douce (une touche tenue ne fait pas tomber la pièce à la reprise).
+- **Thème sans flash** : un court script dans `index.html` pose `data-theme` avant le premier
+  affichage, à partir du réglage enregistré ou du système.
+- **Langue** : détectée au premier lancement (l'ancien code `in` vaut indonésien), changée à
+  chaud ; `lang`, titre et description de la page suivent.
+- **Records** arrondis (points ou millisecondes entiers), clés `mode` ou `daily:AAAAMMJJ`.
+
+### 5.7 Mesures du lot 3
+
+| Mesure (build de production)               | Mobile  | Bureau  |
+| ------------------------------------------ | ------- | ------- |
+| Lighthouse Performance                     | 100     | 100     |
+| Lighthouse Accessibilité                   | 100     | 100     |
+| Lighthouse Bonnes pratiques                | 100     | 100     |
+| Lighthouse SEO                             | 100     | 100     |
+| JavaScript initial (compressé)             | 54,5 Ko | 54,5 Ko |
+| Module de jeu (écran + famille, compressé) | 13,4 Ko | 13,4 Ko |
+
+- Lighthouse 13 ajoute une catégorie expérimentale, « Agentic Browsing » (50) : hors des
+  quatre catégories exigées, elle est affichée à titre indicatif par `npm run lighthouse`.
+- Sur ce poste, le Chromium de Playwright ne peut pas être lancé par Node (`spawn UNKNOWN`) ;
+  le script utilise le Chrome installé (variable `CHROME_PATH` pour en imposer un autre).
+- Vérifié dans le navigateur : 320, 375 et 853 px de large sans défilement horizontal,
+  boutons ≥ 44 px, thèmes clair et sombre à chaud, passage en français à chaud, pause,
+  fin de partie et record, commandes tactiles (Marée).
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
   lignes, sac de 7, score, chaque mode.
-- Test de parité des clés de traduction.
+- Test de parité des clés de traduction (fichiers lus bruts : le plugin i18n les compile à
+  l'import), et présence d'un libellé pour chaque mode, indicateur, annonce et fin de partie.
+- Tests des services (réglages, records, stockage, partage), des commandes (répétition,
+  gestes) et de l'horloge de jeu.
 - Tests de bout en bout Playwright en mobile (390 × 844) et bureau (1280 × 800).
 - `npm run verify` (lint, format, types, tests, build) doit passer avant chaque commit.
 
@@ -548,7 +613,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 0   | Cadrage, outillage, cahier des charges                                                                     | Livré     |
 | 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                | Livré     |
 | 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré     |
-| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | À faire   |
+| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré     |
 | 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | À faire   |
 | 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | À faire   |
 | 6   | Duel contre l'IA                                                                                           | À faire   |
@@ -583,3 +648,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9.                                                      |
 | 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5).                                                  |
 | 0.5     | 12/10/2026 | Direction artistique et son (§ 3.5), personnalisation commerciale (§ 3.6), distribution : démo portfolio et portails après la 1.0 (§ 3.7) ; lots 3 à 13. |
+| 0.6     | 12/10/2026 | Lot 3 : interface (§ 5.6), mesures Lighthouse et budget (§ 5.7), tests de l'interface (§ 6).                                                             |
