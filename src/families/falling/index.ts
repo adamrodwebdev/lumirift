@@ -17,12 +17,12 @@ import { RhythmMode } from './modes/RhythmMode';
 import { SilhouetteMode } from './modes/SilhouetteMode';
 import { TideMode } from './modes/TideMode';
 import { TiltMode } from './modes/TiltMode';
+import { LINE_CLEAR_DELAY_MS } from './rules/Timings';
 
 export { DuelSession } from './DuelSession';
 export { FallingSession, type FallingCommand, type FallingView } from './FallingSession';
 
-/** Pause after a line clear, long enough to see the row shatter and the stack fall. */
-export const LINE_CLEAR_DELAY_MS = 280;
+export { LINE_CLEAR_DELAY_MS } from './rules/Timings';
 
 type SoloModeId = Exclude<FallingModeId, 'duel'>;
 

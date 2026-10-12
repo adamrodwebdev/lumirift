@@ -1,6 +1,6 @@
 import type { RandomSource } from '@/core/Random';
 import type { Indicator, ResultKind } from '@/session/GameSession';
-import type { FallingModeId } from '@/session/ModeId';
+import type { EngineModeId } from '@/session/ModeId';
 import type { Game } from '../game/Game';
 import type { PieceType, Tone } from '../pieces/PieceType';
 
@@ -11,6 +11,8 @@ export type AbilityId = 'flip';
 export interface WellSize {
   readonly width: number;
   readonly height: number;
+  /** The last column touches the first one (the Tower's cylinder). */
+  readonly wraps?: boolean;
 }
 
 /**
@@ -19,7 +21,7 @@ export interface WellSize {
  * A new instance is created for every game, so modes can keep their own state.
  */
 export interface GameMode {
-  readonly id: FallingModeId;
+  readonly id: EngineModeId;
   readonly result: ResultKind;
   readonly well: WellSize;
   /** Full rows disappear (false: they stay, as in Silhouette). */
