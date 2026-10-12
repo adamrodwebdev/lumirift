@@ -295,7 +295,8 @@
     "pickPiece": "Touchez la pièce à tourner",
     "pickCell": "Touchez la case où lancer la bombe",
     "helpKeyboard": "Clavier : 1, 2, 3 pour choisir une pièce (4 pour le cube), flèches pour la placer, Entrée pour la poser, J pour les jokers, Échap pour annuler ou mettre en pause.",
-    "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case."
+    "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case.",
+    "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Puits de sable",

@@ -24,6 +24,8 @@ function setup(rows: string[] | null, shapes: string[]) {
   });
   const session = new PlacementSession('mosaic', game);
   session.start();
+  // Tests give their own jokers: drop the undo every game starts with.
+  (game as unknown as { inventory: JokerId[] }).inventory = [];
   const hand = (game as unknown as { hand: unknown[] }).hand;
   shapes.forEach((text, i) => (hand[i] = { id: 50 + i, shape: Shape.parse(text), tone: 2 }));
   const controller = new MosaicController(session.view, (command) => session.execute(command));
@@ -59,8 +61,8 @@ describe('PlacementSession', () => {
     const onClear = vi.fn();
     session.events.on('clear', onClear);
     expect(session.execute({ type: 'place', slot: 0, x: 7, y: 0 })).toBe(true);
-    expect(onClear).toHaveBeenCalledWith({ lines: 1, points: 80, combo: 0 });
-    expect(session.result()).toEqual({ modeId: 'mosaic', kind: 'score', value: 81 + 300 });
+    expect(onClear).toHaveBeenCalledWith({ lines: 1, points: 10, combo: 0 });
+    expect(session.result()).toEqual({ modeId: 'mosaic', kind: 'score', value: 11 + 300 });
   });
 
   it('announces jokers and clean boards', () => {
@@ -150,7 +152,7 @@ describe('MosaicEffects', () => {
     session.execute({ type: 'place', slot: 0, x: 7, y: 0 });
     expect(effects.pops).toHaveLength(1);
     expect(effects.cracking).toHaveLength(8);
-    expect(effects.popups[0]?.text).toBe('+80');
+    expect(effects.popups[0]?.text).toBe('+10');
     effects.update(BREAK_MS);
     expect(effects.cracking).toHaveLength(0);
     expect(effects.pool.count).toBeGreaterThan(8);

@@ -295,7 +295,8 @@
     "pickPiece": "Ketuk kepingan yang akan diputar",
     "pickCell": "Ketuk kotak untuk dibom",
     "helpKeyboard": "Keyboard: 1, 2, 3 untuk memilih kepingan (4 untuk kubus), panah untuk memindahkan, Enter untuk memasang, J untuk joker, Esc untuk membatalkan atau jeda.",
-    "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak."
+    "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak.",
+    "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Sumur pasir",

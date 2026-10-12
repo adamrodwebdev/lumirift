@@ -295,7 +295,8 @@
     "pickPiece": "Tap the piece to rotate",
     "pickCell": "Tap the cell to bomb",
     "helpKeyboard": "Keyboard: 1, 2, 3 to pick a piece (4 for the cube), arrows to move it, Enter to place it, J for the jokers, Esc to cancel or pause.",
-    "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell."
+    "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell.",
+    "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Sand well",
