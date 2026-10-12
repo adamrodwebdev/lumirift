@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                         |
-| ------- | ---------- | ------------------------------ |
-| 0.9     | 12/10/2026 | Lot 6 livré : duel contre l'IA |
+| Version | Date       | Statut                    |
+| ------- | ---------- | ------------------------- |
+| 0.10    | 12/10/2026 | Lot 7 livré : la Mosaïque |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -230,23 +230,36 @@ Règles détaillées :
 
 #### Famille Placement
 
-- **Mosaïque** : grille de **8 × 8**, sans gravité. Trois pièces (formes de 1 à 9 cases)
-  sont proposées ; le joueur les glisse et les dépose dans l'ordre qu'il veut. Toute ligne ou
-  colonne complète s'efface. Trois nouvelles pièces arrivent quand les trois sont posées.
-  Fin de partie quand aucune des pièces restantes ne rentre.
-- Points : 1 par case posée ; 10 par case effacée, multipliés par le nombre de lignes et
-  colonnes effacées d'un coup ; bonus de série pour les effacements consécutifs.
-- **Jokers**, gagnés par les combos (2 lignes ou colonnes ou plus d'un coup, ou 3
-  effacements de suite), 3 emplacements au plus, **jamais payants** :
-  - **Rotation** : tourner une pièce proposée (impossible dans les jeux du genre) ;
+- **Mosaïque** : grille de **8 × 8**, sans gravité. Trois pièces (formes de 1 à 9 cases,
+  les petites plus fréquentes) sont proposées ; le joueur les pose dans l'ordre qu'il veut.
+  Toute ligne ou colonne complète s'efface (une case à un croisement compte une fois). Trois
+  nouvelles pièces arrivent quand les trois sont posées.
+- **Points** : 1 par case posée ; 10 par case effacée, multiplié par le nombre de lignes et
+  colonnes effacées d'un coup ; **série** : +50 × (série − 1) pour les effacements
+  consécutifs ; **grille nette** (plateau vide après un effacement) : +300.
+- **Jokers**, gagnés en effaçant **au moins 2 lignes d'un coup** ou à **chaque troisième
+  effacement d'une série**, 3 emplacements au plus, **jamais payants** :
+  - **Rotation** : tourner d'un quart de tour une pièce proposée ;
   - **Relance** : remplacer les trois pièces proposées ;
-  - **Bombe** : effacer un carré de 3 × 3 ;
-  - **Retour** : annuler le dernier coup ;
-  - **Cube** : une pièce d'une seule case, à poser où l'on veut.
-- Jeu complet au **clavier** : 1, 2, 3 pour choisir une pièce, flèches pour la placer, Entrée
-  pour la poser, J pour ouvrir les jokers.
+  - **Bombe** : effacer un carré de 3 × 3 (zone surlignée avant de la lancer) ;
+  - **Retour** : annuler la dernière pose. Il rend l'état d'avant la pose, jokers compris :
+    un joker gagné par la pose annulée est perdu (aucune boucle « poser, gagner, annuler ») ;
+  - **Cube** : une pièce d'une seule case dans un emplacement bonus, à poser où l'on veut.
+- **Fin de partie** quand aucune pièce ne rentre **et** qu'aucun joker détenu ne peut
+  débloquer la situation (une Bombe ou une Relance gardent la partie en vie).
+- **Aide au jeu** : pendant qu'on vise, l'aperçu montre la pièce à sa place (ou un contour
+  rouge si elle ne rentre pas) et **les lignes et colonnes qui vont s'effacer s'illuminent**.
+  Une pièce qui ne rentre nulle part est grisée dans la main.
+- **Commandes** : glisser-déposer au doigt (la pièce flotte au-dessus du doigt) ou à la
+  souris ; toucher une pièce puis une case ; clavier complet (1, 2, 3, 4 pour le cube, flèches,
+  Entrée, J pour les jokers, Échap). La pause affiche l'aide propre à la famille.
+- **Matière : céramique émaillée** : carreaux arrondis au reflet brillant et aux fines
+  craquelures, motif gravé par couleur ; posés, ils rebondissent ; effacés, ils sautent, se
+  fendent puis éclatent en tessons et éclats de terre ; la bombe pulvérise sa zone ; sons de
+  céramique (pose, bris plus grave que le verre, bombe, relance, retour).
 - Mécanique libre de droits (genre partagé par de nombreux jeux) ; ni le nom ni l'apparence
-  d'un jeu existant ne sont repris.
+  d'un jeu existant ne sont repris. La Mosaïque peut être le mode du **défi du jour**
+  (deux minutes).
 
 #### Famille Volume
 
@@ -724,6 +737,36 @@ src/families/falling/
 - `createFallingSession` renvoie une session générique (solo ou duel) ; `createSoloSession`
   reste disponible, typée, pour une partie seule.
 
+### 5.11 Famille Placement (livrée au lot 7)
+
+```
+src/core/Tone, src/render/TonePalette, src/render/motifs
+                      Socle de couleurs partagé (sorti de la famille Chute pour l'occasion)
+src/families/placement/
+  engine/Shape        Forme immuable (rotation, clé), bibliothèque pondérée de 1 à 9 cases
+  engine/Grid         Grille 8 × 8 : pose, lignes et colonnes, zone de bombe, aperçu
+  engine/Dealer       Distribution pondérée des pièces et des glaçures
+  engine/MosaicGame   Partie : main, pose, séries, jokers, retour, fin de partie
+  jokers/Joker        Contrat Joker (cible, canUse, use, canHelp) et cinq stratégies
+  PlacementSession    Adaptation au contrat GameSession, commandes typées
+  MosaicController    Sélection, curseur clavier, joker en attente : sans DOM, testable
+  render/             CeramicSprites, MosaicRenderer
+  fx/                 MosaicEffects (rebonds, fissures, tessons), MosaicSoundscape
+  ui/                 MosaicStage (plateau, main, jokers, glisser-déposer), HandPiece
+```
+
+- **Jokers en stratégies** : chacun déclare sa cible (aucune, une pièce, une case), sait s'il
+  est utilisable et s'il peut **débloquer** une partie ; la partie n'a aucun `switch` sur les
+  jokers. En ajouter un ne touche ni la partie ni l'interface.
+- **Le contrôleur** centralise les choix entre deux coups ; le doigt, la souris et le clavier
+  passent tous par lui, donc se comportent pareil.
+- Le moteur de la Mosaïque est un module chargé à la demande (environ 3 Ko compressés,
+  plus 7,6 Ko pour son plateau) : l'accueil ne grossit pas.
+- Leçon retenue (deux fois : vignette du Duel, plateau de la Mosaïque) : un canvas mesure
+  300 × 150 px par défaut et peut élargir son conteneur avant le premier calcul ; tout
+  conteneur de canvas dimensionné par mesure reçoit `min-width: 0` et le canvas
+  `max-width: 100%`.
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
@@ -768,7 +811,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré     |
 | 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré     |
 | 6   | Duel contre l'IA                                                                                           | Livré     |
-| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | À faire   |
+| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré     |
 | 8   | Sable (grains) et ses éléments                                                                             | À faire   |
 | 9   | Volume : Tour (verre courbé)                                                                               | À faire   |
 | 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | À faire   |
@@ -803,3 +846,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.7     | 12/10/2026 | Lot 4 : effets réalisés et profils (§ 3.5), délai après effacement (§ 3.1), architecture des effets (§ 5.8), mesures (§ 5.7).                            |
 | 0.8     | 12/10/2026 | Lot 5 : règles détaillées de Fusion (seuil porté à 6), Bascule (sens corrigé), Silhouette, Rythme ; architecture des modes avancés (§ 5.9).              |
 | 0.9     | 12/10/2026 | Lot 6 : règles et niveaux du Duel (§ 3.2), architecture du duel et de l'IA (§ 5.10).                                                                     |
+| 0.10    | 12/10/2026 | Lot 7 : règles complètes de la Mosaïque et de ses jokers (§ 3.2), famille Placement et socle de couleurs partagé (§ 5.11).                               |
