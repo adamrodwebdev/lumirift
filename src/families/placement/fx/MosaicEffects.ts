@@ -196,7 +196,7 @@ export class MosaicEffects {
     }
     // A few white chips of the clay body.
     const chips = Math.round(3 * profile.particles);
-    const chip = this.color('rgb(245 238 225)');
+    const chip = this.color(palette.effects.clay);
     for (let i = 0; i < chips; i++) {
       this.pool.spawn(
         ParticleKind.Dust,
