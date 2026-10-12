@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                      |
-| ------- | ---------- | --------------------------- |
-| 0.2     | 12/10/2026 | Lot 1 livré : moteur de jeu |
+| Version | Date       | Statut                        |
+| ------- | ---------- | ----------------------------- |
+| 0.3     | 12/10/2026 | Périmètre des 14 modes validé |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -19,8 +19,8 @@ Objectifs :
 
 1. **Prise en main immédiate** : un joueur qui connaît le genre joue en moins de 5 secondes,
    en un clic.
-2. **Rejouabilité** : cinq modes aux objectifs différents, dont un **défi du jour** identique
-   pour tous les joueurs.
+2. **Rejouabilité** : quatorze modes en quatre familles de jeux (chute, sable, placement,
+   volume), dont un **défi du jour** identique pour tous les joueurs.
 3. **Viralité** : le résultat du défi du jour se partage en un geste (texte court + lien).
 4. **Qualité web exemplaire** : Lighthouse ≥ 95 dans les quatre catégories, sur mobile.
 5. **International dès le lancement** : français, anglais et indonésien.
@@ -45,10 +45,15 @@ forte de **légèreté** et de **jouabilité tactile**, qui profite à tous les 
 
 Différenciation :
 
-- **Modes à mécanique nouvelle** (renversement du puits, couleurs, marée) plutôt que de
-  simples variantes de vitesse.
-- **Défi du jour** à graine commune : même suite de pièces pour tous, résultat partageable
-  (boucle virale de type jeu quotidien).
+- **Modes à mécanique nouvelle** (renversement, miroir, bascule du puits, fusion des
+  couleurs, sable, tour cylindrique) plutôt que de simples variantes de vitesse.
+- **Plusieurs jeux sous une même marque** : le joueur venu pour la chute découvre le sable ou
+  la mosaïque sans quitter le site ; la mosaïque se distingue de ses concurrents par des
+  **jokers gagnés en jouant**, jamais vendus.
+- **Défi du jour** à graine commune : même mode et même suite de pièces pour tous, résultat
+  partageable (boucle virale de type jeu quotidien).
+- **Duel contre une IA** et **Silhouette** (énigmes) pour ceux qui cherchent un objectif
+  autre que le score.
 - **Aucun compte, aucun traceur, aucune bannière de cookies** : rien ne s'interpose entre le
   joueur et la partie.
 
@@ -84,20 +89,44 @@ Différenciation :
 
 ### 3.2 Modes de jeu
 
-| Mode             | Objectif                         | Mécanique nouvelle                                        |
-| ---------------- | -------------------------------- | --------------------------------------------------------- |
-| **Classique**    | Meilleur score, sans fin         | Référence du genre                                        |
-| **Défi du jour** | Meilleur score en 2 minutes      | Graine du jour commune à tous, résultat partageable       |
-| **Marée**        | Tenir le plus longtemps possible | Des rangées montent du fond, de plus en plus vite         |
-| **Renversement** | Meilleur score, sans fin         | Le joueur retourne le puits : la pile retombe, en cascade |
-| **Chroma**       | Meilleur score, sans fin         | Couleurs indépendantes des formes, lignes pures × 4       |
+Quatorze modes, répartis en **quatre familles** de jeux. Une famille partage un moteur ; un
+mode n'en change que la règle. Les règles communes du § 3.1 valent pour la famille **Chute**.
+
+- **Chute** (11 modes) : Classique, Défi du jour, Marée, Renversement, Chroma, Miroir,
+  Fusion, Bascule, Silhouette, Rythme, Duel.
+- **Sable** : Sable (les pièces se désagrègent en grains).
+- **Placement** : Mosaïque (grille sans gravité, jokers).
+- **Volume** : Tour (puits cylindrique en pseudo-3D).
+
+Noms des modes (FR / EN / ID) : Classique / Classic / Klasik · Défi du jour / Daily
+Challenge / Tantangan Harian · Marée / Tide / Pasang · Renversement / Flip / Terbalik ·
+Chroma · Miroir / Mirror / Cermin · Fusion / Fusion / Fusi · Bascule / Tilt / Miring ·
+Silhouette / Silhouette / Siluet · Rythme / Rhythm / Ritme · Duel · Sable / Sand / Pasir ·
+Mosaïque / Mosaic / Mozaik · Tour / Tower / Menara.
+
+#### Famille Chute
+
+| Mode             | Objectif                         | Mécanique nouvelle                                          |
+| ---------------- | -------------------------------- | ----------------------------------------------------------- |
+| **Classique**    | Meilleur score, sans fin         | Référence du genre                                          |
+| **Défi du jour** | Meilleur score en 2 minutes      | Graine et mode du jour communs à tous, résultat partageable |
+| **Marée**        | Tenir le plus longtemps possible | Des rangées montent du fond, de plus en plus vite           |
+| **Renversement** | Meilleur score, sans fin         | Le joueur retourne le puits : la pile retombe, en cascade   |
+| **Chroma**       | Meilleur score, sans fin         | Couleurs indépendantes des formes, lignes pures × 4         |
+| **Miroir**       | Meilleur score, sans fin         | Le puits se reflète gauche-droite toutes les 10 lignes      |
+| **Fusion**       | Meilleur score, sans fin         | 4 blocs de même couleur fusionnent, réactions en chaîne     |
+| **Bascule**      | Meilleur score, sans fin         | Le puits pivote d'un quart de tour toutes les 10 lignes     |
+| **Silhouette**   | Remplir une forme cible au mieux | Énigme : pas de lignes, une silhouette à combler            |
+| **Rythme**       | Meilleur score, sans fin         | Poser sa pièce sur le temps fait grimper un multiplicateur  |
+| **Duel**         | Faire déborder l'adversaire (IA) | Les lignes effacées envoient des rangées chez l'adversaire  |
 
 Règles détaillées :
 
-- **Défi du jour** : la graine est la date locale du joueur (AAAAMMJJ). Deux minutes de jeu,
-  niveau de départ 1. En fin de partie, le joueur partage un texte court (score, lignes, date,
-  lien) via le partage natif du téléphone ou, à défaut, le presse-papiers. Meilleur score
-  conservé par jour.
+- **Défi du jour** : la graine est la date locale du joueur (AAAAMMJJ). Elle choisit aussi le
+  **mode du jour** parmi les modes éligibles (Classique, Chroma, Miroir, Fusion, Rythme,
+  Sable, Mosaïque), annoncé sur l'accueil (« Aujourd'hui : Sable »). Deux minutes de jeu.
+  En fin de partie, le joueur partage un texte court (mode, score, date, lien) via le partage
+  natif du téléphone ou, à défaut, le presse-papiers. Meilleur score conservé par jour.
 - **Marée** : une rangée de déchets (un seul trou) monte du fond toutes les 10 s au départ ;
   l'intervalle diminue de 0,5 s par rangée, jusqu'à 3 s. Chaque ligne effacée retarde la
   prochaine montée de 1 s. Score principal : temps de survie.
@@ -111,6 +140,80 @@ Règles détaillées :
 - **Chroma** : chaque pièce reçoit l'une de 4 couleurs, indépendamment de sa forme. Une
   ligne effacée dont les 10 blocs sont de la même couleur est une **ligne pure** : son score
   est multiplié par 4.
+- **Miroir** : toutes les 10 lignes, le puits se reflète gauche-droite : la pile entière et
+  la pièce en cours (un S devient un Z, un J devient un L). Un compte à rebours de 3 s
+  prévient le joueur. Une ligne effacée dans les 5 s qui suivent le reflet compte **double**
+  (bonus réflexe). Les **commandes ne sont jamais inversées** : le défi vient du plateau, pas
+  des doigts (choix d'accessibilité).
+- **Fusion** : couleurs indépendantes des formes, comme Chroma. Après chaque verrouillage,
+  tout groupe d'au moins **4 blocs de même couleur** reliés par un côté disparaît ; les blocs
+  qui ne reposent plus sur rien retombent, ce qui peut former de nouveaux groupes : c'est
+  une **chaîne**. Chaque maillon multiplie les points (10 points par bloc × rang de la
+  chaîne × niveau). Les lignes complètes s'effacent aussi, normalement.
+- **Bascule** : puits **carré de 12 × 12**. Toutes les 10 lignes, le puits pivote d'un quart
+  de tour dans le sens horaire : l'ancien mur gauche devient le sol, et chaque colonne
+  retombe. Une animation montre la rotation (coupée si l'utilisateur réduit les
+  animations). Le sens de la rotation est annoncé 3 s avant.
+- **Silhouette** : une forme cible (cœur, chat, fusée…) est dessinée dans le puits. Aucune
+  ligne ne s'efface. Le joueur dispose d'un nombre limité de pièces (aire de la forme / 4,
+  plus 25 %). Score : +10 par case remplie dans la forme, −20 par bloc posé hors de la forme,
+  bonus de 1 000 pour une forme parfaite. Bibliothèque d'au moins 30 silhouettes (dessinées
+  en texte dans le code), dont une **silhouette du jour**.
+- **Rythme** : une pulsation musicale synthétisée (Web Audio, aucun fichier), 100 battements
+  par minute au niveau 1, plus 5 par niveau. Une pièce posée à ± 120 ms d'un temps augmente
+  le **groove** (multiplicateur × 1 à × 4) ; une pièce posée hors du temps le remet à × 1.
+  Un **métronome visuel** (pulsation du cadre du puits) rend le mode jouable sans le son.
+- **Duel** : le joueur affronte une IA qui joue dans un second puits (côte à côte sur grand
+  écran, en vignette sur mobile). Lignes envoyées : 2 lignes → 1 rangée, 3 → 2, 4 → 4, plus 1
+  par combo. Les rangées reçues attendent 1 s et peuvent être annulées en effaçant des
+  lignes. L'IA évalue chaque placement possible (hauteur, trous, irrégularité, lignes) ;
+  3 niveaux (Facile, Normal, Expert) jouent sur son temps de réflexion et ses erreurs
+  volontaires. Victoire quand l'adversaire déborde.
+
+#### Famille Sable
+
+- **Sable** : les pièces tombent et se manipulent comme d'habitude, puis se **désagrègent
+  en grains** au contact (6 × 6 grains par case, soit un puits de 60 × 120 grains). Chaque
+  grain tombe, puis glisse en diagonale s'il est bloqué.
+- Chaque pièce porte l'une de 4 couleurs. Une **zone de grains d'une même couleur, continue,
+  qui relie le mur gauche au mur droit** est effacée, même si elle serpente. Points : 1 par
+  grain effacé, multipliés par le nombre de zones effacées d'un coup.
+- **Éléments** (pour se démarquer des jeux de sable existants) : de temps en temps, une
+  pièce d'**eau** (ses grains s'infiltrent dans les creux puis se figent dans la couleur
+  voisine), une pièce de **feu** (consume la couleur qu'elle touche), et des coups de
+  **vent** annoncés qui poussent le sable d'un côté.
+- Chaque couleur a sa **texture de grain** propre, pour rester lisible par les daltoniens.
+- Fin de partie quand le sable atteint le haut du puits.
+
+#### Famille Placement
+
+- **Mosaïque** : grille de **8 × 8**, sans gravité. Trois pièces (formes de 1 à 9 cases)
+  sont proposées ; le joueur les glisse et les dépose dans l'ordre qu'il veut. Toute ligne ou
+  colonne complète s'efface. Trois nouvelles pièces arrivent quand les trois sont posées.
+  Fin de partie quand aucune des pièces restantes ne rentre.
+- Points : 1 par case posée ; 10 par case effacée, multipliés par le nombre de lignes et
+  colonnes effacées d'un coup ; bonus de série pour les effacements consécutifs.
+- **Jokers**, gagnés par les combos (2 lignes ou colonnes ou plus d'un coup, ou 3
+  effacements de suite), 3 emplacements au plus, **jamais payants** :
+  - **Rotation** : tourner une pièce proposée (impossible dans les jeux du genre) ;
+  - **Relance** : remplacer les trois pièces proposées ;
+  - **Bombe** : effacer un carré de 3 × 3 ;
+  - **Retour** : annuler le dernier coup ;
+  - **Cube** : une pièce d'une seule case, à poser où l'on veut.
+- Jeu complet au **clavier** : 1, 2, 3 pour choisir une pièce, flèches pour la placer, Entrée
+  pour la poser, J pour ouvrir les jokers.
+- Mécanique libre de droits (genre partagé par de nombreux jeux) ; ni le nom ni l'apparence
+  d'un jeu existant ne sont repris.
+
+#### Famille Volume
+
+- **Tour** : le puits s'enroule en **cylindre** de **20 colonnes** sur 16 rangées : la
+  colonne 19 touche la colonne 0. La caméra tourne autour de la tour pour garder la pièce de
+  face ; environ 10 colonnes sont visibles à la fois. Une ligne est un **anneau** complet de
+  20 cases. Logique 2D (le moteur Chute avec un bord qui boucle), rendu en pseudo-3D sur
+  canvas 2D (projection cylindrique, faces ombrées selon l'angle), sans bibliothèque 3D.
+- Commandes identiques à la famille Chute ; la caméra suit automatiquement, ou se tourne à la
+  main (A / E en AZERTY, Q / E en QWERTY, ou glisser à deux doigts).
 
 ### 3.3 Commandes
 
@@ -124,6 +227,10 @@ Règles détaillées :
 | Réserve           | C ou Maj                        | Bouton                           |
 | Renversement      | F                               | Bouton (mode Renversement)       |
 | Pause             | Échap ou P                      | Bouton                           |
+
+Famille Placement (Mosaïque) : glisser-déposer au doigt ou à la souris (la pièce s'affiche
+au-dessus du doigt pour rester visible) ; au clavier, 1 / 2 / 3 choisit une pièce, les
+flèches la déplacent, Entrée la pose, J ouvre les jokers, Échap annule.
 
 Les touches lettres se lisent par **position physique** (`KeyboardEvent.code`) : la même
 position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale : délai
@@ -144,7 +251,8 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
 - **Lighthouse ≥ 95** en Performance, Accessibilité, Bonnes pratiques et SEO, mesuré sur le
   build de production en profil mobile. Mesure automatisée : `npm run lighthouse`.
 - Budget : JavaScript initial < 100 Ko compressés, aucune police web (polices système),
-  aucune requête tierce.
+  aucune requête tierce. Chaque famille de jeux (et l'IA du Duel, et le synthétiseur du
+  Rythme) est un **module chargé à la demande** : l'accueil ne charge que le nécessaire.
 - Rendu du puits sur `<canvas>` 2D, boucle `requestAnimationFrame`. Dans le moteur, les
   tests de collision et le calcul de la pièce fantôme n'allouent rien (grille `Uint8Array`,
   orientations précalculées, sondes par décalage). 60 images/s visées sur téléphone d'entrée
@@ -242,6 +350,39 @@ src/engine/
 - Délai de verrouillage : il démarre à l'image qui **suit** l'atterrissage, jamais pendant
   l'image où la pièce touche le sol.
 
+### 5.4 Familles de jeux (décidé en v0.3)
+
+Avec le Sable, la Mosaïque et la Tour, Stackrift réunit plusieurs jeux. L'architecture passe
+à deux niveaux :
+
+1. **`GameSession`** : contrat commun à toutes les familles, le seul que connaît l'écran de
+   jeu. Il porte le cycle de vie (`start`, `pause`, `resume`, `update`), les intentions du
+   joueur sous forme de **commandes** (objets `Command` propres à chaque famille, traduites
+   depuis le clavier, le tactile ou la souris par un `InputMapper` de la famille), un
+   **modèle de rendu** lu par le `Renderer` de la famille, les indicateurs du HUD, le
+   résultat et les événements communs (`clear`, `over`…), pour les annonces et les meilleurs
+   scores.
+2. **Familles** : chacune fournit son moteur, son rendu et ses commandes, et ses modes sont
+   des stratégies de ce moteur.
+
+| Famille   | Moteur                                          | Rendu                          |
+| --------- | ----------------------------------------------- | ------------------------------ |
+| Chute     | `Game` + `GameMode` (lot 1), puits paramétrable | Canvas 2D, grille              |
+| Sable     | Automate cellulaire de grains, zones connexes   | Canvas 2D au pixel (ImageData) |
+| Placement | Grille 8 × 8 sans gravité, pièces, jokers       | Canvas 2D + glisser-déposer    |
+| Volume    | Moteur Chute avec bord qui boucle (cylindre)    | Canvas 2D, projection cylindre |
+
+- Un **registre des modes** décrit chaque mode (identifiant, famille, clé de traduction,
+  type de résultat, éligibilité au défi du jour) et **charge sa famille à la demande**
+  (`import()` dynamique) : un module par famille dans le build.
+- Les jokers de la Mosaïque sont des **stratégies** (`Joker` : `canUse`, `use`) ; les
+  éléments du Sable (eau, feu, vent) aussi. Ajouter un joker ou un élément ne touche pas le
+  moteur.
+- L'IA du Duel est un **joueur** qui envoie des commandes à sa propre `Game` : elle passe
+  par la même interface que le joueur humain, sans accès privilégié.
+- Le puits de la famille Chute devient **paramétrable** (largeur, hauteur, bord qui boucle)
+  pour la Bascule (12 × 12) et la Tour (20 colonnes en anneau).
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
@@ -260,7 +401,7 @@ src/engine/
 
 ## 8. Critères d'acceptation
 
-1. Les cinq modes sont jouables du début à la fin, au clavier et au tactile.
+1. Les quatorze modes sont jouables du début à la fin, au clavier et au tactile.
 2. Lighthouse ≥ 95 dans les quatre catégories (mobile, build de production).
 3. Aucun défilement horizontal de 320 à 1920 px ; le puits reste entièrement visible.
 4. Les trois langues sont complètes ; changer de langue ne recharge pas la page.
@@ -269,18 +410,28 @@ src/engine/
 
 ## 9. Lots et planning
 
-| Lot | Contenu                                               | Statut  |
-| --- | ----------------------------------------------------- | ------- |
-| 0   | Cadrage, outillage, cahier des charges                | Livré   |
-| 1   | Moteur : puits, pièces, rotation, sac, score, gravité | Livré   |
-| 2   | Modes de jeu (stratégies)                             | À faire |
-| 3   | Interface Vue, rendu canvas, clavier et tactile, i18n | À faire |
-| 4   | Thèmes, accessibilité, SEO, mesure Lighthouse         | À faire |
-| 5   | Tests de bout en bout, documentation, version 1.0.0   | À faire |
+Tous les modes sortent ensemble en **version 1.0** (décision du 12/10/2026). Les lots sont
+ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichisse.
+
+| Lot | Contenu                                                                     | Statut  |
+| --- | --------------------------------------------------------------------------- | ------- |
+| 0   | Cadrage, outillage, cahier des charges                                      | Livré   |
+| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                 | Livré   |
+| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir | À faire |
+| 3   | Interface Vue, rendu, clavier et tactile, i18n, thèmes, mesure Lighthouse   | À faire |
+| 4   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme (audio)  | À faire |
+| 5   | Duel contre l'IA                                                            | À faire |
+| 6   | Placement : Mosaïque et ses cinq jokers                                     | À faire |
+| 7   | Sable et ses éléments                                                       | À faire |
+| 8   | Volume : Tour                                                               | À faire |
+| 9   | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0    | À faire |
+
+Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 95.
 
 ## 10. Hors périmètre (v1)
 
-Comptes et classements en ligne, multijoueur, manette, musique, monétisation. Voir § 11.
+Comptes et classements en ligne, multijoueur en ligne, manette, musique d'ambiance (seul le
+Rythme a une pulsation), monétisation. Voir § 11.
 
 ## 11. Évolutions envisagées
 
@@ -295,3 +446,4 @@ Comptes et classements en ligne, multijoueur, manette, musique, monétisation. V
 | ------- | ---------- | --------------------------------------------------------------------------------------------------- |
 | 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                  |
 | 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations. |
+| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9. |
