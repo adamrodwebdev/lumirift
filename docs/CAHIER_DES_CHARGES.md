@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                         |
-| ------- | ---------- | ------------------------------ |
-| 0.4     | 12/10/2026 | Lot 2 livré : session, 5 modes |
+| Version | Date       | Statut                       |
+| ------- | ---------- | ---------------------------- |
+| 0.5     | 12/10/2026 | Direction artistique validée |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -54,7 +54,9 @@ Différenciation :
   partageable (boucle virale de type jeu quotidien).
 - **Duel contre une IA** et **Silhouette** (énigmes) pour ceux qui cherchent un objectif
   autre que le score.
-- **Aucun compte, aucun traceur, aucune bannière de cookies** : rien ne s'interpose entre le
+- **Une identité spectaculaire** : des blocs de matière qui se fissurent et volent en éclats
+  (§ 3.5), une matière par famille de jeux.
+- **Aucun compte, aucun traceur, aucune bannière de cookies** (sur notre site) : rien ne s'interpose entre le
   joueur et la partie.
 
 ### 2.3 Nom et propriété intellectuelle
@@ -252,8 +254,90 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
 - Langue (FR, EN, ID ; détection de la langue du navigateur au premier lancement).
 - Thème : système, clair ou sombre.
 - Pièce fantôme : oui / non.
+- Effets : complets / sobres / aucun ; secousse : oui / non ; vibrations : oui / non.
+- Volumes séparés des effets sonores et de l'ambiance ; coupure du son.
 - Meilleurs scores par mode, stockés **uniquement sur l'appareil** (`localStorage`, avec repli
   en mémoire si le stockage est indisponible). Aucune donnée ne quitte l'appareil.
+
+### 3.5 Direction artistique et son (décidé en v0.5)
+
+Stackrift est destiné à être monétisé sur des portails de jeux : il lui faut une identité
+**unique, vendeuse et spectaculaire**, reconnaissable sur une vignette comme dans une vidéo
+de dix secondes.
+
+**Concept : « la matière réagit ».** Chaque bloc est un objet, pas un carré de couleur : il
+a un poids, il cogne en tombant, il se fissure puis se brise. **La faille** (le _rift_ du nom)
+est la signature de la marque : dans le logo, dans les transitions entre écrans (fondu par
+fissure) et sur l'écran de fin de partie.
+
+**Une matière par famille de jeux :**
+
+| Famille   | Matière         | Destruction                                                             |
+| --------- | --------------- | ----------------------------------------------------------------------- |
+| Chute     | Cristal facetté | La ligne se fend, puis éclate en esquilles qui tournent et rebondissent |
+| Sable     | Grains          | Les blocs se désagrègent en grains (c'est la mécanique même)            |
+| Placement | Céramique       | Les carreaux sautent, se fendent et retombent en morceaux               |
+| Volume    | Verre courbé    | L'anneau éclate ; les reflets tournent avec la caméra                   |
+
+**Intensité : spectaculaire par défaut.** Effets de référence (prototype validé le
+12/10/2026) :
+
+- **Fissure** : la ligne complète se fend en 150 ms avant de rompre.
+- **Éclats physiques** : chaque bloc se brise en 4 à 8 esquilles qui tournent, retombent,
+  **rebondissent sur la pile** et sur le fond, puis s'estompent (1,3 à 2 s).
+- **Effondrement pondéré** : les rangées du dessus tombent et rebondissent légèrement au lieu
+  de se téléporter.
+- **Gradation** : plus de lignes d'un coup donne plus d'éclats, projetés plus haut. À 4 lignes
+  s'ajoutent une secousse et un court ralenti (120 ms). L'intensité augmente avec les combos.
+- **Sensations** : écrasement léger et poussière à l'impact, traînée de la chute instantanée,
+  points qui s'envolent vers le compteur, onde au changement de niveau.
+- **Fin de partie** : la pile entière se brise.
+- **Moments propres aux modes** : bascule 3D du puits (Renversement), reflet qui balaie la
+  surface (Miroir), surface d'eau qui monte (Marée), éclat en prisme d'une ligne pure (Chroma),
+  ondes de choc de maillon en maillon (Fusion).
+
+**Palette** : propre à Stackrift (terre cuite, sable, sauge, azur, mauve, rose…), déclinée par
+thème, volontairement éloignée des couleurs standard du genre. Chaque couleur porte un **motif
+gravé** dans ses facettes, pour rester lisible par les daltoniens.
+
+**Son : entièrement synthétisé** (Web Audio, aucun fichier, poids quasi nul). Déplacement,
+rotation, impact, verrouillage, fissure, bris (verre, grains, céramique selon la famille),
+effondrement, niveau, fin de partie. Les bris d'un combo montent sur une gamme : les combos
+« chantent ». Volumes séparés (effets, ambiance), coupure en un geste.
+
+**Vibrations** sur mobile (API Vibration, quand elle existe) : impact court, ligne, 4 lignes ;
+désactivables.
+
+**Garde-fous :**
+
+- Système de particules maison, **réservoir d'objets réutilisés** (pas d'allocation pendant le
+  jeu), plafond de particules et **qualité adaptative** (sous 55 images/s, moins d'éclats).
+- Les effets vivent dans les modules de jeu chargés à la demande : l'accueil reste léger.
+- Réglage **Effets : complets / sobres / aucun** ; secousse réglable à part ;
+  `prefers-reduced-motion` active « sobres » au premier lancement.
+- **Jamais plus de 3 flashs par seconde** (WCAG 2.3.1) ; les éclats ne masquent jamais la
+  pièce en cours.
+
+### 3.6 Personnalisation commerciale (décidé en v0.5, détaillé au lot 10)
+
+Tout ce qui peut se vendre ou se gagner reste **cosmétique** : aucun avantage de jeu.
+
+- **Matières** (skins des blocs) : Cristal par défaut, puis Néon, Obsidienne, Papier, Pixel, Or…
+- **Ambiances** : fond animé, palette et habillage sonore assortis.
+- **Signatures de bris** : éclats dorés, pétales, confettis…
+- Obtention par la **progression** (expérience, objectifs, série de jours au défi du jour) ;
+  les canaux commerciaux (publicités récompensées, achats) seront fixés avec les versions
+  portails. Point ouvert : musique d'ambiance générative par ambiance, à trancher au lot 10.
+
+### 3.7 Distribution (décidé en v0.5)
+
+- **Maintenant** : le jeu de base, sur notre propre site, sans publicité ni SDK tiers.
+- **Démo pour le portfolio** (adamrodwebdev.com) : une version allégée, intégrable dans la
+  section des démos du site, pour illustrer le projet. Préparée une fois le jeu fini.
+- **Versions portails** (CrazyGames, Poki, GameDistribution, GamePix, itch.io, Newgrounds…) :
+  préparées **une fois le projet fini**. Le jeu passera alors par une abstraction `Platform`
+  (début et fin de partie, publicités, stockage, langue, son coupé) sans jamais parler
+  directement à un SDK ; un build par portail. Rien de cela n'est développé avant.
 
 ## 4. Exigences non fonctionnelles
 
@@ -283,7 +367,9 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
 - Navigation complète au clavier, focus visible, contrastes WCAG AA dans les deux thèmes.
 - Le puits est décrit (`role="img"` + libellé) ; score, niveau et événements (lignes, fin de
   partie) annoncés via une région `aria-live` polie.
-- Respect de `prefers-reduced-motion` (animations coupées) et `prefers-color-scheme`.
+- Respect de `prefers-reduced-motion` (effets « sobres ») et `prefers-color-scheme`.
+- Effets réglables (complets, sobres, aucun), secousse et vibrations désactivables, jamais
+  plus de 3 flashs par seconde (§ 3.5).
 
 ### 4.4 Internationalisation
 
@@ -300,7 +386,9 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
 
 ### 4.6 Confidentialité et sécurité
 
-- Aucun cookie, aucun traceur, aucune requête tierce : pas de bannière de consentement.
+- Version de notre site : aucun cookie, aucun traceur, aucune requête tierce, donc pas de
+  bannière de consentement. Les versions portails (§ 3.7) embarqueront le SDK du portail, qui
+  gère lui-même le consentement ; Stackrift n'ajoute jamais de traceur.
 - Messages i18n précompilés au build (pas d'`eval`).
 - Alertes `npm audit` (12/10/2026) : 5 alertes « high » sur `braces`, dépendance de
   l'outillage de développement uniquement (lint, plugin i18n), sans entrée non fiable ; rien
@@ -442,49 +530,56 @@ src/
 ## 8. Critères d'acceptation
 
 1. Les quatorze modes sont jouables du début à la fin, au clavier et au tactile.
-2. Lighthouse ≥ 95 dans les quatre catégories (mobile, build de production).
+2. Lighthouse ≥ 95 dans les quatre catégories (mobile, build de production de notre site).
 3. Aucun défilement horizontal de 320 à 1920 px ; le puits reste entièrement visible.
 4. Les trois langues sont complètes ; changer de langue ne recharge pas la page.
 5. Le thème sombre s'applique sans flash au chargement.
-6. `npm run verify` et `npm run test:e2e` passent.
+6. Les destructions décrites au § 3.5 tiennent 60 images/s sur un téléphone d'entrée de
+   gamme (qualité adaptative comprise).
+7. `npm run verify` et `npm run test:e2e` passent.
 
 ## 9. Lots et planning
 
 Tous les modes sortent ensemble en **version 1.0** (décision du 12/10/2026). Les lots sont
 ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichisse.
 
-| Lot | Contenu                                                                     | Statut  |
-| --- | --------------------------------------------------------------------------- | ------- |
-| 0   | Cadrage, outillage, cahier des charges                                      | Livré   |
-| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                 | Livré   |
-| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir | Livré   |
-| 3   | Interface Vue, rendu, clavier et tactile, i18n, thèmes, mesure Lighthouse   | À faire |
-| 4   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme (audio)  | À faire |
-| 5   | Duel contre l'IA                                                            | À faire |
-| 6   | Placement : Mosaïque et ses cinq jokers                                     | À faire |
-| 7   | Sable et ses éléments                                                       | À faire |
-| 8   | Volume : Tour                                                               | À faire |
-| 9   | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0    | À faire |
+| Lot | Contenu                                                                                                    | Statut    |
+| --- | ---------------------------------------------------------------------------------------------------------- | --------- |
+| 0   | Cadrage, outillage, cahier des charges                                                                     | Livré     |
+| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                | Livré     |
+| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré     |
+| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | À faire   |
+| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | À faire   |
+| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | À faire   |
+| 6   | Duel contre l'IA                                                                                           | À faire   |
+| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | À faire   |
+| 8   | Sable (grains) et ses éléments                                                                             | À faire   |
+| 9   | Volume : Tour (verre courbé)                                                                               | À faire   |
+| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | À faire   |
+| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | À faire   |
+| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Après 1.0 |
+| 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | Après 1.0 |
 
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 95.
 
 ## 10. Hors périmètre (v1)
 
-Comptes et classements en ligne, multijoueur en ligne, manette, musique d'ambiance (seul le
-Rythme a une pulsation), monétisation. Voir § 11.
+Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
+achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 
 ## 11. Évolutions envisagées
 
 - Classement du défi du jour (nécessite un service distant et une politique anti-triche).
 - Duel en ligne (envoi de rangées à l'adversaire).
-- Prise en charge de la manette, effets sonores synthétisés, retour haptique.
-- Application installable (PWA) et publication sur portails de jeux.
+- Prise en charge de la manette.
+- Application installable (PWA).
 
 ## 12. Journal des versions du document
 
-| Version | Date       | Changements                                                                                             |
-| ------- | ---------- | ------------------------------------------------------------------------------------------------------- |
-| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                      |
-| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations.     |
-| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9.     |
-| 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5). |
+| Version | Date       | Changements                                                                                                                                              |
+| ------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                                                                       |
+| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations.                                                      |
+| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9.                                                      |
+| 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5).                                                  |
+| 0.5     | 12/10/2026 | Direction artistique et son (§ 3.5), personnalisation commerciale (§ 3.6), distribution : démo portfolio et portails après la 1.0 (§ 3.7) ; lots 3 à 13. |
