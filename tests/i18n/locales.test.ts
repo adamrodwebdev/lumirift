@@ -68,6 +68,9 @@ describe('translations', () => {
       'groove',
       'onBeat',
       'bpm',
+      'incoming',
+      'sent',
+      'opponentLines',
     ];
     for (const indicator of indicators)
       expect(leaf(fr, `hud.${indicator}`), indicator).toBeTypeOf('string');
@@ -83,6 +86,7 @@ describe('translations', () => {
       'tilt',
       'grooveMax',
       'perfect',
+      'sent',
     ];
     for (const notice of notices) expect(leaf(fr, `notice.${notice}`), notice).toBeTypeOf('string');
     expect(FALLING_MODE_IDS.length).toBeGreaterThan(0);
@@ -121,5 +125,17 @@ describe('detectLocale', () => {
     expect(isLocale('fr')).toBe(true);
     expect(isLocale('de')).toBe(false);
     expect(isLocale(3)).toBe(false);
+  });
+});
+
+describe('variants', () => {
+  it('names and explains every variant of every mode', async () => {
+    const { ModeCatalog } = await import('@/session/ModeCatalog');
+    for (const mode of new ModeCatalog().list()) {
+      for (const variant of mode.variants ?? []) {
+        expect(leaf(fr, `variants.${mode.id}.${variant}`), variant).toBeTypeOf('string');
+        expect(leaf(fr, `variants.${mode.id}Hint.${variant}`), variant).toBeTypeOf('string');
+      }
+    }
   });
 });

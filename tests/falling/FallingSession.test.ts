@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createFallingSession } from '@/families/falling';
+import { createSoloSession } from '@/families/falling';
 import { ConstantRandom } from './helpers';
 
-const session = (modeId: Parameters<typeof createFallingSession>[0], timeLimitMs = null) =>
-  createFallingSession(modeId, { random: new ConstantRandom(), timeLimitMs });
+const session = (modeId: Parameters<typeof createSoloSession>[0], timeLimitMs = null) =>
+  createSoloSession(modeId, { random: new ConstantRandom(), timeLimitMs });
 
 describe('FallingSession', () => {
   it('ignores commands until the game runs', () => {
@@ -66,7 +66,7 @@ describe('FallingSession', () => {
   });
 
   it('applies the time limit given by the daily challenge', () => {
-    const game = createFallingSession('classic', {
+    const game = createSoloSession('classic', {
       random: new ConstantRandom(),
       timeLimitMs: 1000,
     });

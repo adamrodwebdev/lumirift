@@ -11,7 +11,11 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <ModalDialog :open="open" :title="t('over.title')" @dismiss="emit('home')">
+  <ModalDialog
+    :open="open"
+    :title="outcome?.reason === 'victory' ? t('over.victory') : t('over.title')"
+    @dismiss="emit('home')"
+  >
     <template v-if="outcome">
       <p class="reason">{{ t(`over.reason.${outcome.reason}`) }}</p>
       <div class="result">

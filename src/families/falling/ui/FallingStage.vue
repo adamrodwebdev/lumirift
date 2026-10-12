@@ -190,6 +190,8 @@ onBeforeUnmount(() => {
     <section class="stage__side stage__side--hold" :aria-label="t('hud.hold')">
       <p class="stage__label">{{ t('hud.hold') }}</p>
       <PiecePreview :spec="held" :palette="palette" :size="previewSize" :dimmed="!canHold" />
+      <!-- Extra panels of a mode (the opponent of a duel). -->
+      <slot name="side" />
     </section>
 
     <div ref="wellArea" class="stage__well">

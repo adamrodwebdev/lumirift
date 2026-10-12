@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                             |
-| ------- | ---------- | ---------------------------------- |
-| 0.8     | 12/10/2026 | Lot 5 livré : quatre modes avancés |
+| Version | Date       | Statut                         |
+| ------- | ---------- | ------------------------------ |
+| 0.9     | 12/10/2026 | Lot 6 livré : duel contre l'IA |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -190,12 +190,28 @@ Règles détaillées :
   (le cadre du puits pulse, plus fort au premier temps de chaque mesure) et sonore (grosse
   caisse et charleston synthétisés) : le mode se joue aussi sans le son. « × n » s'affiche
   quand une pièce tombe dans le temps ; le multiplicateur maximal est annoncé.
-- **Duel** : le joueur affronte une IA qui joue dans un second puits (côte à côte sur grand
-  écran, en vignette sur mobile). Lignes envoyées : 2 lignes → 1 rangée, 3 → 2, 4 → 4, plus 1
-  par combo. Les rangées reçues attendent 1 s et peuvent être annulées en effaçant des
-  lignes. L'IA évalue chaque placement possible (hauteur, trous, irrégularité, lignes) ;
-  3 niveaux (Facile, Normal, Expert) jouent sur son temps de réflexion et ses erreurs
-  volontaires. Victoire quand l'adversaire déborde.
+- **Duel** : le joueur affronte une IA qui joue dans un second puits, affiché en **vignette
+  vivante** sous la réserve (à toutes les tailles d'écran). L'adversaire se choisit avant la
+  partie : **IA facile, normale ou experte**. Les deux camps reçoivent **la même suite de
+  pièces** (une seule graine pour les deux).
+  - Rangées envoyées : 2 lignes → 1, 3 → 2, 4 → 4, plus 1 par combo en cours.
+  - Une attaque **annule d'abord** les rangées en route vers soi ; le reste part chez
+    l'adversaire. Les rangées reçues attendent **1 s**, puis montent avec un seul trou.
+  - Une **jauge rouge** sur le bord gauche du puits montre les rangées en approche.
+  - Le premier qui déborde perd ; les deux parties s'arrêtent. Fenêtre de fin titrée
+    « Victoire » ou « Partie terminée » (défaite), avec la raison.
+  - L'IA cherche tous les placements atteignables (rotation à l'apparition, glissement,
+    chute), les évalue (hauteur cumulée, lignes, trous, irrégularité ; pondérations de
+    référence) et joue **par les mêmes commandes qu'un joueur** :
+
+    | Niveau  | Réflexion | Entre deux gestes | Erreurs volontaires                |
+    | ------- | --------- | ----------------- | ---------------------------------- |
+    | Facile  | 900 ms    | 170 ms            | 35 % (parmi les 6 meilleurs coups) |
+    | Normale | 450 ms    | 95 ms             | 12 % (parmi les 3 meilleurs)       |
+    | Experte | 160 ms    | 45 ms             | aucune                             |
+
+    Vérifié par les tests : l'IA experte joue seule deux minutes de jeu sans déborder et
+    efface plus de 20 lignes.
 
 #### Famille Sable
 
@@ -682,6 +698,32 @@ src/families/falling/
 - **Date du jour** transmise à la session (`SessionOptions.today`) pour la silhouette du jour.
 - Nouveaux formats d'indicateur : `percent` (forme remplie).
 
+### 5.10 Duel et IA (livrés au lot 6)
+
+```
+src/families/falling/
+  ai/BoardFeatures      Mesure d'un puits : hauteurs, trous, irrégularité
+  ai/PlacementSearch    Tous les placements atteignables, simulés sur une copie du puits
+  ai/Evaluator          Note d'un placement (pondérations de référence)
+  ai/AiPlayer           Joueur IA : choisit, « réfléchit », puis joue coup par coup
+  modes/DuelMode        Un camp : attaques, annulation, rangées reçues différées
+  DuelSession           Deux parties reliées, une seule session pour l'écran
+  ui/DuelStage          Le plateau habituel du joueur + OpponentWell (vignette)
+```
+
+- **Composition** : `DuelSession` contient deux `FallingSession` (joueur et IA) ; le plateau du
+  duel réutilise tel quel celui de la famille Chute pour le joueur, et y insère la vignette
+  adverse par un emplacement (`slot`) prévu sous la réserve.
+- **Équité** : l'IA ne lit que ce qu'un joueur voit (`FallingView`) et n'agit que par
+  `execute` ; sa graine d'aléatoire est distincte de celle des pièces.
+- **Plateau par mode** : `stageFor` cherche d'abord un plateau propre au mode (le duel), puis
+  celui de la famille.
+- **Variantes** : un mode peut proposer des variantes (`variants`, `defaultVariant`) choisies
+  avant la partie dans une fenêtre dédiée ; la variante est transmise à la session
+  (`SessionOptions.variant`).
+- `createFallingSession` renvoie une session générique (solo ou duel) ; `createSoloSession`
+  reste disponible, typée, pour une partie seule.
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
@@ -725,7 +767,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré     |
 | 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré     |
 | 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré     |
-| 6   | Duel contre l'IA                                                                                           | À faire   |
+| 6   | Duel contre l'IA                                                                                           | Livré     |
 | 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | À faire   |
 | 8   | Sable (grains) et ses éléments                                                                             | À faire   |
 | 9   | Volume : Tour (verre courbé)                                                                               | À faire   |
@@ -760,3 +802,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.6     | 12/10/2026 | Lot 3 : interface (§ 5.6), mesures Lighthouse et budget (§ 5.7), tests de l'interface (§ 6).                                                             |
 | 0.7     | 12/10/2026 | Lot 4 : effets réalisés et profils (§ 3.5), délai après effacement (§ 3.1), architecture des effets (§ 5.8), mesures (§ 5.7).                            |
 | 0.8     | 12/10/2026 | Lot 5 : règles détaillées de Fusion (seuil porté à 6), Bascule (sens corrigé), Silhouette, Rythme ; architecture des modes avancés (§ 5.9).              |
+| 0.9     | 12/10/2026 | Lot 6 : règles et niveaux du Duel (§ 3.2), architecture du duel et de l'IA (§ 5.10).                                                                     |

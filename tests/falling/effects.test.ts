@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { effectsProfile, type EffectsLevel } from '@/fx/EffectsProfile';
-import { createFallingSession, type FallingSession } from '@/families/falling';
+import { createSoloSession, type FallingSession } from '@/families/falling';
 import { CRACK_MS, FallingEffects } from '@/families/falling/fx/FallingEffects';
 import { FallingSoundscape } from '@/families/falling/fx/FallingSoundscape';
 import type { TonePalette } from '@/families/falling/render/TonePalette';
@@ -14,7 +14,7 @@ const PALETTE = {
 
 /** A started flip-mode session whose well is ready to clear four lines in cascade. */
 function setup(level: EffectsLevel = 'full') {
-  const session = createFallingSession('flip', { random: new ConstantRandom(), timeLimitMs: null });
+  const session = createSoloSession('flip', { random: new ConstantRandom(), timeLimitMs: null });
   const effects = new FallingEffects(
     session.view,
     () => effectsProfile(level, true),
@@ -117,7 +117,7 @@ describe('FallingSoundscape', () => {
     const audio = { play: (recipe: unknown) => played.push(recipe) } as unknown as AudioEngine;
     const vibrate = vi.fn(() => true);
     const haptics = new Haptics({ vibrate }, () => true);
-    const session = createFallingSession('flip', {
+    const session = createSoloSession('flip', {
       random: new ConstantRandom(),
       timeLimitMs: null,
     });

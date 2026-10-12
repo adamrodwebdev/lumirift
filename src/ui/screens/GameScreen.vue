@@ -16,7 +16,12 @@ import HudPanel from '../components/HudPanel.vue';
 import PauseDialog from '../components/PauseDialog.vue';
 import { stageFor } from '../stages';
 
-const props = defineProps<{ modeId: ModeId; daily: DailyChallenge | null }>();
+const props = defineProps<{
+  modeId: ModeId;
+  daily: DailyChallenge | null;
+  /** Variant chosen on the home screen (AI level of a duel), or null. */
+  variant: string | null;
+}>();
 const emit = defineEmits<{ home: [] }>();
 
 const { t } = useI18n();
@@ -32,7 +37,7 @@ const outcome = ref<GameOutcome | null>(null);
 const shareStatus = ref('');
 const announcement = ref('');
 const toast = ref<{ text: string; key: number } | null>(null);
-const stage = stageFor(descriptor.family);
+const stage = stageFor(descriptor);
 const modeName = computed(() => t(`modes.${props.modeId}.name`));
 /** The game's own subtitle, such as the name of the silhouette of the day. */
 const subtitle = computed(() => {
@@ -56,6 +61,7 @@ const sessionOptions = (): SessionOptions => ({
     timeLimitMs: null,
   }),
   today: today(),
+  ...(props.variant ? { variant: props.variant } : {}),
 });
 
 const sameIndicators = (a: readonly Indicator[], b: readonly Indicator[]) =>

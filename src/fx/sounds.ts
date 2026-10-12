@@ -122,6 +122,12 @@ export const fusion =
     );
   };
 
+/** Duel: rows sent to the opponent. */
+export const attack: SoundRecipe = (s) => {
+  s.noise({ filter: 'bandpass', frequency: 900, to: 4200, q: 1.2, duration: 0.22, gain: 0.1 });
+  s.tone({ type: 'square', frequency: 330, to: 660, duration: 0.12, gain: 0.03 });
+};
+
 /** Rhythm: the downbeat. */
 export const kick: SoundRecipe = (s) => {
   s.tone({ frequency: 130, to: 45, duration: 0.16, gain: 0.3 });

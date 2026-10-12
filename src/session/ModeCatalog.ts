@@ -11,6 +11,10 @@ export interface ModeDescriptor {
   readonly result: ResultKind;
   /** Can be drawn as the mode of the daily challenge. */
   readonly dailyEligible: boolean;
+  /** Variants to choose from before playing (AI levels of the duel). */
+  readonly variants?: readonly string[];
+  /** The variant offered first. */
+  readonly defaultVariant?: string;
 }
 
 /** Modes in menu order. */
@@ -24,6 +28,14 @@ const DESCRIPTORS: readonly ModeDescriptor[] = [
   { id: 'tilt', family: 'falling', result: 'score', dailyEligible: false },
   { id: 'silhouette', family: 'falling', result: 'score', dailyEligible: false },
   { id: 'rhythm', family: 'falling', result: 'score', dailyEligible: true },
+  {
+    id: 'duel',
+    family: 'falling',
+    result: 'score',
+    dailyEligible: false,
+    variants: ['easy', 'normal', 'expert'],
+    defaultVariant: 'normal',
+  },
 ];
 
 /** Each family is a separate chunk, downloaded the first time one of its modes is played. */

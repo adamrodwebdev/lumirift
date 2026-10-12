@@ -9,6 +9,7 @@ const NOTICE_SOUNDS: Readonly<Record<string, SoundRecipe>> = {
   mirrorSoon: sounds.warning,
   tiltSoon: sounds.warning,
   perfect: sounds.pureLine,
+  sent: sounds.attack,
   reflexBonus: sounds.bonus,
   chargeGained: sounds.bonus,
 };

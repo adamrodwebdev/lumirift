@@ -23,7 +23,7 @@
     "modes": "Mode permainan",
     "best": "Rekor: {value}",
     "noBest": "Belum ada rekor",
-    "comingSoon": "Segera hadir: Duel, Pasir, Mozaik, dan Menara."
+    "comingSoon": "Segera hadir: Pasir, Mozaik, dan Menara."
   },
   "daily": {
     "title": "Tantangan Harian",
@@ -68,6 +68,10 @@
     "rhythm": {
       "name": "Ritme",
       "pitch": "Jatuhkan kepingan tepat pada ketukan untuk melipatgandakan poin."
+    },
+    "duel": {
+      "name": "Duel",
+      "pitch": "Lawan AI: setiap baris yang kamu hapus mengirim baris ke lawan."
     }
   },
   "result": {
@@ -99,7 +103,10 @@
     "outside": "Balok di luar",
     "groove": "Pengali",
     "onBeat": "Kepingan tepat ketukan",
-    "bpm": "Tempo"
+    "bpm": "Tempo",
+    "incoming": "Baris datang",
+    "sent": "Baris terkirim",
+    "opponentLines": "Baris AI"
   },
   "notice": {
     "lines": "{n} baris dihapus",
@@ -115,7 +122,8 @@
     "tiltSoon": "Sumur akan segera miring",
     "tilt": "Miring",
     "grooveMax": "Groove maksimum",
-    "perfect": "Siluet sempurna: + {value}"
+    "perfect": "Siluet sempurna: + {value}",
+    "sent": "Baris terkirim: {value}"
   },
   "controls": {
     "label": "Kontrol sentuh",
@@ -141,13 +149,16 @@
   },
   "over": {
     "title": "Permainan selesai",
+    "victory": "Menang",
     "reason": {
       "blockOut": "Sumur sudah penuh.",
       "lockOut": "Sumur sudah penuh.",
       "topOut": "Tumpukan meluap.",
       "timeUp": "Waktu habis.",
       "outOfPieces": "Kepingan habis.",
-      "shapeComplete": "Siluet lengkap."
+      "shapeComplete": "Siluet lengkap.",
+      "victory": "Menang: tumpukan AI meluap.",
+      "defeat": "Kalah: tumpukanmu meluap."
     },
     "result": "Hasil",
     "newBest": "Rekor baru",
@@ -181,7 +192,8 @@
   "game": {
     "loading": "Memuat permainan…",
     "well": "Sumur permainan",
-    "stats": "Papan skor"
+    "stats": "Papan skor",
+    "opponent": "Sumur lawan"
   },
   "languages": {
     "fr": "Français",
@@ -219,5 +231,19 @@
     "chair": "Kursi",
     "pyramid": "Piramida",
     "spaceship": "Pesawat luar angkasa"
+  },
+  "variants": {
+    "title": "Pilih lawanmu",
+    "cancel": "Batal",
+    "duel": {
+      "easy": "AI mudah",
+      "normal": "AI normal",
+      "expert": "AI ahli"
+    },
+    "duelHint": {
+      "easy": "Ragu-ragu dan sering salah.",
+      "normal": "Tangguh, dengan sedikit kesalahan.",
+      "expert": "Cepat, dan tidak pernah salah."
+    }
   }
 }

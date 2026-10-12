@@ -3,6 +3,24 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [0.4.0] — 12/10/2026
+
+Duel contre l'IA.
+
+### Ajouté
+
+- Duel : affrontez une IA facile, normale ou experte ; mêmes pièces pour les deux camps,
+  rangées envoyées selon les lignes et les combos, annulation des rangées reçues, délai d'une
+  seconde, jauge des rangées en approche, puits adverse en vignette vivante.
+- IA par recherche de placements et évaluation (hauteur, lignes, trous, irrégularité), qui
+  joue par les mêmes commandes que le joueur.
+- Choix de la difficulté avant la partie ; titre « Victoire » en fin de duel gagné ; son
+  d'attaque.
+
+### Corrigé
+
+- La vignette du puits adverse débordait de sa colonne (taille par défaut d'un canvas).
+
 ## [0.3.0] — 12/10/2026
 
 Quatre modes avancés.
