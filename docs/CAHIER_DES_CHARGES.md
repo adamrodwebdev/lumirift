@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                        |
-| ------- | ---------- | ----------------------------- |
-| 0.3     | 12/10/2026 | Périmètre des 14 modes validé |
+| Version | Date       | Statut                         |
+| ------- | ---------- | ------------------------------ |
+| 0.4     | 12/10/2026 | Lot 2 livré : session, 5 modes |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -92,11 +92,14 @@ Différenciation :
 Quatorze modes, répartis en **quatre familles** de jeux. Une famille partage un moteur ; un
 mode n'en change que la règle. Les règles communes du § 3.1 valent pour la famille **Chute**.
 
-- **Chute** (11 modes) : Classique, Défi du jour, Marée, Renversement, Chroma, Miroir,
-  Fusion, Bascule, Silhouette, Rythme, Duel.
+- **Chute** (10 modes) : Classique, Marée, Renversement, Chroma, Miroir, Fusion, Bascule,
+  Silhouette, Rythme, Duel.
 - **Sable** : Sable (les pièces se désagrègent en grains).
 - **Placement** : Mosaïque (grille sans gravité, jokers).
 - **Volume** : Tour (puits cylindrique en pseudo-3D).
+- **Défi du jour** : entrée **transversale**, qui n'appartient à aucune famille. Il applique
+  une graine commune et une durée de 2 minutes au mode du jour, tiré parmi les modes
+  éligibles de toutes les familles (précisé en v0.4).
 
 Noms des modes (FR / EN / ID) : Classique / Classic / Klasik · Défi du jour / Daily
 Challenge / Tantangan Harian · Marée / Tide / Pasang · Renversement / Flip / Terbalik ·
@@ -106,19 +109,18 @@ Mosaïque / Mosaic / Mozaik · Tour / Tower / Menara.
 
 #### Famille Chute
 
-| Mode             | Objectif                         | Mécanique nouvelle                                          |
-| ---------------- | -------------------------------- | ----------------------------------------------------------- |
-| **Classique**    | Meilleur score, sans fin         | Référence du genre                                          |
-| **Défi du jour** | Meilleur score en 2 minutes      | Graine et mode du jour communs à tous, résultat partageable |
-| **Marée**        | Tenir le plus longtemps possible | Des rangées montent du fond, de plus en plus vite           |
-| **Renversement** | Meilleur score, sans fin         | Le joueur retourne le puits : la pile retombe, en cascade   |
-| **Chroma**       | Meilleur score, sans fin         | Couleurs indépendantes des formes, lignes pures × 4         |
-| **Miroir**       | Meilleur score, sans fin         | Le puits se reflète gauche-droite toutes les 10 lignes      |
-| **Fusion**       | Meilleur score, sans fin         | 4 blocs de même couleur fusionnent, réactions en chaîne     |
-| **Bascule**      | Meilleur score, sans fin         | Le puits pivote d'un quart de tour toutes les 10 lignes     |
-| **Silhouette**   | Remplir une forme cible au mieux | Énigme : pas de lignes, une silhouette à combler            |
-| **Rythme**       | Meilleur score, sans fin         | Poser sa pièce sur le temps fait grimper un multiplicateur  |
-| **Duel**         | Faire déborder l'adversaire (IA) | Les lignes effacées envoient des rangées chez l'adversaire  |
+| Mode             | Objectif                         | Mécanique nouvelle                                         |
+| ---------------- | -------------------------------- | ---------------------------------------------------------- |
+| **Classique**    | Meilleur score, sans fin         | Référence du genre                                         |
+| **Marée**        | Tenir le plus longtemps possible | Des rangées montent du fond, de plus en plus vite          |
+| **Renversement** | Meilleur score, sans fin         | Le joueur retourne le puits : la pile retombe, en cascade  |
+| **Chroma**       | Meilleur score, sans fin         | Couleurs indépendantes des formes, lignes pures × 4        |
+| **Miroir**       | Meilleur score, sans fin         | Le puits se reflète gauche-droite toutes les 10 lignes     |
+| **Fusion**       | Meilleur score, sans fin         | 4 blocs de même couleur fusionnent, réactions en chaîne    |
+| **Bascule**      | Meilleur score, sans fin         | Le puits pivote d'un quart de tour toutes les 10 lignes    |
+| **Silhouette**   | Remplir une forme cible au mieux | Énigme : pas de lignes, une silhouette à combler           |
+| **Rythme**       | Meilleur score, sans fin         | Poser sa pièce sur le temps fait grimper un multiplicateur |
+| **Duel**         | Faire déborder l'adversaire (IA) | Les lignes effacées envoient des rangées chez l'adversaire |
 
 Règles détaillées :
 
@@ -127,9 +129,15 @@ Règles détaillées :
   Sable, Mosaïque), annoncé sur l'accueil (« Aujourd'hui : Sable »). Deux minutes de jeu.
   En fin de partie, le joueur partage un texte court (mode, score, date, lien) via le partage
   natif du téléphone ou, à défaut, le presse-papiers. Meilleur score conservé par jour.
+  Chaque essai du jour rejoue **exactement la même suite de pièces**. Deux graines
+  distinctes sont dérivées de la date (`mode:AAAAMMJJ` et `pieces:AAAAMMJJ`) : le tirage du
+  mode ne décale pas la suite des pièces. Les modes éligibles sont ceux déjà livrés : la
+  liste s'allonge à chaque lot, et sera figée à la version 1.0.
 - **Marée** : une rangée de déchets (un seul trou) monte du fond toutes les 10 s au départ ;
   l'intervalle diminue de 0,5 s par rangée, jusqu'à 3 s. Chaque ligne effacée retarde la
-  prochaine montée de 1 s. Score principal : temps de survie.
+  prochaine montée de 1 s. Score principal : temps de survie. Une nouvelle rangée garde le
+  trou de la précédente 7 fois sur 10 : le joueur peut creuser un puits pour y glisser la
+  barre.
 - **Renversement** : le joueur gagne une **charge de renversement** toutes les 10 lignes
   (2 au plus, 1 au départ). Utiliser une charge retourne le puits tête en bas : chaque
   colonne de blocs retombe vers le fond, ce qui **supprime tous les trous** et peut
@@ -137,6 +145,8 @@ Règles détaillées :
   l'utilisateur réduit les animations.
   _Équilibrage (v0.2)_ : l'essai du moteur montre que le renversement efface tous les trous
   d'un coup ; une charge toutes les 5 lignes (3 au plus) le rendait trop puissant.
+  Les lignes effacées **en cascade** ne rechargent pas : un renversement ne doit pas payer
+  le suivant (v0.4).
 - **Chroma** : chaque pièce reçoit l'une de 4 couleurs, indépendamment de sa forme. Une
   ligne effacée dont les 10 blocs sont de la même couleur est une **ligne pure** : son score
   est multiplié par 4.
@@ -144,7 +154,8 @@ Règles détaillées :
   la pièce en cours (un S devient un Z, un J devient un L). Un compte à rebours de 3 s
   prévient le joueur. Une ligne effacée dans les 5 s qui suivent le reflet compte **double**
   (bonus réflexe). Les **commandes ne sont jamais inversées** : le défi vient du plateau, pas
-  des doigts (choix d'accessibilité).
+  des doigts (choix d'accessibilité). Le reflet ne peut créer aucune collision : la pile et
+  la pièce sont reflétées ensemble.
 - **Fusion** : couleurs indépendantes des formes, comme Chroma. Après chaque verrouillage,
   tout groupe d'au moins **4 blocs de même couleur** reliés par un côté disparaît ; les blocs
   qui ne reposent plus sur rien retombent, ce qui peut former de nouveaux groupes : c'est
@@ -383,6 +394,35 @@ Avec le Sable, la Mosaïque et la Tour, Stackrift réunit plusieurs jeux. L'arch
 - Le puits de la famille Chute devient **paramétrable** (largeur, hauteur, bord qui boucle)
   pour la Bascule (12 × 12) et la Tour (20 colonnes en anneau).
 
+### 5.5 Session et registre (livrés au lot 2)
+
+```
+src/
+  core/               Emitter, Random : briques partagées par toutes les familles
+  session/            ModeId, GameSession (contrat), ModeCatalog (registre), DailyChallenge
+  families/falling/   index.ts (point d'entrée du module), FallingSession, moteur du lot 1
+    modes/            AbstractMode, ClassicMode, TideMode, FlipMode, ChromaMode, MirrorMode
+```
+
+- **Commandes** : union discriminée par famille (`{ type: 'move', direction: -1 }`,
+  `{ type: 'hardDrop' }`…). `FallingSession` les résout par une **table de traitements**
+  typée, sans `switch`.
+- **`FallingView`** : vue en lecture seule de la partie (puits, pièce, réserve, aperçu,
+  distance de chute) pour le rendu ; le rendu ne peut pas agir sur la partie.
+- **Événements communs** : `state`, `clear`, `levelUp`, `notice`, `over`. Les événements
+  propres au moteur (renversement, reflet, annonces des modes) deviennent des `notice` dont
+  l'identifiant est une clé de traduction (`notice.mirrorSoon`, `notice.reflexBonus`…).
+- **Indicateurs** : score, lignes et niveau d'abord (précédés du temps pour un mode classé
+  au temps), puis ceux du mode (`charges`, `nextRise`, `mirrorIn`…), chacun avec son format
+  (`count` ou `duration`). Le HUD n'a besoin d'aucun cas particulier par mode.
+- **Patron de méthode** dans `AbstractMode` : la limite de temps et ses indicateurs sont
+  gérés une fois pour toutes ; un mode ne surcharge que `tick` (évolution dans le temps) et
+  `ownIndicators`.
+- Le moteur reçoit trois nouveaux points d'extension : `mirrorWell` (reflet), `awardPoints`
+  (bonus annoncé) et `notify` (annonce).
+- `ModeCatalog` charge la famille par `import()` : le module Chute est un chunk séparé du
+  build, téléchargé au premier lancement d'un de ses modes.
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
@@ -417,7 +457,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | --- | --------------------------------------------------------------------------- | ------- |
 | 0   | Cadrage, outillage, cahier des charges                                      | Livré   |
 | 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                 | Livré   |
-| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir | À faire |
+| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir | Livré   |
 | 3   | Interface Vue, rendu, clavier et tactile, i18n, thèmes, mesure Lighthouse   | À faire |
 | 4   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme (audio)  | À faire |
 | 5   | Duel contre l'IA                                                            | À faire |
@@ -442,8 +482,9 @@ Rythme a une pulsation), monétisation. Voir § 11.
 
 ## 12. Journal des versions du document
 
-| Version | Date       | Changements                                                                                         |
-| ------- | ---------- | --------------------------------------------------------------------------------------------------- |
-| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                  |
-| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations. |
-| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9. |
+| Version | Date       | Changements                                                                                             |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------- |
+| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                      |
+| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations.     |
+| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9.     |
+| 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5). |
