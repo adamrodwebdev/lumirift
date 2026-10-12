@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { SeededRandom } from '@/engine/core/Random';
-import { Bag } from '@/engine/pieces/Bag';
-import { PIECE_TYPES } from '@/engine/pieces/PieceType';
+import { SeededRandom } from '@/core/Random';
+import { Bag } from '@/families/falling/pieces/Bag';
+import { PIECE_TYPES } from '@/families/falling/pieces/PieceType';
 
 describe('Bag', () => {
   it('deals each of the seven pieces exactly once per bag', () => {

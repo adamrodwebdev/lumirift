@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Piece } from '@/engine/pieces/Piece';
-import { PIECE_TYPES, Tone, type Rotation } from '@/engine/pieces/PieceType';
-import { kickOffsets, shapeCells } from '@/engine/pieces/Shapes';
+import { Piece } from '@/families/falling/pieces/Piece';
+import { PIECE_TYPES, Tone, type Rotation } from '@/families/falling/pieces/PieceType';
+import { kickOffsets, shapeCells } from '@/families/falling/pieces/Shapes';
 
 const sorted = (cells: readonly { x: number; y: number }[]) =>
   [...cells].sort((a, b) => a.y - b.y || a.x - b.x);

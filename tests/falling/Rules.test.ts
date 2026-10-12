@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { GravityCurve } from '@/engine/rules/GravityCurve';
-import { Scoring } from '@/engine/rules/Scoring';
+import { GravityCurve } from '@/families/falling/rules/GravityCurve';
+import { Scoring } from '@/families/falling/rules/Scoring';
 
 describe('Scoring', () => {
   const scoring = new Scoring();

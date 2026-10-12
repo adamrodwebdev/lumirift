@@ -1,8 +1,8 @@
-import { Board } from '@/engine/board/Board';
-import type { RandomSource } from '@/engine/core/Random';
-import { Game } from '@/engine/game/Game';
-import { ClassicMode } from '@/engine/modes/ClassicMode';
-import type { GameMode } from '@/engine/modes/GameMode';
+import { Board } from '@/families/falling/board/Board';
+import type { RandomSource } from '@/core/Random';
+import { Game } from '@/families/falling/game/Game';
+import { ClassicMode } from '@/families/falling/modes/ClassicMode';
+import type { GameMode } from '@/families/falling/modes/GameMode';
 
 /** Always returns the same value. 0.999 keeps every bag in I O T S Z J L order. */
 export class ConstantRandom implements RandomSource {
