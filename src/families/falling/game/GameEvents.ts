@@ -1,4 +1,4 @@
-import type { ClearedRow } from '../board/Board';
+import type { ClearedRow, RemovedCell } from '../board/Board';
 import type { Piece } from '../pieces/Piece';
 import type { PieceType } from '../pieces/PieceType';
 
@@ -7,8 +7,10 @@ export type GameState = 'ready' | 'running' | 'paused' | 'over';
 /**
  * blockOut: a new piece cannot appear. lockOut: a piece locked entirely above
  * the visible well. topOut: rising rows pushed blocks out. timeUp: timed mode.
+ * outOfPieces / shapeComplete: the end of a Silhouette.
  */
-export type GameOverReason = 'blockOut' | 'lockOut' | 'topOut' | 'timeUp';
+export type GameOverReason =
+  'blockOut' | 'lockOut' | 'topOut' | 'timeUp' | 'outOfPieces' | 'shapeComplete';
 
 export interface LinesClearedEvent {
   readonly lines: number;
@@ -38,6 +40,18 @@ export interface GameEventMap {
   garbage: { readonly rows: number };
   flip: { readonly lines: number };
   mirror: Readonly<Record<string, never>>;
+  /** Groups of same-coloured blocks fused (Fusion); the chain counts the reactions. */
+  fusion: {
+    readonly cells: readonly RemovedCell[];
+    readonly chain: number;
+    readonly points: number;
+  };
+  /** The well turned a quarter left (Tilt). */
+  tilt: { readonly lines: number };
+  /** A beat of the rhythm (Rhythm); every fourth one is a downbeat. */
+  beat: { readonly count: number };
+  /** The groove after a lock: up when the piece landed on the beat. */
+  groove: { readonly level: number; readonly onBeat: boolean };
   /** Mode-specific announcement; `id` is a translation key suffix. */
   notice: { readonly id: string; readonly value?: number };
   over: { readonly reason: GameOverReason };

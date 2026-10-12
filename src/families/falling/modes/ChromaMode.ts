@@ -1,7 +1,7 @@
 import type { RandomSource } from '@/core/Random';
 import type { Indicator } from '@/session/GameSession';
 import type { Game } from '../game/Game';
-import { CHROMA_TONES, type PieceType, type Tone } from '../pieces/PieceType';
+import { randomChromaTone, type PieceType, type Tone } from '../pieces/PieceType';
 import { AbstractMode } from './AbstractMode';
 
 /**
@@ -15,7 +15,7 @@ export class ChromaMode extends AbstractMode {
   private pureLines = 0;
 
   override toneFor(_type: PieceType, random: RandomSource): Tone {
-    return CHROMA_TONES[random.nextInt(CHROMA_TONES.length)]!;
+    return randomChromaTone(random);
   }
 
   override attach(game: Game): void {

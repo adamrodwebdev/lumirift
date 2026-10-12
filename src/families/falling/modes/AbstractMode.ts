@@ -3,11 +3,16 @@ import type { Indicator, ResultKind } from '@/session/GameSession';
 import type { FallingModeId } from '@/session/ModeId';
 import type { Game } from '../game/Game';
 import { shapeTone, type PieceType, type Tone } from '../pieces/PieceType';
-import type { AbilityId, GameMode } from './GameMode';
+import type { AbilityId, GameMode, WellSize } from './GameMode';
+
+/** The genre's standard well. */
+export const STANDARD_WELL: WellSize = { width: 10, height: 20 };
 
 export interface ModeOptions {
   /** Ends the game after this time (daily challenge); null for endless. */
   readonly timeLimitMs?: number | null;
+  /** Date of play (the silhouette of the day…). */
+  readonly today?: Date;
 }
 
 /**
@@ -18,12 +23,17 @@ export interface ModeOptions {
 export abstract class AbstractMode implements GameMode {
   abstract readonly id: FallingModeId;
   readonly result: ResultKind = 'score';
+  readonly well: WellSize = STANDARD_WELL;
+  readonly clearsLines: boolean = true;
+  readonly scoresDrops: boolean = true;
   readonly scoresPureLines: boolean = false;
   readonly ability: AbilityId | null = null;
   protected readonly timeLimitMs: number | null;
+  protected readonly today: Date;
 
   constructor(options: ModeOptions = {}) {
     this.timeLimitMs = options.timeLimitMs ?? null;
+    this.today = options.today ?? new Date();
   }
 
   toneFor(type: PieceType, _random: RandomSource): Tone {
@@ -40,6 +50,18 @@ export abstract class AbstractMode implements GameMode {
       return;
     }
     this.tick(game, deltaMs);
+  }
+
+  afterLock(_game: Game): void {
+    // Nothing happens after a lock by default.
+  }
+
+  clearMultiplier(_game: Game): number {
+    return 1;
+  }
+
+  subtitleKey(): string | null {
+    return null;
   }
 
   useAbility(_game: Game): boolean {
