@@ -3,6 +3,20 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [0.9.0] — 12/10/2026
+
+La progression.
+
+### Ajouté
+
+- Expérience et niveaux (1 à 50), gagnés de la même façon dans toutes les familles : temps
+  de jeu, effacements, défi du jour, victoires en duel, objectifs.
+- Trois objectifs du jour (facile, moyen, difficile), les mêmes pour tous, et la série de
+  jours au défi du jour.
+- Atelier : six matières de blocs pour les modes de chute, six ambiances pour tout le jeu,
+  quatre signatures de bris ; tout est cosmétique et se débloque en jouant.
+- Fin de partie : expérience gagnée, niveau, objectifs accomplis, objets débloqués.
+
 ## [0.8.0] — 12/10/2026
 
 Des règles revues d'après les jeux du genre.

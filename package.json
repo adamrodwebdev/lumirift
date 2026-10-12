@@ -1,6 +1,6 @@
 {
   "name": "stackrift",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "description": "Jeu de blocs qui tombent réinventé : cinq modes de jeu, en français, anglais et indonésien. Vue 3, TypeScript, mobile d'abord.",
   "type": "module",

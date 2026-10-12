@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                                  |
-| ------- | ---------- | --------------------------------------- |
-| 0.13    | 12/10/2026 | Règles revues d'après les jeux du genre |
+| Version | Date       | Statut                     |
+| ------- | ---------- | -------------------------- |
+| 0.14    | 12/10/2026 | Lot 10 livré : progression |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -373,7 +373,8 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
 - Coupure du son en un geste depuis l'en-tête.
 - Effets : complets / sobres / aucun ; secousse : oui / non ; vibrations : oui / non.
 - Volumes séparés des effets sonores et de l'ambiance ; coupure du son.
-- Meilleurs scores par mode, stockés **uniquement sur l'appareil** (`localStorage`, avec repli
+- Progression (expérience, objectifs, série, objets portés) et meilleurs scores par mode,
+  stockés **uniquement sur l'appareil** (`localStorage`, avec repli
   en mémoire si le stockage est indisponible). Aucune donnée ne quitte l'appareil.
 
 ### 3.5 Direction artistique et son (décidé en v0.5)
@@ -474,16 +475,54 @@ naît au premier geste du joueur (exigence des navigateurs) et se met en veille 
 est masquée. **Vibrations** : impact 6 à 14 ms, ligne 26 à 50 ms, 4 lignes [30, 40, 80],
 renversement [20, 30, 50], fin de partie [60, 40, 120].
 
-### 3.6 Personnalisation commerciale (décidé en v0.5, détaillé au lot 10)
+### 3.6 Progression et personnalisation (livrées au lot 10)
 
-Tout ce qui peut se vendre ou se gagner reste **cosmétique** : aucun avantage de jeu.
+Tout ce qui se gagne reste **cosmétique** : aucun avantage de jeu. Tout est gardé **sur
+l'appareil** (`stackrift:profile`), comme les records.
 
-- **Matières** (skins des blocs) : Cristal par défaut, puis Néon, Obsidienne, Papier, Pixel, Or…
-- **Ambiances** : fond animé, palette et habillage sonore assortis.
-- **Signatures de bris** : éclats dorés, pétales, confettis…
-- Obtention par la **progression** (expérience, objectifs, série de jours au défi du jour) ;
-  les canaux commerciaux (publicités récompensées, achats) seront fixés avec les versions
-  portails. Point ouvert : musique d'ambiance générative par ambiance, à trancher au lot 10.
+- **Expérience**, gagnée par partie dans toutes les familles de la même façon (jamais
+  d'après les points, trop différents d'un mode à l'autre) :
+
+  | Source                             | Expérience                                                |
+  | ---------------------------------- | --------------------------------------------------------- |
+  | Partie d'au moins 20 s             | 10                                                        |
+  | Temps de jeu (hors pause)          | 1 toutes les 6 s, 60 au plus                              |
+  | Effacements                        | 3 par effacement, +2 par ligne au-delà d'une, 150 au plus |
+  | Premier défi du jour de la journée | 25                                                        |
+  | Victoire en duel                   | 10, 15, 25, 35 ou 50 selon le niveau de l'IA              |
+  | Objectif du jour accompli          | 40, 70 ou 110 selon sa difficulté                         |
+
+  Une partie de moins de 20 s ne rapporte que son temps : relancer sans jouer ne sert à
+  rien (la fin de partie le dit).
+
+- **Niveaux** 1 à 50 : le niveau n demande 100 + 40 × (n − 1) points.
+- **Objectifs du jour** : trois, un facile, un moyen, un difficile, de sortes différentes,
+  les mêmes pour tous le même jour (tirés de la date) : jouer des parties, jouer un mode
+  donné, effacer des lignes, effacer plusieurs lignes d'un coup, enchaîner des effacements,
+  tenir plusieurs minutes, terminer le défi du jour, battre l'IA normale ou plus forte.
+  Chaque objectif est compté une seule fois.
+- **Série** : jours d'affilée avec un défi du jour terminé (meilleure série gardée) ;
+  affichée sur l'accueil tant qu'elle court.
+- **Atelier** (depuis l'accueil, chargé à la demande) : chaque objet porté est marqué, les
+  objets verrouillés disent comment les obtenir.
+
+  | Sorte                                | Objets (condition)                                                                                             |
+  | ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+  | **Matières** (modes de chute)        | Cristal (offert), Néon (niv. 3), Papier (niv. 6), Pixel (niv. 10), Obsidienne (niv. 15), Or (série de 7 jours) |
+  | **Ambiances** (tout le jeu)          | Nuit (offerte), Aurore (niv. 2), Abysses (niv. 5), Forge (niv. 8), Cosmos (niv. 12), Sakura (20 objectifs)     |
+  | **Signatures de bris** (chute, Tour) | Éclats (offerts), Confettis (niv. 4), Pétales (niv. 9), Feuille d'or (30 objectifs)                            |
+  - Les matières gardent toutes le **motif gravé** de chaque couleur. Les autres familles
+    gardent leur matière propre (sable, céramique, verre de la Tour) : c'est leur identité.
+  - Les ambiances ne changent que deux **lueurs** derrière le jeu, à faible opacité : les
+    contrastes de textes et de pièces sont intacts. Elles bougent lentement et s'arrêtent
+    avec les effets sobres ou la réduction des animations du système.
+
+- **Fin de partie** : expérience gagnée ligne par ligne, niveau atteint, objectifs
+  accomplis, objets débloqués.
+- **Plus tard** : les canaux commerciaux (publicités récompensées, achats) avec les versions
+  portails. **Musique d'ambiance** : non retenue pour la 1.0 (le jeu reste lisible et
+  léger, les portails imposent de toute façon la coupure du son) ; à reprendre avec les
+  portails.
 
 ### 3.7 Distribution (décidé en v0.5)
 
@@ -898,6 +937,30 @@ src/families/volume/
   jetons, les sprites d'une famille (`CrystalSprites`, `CeramicSprites`, `GlassSprites`,
   textures du Sable) et ses effets (`*Effects`, `*Soundscape`).
 
+### 5.15 Progression (livrée au lot 10)
+
+```
+src/progression/
+  GameReport      Bilan d'une partie (mode, durée jouée, effacements, combo…) ; GameTracker
+                  le tire des événements communs à toutes les familles
+  Experience      Barème de l'expérience, courbe des niveaux
+  Objectives      Objectifs du jour : une règle par sorte (stratégies), tirage par la date
+  Cosmetics       Catalogue des objets et règles de déblocage
+  Profile         Entité : recordGame, objectivesFor, equip ; protège ses règles
+src/services/
+  ProfileService  Profil réactif, sauvegardé sur l'appareil
+  AmbianceController  data-ambiance et data-motion sur <html>
+src/families/falling/
+  render/BlockSprites  Classe de base des matières (cache par ton, motif gravé)
+  render/materials     Cristal, Néon, Papier, Pixel, Obsidienne, Or
+  fx/ShatterStyles     Signatures de bris (couleur, rotation, envol des éclats)
+src/styles/ambiances.css  Lueurs par ambiance et par thème
+src/ui/  ProfileCard, AtelierDialog (chargé à la demande), bilan dans GameOverDialog
+```
+
+- La progression ne connaît aucune famille : elle lit le contrat commun (`GameSession`).
+- Toutes les couleurs nouvelles (or, pétales, lueurs) sont des **jetons** des deux thèmes.
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
@@ -945,7 +1008,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré     |
 | 8   | Sable (grains) et ses éléments                                                                             | Livré     |
 | 9   | Volume : Tour (verre courbé)                                                                               | Livré     |
-| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | À faire   |
+| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | Livré     |
 | 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | À faire   |
 | 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Après 1.0 |
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | Après 1.0 |
@@ -985,3 +1048,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.11    | 12/10/2026 | Lot 8 : règles complètes du Sable et de ses éléments (§ 3.2), famille Sable (§ 5.12).                                                                    |
 | 0.12    | 12/10/2026 | Lot 9 : règles et caméra de la Tour (§ 3.2), famille Volume (§ 5.13), séparation du rendu et des règles (§ 5.14).                                        |
 | 0.13    | 12/10/2026 | Règles des éléments du Sable, de la Mosaïque et cinq niveaux d'IA, fondés sur une recherche des jeux du genre (§ 3.2).                                   |
+| 0.14    | 12/10/2026 | Lot 10 : progression et personnalisation (§ 3.6), architecture (§ 5.15) ; musique d'ambiance non retenue pour la 1.0.                                    |
