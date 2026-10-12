@@ -24,6 +24,11 @@ export interface GameOptions {
   readonly random: RandomSource;
   readonly startLevel?: number;
   readonly board?: Board;
+  /**
+   * Pause between a line clear and the next piece, so the destruction can be seen.
+   * It is part of the rules (the same whatever the effect settings), 0 by default.
+   */
+  readonly lineClearDelayMs?: number;
 }
 
 /**
@@ -42,6 +47,7 @@ export class Game {
   private readonly gravity = new GravityCurve();
   private readonly startLevel: number;
   private readonly upcoming: PieceSpec[] = [];
+  private readonly lineClearDelayMs: number;
 
   private _state: GameState = 'ready';
   private _overReason: GameOverReason | null = null;
@@ -59,6 +65,8 @@ export class Game {
   private lockTimer = 0;
   private lockResets = 0;
   private lowestY = 0;
+  /** Time left before the next piece appears, after a line clear. */
+  private spawnDelay = 0;
 
   constructor(
     readonly mode: GameMode,
@@ -70,6 +78,7 @@ export class Game {
     this.scoring = new Scoring(mode.scoresPureLines);
     this.startLevel = options.startLevel ?? 1;
     this._level = this.startLevel;
+    this.lineClearDelayMs = options.lineClearDelayMs ?? 0;
     mode.attach(this);
   }
 
@@ -146,7 +155,16 @@ export class Game {
     this._elapsedMs += deltaMs;
     this.mode.update(this, deltaMs);
     // The mode may have ended the game (time limit, top out).
-    if (!this.canAct() || !this._active) return;
+    if (!this.canAct()) return;
+    if (this.spawnDelay > 0) {
+      this.spawnDelay -= deltaMs;
+      if (this.spawnDelay <= 0) {
+        this.spawnDelay = 0;
+        this.spawnNext();
+      }
+      return;
+    }
+    if (!this._active) return;
     // The lock delay starts on the frame after landing, never on the landing frame.
     if (!this.applyGravity(deltaMs)) this.applyLockDelay(deltaMs);
   }
@@ -179,6 +197,7 @@ export class Game {
     const distance = this.dropDistance();
     this._active = this._active.moved(0, distance);
     this._score += this.scoring.hardDrop(distance);
+    this.events.emit('hardDrop', { piece: this._active, distance });
     this.lockActive();
   }
 
@@ -189,6 +208,7 @@ export class Game {
     for (const kick of kickOffsets(piece.type, piece.rotation, rotated.rotation)) {
       if (this.board.fits(rotated, kick.x, kick.y)) {
         this.place(rotated.moved(kick.x, kick.y));
+        this.events.emit('rotate', { piece: this._active!, kicked: kick.x !== 0 || kick.y !== 0 });
         return true;
       }
     }
@@ -266,6 +286,7 @@ export class Game {
     const piece = this._active;
     if (!this.canAct() || !piece || !this.board.fits(piece, dx, 0)) return false;
     this.place(piece.moved(dx, 0));
+    this.events.emit('move', { piece: this._active! });
     return true;
   }
 
@@ -328,7 +349,8 @@ export class Game {
       return;
     }
     this._canHold = true;
-    this.spawnNext();
+    if (cleared.length > 0 && this.lineClearDelayMs > 0) this.spawnDelay = this.lineClearDelayMs;
+    else this.spawnNext();
   }
 
   private scoreClear(cleared: readonly ClearedRow[], cascade: boolean): void {
@@ -343,7 +365,7 @@ export class Game {
     const points = this.scoring.clear({ lines, pureLines, level: this._level, combo });
     this._score += points;
     this._lines += lines;
-    this.events.emit('clear', { lines, pureLines, points, combo, cascade });
+    this.events.emit('clear', { lines, pureLines, points, combo, cascade, rows: cleared });
 
     const level = this.gravity.levelFor(this.startLevel, this._lines);
     if (level > this._level) {

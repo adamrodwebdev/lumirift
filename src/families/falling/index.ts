@@ -12,6 +12,9 @@ import { TideMode } from './modes/TideMode';
 
 export { FallingSession, type FallingCommand, type FallingView } from './FallingSession';
 
+/** Pause after a line clear, long enough to see the row shatter and the stack fall. */
+export const LINE_CLEAR_DELAY_MS = 280;
+
 const MODES: Readonly<Record<FallingModeId, (options: ModeOptions) => GameMode>> = {
   classic: (options) => new ClassicMode(options),
   tide: (options) => new TideMode(options),
@@ -26,5 +29,8 @@ const isFallingMode = (id: ModeId): id is FallingModeId => id in MODES;
 export function createFallingSession(modeId: ModeId, options: SessionOptions): FallingSession {
   if (!isFallingMode(modeId)) throw new Error(`"${String(modeId)}" is not a falling mode`);
   const mode = MODES[modeId]({ timeLimitMs: options.timeLimitMs });
-  return new FallingSession(modeId, new Game(mode, { random: options.random }));
+  return new FallingSession(
+    modeId,
+    new Game(mode, { random: options.random, lineClearDelayMs: LINE_CLEAR_DELAY_MS }),
+  );
 }

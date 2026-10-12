@@ -1,4 +1,4 @@
-import { Emitter } from '@/core/Emitter';
+import { Emitter, type Listener } from '@/core/Emitter';
 import type {
   GameSession,
   Indicator,
@@ -9,6 +9,7 @@ import type {
 import type { FallingModeId } from '@/session/ModeId';
 import type { Board } from './board/Board';
 import type { Game, PieceSpec } from './game/Game';
+import type { GameEventMap } from './game/GameEvents';
 import type { AbilityId } from './modes/GameMode';
 import type { Piece } from './pieces/Piece';
 import type { RotationDirection } from './pieces/PieceType';
@@ -67,6 +68,14 @@ export class FallingSession implements GameSession<FallingCommand> {
     this.view = game;
     this.ability = game.mode.ability;
     this.forwardEvents();
+  }
+
+  /**
+   * Engine events, for the family's effects and sounds (subscribe only: the
+   * stage can watch the game, never drive it). Returns the unsubscribe function.
+   */
+  onGame<K extends keyof GameEventMap>(type: K, listener: Listener<GameEventMap[K]>): () => void {
+    return this.game.events.on(type, listener);
   }
 
   get state(): SessionState {

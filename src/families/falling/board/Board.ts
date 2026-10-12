@@ -6,6 +6,8 @@ export interface ClearedRow {
   readonly index: number;
   /** True when every block of the row has the same tone. */
   readonly pure: boolean;
+  /** The tones the row held, left to right (for the destruction effects). */
+  readonly tones: Uint8Array;
 }
 
 /**
@@ -83,7 +85,8 @@ export class Board {
   clearFullRows(): ClearedRow[] {
     const cleared: ClearedRow[] = [];
     for (let y = 0; y < this.height; y++) {
-      if (this.isRowFull(y)) cleared.push({ index: y, pure: this.isRowPure(y) });
+      if (this.isRowFull(y))
+        cleared.push({ index: y, pure: this.isRowPure(y), tones: this.rowTones(y) });
     }
     if (cleared.length === 0) return cleared;
 
@@ -160,6 +163,10 @@ export class Board {
       rows.push(row);
     }
     return rows;
+  }
+
+  private rowTones(y: number): Uint8Array {
+    return this.cells.slice(y * this.width, (y + 1) * this.width);
   }
 
   private set(x: number, y: number, tone: Tone): void {

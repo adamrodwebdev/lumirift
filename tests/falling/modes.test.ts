@@ -20,7 +20,14 @@ const indicator = (game: Game, id: string): number | undefined =>
 
 /** Simulates a clear as the engine reports it (for rules that only listen to events). */
 const reportClear = (game: Game, lines: number, cascade = false) =>
-  game.events.emit('clear', { lines, pureLines: 0, points: 100 * lines, combo: 0, cascade });
+  game.events.emit('clear', {
+    lines,
+    pureLines: 0,
+    points: 100 * lines,
+    combo: 0,
+    cascade,
+    rows: [],
+  });
 
 const row = (pattern: string, count: number): string[] => Array<string>(count).fill(pattern);
 /** Ten lines ready to clear in cascade with a single flip of the well. */
