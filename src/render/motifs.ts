@@ -93,4 +93,6 @@ export const MOTIFS: Readonly<Record<Exclude<Tone, typeof Tone.Empty>, Motif>> =
   [Tone.ChromaC]: triangle,
   [Tone.ChromaD]: cross,
   [Tone.Garbage]: hatch,
+  [Tone.Water]: ring,
+  [Tone.Fire]: triangle,
 };

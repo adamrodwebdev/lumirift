@@ -16,6 +16,10 @@ export const Tone = {
   ChromaC: 10,
   ChromaD: 11,
   Garbage: 12,
+  /** Sand: water seeps into hollows, then sets in a neighbouring colour. */
+  Water: 13,
+  /** Sand: fire burns away the colour it touches. */
+  Fire: 14,
 } as const;
 export type Tone = (typeof Tone)[keyof typeof Tone];
 
