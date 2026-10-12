@@ -311,5 +311,90 @@
     "well": "Tour de verre",
     "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, Ctrl pour tourner dans l’autre sens, C pour la réserve, A et E (Q et E en QWERTY) pour faire pivoter la tour, Échap pour la pause. Une ligne est un anneau complet de 20 cases.",
     "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée, glissez à deux doigts pour faire pivoter la tour. La caméra suit la pièce."
+  },
+  "profile": {
+    "level": "Niveau {n}",
+    "xp": "{into} / {needed} XP",
+    "xpLabel": "Progression vers le niveau suivant",
+    "maxLevel": "Niveau maximal atteint",
+    "streak": "Série : {n} jour | Série : {n} jours",
+    "objectives": "Objectifs du jour",
+    "done": "Fait",
+    "reward": "+{n} XP"
+  },
+  "objectives": {
+    "play": "Jouer une partie | Jouer {n} parties",
+    "playMode": "Jouer une partie de {mode}",
+    "lines": "Effacer {n} ligne | Effacer {n} lignes",
+    "bigClear": "Effacer {size} lignes d’un coup",
+    "combo": "Enchaîner {size} effacements",
+    "survive": "Tenir {size} minutes dans une partie",
+    "daily": "Terminer le défi du jour",
+    "duel": "Battre l’IA normale ou plus forte"
+  },
+  "progress": {
+    "title": "Progression",
+    "gained": "+{n} XP",
+    "levelUp": "Niveau {n} atteint !",
+    "objectiveDone": "Objectif accompli : {text}",
+    "unlocked": "Débloqué : {name} ({kind})",
+    "source": {
+      "game": "Partie jouée",
+      "time": "Temps de jeu",
+      "clears": "Effacements",
+      "daily": "Défi du jour",
+      "victory": "Victoire",
+      "objective": "Objectif"
+    },
+    "tooShort": "Jouez au moins 20 secondes pour gagner de l’expérience."
+  },
+  "cosmetics": {
+    "title": "Atelier",
+    "intro": "Tout est cosmétique : rien ne change le jeu. Jouez pour débloquer la suite.",
+    "scope": {
+      "material": "Pour les modes de chute (la Tour garde son verre).",
+      "shatter": "Pour les modes de chute et la Tour."
+    },
+    "worn": "Porté",
+    "wear": "Porter",
+    "close": "Fermer",
+    "kinds": {
+      "material": "Matières",
+      "ambiance": "Ambiances",
+      "shatter": "Signatures de bris"
+    },
+    "one": {
+      "material": "matière",
+      "ambiance": "ambiance",
+      "shatter": "bris"
+    },
+    "material": {
+      "crystal": "Cristal",
+      "neon": "Néon",
+      "paper": "Papier",
+      "pixel": "Pixel",
+      "obsidian": "Obsidienne",
+      "gold": "Or"
+    },
+    "ambiance": {
+      "night": "Nuit",
+      "aurora": "Aurore",
+      "abyss": "Abysses",
+      "forge": "Forge",
+      "cosmos": "Cosmos",
+      "sakura": "Sakura"
+    },
+    "shatter": {
+      "shards": "Éclats",
+      "confetti": "Confettis",
+      "petals": "Pétales",
+      "gold": "Feuille d’or"
+    },
+    "unlock": {
+      "default": "Offert",
+      "level": "Niveau {n}",
+      "streak": "Série de {n} jours au défi",
+      "objectives": "{n} objectifs accomplis"
+    }
   }
 }

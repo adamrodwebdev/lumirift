@@ -23,6 +23,11 @@ const PATHS = {
   cube: 'M5 5h14v14H5z',
   sound: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11',
   mute: 'M4 9v6h4l5 4V5L8 9zM16 9l5 6M21 9l-5 6',
+  atelier:
+    'M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4c0-4.4-4-8-9-8zM7.5 11.5h.01M10.5 7.5h.01M15.5 8.5h.01',
+  lock: 'M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3',
+  check: 'M5 12l5 5L20 7',
+  flame: 'M12 21a6 6 0 0 0 6-6c0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-3 5-3 8a6 6 0 0 0 6 6z',
 } as const;
 
 export type IconName = keyof typeof PATHS;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, shallowRef } from 'vue';
+import { computed, defineAsyncComponent, ref, shallowRef } from 'vue';
 import type { ModeDescriptor } from '@/session/ModeCatalog';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
@@ -9,6 +9,7 @@ import type { ModeId } from '@/session/ModeId';
 import { ScoreBoard } from '@/services/ScoreBoard';
 import AppIcon from '../components/AppIcon.vue';
 import BrandMark from '../components/BrandMark.vue';
+import ProfileCard from '../components/ProfileCard.vue';
 import VariantDialog from '../components/VariantDialog.vue';
 
 const emit = defineEmits<{
@@ -36,6 +37,10 @@ const onVariant = (variant: string) => {
   choosing.value = null;
   if (mode) emit('play', mode.id, variant);
 };
+
+/** The Atelier is loaded the first time it opens. */
+const AtelierDialog = defineAsyncComponent(() => import('../components/AtelierDialog.vue'));
+const atelierOpen = ref(false);
 
 const modes = computed(() =>
   catalog.list().map((mode) => ({ ...mode, best: scores.best(mode.id) })),
@@ -68,6 +73,8 @@ const modes = computed(() =>
       </button>
     </section>
 
+    <ProfileCard @atelier="atelierOpen = true" />
+
     <section class="modes" aria-labelledby="modes-title">
       <h2 id="modes-title" class="modes__title">{{ t('home.modes') }}</h2>
       <ul class="modes__grid">
@@ -88,6 +95,7 @@ const modes = computed(() =>
     </section>
 
     <VariantDialog :mode="choosing" @choose="onVariant" @close="choosing = null" />
+    <AtelierDialog v-if="atelierOpen" :open="atelierOpen" @close="atelierOpen = false" />
 
     <footer class="footer">
       <p>{{ t('app.privacy') }}</p>

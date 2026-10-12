@@ -5,7 +5,9 @@ import { useServices } from '@/app/AppServices';
 import { FrameClock } from '@/app/FrameClock';
 import { useFormat } from '@/app/useFormat';
 import { effectsProfile } from '@/fx/EffectsProfile';
+import { dayKey } from '@/core/Day';
 import { SeededRandom } from '@/core/Random';
+import { GameTracker } from '@/progression/GameReport';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
@@ -26,7 +28,7 @@ const emit = defineEmits<{ home: [] }>();
 
 const { t } = useI18n();
 const format = useFormat();
-const { catalog, scores, settings, share, clock: today } = useServices();
+const { catalog, scores, settings, share, profile, clock: today } = useServices();
 const descriptor = catalog.get(props.modeId);
 
 type Phase = 'loading' | 'playing' | 'paused' | 'over';
@@ -60,6 +62,8 @@ const round = ref(0);
 const showOutcome = ref(false);
 let outcomeTimer: ReturnType<typeof setTimeout> | undefined;
 let unsubscribe: (() => void)[] = [];
+/** Follows the game for the progression (time played, clears). */
+let tracker: GameTracker | null = null;
 let toastKey = 0;
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -82,6 +86,7 @@ const sameIndicators = (a: readonly Indicator[], b: readonly Indicator[]) =>
 clock.subscribe((delta) => {
   const current = session.value;
   if (!current) return;
+  if (current.state === 'running') tracker?.tick(delta);
   current.update(delta);
   const next = current.indicators();
   if (!sameIndicators(next, indicators.value)) indicators.value = next;
@@ -97,6 +102,7 @@ const announce = (text: string, show = true) => {
 };
 
 const listen = (current: GameSession) => {
+  tracker = new GameTracker(current);
   const { events } = current;
   unsubscribe = [
     events.on('clear', ({ lines, combo }) => {
@@ -121,11 +127,20 @@ const finish = (reason: string) => {
   const key = props.daily ? ScoreBoard.dailyKey(props.daily.key) : props.modeId;
   // Whole points or milliseconds: no float noise in the saved records.
   const record = scores.record(key, Math.round(result.value));
+  const report = tracker?.report({
+    modeId: props.modeId,
+    daily: props.daily !== null,
+    variant: props.variant,
+    reason,
+  });
   outcome.value = {
     reason,
     value: format.result(result.kind, result.value),
     best: format.result(result.kind, record.best),
     isNewBest: record.isNewBest,
+    progress: report
+      ? profile.recordGame(report, dayKey(today()))
+      : { xp: [], total: 0, levelBefore: 1, levelAfter: 1, completed: [], unlocked: [], streak: 0 },
   };
   shareStatus.value = '';
   phase.value = 'over';
@@ -151,6 +166,8 @@ const dispose = () => {
   clearTimeout(outcomeTimer);
   unsubscribe.forEach((off) => off());
   unsubscribe = [];
+  tracker?.dispose();
+  tracker = null;
   session.value?.dispose();
   session.value = null;
 };

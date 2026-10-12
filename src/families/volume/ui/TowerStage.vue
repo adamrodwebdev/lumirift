@@ -39,7 +39,7 @@ const session: FallingSession = props.session;
 const CAMERA_KEYS: Readonly<Record<string, -1 | 1>> = { KeyQ: -1, KeyE: 1 };
 
 const { t } = useI18n();
-const { theme, settings, audio, haptics } = useServices();
+const { theme, settings, audio, haptics, profile: progression } = useServices();
 const format = useFormat();
 
 const wellArea = ref<HTMLElement | null>(null);
@@ -58,6 +58,11 @@ const effects = new FallingEffects(
   (points) => format.number(points),
 );
 const detachEffects = effects.attach(session);
+watch(
+  () => progression.current.equipment.shatter,
+  (shatter) => effects.setShatter(shatter),
+  { immediate: true },
+);
 const detachSounds = new FallingSoundscape(audio, haptics).attach(session);
 
 const camera = new TowerCamera(session.view.board.width);

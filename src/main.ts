@@ -4,6 +4,7 @@ import { APP_SERVICES, createBrowserServices } from './app/AppServices';
 import { createAppI18n } from './i18n';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/ambiances.css';
 
 const services = createBrowserServices();
 
