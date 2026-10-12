@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                          |
-| ------- | ---------- | ------------------------------- |
-| 0.7     | 12/10/2026 | Lot 4 livré : matière et effets |
+| Version | Date       | Statut                             |
+| ------- | ---------- | ---------------------------------- |
+| 0.8     | 12/10/2026 | Lot 5 livré : quatre modes avancés |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -120,8 +120,8 @@ Mosaïque / Mosaic / Mozaik · Tour / Tower / Menara.
 | **Renversement** | Meilleur score, sans fin         | Le joueur retourne le puits : la pile retombe, en cascade  |
 | **Chroma**       | Meilleur score, sans fin         | Couleurs indépendantes des formes, lignes pures × 4        |
 | **Miroir**       | Meilleur score, sans fin         | Le puits se reflète gauche-droite toutes les 10 lignes     |
-| **Fusion**       | Meilleur score, sans fin         | 4 blocs de même couleur fusionnent, réactions en chaîne    |
-| **Bascule**      | Meilleur score, sans fin         | Le puits pivote d'un quart de tour toutes les 10 lignes    |
+| **Fusion**       | Meilleur score, sans fin         | 6 blocs de même couleur fusionnent, réactions en chaîne    |
+| **Bascule**      | Meilleur score, sans fin         | Le puits pivote vers la gauche toutes les 10 lignes        |
 | **Silhouette**   | Remplir une forme cible au mieux | Énigme : pas de lignes, une silhouette à combler           |
 | **Rythme**       | Meilleur score, sans fin         | Poser sa pièce sur le temps fait grimper un multiplicateur |
 | **Duel**         | Faire déborder l'adversaire (IA) | Les lignes effacées envoient des rangées chez l'adversaire |
@@ -130,7 +130,7 @@ Règles détaillées :
 
 - **Défi du jour** : la graine est la date locale du joueur (AAAAMMJJ). Elle choisit aussi le
   **mode du jour** parmi les modes éligibles (Classique, Chroma, Miroir, Fusion, Rythme,
-  Sable, Mosaïque), annoncé sur l'accueil (« Aujourd'hui : Sable »). Deux minutes de jeu.
+  puis Sable et Mosaïque quand ils seront livrés), annoncé sur l'accueil (« Aujourd'hui : Sable »). Deux minutes de jeu.
   En fin de partie, le joueur partage un texte court (mode, score, date, lien) via le partage
   natif du téléphone ou, à défaut, le presse-papiers. Meilleur score conservé par jour.
   Chaque essai du jour rejoue **exactement la même suite de pièces**. Deux graines
@@ -161,23 +161,35 @@ Règles détaillées :
   des doigts (choix d'accessibilité). Le reflet ne peut créer aucune collision : la pile et
   la pièce sont reflétées ensemble.
 - **Fusion** : couleurs indépendantes des formes, comme Chroma. Après chaque verrouillage,
-  tout groupe d'au moins **4 blocs de même couleur** reliés par un côté disparaît ; les blocs
-  qui ne reposent plus sur rien retombent, ce qui peut former de nouveaux groupes : c'est
-  une **chaîne**. Chaque maillon multiplie les points (10 points par bloc × rang de la
-  chaîne × niveau). Les lignes complètes s'effacent aussi, normalement.
-- **Bascule** : puits **carré de 12 × 12**. Toutes les 10 lignes, le puits pivote d'un quart
-  de tour dans le sens horaire : l'ancien mur gauche devient le sol, et chaque colonne
-  retombe. Une animation montre la rotation (coupée si l'utilisateur réduit les
-  animations). Le sens de la rotation est annoncé 3 s avant.
-- **Silhouette** : une forme cible (cœur, chat, fusée…) est dessinée dans le puits. Aucune
-  ligne ne s'efface. Le joueur dispose d'un nombre limité de pièces (aire de la forme / 4,
-  plus 25 %). Score : +10 par case remplie dans la forme, −20 par bloc posé hors de la forme,
-  bonus de 1 000 pour une forme parfaite. Bibliothèque d'au moins 30 silhouettes (dessinées
-  en texte dans le code), dont une **silhouette du jour**.
-- **Rythme** : une pulsation musicale synthétisée (Web Audio, aucun fichier), 100 battements
-  par minute au niveau 1, plus 5 par niveau. Une pièce posée à ± 120 ms d'un temps augmente
-  le **groove** (multiplicateur × 1 à × 4) ; une pièce posée hors du temps le remet à × 1.
-  Un **métronome visuel** (pulsation du cadre du puits) rend le mode jouable sans le son.
+  tout groupe d'au moins **6 blocs de même couleur** reliés par un côté fusionne et
+  disparaît ; tous les blocs retombent dans leur colonne, ce qui peut former de nouveaux
+  groupes : c'est une **chaîne**. Chaque maillon multiplie les points (10 points par bloc ×
+  rang de la chaîne × niveau) ; une chaîne d'au moins deux maillons est annoncée. Les lignes
+  complètes s'effacent aussi, normalement.
+  _Révision (v0.8)_ : le seuil passe de 4 à **6 blocs**. Une pièce compte déjà 4 blocs
+  d'une même couleur reliés entre eux : avec 4, chaque pièce aurait fusionné seule dès sa
+  pose. Avec 6, toute fusion demande au moins deux pièces (les jeux du genre font de même :
+  pièces de 2 blocs, seuil de 4). **À valider par le porteur du projet.**
+- **Bascule** : puits **carré de 12 × 12**. Toutes les 10 lignes, après un avertissement de
+  3 s, le puits pivote d'un **quart de tour vers la gauche** : l'ancien mur gauche devient le
+  sol, et chaque colonne retombe ; les lignes complétées par la chute s'effacent en cascade.
+  La pièce en cours repart du haut. Animation de rotation (coupée hors effets complets).
+  _Correction (v0.8)_ : le texte précédent disait « sens horaire », ce qui contredisait
+  « le mur gauche devient le sol » ; c'est ce second effet qui est retenu.
+- **Silhouette** : la **silhouette du jour** (la même pour tous, une nouvelle chaque jour)
+  est tracée en bas du puits : contour doré, cases à remplir teintées ; son nom s'affiche dans
+  le tableau de bord. Aucune ligne ne s'efface et les chutes ne rapportent pas de points. Le
+  joueur dispose de (aire / 4) × 1,25 pièces, arrondi au-dessus. Score : +10 par case remplie
+  dans la forme, −20 par bloc posé hors de la forme (jamais sous zéro), +1 000 pour une forme
+  parfaite, qui termine la partie. Fin aussi quand les pièces sont épuisées. Bibliothèque de
+  **30 silhouettes** dessinées en texte (`modes/silhouettes.ts`), nommées dans les trois
+  langues.
+- **Rythme** : une pulsation à 100 battements par minute au niveau 1, +5 par niveau. Une
+  pièce verrouillée à ± 120 ms d'un temps fait monter le **multiplicateur** (× 1 à × 4) ;
+  hors du temps, il retombe à × 1. Il multiplie les points des lignes. **Métronome visuel**
+  (le cadre du puits pulse, plus fort au premier temps de chaque mesure) et sonore (grosse
+  caisse et charleston synthétisés) : le mode se joue aussi sans le son. « × n » s'affiche
+  quand une pièce tombe dans le temps ; le multiplicateur maximal est annoncé.
 - **Duel** : le joueur affronte une IA qui joue dans un second puits (côte à côte sur grand
   écran, en vignette sur mobile). Lignes envoyées : 2 lignes → 1 rangée, 3 → 2, 4 → 4, plus 1
   par combo. Les rangées reçues attendent 1 s et peuvent être annulées en effaçant des
@@ -651,6 +663,25 @@ src/families/falling/
 - Correctif du lot 3 : le plateau est désormais **recréé à chaque partie** (clé par partie) ;
   avant, « Rejouer » gardait l'affichage de la partie précédente.
 
+### 5.9 Modes avancés (livrés au lot 5)
+
+- **Contrat `GameMode` étendu**, avec des valeurs par défaut dans `AbstractMode` (les modes
+  existants ne changent pas) : `well` (taille du puits, 10 × 20), `clearsLines`,
+  `scoresDrops`, `afterLock` (réaction après chaque pose), `clearMultiplier`
+  (multiplicateur des lignes), `subtitleKey` (sous-titre de la partie).
+- **Nouvelles opérations du puits** : `settle` (chute de chaque colonne), `rotateLeft`
+  (quart de tour d'un puits carré), `findGroups` (groupes de même couleur reliés),
+  `removeCells`.
+- **Nouveaux points d'extension de `Game`** : `fuse`, `tiltWell`, `adjustScore`, `beat`,
+  `groove`, et les événements correspondants (`fusion`, `tilt`, `beat`, `groove`). Un mode
+  ne touche toujours jamais la grille directement.
+- **Fusion** n'hérite pas de Chroma (une fusion n'est pas une couleur pure) : les deux
+  partagent le tirage des couleurs par une fonction (`randomChromaTone`), par composition.
+- **Décors par mode** (`WellDecor`) : eau de la Marée, contour de la Silhouette. Le rendu ne
+  connaît pas les modes ; il reçoit le décor du mode.
+- **Date du jour** transmise à la session (`SessionOptions.today`) pour la silhouette du jour.
+- Nouveaux formats d'indicateur : `percent` (forme remplie).
+
 ## 6. Qualité et tests
 
 - Tests unitaires du moteur : collisions, rotations et décalages muraux, effacement de
@@ -693,7 +724,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré     |
 | 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré     |
 | 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré     |
-| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | À faire   |
+| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré     |
 | 6   | Duel contre l'IA                                                                                           | À faire   |
 | 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | À faire   |
 | 8   | Sable (grains) et ses éléments                                                                             | À faire   |
@@ -728,3 +759,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.5     | 12/10/2026 | Direction artistique et son (§ 3.5), personnalisation commerciale (§ 3.6), distribution : démo portfolio et portails après la 1.0 (§ 3.7) ; lots 3 à 13. |
 | 0.6     | 12/10/2026 | Lot 3 : interface (§ 5.6), mesures Lighthouse et budget (§ 5.7), tests de l'interface (§ 6).                                                             |
 | 0.7     | 12/10/2026 | Lot 4 : effets réalisés et profils (§ 3.5), délai après effacement (§ 3.1), architecture des effets (§ 5.8), mesures (§ 5.7).                            |
+| 0.8     | 12/10/2026 | Lot 5 : règles détaillées de Fusion (seuil porté à 6), Bascule (sens corrigé), Silhouette, Rythme ; architecture des modes avancés (§ 5.9).              |

@@ -82,3 +82,43 @@ describe('Board', () => {
     expect(Board.fromRows(['#.........', EMPTY, EMPTY]).stackHeight()).toBe(3);
   });
 });
+
+describe('Board operations of the advanced modes', () => {
+  it('lets blocks fall in their column, keeping their order', () => {
+    const board = Board.fromRows(['#.........', '..........', '.#........', '..........']);
+    board.settle();
+    expect(board.toRows().slice(-2)).toEqual([EMPTY, '##........']);
+    expect(board.blockCount()).toBe(2);
+  });
+
+  it('turns a square well a quarter turn left: the left wall becomes the floor', () => {
+    const board = new Board(4, 4);
+    const filled = Board.fromRows(['#...', '#...', '#...', '####'], 4, 4);
+    filled.rotateLeft();
+    expect(filled.toRows()).toEqual(['...#', '...#', '...#', '####']);
+    expect(() => new Board().rotateLeft()).toThrow();
+    expect(board.toRows()).toHaveLength(4);
+  });
+
+  it('finds groups of same-coloured blocks touching by a side', () => {
+    const board = new Board();
+    board.lock(new Piece('O', Tone.ChromaA, 0, 20));
+    board.lock(new Piece('O', Tone.ChromaB, 2, 20));
+    board.lock(new Piece('I', Tone.ChromaA, 4, 19)); // a separate line of four at x 4..7
+    expect(board.findGroups(4)).toHaveLength(3);
+    expect(board.findGroups(5)).toHaveLength(0);
+    expect(board.findGroups(4, [Tone.ChromaB])).toHaveLength(2);
+    expect(Board.fromRows(['##########']).findGroups(4, [Tone.Garbage])).toHaveLength(0);
+  });
+
+  it('removes cells and reports their tones', () => {
+    const board = new Board();
+    board.lock(new Piece('O', Tone.ChromaC, 0, 20));
+    const removed = board.removeCells([
+      { x: 0, y: 21 },
+      { x: 1, y: 21 },
+    ]);
+    expect(removed.map((cell) => cell.tone)).toEqual([Tone.ChromaC, Tone.ChromaC]);
+    expect(board.blockCount()).toBe(2);
+  });
+});

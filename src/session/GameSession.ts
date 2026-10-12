@@ -11,7 +11,8 @@ export type ResultKind = 'score' | 'time';
 export interface Indicator {
   readonly id: string;
   readonly value: number;
-  readonly format: 'count' | 'duration';
+  /** `percent`: a value from 0 to 100. */
+  readonly format: 'count' | 'duration' | 'percent';
 }
 
 /** A player intention, defined by each family (`{ type: 'hardDrop' }`…). */
@@ -39,6 +40,8 @@ export interface SessionOptions {
   readonly random: RandomSource;
   /** Fixed duration (daily challenge), or null for the mode's own rules. */
   readonly timeLimitMs: number | null;
+  /** Date of play, for modes that change every day (the silhouette of the day). */
+  readonly today?: Date;
 }
 
 /**
@@ -61,6 +64,8 @@ export interface GameSession<C extends Command = Command> {
   /** HUD values, the main one first. */
   indicators(): readonly Indicator[];
   result(): SessionResult;
+  /** Translation key of a subtitle for this game (the silhouette of the day…), or null. */
+  subtitleKey(): string | null;
   /** Releases listeners; the session cannot be used afterwards. */
   dispose(): void;
 }

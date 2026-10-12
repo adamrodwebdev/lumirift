@@ -4,6 +4,7 @@ const COMBO_POINTS = 50;
 const SOFT_DROP_POINTS = 1;
 const HARD_DROP_POINTS = 2;
 const PURE_LINE_FACTOR = 4;
+const FUSION_POINTS = 10;
 
 export interface ClearScore {
   readonly lines: number;
@@ -24,6 +25,11 @@ export class Scoring {
     const pureShare = this.pureLinesCount ? pureLines / lines : 0;
     const lineScore = Math.round(base * (1 + (PURE_LINE_FACTOR - 1) * pureShare));
     return lineScore + COMBO_POINTS * combo * level;
+  }
+
+  /** Fusion: points per block, multiplied by the rank of the chain reaction and the level. */
+  fusion(blocks: number, chain: number, level: number): number {
+    return FUSION_POINTS * blocks * chain * level;
   }
 
   softDrop(rows: number): number {

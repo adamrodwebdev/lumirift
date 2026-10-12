@@ -7,6 +7,12 @@ import type { PieceType, Tone } from '../pieces/PieceType';
 /** A special move the player triggers on demand (button or key). */
 export type AbilityId = 'flip';
 
+/** Visible size of the well, in cells. */
+export interface WellSize {
+  readonly width: number;
+  readonly height: number;
+}
+
 /**
  * Strategy for a mode of the falling family. The engine calls these hooks;
  * each mode adds its own twist without the engine knowing which mode it plays.
@@ -15,6 +21,11 @@ export type AbilityId = 'flip';
 export interface GameMode {
   readonly id: FallingModeId;
   readonly result: ResultKind;
+  readonly well: WellSize;
+  /** Full rows disappear (false: they stay, as in Silhouette). */
+  readonly clearsLines: boolean;
+  /** Soft and hard drops earn points. */
+  readonly scoresDrops: boolean;
   /** Pure lines (one colour across) score four times. */
   readonly scoresPureLines: boolean;
   readonly ability: AbilityId | null;
@@ -25,10 +36,16 @@ export interface GameMode {
   attach(game: Game): void;
   /** Called every frame while the game runs. */
   update(game: Game, deltaMs: number): void;
+  /** Called after each lock and its line clears, before the next piece. */
+  afterLock(game: Game): void;
+  /** Multiplier of the points of the next line clear. */
+  clearMultiplier(game: Game): number;
   /** Uses the mode's ability; returns false when unavailable. */
   useAbility(game: Game): boolean;
   /** Mode-specific HUD values. */
   indicators(game: Game): readonly Indicator[];
   /** Value saved as the player's result: points, or milliseconds survived. */
   resultValue(game: Game): number;
+  /** Translation key of a subtitle for this game (the silhouette's name…), or null. */
+  subtitleKey(): string | null;
 }

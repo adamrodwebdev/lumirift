@@ -205,6 +205,18 @@ const modes = computed(() =>
 .mode--mirror {
   --mode-color: var(--tone-3);
 }
+.mode--fusion {
+  --mode-color: var(--tone-11);
+}
+.mode--tilt {
+  --mode-color: var(--tone-5);
+}
+.mode--silhouette {
+  --mode-color: var(--tone-4);
+}
+.mode--rhythm {
+  --mode-color: var(--tone-8);
+}
 
 .mode__name {
   font-family: var(--font-display);

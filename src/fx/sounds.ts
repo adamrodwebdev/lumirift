@@ -111,6 +111,38 @@ export const bonus: SoundRecipe = (s) => {
   s.tone({ frequency: 2093, duration: 0.35, gain: 0.05, start: 0.06 });
 };
 
+/** Fusion: a crystalline chord, one step higher for each link of the chain. */
+export const fusion =
+  (chain: number): SoundRecipe =>
+  (s) => {
+    s.noise({ filter: 'highpass', frequency: 3600, duration: 0.18, gain: 0.12 });
+    const base = semitone(659, Math.min(chain - 1, 7) * 2);
+    [0, 4, 7, 12].forEach((step, i) =>
+      s.tone({ frequency: semitone(base, step), duration: 0.5, gain: 0.05, start: i * 0.035 }),
+    );
+  };
+
+/** Rhythm: the downbeat. */
+export const kick: SoundRecipe = (s) => {
+  s.tone({ frequency: 130, to: 45, duration: 0.16, gain: 0.3 });
+  s.noise({ filter: 'lowpass', frequency: 600, duration: 0.03, gain: 0.05 });
+};
+
+/** Rhythm: the other beats. */
+export const hat: SoundRecipe = (s) =>
+  s.noise({ filter: 'highpass', frequency: 7000, duration: 0.05, gain: 0.07 });
+
+/** Rhythm: a piece landed on the beat. */
+export const onBeat =
+  (level: number): SoundRecipe =>
+  (s) =>
+    s.tone({
+      type: 'triangle',
+      frequency: semitone(1047, (level - 1) * 3),
+      duration: 0.18,
+      gain: 0.07,
+    });
+
 export const gameOver: SoundRecipe = (s) => {
   s.tone({ type: 'sawtooth', frequency: 330, to: 55, duration: 1.2, gain: 0.05 });
   s.noise({ filter: 'lowpass', frequency: 500, to: 120, duration: 1.1, gain: 0.16 });

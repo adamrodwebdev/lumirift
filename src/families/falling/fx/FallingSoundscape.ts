@@ -7,6 +7,8 @@ import { CRACK_MS } from './FallingEffects';
 /** Notices that deserve a sound, by id. */
 const NOTICE_SOUNDS: Readonly<Record<string, SoundRecipe>> = {
   mirrorSoon: sounds.warning,
+  tiltSoon: sounds.warning,
+  perfect: sounds.pureLine,
   reflexBonus: sounds.bonus,
   chargeGained: sounds.bonus,
 };
@@ -61,6 +63,18 @@ export class FallingSoundscape {
         haptics.pulse([20, 30, 50]);
       }),
       session.onGame('mirror', () => audio.play(sounds.mirror)),
+      session.onGame('tilt', () => {
+        audio.play(sounds.flip);
+        haptics.pulse([20, 30, 50]);
+      }),
+      session.onGame('fusion', ({ chain }) => {
+        audio.play(sounds.fusion(chain));
+        haptics.pulse(16 + chain * 8);
+      }),
+      session.onGame('beat', ({ count }) => audio.play(count % 4 === 1 ? sounds.kick : sounds.hat)),
+      session.onGame('groove', ({ level, onBeat }) => {
+        if (onBeat) audio.play(sounds.onBeat(level));
+      }),
       session.onGame('notice', ({ id }) => {
         const sound = NOTICE_SOUNDS[id];
         if (sound) audio.play(sound);

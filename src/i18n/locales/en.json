@@ -23,7 +23,7 @@
     "modes": "Game modes",
     "best": "Best: {value}",
     "noBest": "No record yet",
-    "comingSoon": "Coming soon: Fusion, Tilt, Silhouette, Rhythm, Duel, Sand, Mosaic and Tower."
+    "comingSoon": "Coming soon: Duel, Sand, Mosaic and Tower."
   },
   "daily": {
     "title": "Daily Challenge",
@@ -52,6 +52,22 @@
     "mirror": {
       "name": "Mirror",
       "pitch": "Every 10 lines, the well is mirrored. Adapt."
+    },
+    "fusion": {
+      "name": "Fusion",
+      "pitch": "Six blocks of one colour fuse: set off chain reactions."
+    },
+    "tilt": {
+      "name": "Tilt",
+      "pitch": "Every 10 lines the well turns: the left wall becomes the floor."
+    },
+    "silhouette": {
+      "name": "Silhouette",
+      "pitch": "A puzzle a day: fill the shape with a limited number of pieces."
+    },
+    "rhythm": {
+      "name": "Rhythm",
+      "pitch": "Land your pieces on the beat to multiply your points."
     }
   },
   "result": {
@@ -73,7 +89,17 @@
     "mirrorIn": "Mirror in",
     "reflex": "Reflex bonus",
     "hold": "Hold",
-    "next": "Next"
+    "next": "Next",
+    "fused": "Blocks fused",
+    "bestChain": "Best chain",
+    "nextTilt": "Lines to tilt",
+    "tiltIn": "Tilt in",
+    "piecesLeft": "Pieces left",
+    "filled": "Shape filled",
+    "outside": "Blocks outside",
+    "groove": "Multiplier",
+    "onBeat": "Pieces on the beat",
+    "bpm": "Tempo"
   },
   "notice": {
     "lines": "One line cleared | {n} lines cleared",
@@ -84,7 +110,12 @@
     "mirrorSoon": "The well is about to be mirrored",
     "mirror": "Mirrored",
     "reflexBonus": "Reflex bonus: + {value}",
-    "flip": "Flipped"
+    "flip": "Flipped",
+    "chain": "Chain × {value}",
+    "tiltSoon": "The well is about to tilt",
+    "tilt": "Tilted",
+    "grooveMax": "Maximum groove",
+    "perfect": "Perfect silhouette: + {value}"
   },
   "controls": {
     "label": "Touch controls",
@@ -114,7 +145,9 @@
       "blockOut": "The well is full.",
       "lockOut": "The well is full.",
       "topOut": "The stack overflowed.",
-      "timeUp": "Time's up."
+      "timeUp": "Time's up.",
+      "outOfPieces": "No pieces left.",
+      "shapeComplete": "Silhouette complete."
     },
     "result": "Result",
     "newBest": "New record",
@@ -154,5 +187,37 @@
     "fr": "Français",
     "en": "English",
     "id": "Bahasa Indonesia"
+  },
+  "silhouettes": {
+    "heart": "Heart",
+    "cat": "Cat",
+    "house": "House",
+    "rocket": "Rocket",
+    "tree": "Fir tree",
+    "fish": "Fish",
+    "star": "Star",
+    "arrow": "Arrow",
+    "mushroom": "Mushroom",
+    "cup": "Cup",
+    "key": "Key",
+    "crown": "Crown",
+    "ghost": "Ghost",
+    "robot": "Robot",
+    "boat": "Sailboat",
+    "apple": "Apple",
+    "umbrella": "Umbrella",
+    "bell": "Bell",
+    "duck": "Duck",
+    "anchor": "Anchor",
+    "castle": "Castle",
+    "cactus": "Cactus",
+    "diamond": "Diamond",
+    "lightning": "Lightning",
+    "moon": "Moon",
+    "sword": "Sword",
+    "bottle": "Bottle",
+    "chair": "Chair",
+    "pyramid": "Pyramid",
+    "spaceship": "Spaceship"
   }
 }

@@ -25,7 +25,7 @@ export interface TestGameOptions {
 export function startedGame({ rows, mode, startLevel }: TestGameOptions = {}): Game {
   const game = new Game(mode ?? new ClassicMode(), {
     random: new ConstantRandom(),
-    board: rows ? Board.fromRows(rows) : new Board(),
+    ...(rows ? { board: Board.fromRows(rows) } : {}),
     ...(startLevel === undefined ? {} : { startLevel }),
   });
   game.start();

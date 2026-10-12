@@ -1,5 +1,6 @@
 import type { Piece } from '../pieces/Piece';
 import { Tone } from '../pieces/PieceType';
+import type { Cell } from '../pieces/Shapes';
 
 export interface ClearedRow {
   /** Row index before removal. */
@@ -8,6 +9,10 @@ export interface ClearedRow {
   readonly pure: boolean;
   /** The tones the row held, left to right (for the destruction effects). */
   readonly tones: Uint8Array;
+}
+
+export interface RemovedCell extends Cell {
+  readonly tone: Tone;
 }
 
 /**
@@ -131,6 +136,86 @@ export class Board {
       let y = this.height - 1;
       for (const tone of column) this.set(x, y--, tone);
     }
+  }
+
+  /** Lets every block fall to the floor of its column, keeping their order. */
+  settle(): void {
+    for (let x = 0; x < this.width; x++) {
+      let write = this.height - 1;
+      for (let read = this.height - 1; read >= 0; read--) {
+        const tone = this.get(x, read);
+        if (tone === Tone.Empty) continue;
+        if (write !== read) {
+          this.set(x, write, tone);
+          this.set(x, read, Tone.Empty);
+        }
+        write--;
+      }
+    }
+  }
+
+  /**
+   * Turns the visible well a quarter turn to the left: the left wall becomes
+   * the floor. Needs a square visible area; the hidden rows are emptied.
+   */
+  rotateLeft(): void {
+    const size = this.width;
+    if (this.height - this.hiddenRows !== size) throw new Error('rotateLeft needs a square well');
+    const top = this.hiddenRows;
+    const before = this.cells.slice();
+    this.cells.fill(Tone.Empty);
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        // The cell (x, y) of the turned well shows the old cell (size - 1 - y, x).
+        this.set(x, top + y, before[(top + x) * size + (size - 1 - y)] as Tone);
+      }
+    }
+  }
+
+  /**
+   * Groups of at least `minSize` blocks of the same tone touching by a side,
+   * ignoring the given tones (garbage never fuses).
+   */
+  findGroups(minSize: number, ignored: readonly Tone[] = []): Cell[][] {
+    const seen = new Uint8Array(this.cells.length);
+    const groups: Cell[][] = [];
+    for (let start = 0; start < this.cells.length; start++) {
+      const tone = this.cells[start] as Tone;
+      if (seen[start] || tone === Tone.Empty || ignored.includes(tone)) continue;
+      const group: Cell[] = [];
+      const stack = [start];
+      seen[start] = 1;
+      while (stack.length > 0) {
+        const index = stack.pop()!;
+        const x = index % this.width;
+        const y = Math.floor(index / this.width);
+        group.push({ x, y });
+        for (const [nx, ny] of [
+          [x - 1, y],
+          [x + 1, y],
+          [x, y - 1],
+          [x, y + 1],
+        ] as const) {
+          if (!this.isInside(nx, ny)) continue;
+          const next = ny * this.width + nx;
+          if (!seen[next] && this.cells[next] === tone) {
+            seen[next] = 1;
+            stack.push(next);
+          }
+        }
+      }
+      if (group.length >= minSize) groups.push(group);
+    }
+    return groups;
+  }
+
+  /** Empties the given cells and returns what they held. */
+  removeCells(cells: readonly Cell[]): RemovedCell[] {
+    return cells.map(({ x, y }) => {
+      const tone = this.get(x, y);
+      this.set(x, y, Tone.Empty);
+      return { x, y, tone };
+    });
   }
 
   /** Reflects the well left to right. */

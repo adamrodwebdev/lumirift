@@ -5,7 +5,7 @@ import type { GameMode } from '../modes/GameMode';
 import { Bag } from '../pieces/Bag';
 import { Piece } from '../pieces/Piece';
 import type { PieceType, RotationDirection, Tone } from '../pieces/PieceType';
-import { kickOffsets } from '../pieces/Shapes';
+import { kickOffsets, type Cell } from '../pieces/Shapes';
 import { GravityCurve } from '../rules/GravityCurve';
 import { Scoring } from '../rules/Scoring';
 import type { GameEventMap, GameOverReason, GameState } from './GameEvents';
@@ -67,13 +67,15 @@ export class Game {
   private lowestY = 0;
   /** Time left before the next piece appears, after a line clear. */
   private spawnDelay = 0;
+  /** Something was destroyed by the last lock: the next piece waits for the effects. */
+  private pauseAfterLock = false;
 
   constructor(
     readonly mode: GameMode,
     options: GameOptions,
   ) {
     this.random = options.random;
-    this.board = options.board ?? new Board();
+    this.board = options.board ?? new Board(mode.well.width, mode.well.height);
     this.bag = new Bag(this.random);
     this.scoring = new Scoring(mode.scoresPureLines);
     this.startLevel = options.startLevel ?? 1;
@@ -196,7 +198,7 @@ export class Game {
     if (!this.canAct() || !this._active) return;
     const distance = this.dropDistance();
     this._active = this._active.moved(0, distance);
-    this._score += this.scoring.hardDrop(distance);
+    if (this.mode.scoresDrops) this._score += this.scoring.hardDrop(distance);
     this.events.emit('hardDrop', { piece: this._active, distance });
     this.lockActive();
   }
@@ -259,6 +261,60 @@ export class Game {
     this.events.emit('mirror', {});
   }
 
+  /**
+   * Removes fused groups of blocks (Fusion), lets the rest settle and clears
+   * the rows completed by the fall. `chain` is the rank of this reaction.
+   */
+  fuse(groups: readonly (readonly Cell[])[], chain: number): void {
+    if (this._state === 'over' || groups.length === 0) return;
+    const cells = this.board.removeCells(groups.flat());
+    const points = this.scoring.fusion(cells.length, chain, this._level);
+    this._score += points;
+    this.events.emit('fusion', { cells, chain, points });
+    this.board.settle();
+    const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
+    this.scoreClear(cleared, true);
+    this.pauseAfterLock = true;
+    if (!this.liftActiveUntilItFits()) this.finish('topOut');
+  }
+
+  /**
+   * Turns the well a quarter left (Tilt): the left wall becomes the floor and
+   * every column settles. The falling piece goes back to the front of the queue.
+   */
+  tiltWell(): void {
+    if (this._state === 'over') return;
+    const piece = this._active;
+    if (piece) {
+      this.upcoming.unshift({ type: piece.type, tone: piece.tone });
+      this._active = null;
+    }
+    this.board.rotateLeft();
+    this.board.settle();
+    const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
+    this.scoreClear(cleared, true);
+    this.events.emit('tilt', { lines: cleared.length });
+    if (this._state !== 'running' || this.spawnDelay > 0) return;
+    if (this.lineClearDelayMs > 0) this.spawnDelay = this.lineClearDelayMs;
+    else this.spawnNext();
+  }
+
+  /** Adds or removes points by a mode rule (never below zero). */
+  adjustScore(delta: number): void {
+    if (this._state === 'over') return;
+    this._score = Math.max(0, this._score + delta);
+  }
+
+  /** Publishes a beat of the mode's rhythm. */
+  beat(count: number): void {
+    this.events.emit('beat', { count });
+  }
+
+  /** Publishes the groove reached by the last lock. */
+  groove(level: number, onBeat: boolean): void {
+    this.events.emit('groove', { level, onBeat });
+  }
+
   /** Adds bonus points granted by a mode rule, and announces them. */
   awardPoints(points: number, reason: string): void {
     if (this._state === 'over' || points <= 0) return;
@@ -318,7 +374,7 @@ export class Game {
       }
       this.place(this._active.moved(0, 1));
       fell = true;
-      if (this.softDropping) this._score += this.scoring.softDrop(1);
+      if (this.softDropping && this.mode.scoresDrops) this._score += this.scoring.softDrop(1);
     }
     return fell;
   }
@@ -342,14 +398,17 @@ export class Game {
     const visible = this.board.lock(piece);
     this._active = null;
     this.events.emit('lock', { piece });
-    const cleared = this.board.clearFullRows();
+    const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
+    this.pauseAfterLock = cleared.length > 0;
     this.scoreClear(cleared, false);
+    this.mode.afterLock(this);
+    if (this._state === 'over') return;
     if (!visible && cleared.length === 0) {
       this.finish('lockOut');
       return;
     }
     this._canHold = true;
-    if (cleared.length > 0 && this.lineClearDelayMs > 0) this.spawnDelay = this.lineClearDelayMs;
+    if (this.pauseAfterLock && this.lineClearDelayMs > 0) this.spawnDelay = this.lineClearDelayMs;
     else this.spawnNext();
   }
 
@@ -362,7 +421,8 @@ export class Game {
     const lines = cleared.length;
     const pureLines = cleared.filter((row) => row.pure).length;
     const combo = this._combo;
-    const points = this.scoring.clear({ lines, pureLines, level: this._level, combo });
+    const base = this.scoring.clear({ lines, pureLines, level: this._level, combo });
+    const points = Math.round(base * this.mode.clearMultiplier(this));
     this._score += points;
     this._lines += lines;
     this.events.emit('clear', { lines, pureLines, points, combo, cascade, rows: cleared });

@@ -3,6 +3,21 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [0.3.0] — 12/10/2026
+
+Quatre modes avancés.
+
+### Ajouté
+
+- Fusion : six blocs de même couleur fusionnent, réactions en chaîne, points par maillon.
+- Bascule : puits carré qui pivote d'un quart de tour vers la gauche toutes les 10 lignes.
+- Silhouette : la silhouette du jour à remplir avec un nombre limité de pièces ;
+  bibliothèque de 30 formes nommées en français, anglais et indonésien.
+- Rythme : pulsation qui accélère avec le niveau, multiplicateur jusqu'à × 4 pour les
+  pièces posées dans le temps, métronome visuel et sonore.
+- Effets et sons propres à ces modes ; sous-titre de partie (nom de la silhouette).
+- Fusion et Rythme peuvent être le mode du défi du jour.
+
 ## [0.2.0] — 12/10/2026
 
 Matière et effets : la destruction devient spectaculaire.

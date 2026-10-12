@@ -23,7 +23,7 @@
     "modes": "Modes de jeu",
     "best": "Record : {value}",
     "noBest": "Pas encore de record",
-    "comingSoon": "Bientôt : Fusion, Bascule, Silhouette, Rythme, Duel, Sable, Mosaïque et Tour."
+    "comingSoon": "Bientôt : Duel, Sable, Mosaïque et Tour."
   },
   "daily": {
     "title": "Défi du jour",
@@ -52,6 +52,22 @@
     "mirror": {
       "name": "Miroir",
       "pitch": "Toutes les 10 lignes, le puits se reflète. Adaptez-vous."
+    },
+    "fusion": {
+      "name": "Fusion",
+      "pitch": "Six blocs de même couleur fusionnent : déclenchez des réactions en chaîne."
+    },
+    "tilt": {
+      "name": "Bascule",
+      "pitch": "Toutes les 10 lignes, le puits pivote : le mur gauche devient le sol."
+    },
+    "silhouette": {
+      "name": "Silhouette",
+      "pitch": "Une énigme par jour : remplissez la forme avec un nombre limité de pièces."
+    },
+    "rhythm": {
+      "name": "Rythme",
+      "pitch": "Posez vos pièces sur le temps pour multiplier vos points."
     }
   },
   "result": {
@@ -73,7 +89,17 @@
     "mirrorIn": "Reflet dans",
     "reflex": "Bonus réflexe",
     "hold": "Réserve",
-    "next": "Suivantes"
+    "next": "Suivantes",
+    "fused": "Blocs fusionnés",
+    "bestChain": "Meilleure chaîne",
+    "nextTilt": "Lignes avant bascule",
+    "tiltIn": "Bascule dans",
+    "piecesLeft": "Pièces restantes",
+    "filled": "Forme remplie",
+    "outside": "Blocs hors forme",
+    "groove": "Multiplicateur",
+    "onBeat": "Pièces dans le temps",
+    "bpm": "Tempo"
   },
   "notice": {
     "lines": "Une ligne effacée | {n} lignes effacées",
@@ -84,7 +110,12 @@
     "mirrorSoon": "Le puits va se refléter",
     "mirror": "Reflet",
     "reflexBonus": "Bonus réflexe : + {value}",
-    "flip": "Renversement"
+    "flip": "Renversement",
+    "chain": "Chaîne × {value}",
+    "tiltSoon": "Le puits va basculer",
+    "tilt": "Bascule",
+    "grooveMax": "Groove maximal",
+    "perfect": "Silhouette parfaite : + {value}"
   },
   "controls": {
     "label": "Commandes tactiles",
@@ -114,7 +145,9 @@
       "blockOut": "Le puits est plein.",
       "lockOut": "Le puits est plein.",
       "topOut": "La pile a débordé.",
-      "timeUp": "Temps écoulé."
+      "timeUp": "Temps écoulé.",
+      "outOfPieces": "Plus de pièces.",
+      "shapeComplete": "Silhouette complète."
     },
     "result": "Résultat",
     "newBest": "Nouveau record",
@@ -154,5 +187,37 @@
     "fr": "Français",
     "en": "English",
     "id": "Bahasa Indonesia"
+  },
+  "silhouettes": {
+    "heart": "Cœur",
+    "cat": "Chat",
+    "house": "Maison",
+    "rocket": "Fusée",
+    "tree": "Sapin",
+    "fish": "Poisson",
+    "star": "Étoile",
+    "arrow": "Flèche",
+    "mushroom": "Champignon",
+    "cup": "Tasse",
+    "key": "Clé",
+    "crown": "Couronne",
+    "ghost": "Fantôme",
+    "robot": "Robot",
+    "boat": "Voilier",
+    "apple": "Pomme",
+    "umbrella": "Parapluie",
+    "bell": "Cloche",
+    "duck": "Canard",
+    "anchor": "Ancre",
+    "castle": "Château",
+    "cactus": "Cactus",
+    "diamond": "Diamant",
+    "lightning": "Éclair",
+    "moon": "Lune",
+    "sword": "Épée",
+    "bottle": "Bouteille",
+    "chair": "Chaise",
+    "pyramid": "Pyramide",
+    "spaceship": "Vaisseau"
   }
 }

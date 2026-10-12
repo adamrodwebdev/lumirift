@@ -34,3 +34,7 @@ export const CHROMA_TONES: readonly Tone[] = [
 ];
 
 export const shapeTone = (type: PieceType): Tone => Tone[type];
+
+/** One of the four colours dealt independently of the shape (Chroma, Fusion). */
+export const randomChromaTone = (random: { nextInt(max: number): number }): Tone =>
+  CHROMA_TONES[random.nextInt(CHROMA_TONES.length)]!;
