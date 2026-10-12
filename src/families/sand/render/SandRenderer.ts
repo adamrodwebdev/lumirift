@@ -140,6 +140,14 @@ export class SandRenderer {
       buffer[i] =
         tone === 0 || hidden ? this.background : this.colour(tone, grain[i]!, i % W, (i / W) | 0);
     }
+    const target = hidden ? null : this.view.fireTarget();
+    if (target) {
+      for (const i of target) {
+        if (((i * 7 + (this.frame >> 2)) & 3) === 0) {
+          buffer[i] = this.colour(Tone.Fire, 3, i % W, (i / W) | 0);
+        }
+      }
+    }
     if (active && !hidden) {
       const g = GRAINS_PER_CELL;
       for (const cell of active.localCells) {

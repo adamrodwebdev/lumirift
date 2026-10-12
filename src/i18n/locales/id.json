@@ -150,7 +150,8 @@
     "windSoonRight": "Angin bertiup ke kanan",
     "elementWater": "Kepingan air",
     "elementFire": "Kepingan api",
-    "burn": "Api membakar {value} butir"
+    "burn": "Api membakar {value} butir",
+    "quench": "Air memadamkan api"
   },
   "controls": {
     "label": "Kontrol sentuh",

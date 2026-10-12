@@ -150,7 +150,8 @@
     "windSoonRight": "Wind blowing to the right",
     "elementWater": "Water piece",
     "elementFire": "Fire piece",
-    "burn": "Fire burnt {value} grains"
+    "burn": "Fire burnt {value} grains",
+    "quench": "Water puts the fire out"
   },
   "controls": {
     "label": "Touch controls",

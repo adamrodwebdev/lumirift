@@ -150,7 +150,8 @@
     "windSoonRight": "Coup de vent vers la droite",
     "elementWater": "Pièce d’eau",
     "elementFire": "Pièce de feu",
-    "burn": "Le feu a consumé {value} grains"
+    "burn": "Le feu a consumé {value} grains",
+    "quench": "L’eau éteint le feu"
   },
   "controls": {
     "label": "Commandes tactiles",

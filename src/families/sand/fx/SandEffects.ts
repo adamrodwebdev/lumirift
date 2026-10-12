@@ -51,6 +51,7 @@ export class SandEffects {
         this.onClear(samples, points, regions),
       ),
       session.onGame('burn', ({ samples, points }) => this.onBurn(samples, points)),
+      session.onGame('quench', ({ samples }) => this.onQuench(samples)),
       session.onGame('lock', ({ piece }) => this.onLock(piece)),
       session.onGame('wind', ({ phase, direction }) => {
         this.wind = phase === 'start' ? direction : 0;
@@ -124,6 +125,25 @@ export class SandEffects {
         random(0.5, 1.1),
         0.6,
         color,
+      );
+    }
+  }
+
+  /** Water meets fire: a puff of steam rises. */
+  private onQuench(samples: readonly GrainSample[]): void {
+    const palette = this.palette();
+    if (this.profile().particles === 0 || !palette) return;
+    const steam = this.color(palette.effects.steam);
+    for (const sample of this.thin(samples)) {
+      this.pool.spawn(
+        ParticleKind.Dust,
+        sample.x + 0.5,
+        sample.y + 0.5,
+        random(-12, 12),
+        random(-70, -30),
+        random(0.8, 1.4),
+        2.5,
+        steam,
       );
     }
   }
