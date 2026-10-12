@@ -1,0 +1,32 @@
+import type { Piece } from '../pieces/Piece';
+import type { PieceType } from '../pieces/PieceType';
+
+export type GameState = 'ready' | 'running' | 'paused' | 'over';
+
+/**
+ * blockOut: a new piece cannot appear. lockOut: a piece locked entirely above
+ * the visible well. topOut: rising rows pushed blocks out. timeUp: timed mode.
+ */
+export type GameOverReason = 'blockOut' | 'lockOut' | 'topOut' | 'timeUp';
+
+export interface LinesClearedEvent {
+  readonly lines: number;
+  readonly pureLines: number;
+  readonly points: number;
+  /** Consecutive clearing locks before this one. */
+  readonly combo: number;
+  /** True when the clear came from a flip of the well, not from a lock. */
+  readonly cascade: boolean;
+}
+
+export interface GameEventMap {
+  state: { readonly state: GameState };
+  spawn: { readonly piece: Piece };
+  lock: { readonly piece: Piece };
+  hold: { readonly type: PieceType };
+  clear: LinesClearedEvent;
+  levelUp: { readonly level: number };
+  garbage: { readonly rows: number };
+  flip: { readonly lines: number };
+  over: { readonly reason: GameOverReason };
+}
