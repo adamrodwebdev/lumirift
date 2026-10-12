@@ -41,6 +41,7 @@ const stage = stageFor(descriptor);
 /** Controls help shown in the pause dialog, by family. */
 const HELP: Readonly<Partial<Record<string, readonly string[]>>> = {
   falling: ['controls.keyboard', 'controls.touch'],
+  sand: ['sand.helpKeyboard', 'sand.helpTouch'],
   placement: ['mosaic.helpKeyboard', 'mosaic.helpTouch'],
 };
 const help = HELP[descriptor.family] ?? [];

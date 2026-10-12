@@ -21,5 +21,8 @@ export type FallingModeId = (typeof FALLING_MODE_IDS)[number];
 export const PLACEMENT_MODE_IDS = ['mosaic'] as const;
 export type PlacementModeId = (typeof PLACEMENT_MODE_IDS)[number];
 
-export const MODE_IDS = [...FALLING_MODE_IDS, ...PLACEMENT_MODE_IDS] as const;
+/** Modes of the sand family. */
+export const SAND_MODE_IDS = ['sand'] as const;
+
+export const MODE_IDS = [...FALLING_MODE_IDS, ...SAND_MODE_IDS, ...PLACEMENT_MODE_IDS] as const;
 export type ModeId = (typeof MODE_IDS)[number];

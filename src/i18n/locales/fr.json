@@ -23,7 +23,7 @@
     "modes": "Modes de jeu",
     "best": "Record : {value}",
     "noBest": "Pas encore de record",
-    "comingSoon": "Bientôt : Sable et Tour."
+    "comingSoon": "Bientôt : la Tour."
   },
   "daily": {
     "title": "Défi du jour",
@@ -76,6 +76,10 @@
     "mosaic": {
       "name": "Mosaïque",
       "pitch": "Posez des pièces de céramique, complétez lignes et colonnes, gagnez des jokers."
+    },
+    "sand": {
+      "name": "Sable",
+      "pitch": "Les pièces se désagrègent en grains : reliez les deux murs d’une même couleur."
     }
   },
   "result": {
@@ -111,7 +115,9 @@
     "incoming": "Rangées en approche",
     "sent": "Rangées envoyées",
     "opponentLines": "Lignes de l’IA",
-    "streak": "Série"
+    "streak": "Série",
+    "regions": "Zones effacées",
+    "windIn": "Prochain coup de vent"
   },
   "notice": {
     "lines": "Une ligne effacée | {n} lignes effacées",
@@ -136,7 +142,12 @@
       "bomb": "Joker gagné : Bombe",
       "undo": "Joker gagné : Retour",
       "cube": "Joker gagné : Cube"
-    }
+    },
+    "windSoonLeft": "Coup de vent vers la gauche",
+    "windSoonRight": "Coup de vent vers la droite",
+    "elementWater": "Pièce d’eau",
+    "elementFire": "Pièce de feu",
+    "burn": "Le feu a consumé {value} grains"
   },
   "controls": {
     "label": "Commandes tactiles",
@@ -281,5 +292,10 @@
     "pickCell": "Touchez la case où lancer la bombe",
     "helpKeyboard": "Clavier : 1, 2, 3 pour choisir une pièce (4 pour le cube), flèches pour la placer, Entrée pour la poser, J pour les jokers, Échap pour annuler ou mettre en pause.",
     "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case."
+  },
+  "sand": {
+    "well": "Puits de sable",
+    "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour faire tomber, ↑ ou X pour tourner, Ctrl pour tourner dans l’autre sens, Échap pour la pause. Une zone d’une seule couleur qui relie les deux murs s’efface.",
+    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour faire tomber. L’eau prend la couleur voisine, le feu brûle la couleur qu’il touche."
   }
 }

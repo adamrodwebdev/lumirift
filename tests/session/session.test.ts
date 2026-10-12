@@ -21,6 +21,7 @@ describe('ModeCatalog', () => {
       'mirror',
       'fusion',
       'rhythm',
+      'sand',
       'mosaic',
     ]);
   });

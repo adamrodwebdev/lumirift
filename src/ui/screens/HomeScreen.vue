@@ -237,6 +237,9 @@ const modes = computed(() =>
 .mode--mosaic {
   --mode-color: var(--tone-7);
 }
+.mode--sand {
+  --mode-color: var(--tone-9);
+}
 
 .mode__name {
   font-family: var(--font-display);
