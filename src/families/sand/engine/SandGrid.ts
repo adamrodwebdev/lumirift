@@ -183,6 +183,16 @@ export class SandGrid {
     return spanning;
   }
 
+  /** Removes the bottom `count` rows of grains; everything above drops by as much. */
+  dropBottomRows(count: number): void {
+    const n = Math.min(count, this.height) * this.width;
+    const keep = this.tones.length - n;
+    for (const array of [this.tones, this.grain, this.life, this.drift]) {
+      array.copyWithin(n, 0, keep);
+      array.fill(0, 0, n);
+    }
+  }
+
   /** Empties the given grains. */
   remove(indices: readonly number[]): void {
     for (const i of indices) {

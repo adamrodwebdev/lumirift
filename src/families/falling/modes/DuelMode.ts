@@ -35,7 +35,9 @@ export class DuelMode extends AbstractMode {
   }
 
   receive(rows: number): void {
-    if (rows > 0) this.incoming.push({ rows, timer: INCOMING_DELAY_MS });
+    if (rows > 0) {
+      this.incoming.push({ rows, timer: INCOMING_DELAY_MS + this.boosts.garbageDelayMs });
+    }
   }
 
   override attach(game: Game): void {

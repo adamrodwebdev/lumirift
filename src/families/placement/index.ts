@@ -10,6 +10,10 @@ export function createPlacementSession(modeId: ModeId, options: SessionOptions):
   if (modeId !== 'mosaic') throw new Error(`"${modeId}" is not a placement mode`);
   return new PlacementSession(
     modeId,
-    new MosaicGame({ random: options.random, timeLimitMs: options.timeLimitMs }),
+    new MosaicGame({
+      random: options.random,
+      timeLimitMs: options.timeLimitMs,
+      ...(options.boosts ? { boosts: options.boosts } : {}),
+    }),
   );
 }

@@ -1,4 +1,5 @@
 import type { RandomSource } from '@/core/Random';
+import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import type { Indicator, ResultKind } from '@/session/GameSession';
 import type { EngineModeId } from '@/session/ModeId';
 import type { Game } from '../game/Game';
@@ -13,6 +14,8 @@ export interface ModeOptions {
   readonly timeLimitMs?: number | null;
   /** Date of play (the silhouette of the day…). */
   readonly today?: Date;
+  /** Campaign upgrades read by a mode (the Rhythm's window, the duel's delay). */
+  readonly boosts?: Boosts;
 }
 
 /**
@@ -30,10 +33,12 @@ export abstract class AbstractMode implements GameMode {
   readonly ability: AbilityId | null = null;
   protected readonly timeLimitMs: number | null;
   protected readonly today: Date;
+  protected readonly boosts: Boosts;
 
   constructor(options: ModeOptions = {}) {
     this.timeLimitMs = options.timeLimitMs ?? null;
     this.today = options.today ?? new Date();
+    this.boosts = options.boosts ?? NO_BOOSTS;
   }
 
   toneFor(type: PieceType, _random: RandomSource): Tone {

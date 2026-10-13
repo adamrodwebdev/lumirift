@@ -143,6 +143,7 @@ export class FallingSession implements GameSession<FallingCommand> {
     );
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));
+    events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('flip', ({ lines }) => this.events.emit('notice', { id: 'flip', value: lines }));
     events.on('mirror', () => this.events.emit('notice', { id: 'mirror' }));
     events.on('tilt', () => this.events.emit('notice', { id: 'tilt' }));

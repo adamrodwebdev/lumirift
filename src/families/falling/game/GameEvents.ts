@@ -52,6 +52,8 @@ export interface GameEventMap {
   beat: { readonly count: number };
   /** The groove after a lock: up when the piece landed on the beat. */
   groove: { readonly level: number; readonly onBeat: boolean };
+  /** A second chance: the bottom rows vanished instead of the game ending. */
+  rescue: { readonly rows: number };
   /** Mode-specific announcement; `id` is a translation key suffix. */
   notice: { readonly id: string; readonly value?: number };
   over: { readonly reason: GameOverReason };

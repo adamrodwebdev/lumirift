@@ -149,6 +149,16 @@ export class Board {
     }
   }
 
+  /**
+   * Removes the bottom `count` rows and lets everything above drop by as
+   * much (a second chance when the well overflows).
+   */
+  dropBottomRows(count: number): void {
+    const n = Math.min(count, this.height);
+    this.cells.copyWithin(n * this.width, 0, (this.height - n) * this.width);
+    this.cells.fill(Tone.Empty, 0, n * this.width);
+  }
+
   /** Lets every block fall to the floor of its column, keeping their order. */
   settle(): void {
     for (let x = 0; x < this.width; x++) {

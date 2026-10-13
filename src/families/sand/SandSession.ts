@@ -126,6 +126,7 @@ export class SandSession implements GameSession<FallingCommand> {
     );
     events.on('burn', ({ grains }) => this.events.emit('notice', { id: 'burn', value: grains }));
     events.on('quench', () => this.events.emit('notice', { id: 'quench' }));
+    events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));
