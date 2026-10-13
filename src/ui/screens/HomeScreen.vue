@@ -7,6 +7,7 @@ import type { CampaignLevel } from '@/campaign/Levels';
 import { DailyChallenge } from '@/session/DailyChallenge';
 import type { ModeDescriptor } from '@/session/ModeCatalog';
 import type { ModeId } from '@/session/ModeId';
+import { allowsMode } from '@/platform/Edition';
 import { ScoreBoard } from '@/services/ScoreBoard';
 import AppIcon from '../components/AppIcon.vue';
 import CampaignCard from '../components/CampaignCard.vue';
@@ -30,10 +31,15 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const format = useFormat();
-const { catalog, scores, clock } = useServices();
+const { catalog, scores, clock, platform } = useServices();
+const { edition } = platform;
 
 const today = clock();
-const daily = new DailyChallenge(today, catalog.dailyEligible());
+// The daily challenge only draws among the modes this edition opens.
+const daily = new DailyChallenge(
+  today,
+  catalog.dailyEligible().filter((id) => allowsMode(edition, id)),
+);
 const appVersion = __APP_VERSION__;
 const dailyResult = catalog.get(daily.modeId).result;
 const dailyBest = computed(() => scores.best(ScoreBoard.dailyKey(daily.key)));
@@ -55,7 +61,11 @@ const AtelierDialog = defineAsyncComponent(() => import('../components/AtelierDi
 const atelierOpen = ref(false);
 
 const modes = computed(() =>
-  catalog.list().map((mode) => ({ ...mode, best: scores.best(mode.id) })),
+  catalog.list().map((mode) => ({
+    ...mode,
+    best: scores.best(mode.id),
+    locked: !allowsMode(edition, mode.id),
+  })),
 );
 </script>
 
@@ -63,6 +73,10 @@ const modes = computed(() =>
   <div class="home">
     <h1 class="sr-only">{{ t('meta.title') }}</h1>
     <p class="tagline">{{ t('app.tagline') }}</p>
+
+    <p v-if="edition.id === 'demo'" class="demo" role="note">
+      <strong>{{ t('demo.title') }}</strong> {{ t('demo.banner') }}
+    </p>
 
     <PlayerBar class="home__player" @atelier="atelierOpen = true" />
 
@@ -129,6 +143,14 @@ const modes = computed(() =>
   font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
   font-weight: 700;
   color: var(--text-muted);
+}
+
+.demo {
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--accent-fill);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-fill) 10%, transparent);
+  font-size: 0.9rem;
 }
 
 .home__lead {

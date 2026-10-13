@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut             |
-| ------- | ---------- | ------------------ |
-| 1.2     | 13/10/2026 | Version CrazyGames |
+| Version | Date       | Statut            |
+| ------- | ---------- | ----------------- |
+| 1.3     | 13/10/2026 | Démo du portfolio |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -582,8 +582,16 @@ l'appareil** (`stackrift:profile`), comme les records.
   lien sortant.
 
 - **Maintenant** : le jeu de base, sur notre propre site, sans publicité ni SDK tiers.
-- **Démo pour le portfolio** (adamrodwebdev.com) : une version allégée, intégrable dans la
-  section des démos du site, pour illustrer le projet. Préparée une fois le jeu fini.
+- **Démo pour le portfolio (1.3)** : `npm run build:demo` produit `dist-demo`, servi par
+  adamrodwebdev.com dans `/demos/stackrift/` (chemins relatifs, aucune balise de référencement :
+  la page du portfolio porte les siennes). Une **édition** (`src/platform/Edition.ts`) dit ce
+  que le build ouvre ; la plateforme `DemoPlatform` porte l'édition démo :
+  - jeu libre : **Classique, Sable, Mosaïque, Tour et Duel** (un mode par famille, plus le
+    duel) ; les huit autres restent visibles dans le carrousel, grisés, « Jeu complet » ;
+  - campagne : le **premier chapitre** (niveaux 1-1 à 1-6, qui passent aussi par Chroma et
+    Miroir) ; la carte montre la suite verrouillée, pas de « niveau suivant » après 1-6 ;
+  - défi du jour et objectifs quotidiens tirés parmi les modes ouverts ;
+  - un bandeau d'accueil annonce la démo. Progression, Atelier et améliorations sont complets.
 - **Versions portails** (CrazyGames, Poki, GameDistribution, GamePix, itch.io, Newgrounds…) :
   préparées **une fois le projet fini**. Le jeu passera alors par une abstraction `Platform`
   (début et fin de partie, publicités, stockage, langue, son coupé) sans jamais parler
@@ -1119,7 +1127,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 9   | Volume : Tour (verre courbé)                                                                               | Livré                  |
 | 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | Livré                  |
 | 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | Livré                  |
-| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Après 1.0              |
+| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Livré (1.3)            |
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames livré (1.2) |
 | 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                  |
 
@@ -1162,3 +1170,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.0     | 12/10/2026 | Lot 11 : accessibilité vérifiée (§ 4.3), référencement et partage (§ 4.8), tests de bout en bout et CI (§ 6), état des critères d'acceptation (§ 8). Version 1.0. |
 | 1.1     | 13/10/2026 | Campagne et dix améliorations (§ 3.2 bis, § 5.16), nouvel accueil et carrousel des modes (§ 3.2 ter).                                                             |
 | 1.2     | 13/10/2026 | Version CrazyGames : abstraction `Platform`, build, médias et contrôle des exigences (§ 3.7, CRAZYGAMES.md).                                                      |
+| 1.3     | 13/10/2026 | Lot 12 : démo du portfolio, éditions complète et démo (§ 3.7).                                                                                                    |

@@ -518,5 +518,11 @@
       "name": "Rampart",
       "effect": "Opponent rows delayed by {value} s"
     }
+  },
+  "demo": {
+    "title": "Demo.",
+    "banner": "Five modes in free play (Classic, Sand, Mosaic, Tower, Duel) and the first chapter of the campaign. The full game has thirteen modes and thirty levels.",
+    "fullGame": "Full game",
+    "campaignDone": "Demo complete: the rest is in the full game."
   }
 }

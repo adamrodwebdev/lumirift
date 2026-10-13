@@ -11,6 +11,7 @@ import { CampaignRun, type CampaignOutcome } from '@/campaign/CampaignRun';
 import type { LiveState } from '@/campaign/Goals';
 import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
 import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
+import { allowsLevel } from '@/platform/Edition';
 import { GameTracker } from '@/progression/GameReport';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
@@ -172,6 +173,12 @@ const listen = (current: GameSession) => {
   ];
 };
 
+/** The level after this one, if this edition opens it. */
+const nextLevel = (index: number): CampaignLevel | null => {
+  const next = LEVELS[index + 1];
+  return next && allowsLevel(platform.edition, next) ? next : null;
+};
+
 /** The campaign's verdict on this game, recorded; the next level once won. */
 const judge = (decided: CampaignOutcome) => {
   const gained = campaign.record(decided);
@@ -181,7 +188,7 @@ const judge = (decided: CampaignOutcome) => {
     won: decided.won,
     stars: decided.stars,
     gained,
-    next: decided.won ? (LEVELS[index + 1] ?? null) : null,
+    next: decided.won ? nextLevel(index) : null,
   };
 };
 

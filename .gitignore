@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-crazygames/
+dist-demo/
 release/
 coverage/
 test-results/

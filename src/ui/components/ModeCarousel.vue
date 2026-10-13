@@ -14,6 +14,8 @@ import ModeArt from './ModeArt.vue';
  */
 export interface CarouselMode extends ModeDescriptor {
   readonly best: number | null;
+  /** Not in this edition (the demo): shown, not playable. */
+  readonly locked?: boolean;
 }
 
 const props = defineProps<{ modes: readonly CarouselMode[] }>();
@@ -108,15 +110,19 @@ onBeforeUnmount(() => observer.disconnect());
         <button
           type="button"
           class="mode card"
-          :class="`mode--${mode.family}`"
-          @click="emit('choose', mode)"
+          :class="[`mode--${mode.family}`, { 'mode--locked': mode.locked }]"
+          :aria-disabled="mode.locked === true"
+          @click="!mode.locked && emit('choose', mode)"
         >
           <span class="mode__art"><ModeArt :mode="mode.id" /></span>
           <span class="mode__name">{{ t(`modes.${mode.id}.name`) }}</span>
           <span class="mode__pitch">{{ t(`modes.${mode.id}.pitch`) }}</span>
           <span class="mode__meta">
             <span class="mode__family">{{ t(`families.${mode.family}`) }}</span>
-            <span v-if="mode.best !== null">
+            <span v-if="mode.locked" class="mode__locked">
+              <AppIcon name="lock" :size="14" />{{ t('demo.fullGame') }}
+            </span>
+            <span v-else-if="mode.best !== null">
               {{ t('home.best', { value: format.result(mode.result, mode.best) }) }}
             </span>
           </span>
@@ -218,6 +224,26 @@ onBeforeUnmount(() => observer.disconnect());
 .mode:hover {
   transform: translateY(-3px);
   border-color: var(--mode-color);
+}
+
+.mode--locked {
+  cursor: not-allowed;
+}
+
+.mode--locked:hover {
+  transform: none;
+  border-color: var(--border);
+}
+
+.mode--locked .mode__art {
+  opacity: 0.45;
+}
+
+.mode__locked {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 700;
 }
 
 .mode--falling {
