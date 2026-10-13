@@ -3,6 +3,34 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.2.0] — 13/10/2026
+
+La version CrazyGames.
+
+### Ajouté
+
+- Abstraction `Platform` (notre site, CrazyGames) : le jeu ne parle jamais directement à un
+  SDK de portail.
+- Build CrazyGames (`npm run package:crazygames`) : SDK HTML5 v3, événements de jeu et de
+  chargement, langue du joueur, sauvegarde dans le module Data, bouton muet du portail,
+  célébrations, publicité mi-partie entre deux parties (interface bloquée, son coupé pendant
+  la pub seulement), aucun lien sortant ; contrôles automatiques de taille, de nombre de
+  fichiers et de chemins ; zip prêt à téléverser.
+- Médias CrazyGames : trois covers (1920 × 1080, 800 × 1200, 800 × 800) et deux vidéos de
+  18 s (1080p paysage et portrait) rendues image par image depuis le vrai jeu.
+- docs/CRAZYGAMES.md : chaque exigence du portail, son statut et sa preuve ; textes du dépôt.
+
+### Modifié
+
+- Dans un cadre paysage peu haut (iframe de portail sur téléphone), le HUD passe sur le côté
+  et l'en-tête s'affine.
+
+### Corrigé
+
+- Mosaïque : dans un cadre paysage peu haut (960 × 540, 800 × 450), la taille de la main et
+  celle du plateau s'entretenaient l'une l'autre ; le plateau était redimensionné, donc
+  effacé, à chaque image et restait noir.
+
 ## [1.1.0] — 13/10/2026
 
 La campagne.
