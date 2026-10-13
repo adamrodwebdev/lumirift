@@ -27,16 +27,48 @@ langue, sauvegarde, coupure du son et publicités. Notre site ne charge jamais l
 ## À saisir au dépôt (Developer Portal)
 
 - **Title** : Stackrift
-- **Description** : The falling-blocks game you know, reinvented in 13 modes. Crack crystal
-  lines in Classic, outlast the rising Tide, flip the well upside down, link walls of colour
-  in Sand, fill a ceramic Mosaic with jokers, spin a glass Tower, and beat an AI in a Duel.
-  Play a 30-level campaign across every mode, earn stars and spend them on 10 upgrades, take
-  the Daily Challenge, and unlock block skins, ambiances and shatter effects as you level up.
-  In English, French and Indonesian.
-- **Controls** : Arrow keys or A/D move, Down or S soft drop, Space hard drop, Up or X rotate,
-  Ctrl or Z rotate back, C or Shift hold, F ability, Q/E turn the Tower, P or Esc pause.
-  Mosaic: 1–4 pick a piece, arrows aim, Enter places, J jokers, or drag and drop. Touch:
-  swipe to move, tap to rotate, flick down to drop, on-screen buttons.
+- **Description** :
+
+  > Stackrift reinvents the falling-blocks game you know with 13 original modes across four
+  > families.
+  >
+  > Shatter crystal lines in Classic, outlast the rising Tide, flip the well upside down, match
+  > colours in Chroma, fuse blocks in Fusion, keep the beat in Rhythm and fill a target shape
+  > in Silhouette. Watch pieces crumble into sand and link both walls with a single colour,
+  > while water, fire and wind change the field. Place ceramic pieces on an 8×8 Mosaic and earn
+  > jokers. Wrap the well into a glass Tower where every line goes all the way around. Then
+  > take on an AI opponent in a head-to-head Duel, from Rookie to Expert.
+  >
+  > Play a 30-level campaign that visits every mode, earn up to three stars per level and spend
+  > them on 10 upgrades. Come back for the Daily Challenge and three new objectives every day.
+  > Level up to unlock block skins, ambiances and shatter effects.
+  >
+  > No sign-up, progress saved automatically. Available in English, French and Indonesian.
+
+- **Controls** :
+
+  > **Keyboard**
+  >
+  > - Move: Left / Right arrows (or A / D)
+  > - Soft drop: Down arrow (or S)
+  > - Hard drop: Space
+  > - Rotate: Up arrow or X — rotate back: Z or Ctrl
+  > - Hold: C or Shift
+  > - Special ability (Flip mode): F
+  > - Turn the Tower: Q / E
+  > - Pause: P or Esc
+  > - Mosaic: 1–3 to pick a piece (4 for the bonus cube), arrows to aim, Enter to place, J to
+  >   use a joker
+  >
+  > AZERTY keyboards are supported automatically: the same key positions work.
+  >
+  > **Mouse and touch**
+  >
+  > - Swipe left or right to move, tap to rotate, flick down to drop, or use the on-screen
+  >   buttons.
+  > - Turn the Tower with a two-finger drag.
+  > - Mosaic: drag and drop pieces onto the board, or tap a piece and then a cell.
+
 - **Orientation** : paysage et portrait (le jeu s'adapte aux deux).
 - **Mobile** : oui. **Progress Save** : oui (module Data). **Multijoueur** : non.
   **Comptes** : non (aucune connexion).
