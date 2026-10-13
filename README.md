@@ -88,6 +88,15 @@ SITE_URL=https://exemple.fr/stackrift/ npm run build
 partage, `sitemap.xml` et sa mention dans `robots.txt`. Sans lui, le build reste portable
 (portails de jeux, sous-dossiers).
 
+### Version CrazyGames
+
+```bash
+npm run package:crazygames          # build, contrôles, zip dans release/
+node scripts/crazygames-media.mjs   # covers et vidéos dans release/crazygames-media/
+```
+
+Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAMES.md).
+
 ## Qualité
 
 - TypeScript strict, ESLint `strictTypeChecked`, Prettier.

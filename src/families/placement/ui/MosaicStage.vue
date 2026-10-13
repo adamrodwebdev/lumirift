@@ -126,9 +126,11 @@ const observer = new ResizeObserver(([entry]) => {
   const { width, height } = entry.contentRect;
   // Minus the 2 px frame on each side.
   cellCss = renderer.layout(Math.min(width, height) - 4, Math.min(2, window.devicePixelRatio || 1));
-  // Four pieces (with the cube) must fit side by side.
+  // Four pieces (with the cube) must fit side by side. The size depends on the
+  // screen only, never on the board: the board's room depends on the hand, and a
+  // loop between the two would resize (and clear) the board every frame.
   const handRoom = (width - 3 * 12) / 4;
-  pieceSize.value = Math.round(Math.max(48, Math.min(120, cellCss * 2.6, handRoom)));
+  pieceSize.value = Math.round(Math.max(48, Math.min(120, handRoom, window.innerHeight * 0.17)));
 });
 
 const refreshPalette = async () => {

@@ -1,5 +1,6 @@
 import { inject, type InjectionKey } from 'vue';
 import { detectLocale } from '@/i18n/locales';
+import { WebPlatform, type Platform } from '@/platform/Platform';
 import { ModeCatalog } from '@/session/ModeCatalog';
 import { AmbianceController } from '@/services/AmbianceController';
 import { AudioEngine } from '@/services/audio/AudioEngine';
@@ -26,15 +27,19 @@ export interface AppServices {
   readonly audio: AudioEngine;
   readonly haptics: Haptics;
   readonly clock: () => Date;
+  /** Our site or a game portal: gameplay events, ads, the portal's mute button. */
+  readonly platform: Platform;
 }
 
 export const APP_SERVICES: InjectionKey<AppServices> = Symbol('AppServices');
 
 export function createBrowserServices(
-  storage: KeyValueStorage = BrowserStorage.local(),
+  platform: Platform = new WebPlatform(),
+  storage: KeyValueStorage = platform.storage ?? BrowserStorage.local(),
 ): AppServices {
   const settings = new SettingsService(storage, {
-    locale: detectLocale(navigator.languages),
+    // A portal knows the player's language; English when it does not.
+    locale: detectLocale(platform.locale ? [platform.locale] : navigator.languages),
     theme: 'system',
     ghost: true,
     // Players who ask their system for less motion start with calmer effects.
@@ -60,6 +65,7 @@ export function createBrowserServices(
     audio: AudioEngine.browser(),
     haptics: new Haptics(navigator, () => settings.current.haptics),
     clock: () => new Date(),
+    platform,
   };
 }
 

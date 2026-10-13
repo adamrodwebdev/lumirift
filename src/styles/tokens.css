@@ -73,7 +73,7 @@
   --space-4: 1rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
-  --header-h: 3.25rem;
+  --header-h: clamp(2.75rem, 7vh, 3.25rem);
   --touch: 2.75rem;
 }
 

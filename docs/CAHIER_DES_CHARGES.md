@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut                     |
-| ------- | ---------- | -------------------------- |
-| 1.1     | 13/10/2026 | Campagne et nouvel accueil |
+| Version | Date       | Statut             |
+| ------- | ---------- | ------------------ |
+| 1.2     | 13/10/2026 | Version CrazyGames |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -573,7 +573,13 @@ l'appareil** (`stackrift:profile`), comme les records.
   léger, les portails imposent de toute façon la coupure du son) ; à reprendre avec les
   portails.
 
-### 3.7 Distribution (décidé en v0.5)
+### 3.7 Distribution (décidé en v0.5 ; CrazyGames livré en 1.2)
+
+- **CrazyGames (1.2)** : build dédié (`npm run package:crazygames`), médias (covers et vidéos,
+  `scripts/crazygames-media.mjs`) et contrôle de chaque exigence du portail dans
+  [CRAZYGAMES.md](CRAZYGAMES.md). Le jeu passe par l'abstraction `Platform` : événements de
+  jeu, langue, sauvegarde du portail, coupure du son, publicité entre deux parties ; aucun
+  lien sortant.
 
 - **Maintenant** : le jeu de base, sur notre propre site, sans publicité ni SDK tiers.
 - **Démo pour le portfolio** (adamrodwebdev.com) : une version allégée, intégrable dans la
@@ -1099,23 +1105,23 @@ gamme reste à faire sur un appareil réel.
 Tous les modes sortent ensemble en **version 1.0** (décision du 12/10/2026). Les lots sont
 ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichisse.
 
-| Lot | Contenu                                                                                                    | Statut    |
-| --- | ---------------------------------------------------------------------------------------------------------- | --------- |
-| 0   | Cadrage, outillage, cahier des charges                                                                     | Livré     |
-| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                | Livré     |
-| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré     |
-| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré     |
-| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré     |
-| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré     |
-| 6   | Duel contre l'IA                                                                                           | Livré     |
-| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré     |
-| 8   | Sable (grains) et ses éléments                                                                             | Livré     |
-| 9   | Volume : Tour (verre courbé)                                                                               | Livré     |
-| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | Livré     |
-| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | Livré     |
-| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Après 1.0 |
-| 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | Après 1.0 |
-| 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré     |
+| Lot | Contenu                                                                                                    | Statut                 |
+| --- | ---------------------------------------------------------------------------------------------------------- | ---------------------- |
+| 0   | Cadrage, outillage, cahier des charges                                                                     | Livré                  |
+| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                | Livré                  |
+| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré                  |
+| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré                  |
+| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré                  |
+| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré                  |
+| 6   | Duel contre l'IA                                                                                           | Livré                  |
+| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré                  |
+| 8   | Sable (grains) et ses éléments                                                                             | Livré                  |
+| 9   | Volume : Tour (verre courbé)                                                                               | Livré                  |
+| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | Livré                  |
+| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | Livré                  |
+| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Après 1.0              |
+| 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames livré (1.2) |
+| 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                  |
 
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 95.
 
@@ -1155,3 +1161,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.14    | 12/10/2026 | Lot 10 : progression et personnalisation (§ 3.6), architecture (§ 5.15) ; musique d'ambiance non retenue pour la 1.0.                                             |
 | 1.0     | 12/10/2026 | Lot 11 : accessibilité vérifiée (§ 4.3), référencement et partage (§ 4.8), tests de bout en bout et CI (§ 6), état des critères d'acceptation (§ 8). Version 1.0. |
 | 1.1     | 13/10/2026 | Campagne et dix améliorations (§ 3.2 bis, § 5.16), nouvel accueil et carrousel des modes (§ 3.2 ter).                                                             |
+| 1.2     | 13/10/2026 | Version CrazyGames : abstraction `Platform`, build, médias et contrôle des exigences (§ 3.7, CRAZYGAMES.md).                                                      |

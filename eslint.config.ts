@@ -3,7 +3,17 @@ import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescri
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
 
 export default defineConfigWithVueTs(
-  { ignores: ['dist/**', 'coverage/**', 'reports/**', 'test-results/**', 'playwright-report/**'] },
+  {
+    ignores: [
+      'dist/**',
+      'dist-*/**',
+      'release/**',
+      'coverage/**',
+      'reports/**',
+      'test-results/**',
+      'playwright-report/**',
+    ],
+  },
   pluginVue.configs['flat/recommended'],
   vueTsConfigs.strictTypeChecked,
   {

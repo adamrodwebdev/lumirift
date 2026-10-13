@@ -37,6 +37,13 @@ export class MosaicRenderer {
   layout(available: number, pixelRatio: number): number {
     const size = this.view.grid.size;
     const cssCell = Math.max(8, Math.floor(available / size));
+    // Same size: nothing to do (resizing a canvas clears it).
+    if (
+      Math.round(cssCell * pixelRatio) === this.cell &&
+      this.canvas.style.width === `${cssCell * size}px`
+    ) {
+      return cssCell;
+    }
     this.cell = Math.round(cssCell * pixelRatio);
     this.canvas.style.width = `${cssCell * size}px`;
     this.canvas.style.height = `${cssCell * size}px`;
