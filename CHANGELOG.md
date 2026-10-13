@@ -3,6 +3,24 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.1.0] — 13/10/2026
+
+La campagne.
+
+### Ajouté
+
+- Campagne : 30 niveaux en cinq chapitres à travers tous les modes, objectifs, étoiles,
+  un duel contre une IA plus forte à la fin de chaque chapitre.
+- Dix améliorations à trois rangs, achetées avec les étoiles de campagne (sablier, plume,
+  longue-vue, ancre, prisme, phénix, besace, braise, métronome, rempart), remboursables ;
+  elles ne servent qu'en campagne.
+- Carrousel des modes avec filtres par famille et une illustration par mode.
+
+### Modifié
+
+- Accueil repensé : barre joueur, campagne en tête, défi du jour illustré, partie rapide.
+- Style : boutons en pilule, accent en dégradé, cartes surélevées.
+
 ## [1.0.0] — 12/10/2026
 
 Première version complète : 13 modes en quatre familles, défi du jour, duel contre l'IA,

@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut             |
-| ------- | ---------- | ------------------ |
-| 1.0     | 12/10/2026 | Version 1.0 livrée |
+| Version | Date       | Statut                     |
+| ------- | ---------- | -------------------------- |
+| 1.1     | 13/10/2026 | Campagne et nouvel accueil |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -343,6 +343,55 @@ Règles détaillées :
 - La Tour peut être le mode du **défi du jour**.
 - **Mesures** (navigateur intégré) : l'animation tient la cadence de l'écran (165 images/s)
   avec une pile sur toute la hauteur.
+
+### 3.2 bis Campagne et améliorations (livrées en 1.1)
+
+- **Campagne** : **30 niveaux** en cinq chapitres de six (Premiers blocs, Courants,
+  Mosaïques, Vertiges, Le Rift), qui parcourent **tous les modes** ; chaque chapitre se
+  termine par un **duel** contre une IA plus forte (Débutante → Experte). Les niveaux
+  s'ouvrent dans l'ordre : il faut gagner un niveau pour ouvrir le suivant.
+- **Objectifs** : effacer des lignes, marquer des points, effacer plusieurs lignes d'un
+  coup, tenir un temps donné, battre l'IA, compléter la silhouette. Les objectifs mesurés en
+  jeu (lignes, points, lignes d'un coup, survie) **terminent le niveau dès qu'ils sont
+  atteints** ; la victoire en duel et la silhouette se jugent à la fin de la partie. La
+  plupart des niveaux sont **minutés** (2 à 4 min).
+- **Étoiles** (1 à 3, la meilleure note est gardée) : selon le temps restant à la réussite
+  (40 % → 3, 15 % → 2), les lignes effacées (survie) ou la rapidité (duel, silhouette). La
+  fiche du niveau énonce l'objectif, le temps et la règle des étoiles avant de jouer.
+- **Dix améliorations**, trois rangs chacune, achetées avec les étoiles (2, 3 puis 5 par
+  rang : 100 étoiles pour tout, 90 à gagner, il faut donc choisir) ; toutes les étoiles
+  peuvent être **rendues** pour essayer d'autres choix. Elles ne servent **qu'en campagne** :
+  records, défi du jour et classements restent équitables ; en duel, elles n'aident jamais
+  l'IA.
+
+  | Amélioration | Effet par rang                                                                                                                                | Modes              |
+  | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+  | Sablier      | +15 / 30 / 45 s au chrono des niveaux minutés                                                                                                 | Tous               |
+  | Plume        | Chute ralentie de 10 / 20 / 30 %                                                                                                              | Chute, Tour, Sable |
+  | Longue-vue   | +1 / 2 / 3 pièces à l'aperçu                                                                                                                  | Chute, Tour, Sable |
+  | Ancre        | +100 / 200 / 300 ms avant la pose                                                                                                             | Chute, Tour, Sable |
+  | Prisme       | +10 / 20 / 30 % de points sur les effacements                                                                                                 | Tous               |
+  | Phénix       | Seconde chance : 4 / 6 / 8 rangées du bas effacées au lieu de la fin, une fois par niveau (Mosaïque : les 2 / 3 / 4 rangées les plus pleines) | Tous               |
+  | Besace       | 1 / 2 / 3 jokers de plus au départ (Bombe, Relance, Rotation)                                                                                 | Mosaïque           |
+  | Braise       | +3 / 6 / 9 % de pièces de feu                                                                                                                 | Sable              |
+  | Métronome    | Fenêtre du temps élargie de 40 / 80 / 120 ms                                                                                                  | Rythme             |
+  | Rempart      | Rangées adverses retardées de 1 / 2 / 3 s                                                                                                     | Duel               |
+
+- Une partie de campagne rapporte de l'expérience et compte pour les objectifs du jour,
+  mais **jamais comme record** (elle peut être aidée).
+- **Équilibrage à confirmer en jeu** : les cibles de chaque niveau sont des estimations.
+
+### 3.2 ter Accueil (refait en 1.1)
+
+- Barre joueur (anneau de niveau, expérience, série, Atelier), **carte Campagne** en tête
+  (chapitre en cours, étoiles, « Continuer » vers le niveau suivant, carte et améliorations),
+  défi du jour illustré, partie rapide, puis les modes et les objectifs du jour.
+- **Carrousel des modes** : une rangée de cartes qui s'aimante sous le doigt, la molette ou
+  le clavier (défilement natif `scroll-snap`, sans bibliothèque), flèches, filtres par
+  famille, barre de progression ; chaque mode a son **illustration** (blocs et tracés aux
+  couleurs des pièces).
+- Style : boutons en pilule, accent en dégradé, cartes surélevées ; tout passe par les
+  jetons des deux thèmes.
 
 ### 3.3 Commandes
 
@@ -983,6 +1032,27 @@ src/ui/  ProfileCard, AtelierDialog (chargé à la demande), bilan dans GameOver
 - La progression ne connaît aucune famille : elle lit le contrat commun (`GameSession`).
 - Toutes les couleurs nouvelles (or, pétales, lueurs) sont des **jetons** des deux thèmes.
 
+### 5.16 Campagne (livrée en 1.1)
+
+```
+src/session/Boosts.ts      Aides portées par SessionOptions (campagne seulement)
+src/campaign/
+  Levels       Les 30 niveaux (données) et leurs règles d'étoiles
+  Goals        Une règle par sorte d'objectif (progression, réussite en jeu, à la fin)
+  CampaignRun  Arbitre pur d'une partie : progression, réussite, étoiles
+  Upgrades     Les dix améliorations (rangs → Boosts), coûts
+  CampaignProgress  Entité : niveaux ouverts, meilleures étoiles, achats, remboursement
+src/services/CampaignService.ts   Campagne réactive, gardée sur l'appareil
+src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
+         ModeCarousel, ModeArt, PlayerBar, ObjectivesCard
+```
+
+- Chaque moteur lit les `Boosts` qui le concernent (vitesse de chute, aperçu, délai de pose,
+  bonus de points, seconde chance, jokers de départ, feu, fenêtre du Rythme, délai des
+  rangées reçues) ; sans `Boosts`, il joue exactement comme avant.
+- L'écran de jeu suit l'objectif à chaque image (`GameTracker` + résultat de la session) ;
+  la campagne ne connaît aucune famille.
+
 ## 6. Qualité et tests
 
 - **Tests unitaires** (Vitest, plus de 280) : moteurs et règles de chaque famille, chaque
@@ -1045,6 +1115,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | Livré     |
 | 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Après 1.0 |
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | Après 1.0 |
+| 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré     |
 
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 95.
 
@@ -1083,3 +1154,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 0.13    | 12/10/2026 | Règles des éléments du Sable, de la Mosaïque et cinq niveaux d'IA, fondés sur une recherche des jeux du genre (§ 3.2).                                            |
 | 0.14    | 12/10/2026 | Lot 10 : progression et personnalisation (§ 3.6), architecture (§ 5.15) ; musique d'ambiance non retenue pour la 1.0.                                             |
 | 1.0     | 12/10/2026 | Lot 11 : accessibilité vérifiée (§ 4.3), référencement et partage (§ 4.8), tests de bout en bout et CI (§ 6), état des critères d'acceptation (§ 8). Version 1.0. |
+| 1.1     | 13/10/2026 | Campagne et dix améliorations (§ 3.2 bis, § 5.16), nouvel accueil et carrousel des modes (§ 3.2 ter).                                                             |
