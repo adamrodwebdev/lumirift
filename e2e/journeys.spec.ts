@@ -23,7 +23,7 @@ const MODES = [
 
 const modeButton = (page: Page, name: string) =>
   page
-    .locator('.modes__grid .mode')
+    .locator('.track .mode')
     .filter({ has: page.locator('.mode__name', { hasText: new RegExp(`^${name}$`) }) });
 
 /** The page never scrolls sideways. */
@@ -177,4 +177,54 @@ test('no horizontal scroll from 320 to 1920 px, at home and in every family', as
       await page.getByRole('button', { name: 'Accueil' }).click();
     }
   }
+});
+
+test('the modes swiper pages through the modes and filters them by family', async ({ page }) => {
+  const next = page.getByRole('button', { name: 'Modes suivants' });
+  const previous = page.getByRole('button', { name: 'Modes précédents' });
+  await expect(previous).toBeDisabled();
+  await next.click();
+  await expect(previous).toBeEnabled();
+  await page.getByRole('button', { name: 'Placement', exact: true }).click();
+  await expect(page.locator('.track .mode')).toHaveCount(1);
+  await expect(modeButton(page, 'Mosaïque')).toBeVisible();
+});
+
+test('the campaign: map, a level, its goal, then back to the map', async ({ page }) => {
+  await page.getByRole('button', { name: 'Carte et améliorations' }).click();
+  await expect(page.getByRole('heading', { name: 'Campagne', level: 1 })).toBeVisible();
+  // Only the first level is open.
+  await expect(page.getByRole('button', { name: /1-2/ })).toHaveAttribute('aria-disabled', 'true');
+  await page.getByRole('button', { name: /1-1/ }).click();
+  const detail = page.getByRole('dialog', { name: 'Niveau 1-1 · Classique' });
+  await expect(detail).toContainText('Effacer 5 lignes');
+  await detail.getByRole('button', { name: 'Jouer' }).click();
+  await expect(page.getByRole('group', { name: 'Objectif' })).toContainText('0 / 5');
+  await expect(page.locator('canvas[role="img"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page
+    .getByRole('dialog', { name: 'Pause' })
+    .getByRole('button', { name: 'Quitter' })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Campagne', level: 1 })).toBeVisible();
+});
+
+test('the upgrades are bought with campaign stars, and refunded', async ({ page }) => {
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'stackrift:campaign',
+      JSON.stringify({ stars: { '1-1': 3, '1-2': 2 }, ranks: {} }),
+    ),
+  );
+  await page.reload();
+  await page.getByRole('button', { name: 'Carte et améliorations' }).click();
+  await page.getByRole('button', { name: /^Améliorations/ }).click();
+  const shop = page.getByRole('dialog', { name: 'Améliorations' });
+  await expect(shop).toContainText('5 étoiles disponibles');
+  const phoenix = shop.getByRole('listitem').filter({ hasText: 'Phénix' });
+  await phoenix.getByRole('button', { name: /Améliorer/ }).click();
+  await expect(shop).toContainText('3 étoiles disponibles');
+  await expect(phoenix.getByRole('img', { name: 'Rang 1 sur 3' })).toBeVisible();
+  await shop.getByRole('button', { name: 'Rendre toutes les étoiles' }).click();
+  await expect(shop).toContainText('5 étoiles disponibles');
 });
