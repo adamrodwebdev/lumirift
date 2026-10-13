@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { CHAPTERS, LEVELS, MAX_STARS, type CampaignLevel } from '@/campaign/Levels';
 import { timeBonusMs, UPGRADES } from '@/campaign/Upgrades';
+import { allowsLevel } from '@/platform/Edition';
 import AppIcon from '../components/AppIcon.vue';
 import ModalDialog from '../components/ModalDialog.vue';
 import ModeArt from '../components/ModeArt.vue';
@@ -18,7 +19,7 @@ import { upgradeHelps, useCampaignText } from '../useCampaignText';
 const emit = defineEmits<{ play: [level: CampaignLevel] }>();
 
 const { t } = useI18n();
-const { campaign, catalog } = useServices();
+const { campaign, catalog, platform } = useServices();
 const text = useCampaignText();
 
 const chapters = computed(() => {
@@ -27,7 +28,8 @@ const chapters = computed(() => {
     const levels = LEVELS.filter((level) => level.chapter === chapter).map((level) => ({
       level,
       stars: model.starsOf(level.id),
-      unlocked: model.isUnlocked(level),
+      unlocked: model.isUnlocked(level) && allowsLevel(platform.edition, level),
+      inDemo: allowsLevel(platform.edition, level),
       current: model.nextLevel === level,
     }));
     return { chapter, levels, stars: levels.reduce((sum, entry) => sum + entry.stars, 0) };
@@ -108,7 +110,10 @@ const play = () => {
             <span class="level__id">{{ item.level.id }}</span>
             <span class="level__art"><ModeArt :mode="item.level.modeId" /></span>
             <span class="level__mode">{{ t(`modes.${item.level.modeId}.name`) }}</span>
-            <AppIcon v-if="!item.unlocked" name="lock" :size="16" />
+            <span v-if="!item.inDemo" class="level__full">
+              <AppIcon name="lock" :size="14" />{{ t('demo.fullGame') }}
+            </span>
+            <AppIcon v-else-if="!item.unlocked" name="lock" :size="16" />
             <StarRow
               v-else
               :count="item.stars"
@@ -308,6 +313,14 @@ const play = () => {
   padding: var(--space-1);
   border-radius: var(--radius-sm);
   background: var(--well-bg);
+}
+
+.level__full {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .level__mode {

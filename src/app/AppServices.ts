@@ -1,5 +1,6 @@
 import { inject, type InjectionKey } from 'vue';
 import { detectLocale } from '@/i18n/locales';
+import { allowsMode } from '@/platform/Edition';
 import { WebPlatform, type Platform } from '@/platform/Platform';
 import { ModeCatalog } from '@/session/ModeCatalog';
 import { AmbianceController } from '@/services/AmbianceController';
@@ -50,7 +51,13 @@ export function createBrowserServices(
     muted: false,
   });
   const catalog = new ModeCatalog();
-  const profile = new ProfileService(storage, () => catalog.list().map((mode) => mode.id));
+  // Objectives only ask for modes this edition lets the player reach.
+  const profile = new ProfileService(storage, () =>
+    catalog
+      .list()
+      .map((mode) => mode.id)
+      .filter((id) => allowsMode(platform.edition, id)),
+  );
   new AmbianceController(profile, settings, document.documentElement);
   return {
     settings,

@@ -518,5 +518,11 @@
       "name": "Rempart",
       "effect": "Rangées adverses retardées de {value} s"
     }
+  },
+  "demo": {
+    "title": "Démo.",
+    "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet en compte treize et trente niveaux.",
+    "fullGame": "Jeu complet",
+    "campaignDone": "Démo terminée : la suite est dans le jeu complet."
   }
 }

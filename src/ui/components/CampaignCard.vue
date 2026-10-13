@@ -3,17 +3,24 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { MAX_STARS, type CampaignLevel } from '@/campaign/Levels';
+import { allowsLevel } from '@/platform/Edition';
 import AppIcon from './AppIcon.vue';
 
 /** The campaign on the home page: where the player is, and the way back in. */
 const emit = defineEmits<{ open: []; play: [level: CampaignLevel] }>();
 
 const { t } = useI18n();
-const { campaign } = useServices();
+const { campaign, platform } = useServices();
 
 const progress = computed(() => {
   const model = campaign.model;
-  return { next: model.nextLevel, stars: model.totalStars, spare: model.availableStars };
+  return {
+    next: model.nextLevel,
+    // Every level of the demo is won: the rest is in the full game.
+    open: allowsLevel(platform.edition, model.nextLevel),
+    stars: model.totalStars,
+    spare: model.availableStars,
+  };
 });
 </script>
 
@@ -32,7 +39,12 @@ const progress = computed(() => {
       </span>
     </div>
     <div class="campaign__actions">
-      <button type="button" class="btn campaign__play" @click="emit('play', progress.next)">
+      <button
+        v-if="progress.open"
+        type="button"
+        class="btn campaign__play"
+        @click="emit('play', progress.next)"
+      >
         <AppIcon name="play" :size="20" />
         {{
           t('campaign.continue', {
@@ -41,6 +53,7 @@ const progress = computed(() => {
           })
         }}
       </button>
+      <p v-else class="campaign__end">{{ t('demo.campaignDone') }}</p>
       <button type="button" class="btn campaign__open" @click="emit('open')">
         {{ t('campaign.open') }}
         <span v-if="progress.spare > 0" class="badge">
@@ -130,6 +143,12 @@ const progress = computed(() => {
   border-color: transparent;
   background: var(--on-accent-fill);
   color: var(--accent-fill);
+}
+
+.campaign__end {
+  flex: 1 1 14rem;
+  align-self: center;
+  font-weight: 800;
 }
 
 .campaign__open {

@@ -12,18 +12,19 @@ const SITE_ONLY: readonly RegExp[] = [
 ];
 
 /**
- * What a portal build changes in index.html: the portal's SDK, loaded before
- * the game, and none of our site's social, search or install tags.
+ * What a portal or demo build changes in index.html: the portal's SDK
+ * (CrazyGames), loaded before the game, and none of our site's social, search
+ * or install tags (the page that embeds the game carries its own).
  */
 export function portalPlugin(platform: string | undefined): Plugin {
   return {
     name: 'stackrift-portal',
     transformIndexHtml(html) {
-      if (platform !== 'crazygames') return html;
-      const withSdk = html.replace(
-        '</title>',
-        `</title>\n    <script src="${CRAZYGAMES_SDK}"></script>`,
-      );
+      if (!platform) return html;
+      const withSdk =
+        platform === 'crazygames'
+          ? html.replace('</title>', `</title>\n    <script src="${CRAZYGAMES_SDK}"></script>`)
+          : html;
       return SITE_ONLY.reduce((page, pattern) => page.replace(pattern, ''), withSdk);
     },
   };

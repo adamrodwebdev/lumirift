@@ -1,6 +1,7 @@
 import type { KeyValueStorage } from '@/services/KeyValueStorage';
+import { DEMO_EDITION, FULL_EDITION, type Edition } from './Edition';
 
-export type PlatformId = 'web' | 'crazygames';
+export type PlatformId = 'web' | 'crazygames' | 'demo';
 
 /** Called around a video ad: the game pauses its sound only once the ad really plays. */
 export interface AdHooks {
@@ -15,6 +16,8 @@ export interface AdHooks {
  */
 export interface Platform {
   readonly id: PlatformId;
+  /** The whole game, or the demo. */
+  readonly edition: Edition;
   /** Links out of the game (sharing a URL) are allowed. Portals forbid them. */
   readonly allowsExternalLinks: boolean;
   /** The player's language as the portal knows it (`en-US`…), or null. */
@@ -38,7 +41,8 @@ export interface Platform {
 
 /** Our own site: no portal, nothing to report, no ads. */
 export class WebPlatform implements Platform {
-  readonly id = 'web';
+  readonly id: PlatformId = 'web';
+  readonly edition: Edition = FULL_EDITION;
   readonly allowsExternalLinks = true;
   readonly locale = null;
   readonly storage = null;
@@ -57,4 +61,13 @@ export class WebPlatform implements Platform {
   midgameAd(): Promise<void> {
     return Promise.resolve();
   }
+}
+
+/**
+ * The demo embedded in the portfolio (adamrodwebdev.com): our site's
+ * behaviour, the demo's edition.
+ */
+export class DemoPlatform extends WebPlatform {
+  override readonly id: PlatformId = 'demo';
+  override readonly edition: Edition = DEMO_EDITION;
 }

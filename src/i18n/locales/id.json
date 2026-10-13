@@ -518,5 +518,11 @@
       "name": "Benteng",
       "effect": "Baris lawan tertunda {value} dtk"
     }
+  },
+  "demo": {
+    "title": "Demo.",
+    "banner": "Lima mode permainan bebas (Klasik, Pasir, Mozaik, Menara, Duel) dan bab pertama kampanye. Game lengkap punya tiga belas mode dan tiga puluh level.",
+    "fullGame": "Game lengkap",
+    "campaignDone": "Demo selesai: kelanjutannya ada di game lengkap."
   }
 }

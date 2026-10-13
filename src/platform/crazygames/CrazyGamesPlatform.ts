@@ -1,4 +1,5 @@
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
+import { FULL_EDITION } from '../Edition';
 import type { AdHooks, Platform } from '../Platform';
 
 /** The part of the CrazyGames HTML5 SDK (v3) the game uses. */
@@ -89,6 +90,7 @@ class CrazyGamesStorage implements KeyValueStorage {
  */
 export class CrazyGamesPlatform implements Platform {
   readonly id = 'crazygames';
+  readonly edition = FULL_EDITION;
   readonly allowsExternalLinks = false;
   readonly locale: string | null;
   readonly storage: KeyValueStorage | null;

@@ -88,6 +88,14 @@ SITE_URL=https://exemple.fr/stackrift/ npm run build
 partage, `sitemap.xml` et sa mention dans `robots.txt`. Sans lui, le build reste portable
 (portails de jeux, sous-dossiers).
 
+### Démo du portfolio
+
+```bash
+npm run build:demo   # dist-demo : cinq modes et le premier chapitre de la campagne
+```
+
+Copiée dans `demos/stackrift/` du portfolio (adamrodwebdev.com).
+
 ### Version CrazyGames
 
 ```bash

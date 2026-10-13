@@ -3,6 +3,23 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.3.0] — 13/10/2026
+
+La démo du portfolio.
+
+### Ajouté
+
+- Éditions du jeu (complète, démo) portées par la plateforme du build.
+- Build de démo (`npm run build:demo`, dossier `dist-demo`) pour adamrodwebdev.com : cinq
+  modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel), le premier chapitre de la
+  campagne, bandeau d'accueil ; les autres modes et niveaux restent visibles, marqués
+  « Jeu complet ».
+
+### Modifié
+
+- Le défi du jour et les objectifs quotidiens ne proposent que les modes ouverts par
+  l'édition.
+
 ## [1.2.0] — 13/10/2026
 
 La version CrazyGames.
