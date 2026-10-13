@@ -22,7 +22,8 @@
     "play": "Jouer",
     "modes": "Modes de jeu",
     "best": "Record : {value}",
-    "noBest": "Pas encore de record"
+    "noBest": "Pas encore de record",
+    "quick": "Une partie de Classique, tout de suite"
   },
   "daily": {
     "title": "Défi du jour",
@@ -151,7 +152,8 @@
     "elementWater": "Pièce d’eau",
     "elementFire": "Pièce de feu",
     "burn": "Le feu a consumé {value} grains",
-    "quench": "L’eau éteint le feu"
+    "quench": "L’eau éteint le feu",
+    "rescue": "Seconde chance !"
   },
   "controls": {
     "label": "Commandes tactiles",
@@ -187,7 +189,8 @@
       "shapeComplete": "Silhouette complète.",
       "victory": "Victoire : la pile de l’IA a débordé.",
       "defeat": "Défaite : votre pile a débordé.",
-      "noMoves": "Plus aucune pièce ne rentre."
+      "noMoves": "Plus aucune pièce ne rentre.",
+      "goal": "Objectif atteint !"
     },
     "result": "Résultat",
     "newBest": "Nouveau record",
@@ -395,6 +398,125 @@
       "level": "Niveau {n}",
       "streak": "Série de {n} jours au défi",
       "objectives": "{n} objectifs accomplis"
+    }
+  },
+  "families": {
+    "all": "Tous",
+    "falling": "Chute",
+    "sand": "Sable",
+    "placement": "Placement",
+    "volume": "Volume"
+  },
+  "carousel": {
+    "previous": "Modes précédents",
+    "next": "Modes suivants",
+    "filter": "Filtrer par famille"
+  },
+  "campaign": {
+    "title": "Campagne",
+    "chapter": "Chapitre {n}",
+    "chapters": {
+      "1": "Premiers blocs",
+      "2": "Courants",
+      "3": "Mosaïques",
+      "4": "Vertiges",
+      "5": "Le Rift"
+    },
+    "stars": "{n} / {max} étoiles",
+    "chapterStars": "{n} / {max} étoiles",
+    "continue": "Continuer · {level} {mode}",
+    "open": "Carte et améliorations",
+    "spare": "{n} étoile à dépenser | {n} étoiles à dépenser",
+    "starsWon": "Aucune étoile | {n} étoile | {n} étoiles",
+    "levelTitle": "Niveau {level} · {mode}",
+    "levelShort": "Niveau {level}",
+    "goalLabel": "Objectif",
+    "timeLabel": "Temps",
+    "timeBonus": "(dont {time} du sablier)",
+    "starsLabel": "Étoiles",
+    "bestLabel": "Meilleur résultat",
+    "helpingLabel": "Améliorations utiles",
+    "back": "Retour",
+    "play": "Jouer",
+    "goal": {
+      "lines": "Effacer {n} ligne | Effacer {n} lignes",
+      "score": "Marquer {n} points",
+      "bigClear": "Effacer {n} lignes d’un coup",
+      "survive": "Tenir {time}",
+      "win": "Battre l’{ai}",
+      "shape": "Compléter la silhouette"
+    },
+    "starRule": {
+      "timeLeft": "1 étoile en réussissant, 2 avec 15 % du temps restant, 3 avec 40 %.",
+      "lines": "1 étoile en tenant, 2 dès {two} lignes effacées, 3 dès {three}.",
+      "fast": "1 étoile en gagnant, 2 en moins de {two}, 3 en moins de {three}."
+    },
+    "won": "Niveau réussi !",
+    "lost": "Niveau échoué",
+    "gained": "+{n} étoile | +{n} étoiles",
+    "noBetter": "Pas mieux que votre meilleur résultat.",
+    "nextLevel": "Niveau {level}",
+    "retry": "Rejouer",
+    "map": "Carte de campagne"
+  },
+  "upgrades": {
+    "title": "Améliorations",
+    "intro": "Dépensez vos étoiles de campagne : chaque amélioration a trois rangs. Elles ne servent qu’en campagne ; vous pouvez tout rendre pour essayer autre chose.",
+    "available": "{n} étoile disponible | {n} étoiles disponibles",
+    "none": "Pas encore achetée",
+    "next": "Rang suivant : {effect}",
+    "rank": "Rang {n} sur {max}",
+    "max": "Au maximum",
+    "buy": "Améliorer · {n}",
+    "refund": "Rendre toutes les étoiles",
+    "close": "Fermer",
+    "scope": {
+      "all": "Tous les modes",
+      "falling": "Chute, Tour et Sable",
+      "sand": "Sable",
+      "mosaic": "Mosaïque",
+      "rhythm": "Rythme",
+      "duel": "Duel"
+    },
+    "hourglass": {
+      "name": "Sablier",
+      "effect": "+{value} s au chrono des niveaux minutés"
+    },
+    "feather": {
+      "name": "Plume",
+      "effect": "Chute ralentie de {value} %"
+    },
+    "spyglass": {
+      "name": "Longue-vue",
+      "effect": "+{value} à l’aperçu des pièces"
+    },
+    "anchor": {
+      "name": "Ancre",
+      "effect": "+{value} ms avant la pose d’une pièce"
+    },
+    "prism": {
+      "name": "Prisme",
+      "effect": "+{value} % de points sur les effacements"
+    },
+    "phoenix": {
+      "name": "Phénix",
+      "effect": "Seconde chance : {value} rangées du bas effacées, une fois par niveau"
+    },
+    "satchel": {
+      "name": "Besace",
+      "effect": "+{value} jokers au départ de la Mosaïque"
+    },
+    "ember": {
+      "name": "Braise",
+      "effect": "+{value} % de pièces de feu dans le Sable"
+    },
+    "metronome": {
+      "name": "Métronome",
+      "effect": "Fenêtre du temps élargie de {value} ms"
+    },
+    "rampart": {
+      "name": "Rempart",
+      "effect": "Rangées adverses retardées de {value} s"
     }
   }
 }

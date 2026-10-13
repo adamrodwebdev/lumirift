@@ -25,9 +25,9 @@ export class CampaignService {
     return this.state.value;
   }
 
-  /** Derived values (stars, ranks, unlocks); read `current` too to stay reactive. */
+  /** Derived values (stars, ranks, unlocks), reactive: rebuilt from the snapshot. */
   get model(): CampaignProgress {
-    return this.progress;
+    return new CampaignProgress(this.state.value);
   }
 
   /** Records a won level; returns the stars gained. */

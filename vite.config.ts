@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
-import { seoPlugin } from './scripts/seoPlugin';
+import { seoPlugin } from './scripts/seoPlugin.ts';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
   version: string;

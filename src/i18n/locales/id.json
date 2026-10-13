@@ -22,7 +22,8 @@
     "play": "Main",
     "modes": "Mode permainan",
     "best": "Rekor: {value}",
-    "noBest": "Belum ada rekor"
+    "noBest": "Belum ada rekor",
+    "quick": "Satu permainan Klasik, sekarang"
   },
   "daily": {
     "title": "Tantangan Harian",
@@ -151,7 +152,8 @@
     "elementWater": "Kepingan air",
     "elementFire": "Kepingan api",
     "burn": "Api membakar {value} butir",
-    "quench": "Air memadamkan api"
+    "quench": "Air memadamkan api",
+    "rescue": "Kesempatan kedua!"
   },
   "controls": {
     "label": "Kontrol sentuh",
@@ -187,7 +189,8 @@
       "shapeComplete": "Siluet lengkap.",
       "victory": "Menang: tumpukan AI meluap.",
       "defeat": "Kalah: tumpukanmu meluap.",
-      "noMoves": "Tidak ada kepingan yang muat lagi."
+      "noMoves": "Tidak ada kepingan yang muat lagi.",
+      "goal": "Tujuan tercapai!"
     },
     "result": "Hasil",
     "newBest": "Rekor baru",
@@ -395,6 +398,125 @@
       "level": "Level {n}",
       "streak": "Beruntun {n} hari di tantangan",
       "objectives": "{n} tujuan selesai"
+    }
+  },
+  "families": {
+    "all": "Semua",
+    "falling": "Jatuh",
+    "sand": "Pasir",
+    "placement": "Penempatan",
+    "volume": "Volume"
+  },
+  "carousel": {
+    "previous": "Mode sebelumnya",
+    "next": "Mode berikutnya",
+    "filter": "Saring menurut keluarga"
+  },
+  "campaign": {
+    "title": "Kampanye",
+    "chapter": "Bab {n}",
+    "chapters": {
+      "1": "Balok pertama",
+      "2": "Arus",
+      "3": "Mozaik",
+      "4": "Pusing",
+      "5": "Retakan"
+    },
+    "stars": "{n} / {max} bintang",
+    "chapterStars": "{n} / {max} bintang",
+    "continue": "Lanjutkan · {level} {mode}",
+    "open": "Peta dan peningkatan",
+    "spare": "{n} bintang untuk dibelanjakan",
+    "starsWon": "Tanpa bintang | {n} bintang | {n} bintang",
+    "levelTitle": "Level {level} · {mode}",
+    "levelShort": "Level {level}",
+    "goalLabel": "Tujuan",
+    "timeLabel": "Waktu",
+    "timeBonus": "(termasuk {time} dari jam pasir)",
+    "starsLabel": "Bintang",
+    "bestLabel": "Hasil terbaik",
+    "helpingLabel": "Peningkatan yang membantu",
+    "back": "Kembali",
+    "play": "Main",
+    "goal": {
+      "lines": "Hapus {n} baris",
+      "score": "Cetak {n} poin",
+      "bigClear": "Hapus {n} baris sekaligus",
+      "survive": "Bertahan {time}",
+      "win": "Kalahkan {ai}",
+      "shape": "Lengkapi siluet"
+    },
+    "starRule": {
+      "timeLeft": "1 bintang jika berhasil, 2 dengan sisa waktu 15 %, 3 dengan 40 %.",
+      "lines": "1 bintang jika bertahan, 2 mulai {two} baris, 3 mulai {three}.",
+      "fast": "1 bintang jika menang, 2 di bawah {two}, 3 di bawah {three}."
+    },
+    "won": "Level selesai!",
+    "lost": "Level gagal",
+    "gained": "+{n} bintang",
+    "noBetter": "Tidak lebih baik dari hasil terbaik Anda.",
+    "nextLevel": "Level {level}",
+    "retry": "Coba lagi",
+    "map": "Peta kampanye"
+  },
+  "upgrades": {
+    "title": "Peningkatan",
+    "intro": "Belanjakan bintang kampanye Anda: setiap peningkatan punya tiga tingkat. Hanya berlaku di kampanye; semua bintang bisa dikembalikan untuk mencoba yang lain.",
+    "available": "{n} bintang tersedia",
+    "none": "Belum dibeli",
+    "next": "Tingkat berikutnya: {effect}",
+    "rank": "Tingkat {n} dari {max}",
+    "max": "Maksimal",
+    "buy": "Tingkatkan · {n}",
+    "refund": "Kembalikan semua bintang",
+    "close": "Tutup",
+    "scope": {
+      "all": "Semua mode",
+      "falling": "Jatuh, Menara dan Pasir",
+      "sand": "Pasir",
+      "mosaic": "Mozaik",
+      "rhythm": "Ritme",
+      "duel": "Duel"
+    },
+    "hourglass": {
+      "name": "Jam pasir",
+      "effect": "+{value} dtk pada level berwaktu"
+    },
+    "feather": {
+      "name": "Bulu",
+      "effect": "Kepingan jatuh {value} % lebih lambat"
+    },
+    "spyglass": {
+      "name": "Teropong",
+      "effect": "+{value} pada pratinjau kepingan"
+    },
+    "anchor": {
+      "name": "Jangkar",
+      "effect": "+{value} md sebelum kepingan terkunci"
+    },
+    "prism": {
+      "name": "Prisma",
+      "effect": "+{value} % poin penghapusan"
+    },
+    "phoenix": {
+      "name": "Feniks",
+      "effect": "Kesempatan kedua: {value} baris bawah dihapus, sekali per level"
+    },
+    "satchel": {
+      "name": "Tas",
+      "effect": "+{value} joker di awal Mozaik"
+    },
+    "ember": {
+      "name": "Bara",
+      "effect": "+{value} % kepingan api di Pasir"
+    },
+    "metronome": {
+      "name": "Metronom",
+      "effect": "Jendela ketukan diperlebar {value} md"
+    },
+    "rampart": {
+      "name": "Benteng",
+      "effect": "Baris lawan tertunda {value} dtk"
     }
   }
 }
