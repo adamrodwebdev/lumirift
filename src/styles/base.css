@@ -73,9 +73,9 @@ button {
   min-width: var(--touch);
   padding: var(--space-2) var(--space-4);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: var(--surface);
-  font-weight: 600;
+  font-weight: 650;
   text-decoration: none;
   transition:
     background-color 120ms ease,
@@ -91,14 +91,29 @@ button {
 }
 
 .btn--primary {
-  background: var(--accent-fill);
-  border-color: var(--accent-fill);
+  background: var(--accent-gradient);
+  border-color: transparent;
   color: var(--on-accent-fill);
+  box-shadow: 0 0.35rem 1rem color-mix(in srgb, var(--accent-fill) 35%, transparent);
 }
 
 .btn--primary:hover {
-  background: var(--accent-fill);
+  background: var(--accent-gradient);
   filter: brightness(1.06);
+}
+
+/* Shared cards: rounded, a hairline border, a faint light from the top. */
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--text) 3%, transparent), transparent 40%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.section-title {
+  font-size: clamp(1.15rem, 1rem + 0.8vw, 1.5rem);
 }
 
 .btn--ghost {

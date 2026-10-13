@@ -1,30 +1,58 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { CampaignLevel } from '@/campaign/Levels';
 import type { GameOutcome } from '../GameOutcome';
 import { useProgressText } from '../useProgressText';
 import AppIcon from './AppIcon.vue';
 import ModalDialog from './ModalDialog.vue';
+import StarRow from './StarRow.vue';
 
-defineProps<{ open: boolean; outcome: GameOutcome | null; shareStatus: string }>();
-const emit = defineEmits<{ again: []; home: []; share: [] }>();
+const props = defineProps<{ open: boolean; outcome: GameOutcome | null; shareStatus: string }>();
+const emit = defineEmits<{
+  again: [];
+  home: [];
+  share: [];
+  campaign: [];
+  next: [level: CampaignLevel];
+}>();
 
 const { t } = useI18n();
 const text = useProgressText();
+
+const title = computed(() => {
+  const outcome = props.outcome;
+  if (outcome?.campaign) return t(outcome.campaign.won ? 'campaign.won' : 'campaign.lost');
+  return outcome?.reason === 'victory' ? t('over.victory') : t('over.title');
+});
 </script>
 
 <template>
   <ModalDialog
     :open="open"
-    :title="outcome?.reason === 'victory' ? t('over.victory') : t('over.title')"
-    @dismiss="emit('home')"
+    :title="title"
+    @dismiss="outcome?.campaign ? emit('campaign') : emit('home')"
   >
     <template v-if="outcome">
       <p class="reason">{{ t(`over.reason.${outcome.reason}`) }}</p>
+      <div v-if="outcome.campaign" class="level">
+        <StarRow
+          :count="outcome.campaign.stars"
+          :label="t('campaign.starsWon', { n: outcome.campaign.stars }, outcome.campaign.stars)"
+          :size="36"
+        />
+        <p v-if="outcome.campaign.gained > 0" class="level__gained">
+          {{ t('campaign.gained', { n: outcome.campaign.gained }, outcome.campaign.gained) }}
+        </p>
+        <p v-else-if="outcome.campaign.won" class="level__gained">{{ t('campaign.noBetter') }}</p>
+      </div>
       <div class="result">
         <span class="result__label">{{ t('over.result') }}</span>
         <span class="result__value">{{ outcome.value }}</span>
-        <span v-if="outcome.isNewBest" class="result__badge">{{ t('over.newBest') }}</span>
-        <span v-else class="result__best">{{ t('over.best', { value: outcome.best }) }}</span>
+        <template v-if="!outcome.campaign">
+          <span v-if="outcome.isNewBest" class="result__badge">{{ t('over.newBest') }}</span>
+          <span v-else class="result__best">{{ t('over.best', { value: outcome.best }) }}</span>
+        </template>
       </div>
       <section v-if="outcome.progress.total > 0" class="progress" :aria-label="t('progress.title')">
         <p class="progress__total">{{ t('progress.gained', { n: outcome.progress.total }) }}</p>
@@ -60,7 +88,30 @@ const text = useProgressText();
       </section>
       <p v-else class="progress__hint">{{ t('progress.tooShort') }}</p>
     </template>
-    <div class="actions">
+    <div v-if="outcome?.campaign" class="actions">
+      <button
+        v-if="outcome.campaign.next"
+        type="button"
+        class="btn btn--primary"
+        autofocus
+        @click="outcome.campaign.next && emit('next', outcome.campaign.next)"
+      >
+        <AppIcon name="play" :size="20" />
+        {{ t('campaign.nextLevel', { level: outcome.campaign.next.id }) }}
+      </button>
+      <button
+        type="button"
+        class="btn"
+        :class="{ 'btn--primary': !outcome.campaign.next }"
+        @click="emit('again')"
+      >
+        <AppIcon name="restart" :size="20" />{{ t('campaign.retry') }}
+      </button>
+      <button type="button" class="btn" @click="emit('campaign')">
+        <AppIcon name="back" :size="20" />{{ t('campaign.map') }}
+      </button>
+    </div>
+    <div v-else class="actions">
       <button type="button" class="btn btn--primary" autofocus @click="emit('again')">
         <AppIcon name="restart" :size="20" />{{ t('over.again') }}
       </button>
@@ -76,6 +127,18 @@ const text = useProgressText();
 </template>
 
 <style scoped>
+.level {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  margin-block-start: var(--space-4);
+}
+
+.level__gained {
+  font-weight: 800;
+  color: var(--accent);
+}
+
 .reason {
   color: var(--text-muted);
 }

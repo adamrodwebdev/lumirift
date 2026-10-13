@@ -85,7 +85,7 @@ const refresh = () => {
   pending.value = controller.pendingJoker;
 };
 const detachRefresh = (
-  ['deal', 'place', 'jokerGained', 'jokerUsed', 'turn', 'undo', 'bomb'] as const
+  ['deal', 'place', 'jokerGained', 'jokerUsed', 'turn', 'undo', 'bomb', 'rescue'] as const
 ).map((type) => session.onGame(type, refresh));
 
 /** One button per kind of joker, with how many are held; it uses the first of them. */

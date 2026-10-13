@@ -10,6 +10,7 @@ import {
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
+import type { CampaignLevel } from '@/campaign/Levels';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { ModeId } from '@/session/ModeId';
 import AppHeader from '@/ui/components/AppHeader.vue';
@@ -18,14 +19,18 @@ import HomeScreen from '@/ui/screens/HomeScreen.vue';
 
 /** The game screen and its families are downloaded only when a game starts. */
 const GameScreen = defineAsyncComponent(() => import('@/ui/screens/GameScreen.vue'));
+const CampaignScreen = defineAsyncComponent(() => import('@/ui/screens/CampaignScreen.vue'));
 
 type Screen =
   | { readonly kind: 'home' }
+  | { readonly kind: 'campaign' }
   | {
       readonly kind: 'game';
       readonly modeId: ModeId;
       readonly daily: DailyChallenge | null;
       readonly variant: string | null;
+      /** Set for a campaign level. */
+      readonly level: CampaignLevel | null;
       readonly id: number;
     };
 
@@ -42,12 +47,15 @@ const play = (
   daily: DailyChallenge | null = null,
   variant: string | null = null,
 ) => {
-  screen.value = { kind: 'game', modeId, daily, variant, id: ++gameId };
-  window.scrollTo(0, 0);
-  focusMain();
+  show({ kind: 'game', modeId, daily, variant, level: null, id: ++gameId });
 };
-const home = () => {
-  screen.value = { kind: 'home' };
+const playLevel = (level: CampaignLevel) =>
+  show({ kind: 'game', modeId: level.modeId, daily: null, variant: null, level, id: ++gameId });
+const home = () => show({ kind: 'home' });
+const campaignMap = () => show({ kind: 'campaign' });
+const show = (next: Screen) => {
+  screen.value = next;
+  window.scrollTo(0, 0);
   focusMain();
 };
 /**
@@ -87,20 +95,26 @@ onBeforeUnmount(() => {
 
 <template>
   <a class="skip" href="#main">{{ t('nav.skip') }}</a>
-  <AppHeader :in-game="screen.kind === 'game'" @home="home" @settings="settingsOpen = true" />
+  <AppHeader :in-game="screen.kind !== 'home'" @home="home" @settings="settingsOpen = true" />
   <main id="main" ref="main" tabindex="-1">
     <HomeScreen
       v-if="screen.kind === 'home'"
       @play="(modeId, variant) => play(modeId, null, variant ?? null)"
       @daily="(challenge) => play(challenge.modeId, challenge)"
+      @campaign="campaignMap"
+      @level="playLevel"
     />
+    <CampaignScreen v-else-if="screen.kind === 'campaign'" @play="playLevel" />
     <GameScreen
       v-else
       :key="screen.id"
       :mode-id="screen.modeId"
       :daily="screen.daily"
       :variant="screen.variant"
+      :level="screen.level"
       @home="home"
+      @campaign="campaignMap"
+      @next="playLevel"
     />
   </main>
   <SettingsDialog :open="settingsOpen" @close="settingsOpen = false" />

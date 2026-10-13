@@ -3,6 +3,7 @@ import { detectLocale } from '@/i18n/locales';
 import { ModeCatalog } from '@/session/ModeCatalog';
 import { AmbianceController } from '@/services/AmbianceController';
 import { AudioEngine } from '@/services/audio/AudioEngine';
+import { CampaignService } from '@/services/CampaignService';
 import { Haptics } from '@/services/Haptics';
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
 import { ProfileService } from '@/services/ProfileService';
@@ -18,6 +19,8 @@ export interface AppServices {
   readonly scores: ScoreBoard;
   /** Experience, objectives, streak and cosmetics. */
   readonly profile: ProfileService;
+  /** Campaign stars and upgrades. */
+  readonly campaign: CampaignService;
   readonly share: ShareService;
   readonly catalog: ModeCatalog;
   readonly audio: AudioEngine;
@@ -51,6 +54,7 @@ export function createBrowserServices(
     ),
     scores: new ScoreBoard(storage),
     profile,
+    campaign: new CampaignService(storage),
     share: new ShareService(navigator),
     catalog,
     audio: AudioEngine.browser(),

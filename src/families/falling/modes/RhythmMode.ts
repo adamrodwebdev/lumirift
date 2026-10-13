@@ -25,7 +25,7 @@ export class RhythmMode extends AbstractMode {
     game.events.on('lock', () => {
       const period = this.period(game);
       const distance = Math.min(this.phase, period - this.phase);
-      const onBeat = distance <= RHYTHM_WINDOW_MS;
+      const onBeat = distance <= RHYTHM_WINDOW_MS + this.boosts.rhythmWindowMs;
       const previous = this.groove;
       this.groove = onBeat ? Math.min(RHYTHM_MAX_GROOVE, this.groove + 1) : 1;
       if (onBeat) this.onBeatLocks++;

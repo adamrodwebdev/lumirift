@@ -60,6 +60,12 @@
 
   --radius: 0.75rem;
   --radius-sm: 0.5rem;
+  --radius-lg: 1.25rem;
+  /* Accent as a light, warm gradient (primary buttons, the campaign card). */
+  --accent-gradient: linear-gradient(135deg, #f0bd55, #e8955a);
+  --surface-raised: color-mix(in srgb, var(--surface) 92%, var(--accent-fill));
+  --star: #c98a00;
+  --star-empty: #c9c0ae;
   --shadow: 0 0.5rem 1.5rem rgb(28 26 23 / 0.12);
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -120,4 +126,8 @@
   --tone-14: #ff7a3d;
 
   --shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.45);
+  --accent-gradient: linear-gradient(135deg, #f6cd6a, #f09a62);
+  --surface-raised: color-mix(in srgb, var(--surface) 88%, var(--accent-fill));
+  --star: #f6cd6a;
+  --star-empty: #3a4456;
 }

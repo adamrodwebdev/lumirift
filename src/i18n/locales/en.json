@@ -22,7 +22,8 @@
     "play": "Play",
     "modes": "Game modes",
     "best": "Best: {value}",
-    "noBest": "No record yet"
+    "noBest": "No record yet",
+    "quick": "A game of Classic, right now"
   },
   "daily": {
     "title": "Daily Challenge",
@@ -151,7 +152,8 @@
     "elementWater": "Water piece",
     "elementFire": "Fire piece",
     "burn": "Fire burnt {value} grains",
-    "quench": "Water puts the fire out"
+    "quench": "Water puts the fire out",
+    "rescue": "Second chance!"
   },
   "controls": {
     "label": "Touch controls",
@@ -187,7 +189,8 @@
       "shapeComplete": "Silhouette complete.",
       "victory": "Victory: the AI’s stack overflowed.",
       "defeat": "Defeat: your stack overflowed.",
-      "noMoves": "No piece fits any more."
+      "noMoves": "No piece fits any more.",
+      "goal": "Goal reached!"
     },
     "result": "Result",
     "newBest": "New record",
@@ -395,6 +398,125 @@
       "level": "Level {n}",
       "streak": "{n}-day daily streak",
       "objectives": "{n} objectives done"
+    }
+  },
+  "families": {
+    "all": "All",
+    "falling": "Falling",
+    "sand": "Sand",
+    "placement": "Placement",
+    "volume": "Volume"
+  },
+  "carousel": {
+    "previous": "Previous modes",
+    "next": "Next modes",
+    "filter": "Filter by family"
+  },
+  "campaign": {
+    "title": "Campaign",
+    "chapter": "Chapter {n}",
+    "chapters": {
+      "1": "First blocks",
+      "2": "Currents",
+      "3": "Mosaics",
+      "4": "Vertigo",
+      "5": "The Rift"
+    },
+    "stars": "{n} / {max} stars",
+    "chapterStars": "{n} / {max} stars",
+    "continue": "Continue · {level} {mode}",
+    "open": "Map and upgrades",
+    "spare": "{n} star to spend | {n} stars to spend",
+    "starsWon": "No star | {n} star | {n} stars",
+    "levelTitle": "Level {level} · {mode}",
+    "levelShort": "Level {level}",
+    "goalLabel": "Goal",
+    "timeLabel": "Time",
+    "timeBonus": "({time} from the hourglass)",
+    "starsLabel": "Stars",
+    "bestLabel": "Best result",
+    "helpingLabel": "Helpful upgrades",
+    "back": "Back",
+    "play": "Play",
+    "goal": {
+      "lines": "Clear {n} line | Clear {n} lines",
+      "score": "Score {n} points",
+      "bigClear": "Clear {n} lines at once",
+      "survive": "Last {time}",
+      "win": "Beat the {ai}",
+      "shape": "Complete the silhouette"
+    },
+    "starRule": {
+      "timeLeft": "1 star for winning, 2 with 15 % of the time left, 3 with 40 %.",
+      "lines": "1 star for lasting, 2 from {two} lines cleared, 3 from {three}.",
+      "fast": "1 star for winning, 2 in under {two}, 3 in under {three}."
+    },
+    "won": "Level complete!",
+    "lost": "Level failed",
+    "gained": "+{n} star | +{n} stars",
+    "noBetter": "No better than your best result.",
+    "nextLevel": "Level {level}",
+    "retry": "Try again",
+    "map": "Campaign map"
+  },
+  "upgrades": {
+    "title": "Upgrades",
+    "intro": "Spend your campaign stars: each upgrade has three ranks. They only work in the campaign; you can take every star back to try something else.",
+    "available": "{n} star available | {n} stars available",
+    "none": "Not bought yet",
+    "next": "Next rank: {effect}",
+    "rank": "Rank {n} of {max}",
+    "max": "Maxed out",
+    "buy": "Upgrade · {n}",
+    "refund": "Take every star back",
+    "close": "Close",
+    "scope": {
+      "all": "Every mode",
+      "falling": "Falling, Tower and Sand",
+      "sand": "Sand",
+      "mosaic": "Mosaic",
+      "rhythm": "Rhythm",
+      "duel": "Duel"
+    },
+    "hourglass": {
+      "name": "Hourglass",
+      "effect": "+{value} s on the clock of timed levels"
+    },
+    "feather": {
+      "name": "Feather",
+      "effect": "Pieces fall {value} % slower"
+    },
+    "spyglass": {
+      "name": "Spyglass",
+      "effect": "+{value} in the piece preview"
+    },
+    "anchor": {
+      "name": "Anchor",
+      "effect": "+{value} ms before a piece locks"
+    },
+    "prism": {
+      "name": "Prism",
+      "effect": "+{value} % points on clears"
+    },
+    "phoenix": {
+      "name": "Phoenix",
+      "effect": "Second chance: {value} bottom rows cleared, once per level"
+    },
+    "satchel": {
+      "name": "Satchel",
+      "effect": "+{value} jokers at the start of the Mosaic"
+    },
+    "ember": {
+      "name": "Ember",
+      "effect": "+{value} % fire pieces in the Sand"
+    },
+    "metronome": {
+      "name": "Metronome",
+      "effect": "Beat window widened by {value} ms"
+    },
+    "rampart": {
+      "name": "Rampart",
+      "effect": "Opponent rows delayed by {value} s"
     }
   }
 }

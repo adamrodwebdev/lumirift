@@ -1,4 +1,5 @@
 import { Board, type ClearedRow } from '../board/Board';
+import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import { Emitter } from '@/core/Emitter';
 import type { RandomSource } from '@/core/Random';
 import type { GameMode } from '../modes/GameMode';
@@ -29,6 +30,8 @@ export interface GameOptions {
    * It is part of the rules (the same whatever the effect settings), 0 by default.
    */
   readonly lineClearDelayMs?: number;
+  /** Campaign upgrades (none by default). */
+  readonly boosts?: Boosts;
 }
 
 /**
@@ -48,6 +51,9 @@ export class Game {
   private readonly startLevel: number;
   private readonly upcoming: PieceSpec[] = [];
   private readonly lineClearDelayMs: number;
+  private readonly boosts: Boosts;
+  /** The second chance has not been used yet. */
+  private rescueReady: boolean;
 
   private _state: GameState = 'ready';
   private _overReason: GameOverReason | null = null;
@@ -83,6 +89,8 @@ export class Game {
     this.startLevel = options.startLevel ?? 1;
     this._level = this.startLevel;
     this.lineClearDelayMs = options.lineClearDelayMs ?? 0;
+    this.boosts = options.boosts ?? NO_BOOSTS;
+    this.rescueReady = this.boosts.rescueRows > 0;
     mode.attach(this);
   }
 
@@ -120,7 +128,7 @@ export class Game {
   }
 
   /** The next pieces, in order. */
-  preview(count = PREVIEW_COUNT): readonly PieceSpec[] {
+  preview(count = PREVIEW_COUNT + this.boosts.extraPreview): readonly PieceSpec[] {
     this.fillQueue(count);
     return this.upcoming.slice(0, count);
   }
@@ -242,7 +250,7 @@ export class Game {
     if (this._state === 'over') return;
     const overflow = this.board.pushGarbageRow(holeX);
     this.events.emit('garbage', { rows: 1 });
-    if (overflow || !this.liftActiveUntilItFits()) this.finish('topOut');
+    if (overflow || !this.liftActiveUntilItFits()) this.overflow();
   }
 
   /** Turns the well upside down; blocks settle and full rows clear in cascade. */
@@ -252,7 +260,7 @@ export class Game {
     const cleared = this.board.clearFullRows();
     this.scoreClear(cleared, true);
     this.events.emit('flip', { lines: cleared.length });
-    if (!this.liftActiveUntilItFits()) this.finish('topOut');
+    if (!this.liftActiveUntilItFits()) this.overflow();
   }
 
   /** Reflects the well and the falling piece left to right (no collision can appear). */
@@ -277,7 +285,7 @@ export class Game {
     const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
     this.scoreClear(cleared, true);
     this.pauseAfterLock = true;
-    if (!this.liftActiveUntilItFits()) this.finish('topOut');
+    if (!this.liftActiveUntilItFits()) this.overflow();
   }
 
   /**
@@ -365,7 +373,7 @@ export class Game {
   private applyGravity(deltaMs: number): boolean {
     const interval = this.softDropping
       ? this.gravity.softDropIntervalMs(this._level)
-      : this.gravity.rowIntervalMs(this._level);
+      : this.gravity.rowIntervalMs(this._level) / this.boosts.gravityScale;
     let fell = false;
     this.fallAccumulator += deltaMs;
     while (this.fallAccumulator >= interval && this._active) {
@@ -389,7 +397,8 @@ export class Game {
       return;
     }
     this.lockTimer += deltaMs;
-    if (this.lockTimer >= LOCK_DELAY_MS || this.lockResets >= MAX_LOCK_RESETS) {
+    const delay = LOCK_DELAY_MS + this.boosts.extraLockDelayMs;
+    if (this.lockTimer >= delay || this.lockResets >= MAX_LOCK_RESETS) {
       this.lockActive();
     }
   }
@@ -405,7 +414,7 @@ export class Game {
     this.scoreClear(cleared, false);
     this.mode.afterLock(this);
     if (this._state === 'over') return;
-    if (!visible && cleared.length === 0) {
+    if (!visible && cleared.length === 0 && !this.rescue()) {
       this.finish('lockOut');
       return;
     }
@@ -424,7 +433,9 @@ export class Game {
     const pureLines = cleared.filter((row) => row.pure).length;
     const combo = this._combo;
     const base = this.scoring.clear({ lines, pureLines, level: this._level, combo });
-    const points = Math.round(base * this.mode.clearMultiplier(this));
+    const points = Math.round(
+      base * this.mode.clearMultiplier(this) * (1 + this.boosts.scoreBonus),
+    );
     this._score += points;
     this._lines += lines;
     this.events.emit('clear', { lines, pureLines, points, combo, cascade, rows: cleared });
@@ -445,7 +456,8 @@ export class Game {
     if (this._state === 'over') return;
     let piece = Piece.spawn(spec.type, spec.tone, this.board.width);
     if (!this.board.fits(piece)) {
-      this.finish('blockOut');
+      if (this.rescue()) this.spawn(spec);
+      else this.finish('blockOut');
       return;
     }
     // Pieces enter the visible well right away when there is room.
@@ -463,6 +475,23 @@ export class Game {
       const type = this.bag.next();
       this.upcoming.push({ type, tone: this.mode.toneFor(type, this.random) });
     }
+  }
+
+  /** The stack overflowed: a second chance if there is one, otherwise the end. */
+  private overflow(): void {
+    if (!this.rescue() || !this.liftActiveUntilItFits()) this.finish('topOut');
+  }
+
+  /**
+   * The second chance (campaign upgrade), once per game: the bottom rows
+   * vanish and the stack drops. Only in modes that clear lines.
+   */
+  private rescue(): boolean {
+    if (!this.rescueReady || !this.mode.clearsLines) return false;
+    this.rescueReady = false;
+    this.board.dropBottomRows(this.boosts.rescueRows);
+    this.events.emit('rescue', { rows: this.boosts.rescueRows });
+    return true;
   }
 
   /** After the stack moved under it, nudges the active piece up until it fits. */

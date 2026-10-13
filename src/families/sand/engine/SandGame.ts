@@ -1,4 +1,5 @@
 import { Emitter } from '@/core/Emitter';
+import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import type { RandomSource } from '@/core/Random';
 import { Tone } from '@/core/Tone';
 import { Bag } from '@/families/falling/pieces/Bag';
@@ -69,6 +70,8 @@ export interface SandEventMap {
   wind: { readonly phase: 'soon' | 'start' | 'end'; readonly direction: -1 | 1 };
   levelUp: { readonly level: number };
   notice: { readonly id: string; readonly value?: number };
+  /** A second chance: the bottom of the sand vanished instead of the game ending. */
+  rescue: { readonly rows: number };
   over: { readonly reason: SandOverReason };
 }
 
@@ -76,6 +79,8 @@ export interface SandOptions {
   readonly random: RandomSource;
   readonly timeLimitMs?: number | null;
   readonly grid?: SandGrid;
+  /** Campaign upgrades (none by default). */
+  readonly boosts?: Boosts;
 }
 
 /**
@@ -100,6 +105,9 @@ export class SandGame {
   private _level = 1;
   private _elapsedMs = 0;
   private dealt = 0;
+  private readonly boosts: Boosts;
+  /** The second chance has not been used yet. */
+  private rescueReady: boolean;
   /** Sand pieces dealt since the last element. */
   private sinceElement = 0;
   /** The region the falling fire would burn, cached for one grid step and one position. */
@@ -120,6 +128,8 @@ export class SandGame {
     this.grid = options.grid ?? new SandGrid();
     this.bag = new Bag(this.random);
     this.timeLimitMs = options.timeLimitMs ?? null;
+    this.boosts = options.boosts ?? NO_BOOSTS;
+    this.rescueReady = this.boosts.rescueRows > 0;
     this.wind = {
       direction: this.random.next() < 0.5 ? -1 : 1,
       at: this.nextGustDelay(),
@@ -158,7 +168,7 @@ export class SandGame {
     return this.wind.phase === 'blowing' ? 0 : Math.max(0, this.wind.at - this._elapsedMs);
   }
 
-  preview(count = PREVIEW_COUNT): readonly PieceSpec[] {
+  preview(count = PREVIEW_COUNT + this.boosts.extraPreview): readonly PieceSpec[] {
     this.fillQueue(count);
     return this.upcoming.slice(0, count);
   }
@@ -315,7 +325,7 @@ export class SandGame {
   private applyGravity(deltaMs: number): boolean {
     const row = this.softDropping
       ? this.gravity.softDropIntervalMs(this._level)
-      : this.gravity.rowIntervalMs(this._level);
+      : this.gravity.rowIntervalMs(this._level) / this.boosts.gravityScale;
     const interval = row / GRAINS_PER_CELL;
     let fell = false;
     this.fallAccumulator += deltaMs;
@@ -339,7 +349,8 @@ export class SandGame {
       return;
     }
     this.lockTimer += deltaMs;
-    if (this.lockTimer >= LOCK_DELAY_MS || this.lockResets >= MAX_LOCK_RESETS) this.lock();
+    const delay = LOCK_DELAY_MS + this.boosts.extraLockDelayMs;
+    if (this.lockTimer >= delay || this.lockResets >= MAX_LOCK_RESETS) this.lock();
   }
 
   /**
@@ -406,7 +417,7 @@ export class SandGame {
     if (region.length === 0) return;
     const samples = this.sample(region);
     this.grid.remove(region);
-    const points = Math.round(region.length / 2);
+    const points = Math.round((region.length / 2) * (1 + this.boosts.scoreBonus));
     this._score += points;
     this.events.emit('burn', { grains: region.length, points, samples });
   }
@@ -464,7 +475,7 @@ export class SandGame {
     const all = regions.flat();
     const samples = this.sample(all);
     this.grid.remove(all);
-    const points = all.length * regions.length;
+    const points = Math.round(all.length * regions.length * (1 + this.boosts.scoreBonus));
     this._score += points;
     this._clears += regions.length;
     this.events.emit('clear', { regions: regions.length, grains: all.length, points, samples });
@@ -527,6 +538,15 @@ export class SandGame {
     const spec = this.upcoming.shift()!;
     const piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
     if (!this.fits(piece)) {
+      if (this.rescueReady) {
+        // The second chance: the bottom of the sand vanishes, the piece comes back.
+        this.rescueReady = false;
+        this.grid.dropBottomRows(this.boosts.rescueRows * GRAINS_PER_CELL);
+        this.events.emit('rescue', { rows: this.boosts.rescueRows });
+        this.upcoming.unshift(spec);
+        this.spawnNext();
+        return;
+      }
       this.finish('blockOut');
       return;
     }
@@ -549,7 +569,7 @@ export class SandGame {
       if (this.dealt > ELEMENTS_AFTER && this.sinceElement >= ELEMENT_GAP) {
         const roll = this.random.next();
         if (roll < WATER_CHANCE) tone = Tone.Water;
-        else if (roll < WATER_CHANCE + FIRE_CHANCE) tone = Tone.Fire;
+        else if (roll < WATER_CHANCE + FIRE_CHANCE + this.boosts.fireBonus) tone = Tone.Fire;
       }
       this.sinceElement = tone === Tone.Water || tone === Tone.Fire ? 0 : this.sinceElement + 1;
       this.upcoming.push({ type, tone });

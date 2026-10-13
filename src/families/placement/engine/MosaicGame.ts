@@ -1,4 +1,5 @@
 import { Emitter } from '@/core/Emitter';
+import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import type { RandomSource } from '@/core/Random';
 import { JOKER_IDS, JOKERS, type JokerId, type JokerTarget } from '../jokers/Joker';
 import { CUBE, Dealer, type OfferedPiece } from './Dealer';
@@ -46,6 +47,8 @@ export interface MosaicEventMap {
   };
   /** The board is empty after a clear. */
   perfect: { readonly points: number };
+  /** A second chance: the fullest lines vanished instead of the game ending. */
+  rescue: { readonly lines: number };
   jokerGained: { readonly joker: JokerId };
   jokerUsed: { readonly joker: JokerId };
   bomb: { readonly x: number; readonly y: number; readonly removed: readonly RemovedTile[] };
@@ -70,7 +73,12 @@ export interface MosaicOptions {
   readonly random: RandomSource;
   readonly timeLimitMs?: number | null;
   readonly grid?: Grid;
+  /** Campaign upgrades (none by default). */
+  readonly boosts?: Boosts;
 }
+
+/** Jokers the start-jokers upgrade adds, in this order. */
+const START_JOKERS: readonly JokerId[] = ['bomb', 'reroll', 'rotate'];
 
 /**
  * A game of Mosaic: place the offered pieces on an 8 × 8 board; full rows and
@@ -90,6 +98,9 @@ export class MosaicGame {
   private bonus: OfferedPiece | null = null;
   /** Every game starts with one undo: a first mistake is forgiven. */
   private inventory: JokerId[] = ['undo'];
+  private readonly boosts: Boosts;
+  /** The second chance has not been used yet. */
+  private rescueReady: boolean;
   private history: Snapshot | null = null;
   private _state: MosaicState = 'ready';
   private _overReason: MosaicOverReason | null = null;
@@ -105,6 +116,10 @@ export class MosaicGame {
   constructor(options: MosaicOptions) {
     this.grid = options.grid ?? new Grid();
     this.dealer = new Dealer(options.random);
+    this.boosts = options.boosts ?? NO_BOOSTS;
+    this.rescueReady = this.boosts.rescueRows > 0;
+    for (const joker of START_JOKERS.slice(0, this.boosts.startJokers)) this.inventory.push(joker);
+    this.inventory.sort((a, b) => JOKER_IDS.indexOf(a) - JOKER_IDS.indexOf(b));
     this.timeLimitMs = options.timeLimitMs ?? null;
   }
 
@@ -287,7 +302,9 @@ export class MosaicGame {
     this.misses = 0;
     this._streak++;
     this._bestStreak = Math.max(this._bestStreak, this._streak);
-    const points = Math.round(linePoints(count) * comboMultiplier(this._streak));
+    const points = Math.round(
+      linePoints(count) * comboMultiplier(this._streak) * (1 + this.boosts.scoreBonus),
+    );
     const linesBefore = this._lines;
     this._score += points;
     this._lines += count;
@@ -336,7 +353,34 @@ export class MosaicGame {
     if (this._state !== 'running') return;
     const fits = this.pieces().some(({ piece }) => this.grid.fitsAnywhere(piece.shape));
     const help = this.inventory.some((joker) => JOKERS[joker].canHelp(this));
-    if (!fits && !help) this.finish('noMoves');
+    if (fits || help) return;
+    if (this.rescueReady) {
+      this.rescue();
+      return;
+    }
+    this.finish('noMoves');
+  }
+
+  /**
+   * The second chance (campaign upgrade), once per game: the fullest rows
+   * vanish (half as many as the rows of the falling family).
+   */
+  private rescue(): void {
+    this.rescueReady = false;
+    const size = this.grid.size;
+    const fill = (y: number) =>
+      Array.from({ length: size }, (_, x) => (this.grid.isFree(x, y) ? 0 : 1)).reduce(
+        (sum: number, n: number) => sum + n,
+        0,
+      );
+    const rows = Array.from({ length: size }, (_, y) => y)
+      .sort((a, b) => fill(b) - fill(a))
+      .slice(0, Math.max(1, Math.round(this.boosts.rescueRows / 2)));
+    // Not a clear: it scores nothing and does not count towards objectives.
+    this.grid.clearLines({ rows, columns: [] });
+    this.history = null;
+    this.events.emit('rescue', { lines: rows.length });
+    this.checkMoves();
   }
 
   private snapshot(): Snapshot {

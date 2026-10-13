@@ -10,6 +10,10 @@ export function createSandSession(modeId: ModeId, options: SessionOptions): Game
   if (modeId !== 'sand') throw new Error(`"${modeId}" is not a sand mode`);
   return new SandSession(
     modeId,
-    new SandGame({ random: options.random, timeLimitMs: options.timeLimitMs }),
+    new SandGame({
+      random: options.random,
+      timeLimitMs: options.timeLimitMs,
+      ...(options.boosts ? { boosts: options.boosts } : {}),
+    }),
   );
 }

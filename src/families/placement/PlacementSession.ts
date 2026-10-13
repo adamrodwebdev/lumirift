@@ -117,6 +117,7 @@ export class PlacementSession implements GameSession<MosaicCommand> {
     events.on('clear', ({ lines, points, streak }) =>
       this.events.emit('clear', { lines, points, combo: streak - 1 }),
     );
+    events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('perfect', ({ points }) =>
       this.events.emit('notice', { id: 'perfectGrid', value: points }),
     );

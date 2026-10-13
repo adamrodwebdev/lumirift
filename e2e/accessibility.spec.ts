@@ -18,7 +18,7 @@ const audit = async (page: Page) => {
 
 const openMode = async (page: Page, name: string) => {
   await page
-    .locator('.modes__grid .mode')
+    .locator('.track .mode')
     .filter({ has: page.locator('.mode__name', { hasText: new RegExp(`^${name}$`) }) })
     .click();
   if (name === 'Duel') await page.getByRole('button', { name: /IA normale/ }).click();
@@ -48,7 +48,7 @@ for (const theme of ['light', 'dark'] as const) {
 
     test('duel opponent choice', async ({ page }) => {
       await page
-        .locator('.modes__grid .mode')
+        .locator('.track .mode')
         .filter({ has: page.locator('.mode__name', { hasText: /^Duel$/ }) })
         .click();
       await expect(page.getByRole('dialog')).toBeVisible();
@@ -75,5 +75,22 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(over).toBeVisible({ timeout: 5000 });
       await audit(page);
     });
+  });
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`${theme} theme: campaign map, level and upgrades`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Carte et améliorations' }).click();
+    await expect(page.getByRole('heading', { name: 'Campagne', level: 1 })).toBeVisible();
+    await audit(page);
+    await page.getByRole('button', { name: /1-1/ }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await audit(page);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: /^Améliorations/ }).click();
+    await expect(page.getByRole('dialog', { name: 'Améliorations' })).toBeVisible();
+    await audit(page);
   });
 }

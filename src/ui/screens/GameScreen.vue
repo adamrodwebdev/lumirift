@@ -7,11 +7,16 @@ import { useFormat } from '@/app/useFormat';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { dayKey } from '@/core/Day';
 import { SeededRandom } from '@/core/Random';
+import { CampaignRun, type CampaignOutcome } from '@/campaign/CampaignRun';
+import type { LiveState } from '@/campaign/Goals';
+import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
+import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
 import { GameTracker } from '@/progression/GameReport';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import { ScoreBoard } from '@/services/ScoreBoard';
+import CampaignGoal from '../components/CampaignGoal.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import type { GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
@@ -23,12 +28,14 @@ const props = defineProps<{
   daily: DailyChallenge | null;
   /** Variant chosen on the home screen (AI level of a duel), or null. */
   variant: string | null;
+  /** The campaign level played, or null outside the campaign. */
+  level: CampaignLevel | null;
 }>();
-const emit = defineEmits<{ home: [] }>();
+const emit = defineEmits<{ home: []; campaign: []; next: [level: CampaignLevel] }>();
 
 const { t } = useI18n();
 const format = useFormat();
-const { catalog, scores, settings, share, profile, clock: today } = useServices();
+const { catalog, scores, settings, share, profile, campaign, clock: today } = useServices();
 const descriptor = catalog.get(props.modeId);
 
 type Phase = 'loading' | 'playing' | 'paused' | 'over';
@@ -64,16 +71,40 @@ let outcomeTimer: ReturnType<typeof setTimeout> | undefined;
 let unsubscribe: (() => void)[] = [];
 /** Follows the game for the progression (time played, clears). */
 let tracker: GameTracker | null = null;
+/** Judges a campaign level: its goal, its end, its stars. */
+let run: CampaignRun | null = null;
+const goal = shallowRef<{ readonly value: number; readonly target: number } | null>(null);
 let toastKey = 0;
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
-const sessionOptions = (): SessionOptions => ({
-  ...(props.daily?.sessionOptions() ?? {
-    random: new SeededRandom(Math.floor(Math.random() * 2 ** 32)),
-    timeLimitMs: null,
-  }),
-  today: today(),
-  ...(props.variant ? { variant: props.variant } : {}),
+/** The clock of a campaign level, hourglass included. */
+const levelTime = (level: CampaignLevel): number | null =>
+  level.timeLimitMs === null ? null : level.timeLimitMs + timeBonusMs(campaign.current.ranks);
+
+const sessionOptions = (): SessionOptions => {
+  const random = new SeededRandom(Math.floor(Math.random() * 2 ** 32));
+  const level = props.level;
+  if (level) {
+    // Campaign: the level's clock and opponent, and the upgrades bought.
+    return {
+      random,
+      timeLimitMs: levelTime(level),
+      today: today(),
+      boosts: boostsFor(campaign.current.ranks),
+      ...(level.variant ? { variant: level.variant } : {}),
+    };
+  }
+  return {
+    ...(props.daily?.sessionOptions() ?? { random, timeLimitMs: null }),
+    today: today(),
+    ...(props.variant ? { variant: props.variant } : {}),
+  };
+};
+
+/** Where the game stands, for the campaign goal. */
+const liveState = (current: GameSession): LiveState => ({
+  ...(tracker?.live ?? { durationMs: 0, clears: 0, lines: 0, bestAtOnce: 0 }),
+  score: current.result().value,
 });
 
 const sameIndicators = (a: readonly Indicator[], b: readonly Indicator[]) =>
@@ -90,6 +121,17 @@ clock.subscribe((delta) => {
   current.update(delta);
   const next = current.indicators();
   if (!sameIndicators(next, indicators.value)) indicators.value = next;
+  if (run && phase.value === 'playing' && current.state === 'running') {
+    const state = liveState(current);
+    const progress = run.progress(state);
+    if (progress.value !== goal.value?.value) goal.value = progress;
+    // A goal met during play ends the level at once.
+    const won = run.check(state);
+    if (won) {
+      current.pause();
+      finish('goal', won);
+    }
+  }
 });
 
 /** Announced to screen readers, and shown over the well. */
@@ -120,13 +162,30 @@ const listen = (current: GameSession) => {
   ];
 };
 
-const finish = (reason: string) => {
+/** The campaign's verdict on this game, recorded; the next level once won. */
+const judge = (decided: CampaignOutcome) => {
+  const gained = campaign.record(decided);
+  const index = LEVELS.findIndex((level) => level.id === decided.levelId);
+  return {
+    levelId: decided.levelId,
+    won: decided.won,
+    stars: decided.stars,
+    gained,
+    next: decided.won ? (LEVELS[index + 1] ?? null) : null,
+  };
+};
+
+const finish = (reason: string, decided: CampaignOutcome | null = null) => {
   const current = session.value;
-  if (!current) return;
+  if (!current || phase.value === 'over') return;
   const result = current.result();
   const key = props.daily ? ScoreBoard.dailyKey(props.daily.key) : props.modeId;
-  // Whole points or milliseconds: no float noise in the saved records.
-  const record = scores.record(key, Math.round(result.value));
+  const verdict = run ? (decided ?? run.end(reason, liveState(current))) : null;
+  // Whole points or milliseconds: no float noise in the saved records. Campaign
+  // games bring upgrades along: they never count as records.
+  const record = run
+    ? { best: scores.best(key) ?? Math.round(result.value), isNewBest: false }
+    : scores.record(key, Math.round(result.value));
   const report = tracker?.report({
     modeId: props.modeId,
     daily: props.daily !== null,
@@ -141,6 +200,7 @@ const finish = (reason: string) => {
     progress: report
       ? profile.recordGame(report, dayKey(today()))
       : { xp: [], total: 0, levelBefore: 1, levelAfter: 1, completed: [], unlocked: [], streak: 0 },
+    ...(verdict ? { campaign: judge(verdict) } : {}),
   };
   shareStatus.value = '';
   phase.value = 'over';
@@ -152,6 +212,8 @@ const start = async () => {
   dispose();
   phase.value = 'loading';
   const created = await catalog.create(props.modeId, sessionOptions());
+  run = props.level ? new CampaignRun(props.level, levelTime(props.level)) : null;
+  goal.value = run ? { value: 0, target: run.level.goal.target } : null;
   listen(created);
   showOutcome.value = false;
   round.value++;
@@ -222,11 +284,20 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="game">
-    <h1 class="sr-only">{{ daily ? `${t('daily.title')} · ${modeName}` : modeName }}</h1>
+    <h1 class="sr-only">
+      {{
+        level
+          ? t('campaign.levelTitle', { level: level.id, mode: modeName })
+          : daily
+            ? `${t('daily.title')} · ${modeName}`
+            : modeName
+      }}
+    </h1>
     <aside class="game__hud">
       <p class="game__mode">{{ modeName }}</p>
       <!-- Part of the game (the shape to fill): shown at every screen size. -->
       <p v-if="subtitle" class="game__subtitle">{{ subtitle }}</p>
+      <CampaignGoal v-if="level && goal" :level="level" :value="goal.value" />
       <HudPanel :indicators="indicators" />
     </aside>
 
@@ -256,7 +327,7 @@ onBeforeUnmount(() => {
       :open="phase === 'paused'"
       @resume="resume"
       @restart="start"
-      @quit="emit('home')"
+      @quit="level ? emit('campaign') : emit('home')"
     />
     <GameOverDialog
       :open="phase === 'over' && showOutcome"
@@ -265,6 +336,8 @@ onBeforeUnmount(() => {
       @again="start"
       @home="emit('home')"
       @share="onShare"
+      @campaign="emit('campaign')"
+      @next="(next) => emit('next', next)"
     />
   </div>
 </template>

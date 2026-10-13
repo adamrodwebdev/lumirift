@@ -40,6 +40,16 @@ export class GameTracker {
     });
   }
 
+  /** The counts so far, while the game runs (the campaign follows its goal with them). */
+  get live(): Pick<GameReport, 'durationMs' | 'clears' | 'lines' | 'bestAtOnce'> {
+    return {
+      durationMs: this.durationMs,
+      clears: this.clears,
+      lines: this.lines,
+      bestAtOnce: this.bestAtOnce,
+    };
+  }
+
   /** Time played, while the game runs. */
   tick(deltaMs: number): void {
     this.durationMs += deltaMs;

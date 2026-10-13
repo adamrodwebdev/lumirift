@@ -1,4 +1,5 @@
 import type { Emitter } from '@/core/Emitter';
+import type { Boosts } from './Boosts';
 import type { RandomSource } from '@/core/Random';
 import type { FamilyId, ModeId } from './ModeId';
 
@@ -44,6 +45,8 @@ export interface SessionOptions {
   readonly today?: Date;
   /** A variant chosen before the game (the AI level of a duel), or none. */
   readonly variant?: string;
+  /** Campaign upgrades; never set outside the campaign. */
+  readonly boosts?: Boosts;
 }
 
 /**

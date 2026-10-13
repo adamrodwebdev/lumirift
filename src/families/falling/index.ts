@@ -44,6 +44,7 @@ const isSoloMode = (id: ModeId): id is SoloModeId => id in SOLO_MODES;
 const modeOptions = (options: SessionOptions): ModeOptions => ({
   timeLimitMs: options.timeLimitMs,
   ...(options.today ? { today: options.today } : {}),
+  ...(options.boosts ? { boosts: options.boosts } : {}),
 });
 
 /**
@@ -52,13 +53,18 @@ const modeOptions = (options: SessionOptions): ModeOptions => ({
  */
 function createDuelSession(options: SessionOptions): DuelSession {
   const seed = options.random.nextInt(2 ** 32);
-  const game = () =>
-    new Game(new DuelMode(modeOptions(options)), {
-      random: new SeededRandom(seed),
-      lineClearDelayMs: LINE_CLEAR_DELAY_MS,
-    });
+  // Upgrades help the player only, never the AI.
+  const player = new Game(new DuelMode(modeOptions(options)), {
+    random: new SeededRandom(seed),
+    lineClearDelayMs: LINE_CLEAR_DELAY_MS,
+    ...(options.boosts ? { boosts: options.boosts } : {}),
+  });
+  const opponent = new Game(new DuelMode({ timeLimitMs: options.timeLimitMs }), {
+    random: new SeededRandom(seed),
+    lineClearDelayMs: LINE_CLEAR_DELAY_MS,
+  });
   const level = isAiLevel(options.variant) ? options.variant : 'normal';
-  return new DuelSession(game(), game(), level, new SeededRandom(seed ^ 0x9e3779b9));
+  return new DuelSession(player, opponent, level, new SeededRandom(seed ^ 0x9e3779b9));
 }
 
 /** A game played alone. */
@@ -67,7 +73,11 @@ export function createSoloSession(modeId: ModeId, options: SessionOptions): Fall
   const mode = SOLO_MODES[modeId](modeOptions(options));
   return new FallingSession(
     modeId,
-    new Game(mode, { random: options.random, lineClearDelayMs: LINE_CLEAR_DELAY_MS }),
+    new Game(mode, {
+      random: options.random,
+      lineClearDelayMs: LINE_CLEAR_DELAY_MS,
+      ...(options.boosts ? { boosts: options.boosts } : {}),
+    }),
   );
 }
 

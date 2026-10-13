@@ -17,6 +17,8 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 | **Placement** | Mosaïque : grille 8 × 8, pièces à poser, cinq jokers                                      | Céramique       |
 | **Volume**    | Tour : le puits s'enroule en cylindre de verre                                            | Verre courbé    |
 
+- **Campagne** : 30 niveaux en cinq chapitres à travers tous les modes, des étoiles à
+  gagner et **dix améliorations** à acheter avec elles.
 - **Défi du jour** : chaque jour, un mode et les mêmes pièces pour tout le monde, deux
   minutes, résultat à partager.
 - **Duel** contre une IA, cinq niveaux calés sur la vitesse de vrais joueurs.

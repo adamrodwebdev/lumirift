@@ -15,10 +15,15 @@ export function createVolumeSession(modeId: ModeId, options: SessionOptions): Ga
   const mode = new TowerMode({
     timeLimitMs: options.timeLimitMs,
     ...(options.today ? { today: options.today } : {}),
+    ...(options.boosts ? { boosts: options.boosts } : {}),
   });
   return new FallingSession(
     modeId,
-    new Game(mode, { random: options.random, lineClearDelayMs: LINE_CLEAR_DELAY_MS }),
+    new Game(mode, {
+      random: options.random,
+      lineClearDelayMs: LINE_CLEAR_DELAY_MS,
+      ...(options.boosts ? { boosts: options.boosts } : {}),
+    }),
     'volume',
   );
 }
