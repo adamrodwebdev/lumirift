@@ -35,7 +35,7 @@ type Screen =
     };
 
 const { t, locale } = useI18n();
-const { settings, audio } = useServices();
+const { settings, audio, platform } = useServices();
 
 const screen = shallowRef<Screen>({ kind: 'home' });
 const settingsOpen = ref(false);
@@ -74,12 +74,15 @@ watchEffect(() => {
     ?.setAttribute('content', t('meta.description'));
 });
 
-// Sound: browsers allow audio only after a gesture; volume and mute follow the settings.
+// Sound: browsers allow audio only after a gesture; volume and mute follow the
+// settings, and the portal's own mute button when there is one.
+const portalMuted = ref(platform.muted);
+const offPortalMute = platform.onMuteChange((muted) => (portalMuted.value = muted));
 const unlockAudio = () => audio.unlock();
 const onVisibility = () => (document.hidden ? audio.suspend() : audio.resume());
 watchEffect(() => {
   audio.setVolume(settings.current.volume);
-  audio.setMuted(settings.current.muted);
+  audio.setMuted(settings.current.muted || portalMuted.value);
 });
 onMounted(() => {
   window.addEventListener('pointerdown', unlockAudio, { capture: true });
@@ -90,6 +93,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('pointerdown', unlockAudio, { capture: true });
   window.removeEventListener('keydown', unlockAudio, { capture: true });
   document.removeEventListener('visibilitychange', onVisibility);
+  offPortalMute();
 });
 </script>
 

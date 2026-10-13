@@ -35,7 +35,17 @@ const emit = defineEmits<{ home: []; campaign: []; next: [level: CampaignLevel] 
 
 const { t } = useI18n();
 const format = useFormat();
-const { catalog, scores, settings, share, profile, campaign, clock: today } = useServices();
+const {
+  catalog,
+  scores,
+  settings,
+  share,
+  profile,
+  campaign,
+  platform,
+  audio,
+  clock: today,
+} = useServices();
 const descriptor = catalog.get(props.modeId);
 
 type Phase = 'loading' | 'playing' | 'paused' | 'over';
@@ -192,6 +202,11 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
     variant: props.variant,
     reason,
   });
+  platform.gameplayStop();
+  // Read before the verdict is recorded: does this game beat the level's best?
+  const improved = verdict?.won ? campaign.model.starsOf(verdict.levelId) < verdict.stars : false;
+  // A record or a better level result is worth a celebration on the portal.
+  if (record.isNewBest || improved) platform.happyTime();
   outcome.value = {
     reason,
     value: format.result(result.kind, result.value),
@@ -211,7 +226,9 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
 const start = async () => {
   dispose();
   phase.value = 'loading';
+  platform.loadingStart();
   const created = await catalog.create(props.modeId, sessionOptions());
+  platform.loadingStop();
   run = props.level ? new CampaignRun(props.level, levelTime(props.level)) : null;
   goal.value = run ? { value: 0, target: run.level.goal.target } : null;
   listen(created);
@@ -221,8 +238,24 @@ const start = async () => {
   indicators.value = created.indicators();
   created.start();
   phase.value = 'playing';
+  platform.gameplayStart();
   clock.start();
 };
+
+/**
+ * Between two games (play again, next level): the portal may show an ad.
+ * The sound pauses only while an ad really plays.
+ */
+const adBreak = ref(false);
+const afterBreak = async (next: () => void) => {
+  // The interface stays blocked until the ad ends (or does not come).
+  showOutcome.value = false;
+  adBreak.value = true;
+  await platform.midgameAd({ onStart: () => audio.suspend(), onEnd: () => audio.resume() });
+  adBreak.value = false;
+  next();
+};
+const again = () => afterBreak(() => void start());
 
 const dispose = () => {
   clearTimeout(outcomeTimer);
@@ -238,12 +271,14 @@ const pause = () => {
   if (phase.value !== 'playing') return;
   session.value?.pause();
   phase.value = 'paused';
+  platform.gameplayStop();
 };
 
 const resume = () => {
   if (phase.value !== 'paused') return;
   session.value?.resume();
   phase.value = 'playing';
+  platform.gameplayStart();
 };
 
 const onShare = async () => {
@@ -278,6 +313,7 @@ onBeforeUnmount(() => {
   clearTimeout(toastTimer);
   clearTimeout(outcomeTimer);
   clock.stop();
+  platform.gameplayStop();
   dispose();
 });
 </script>
@@ -321,6 +357,9 @@ onBeforeUnmount(() => {
     </div>
 
     <p class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
+    <div v-if="adBreak" class="game__break" role="status" aria-busy="true">
+      <span class="sr-only">{{ t('game.loading') }}</span>
+    </div>
 
     <PauseDialog
       :help="help"
@@ -333,11 +372,12 @@ onBeforeUnmount(() => {
       :open="phase === 'over' && showOutcome"
       :outcome="outcome"
       :share-status="shareStatus"
-      @again="start"
+      :can-share="platform.allowsExternalLinks"
+      @again="again"
       @home="emit('home')"
       @share="onShare"
       @campaign="emit('campaign')"
-      @next="(next) => emit('next', next)"
+      @next="(next) => afterBreak(() => emit('next', next))"
     />
   </div>
 </template>
@@ -425,7 +465,15 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (min-width: 1024px) {
+.game__break {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+/* Wide screens, and short landscape frames (a portal's iframe on a phone): the HUD goes to the side. */
+@media (min-width: 1024px),
+  (orientation: landscape) and (min-width: 640px) and (max-height: 540px) {
   .game {
     grid-template-rows: minmax(0, 1fr);
     grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);

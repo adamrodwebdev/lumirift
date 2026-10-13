@@ -8,7 +8,13 @@ import AppIcon from './AppIcon.vue';
 import ModalDialog from './ModalDialog.vue';
 import StarRow from './StarRow.vue';
 
-const props = defineProps<{ open: boolean; outcome: GameOutcome | null; shareStatus: string }>();
+const props = defineProps<{
+  open: boolean;
+  outcome: GameOutcome | null;
+  shareStatus: string;
+  /** False on portals, which forbid links out of the game. */
+  canShare?: boolean;
+}>();
 const emit = defineEmits<{
   again: [];
   home: [];
@@ -115,7 +121,7 @@ const title = computed(() => {
       <button type="button" class="btn btn--primary" autofocus @click="emit('again')">
         <AppIcon name="restart" :size="20" />{{ t('over.again') }}
       </button>
-      <button type="button" class="btn" @click="emit('share')">
+      <button v-if="canShare !== false" type="button" class="btn" @click="emit('share')">
         <AppIcon name="share" :size="20" />{{ t('over.share') }}
       </button>
       <button type="button" class="btn" @click="emit('home')">

@@ -1,6 +1,6 @@
 {
   "name": "stackrift",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Jeu de blocs qui tombent réinventé : 13 modes en quatre familles, défi du jour, duel contre l’IA, en français, anglais et indonésien. Vue 3, TypeScript, mobile d’abord.",
   "type": "module",
@@ -19,7 +19,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lighthouse": "node scripts/lighthouse.mjs",
-    "verify": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build"
+    "verify": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build",
+    "build:crazygames": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode crazygames",
+    "package:crazygames": "node scripts/package-crazygames.mjs"
   },
   "dependencies": {
     "vue": "3.5.43",

@@ -1,4 +1,6 @@
 dist
+dist-*
+release
 coverage
 reports
 package-lock.json

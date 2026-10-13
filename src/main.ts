@@ -1,12 +1,16 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import { APP_SERVICES, createBrowserServices } from './app/AppServices';
+import { createPlatform } from './platform/createPlatform';
 import { createAppI18n } from './i18n';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/ambiances.css';
 
-const services = createBrowserServices();
+// The portal's SDK first (CrazyGames build): it provides the language and the save.
+const platform = await createPlatform();
+document.documentElement.dataset.platform = platform.id;
+const services = createBrowserServices(platform);
 
 createApp(App)
   .provide(APP_SERVICES, services)

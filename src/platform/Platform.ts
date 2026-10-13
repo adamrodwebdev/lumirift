@@ -1,0 +1,60 @@
+import type { KeyValueStorage } from '@/services/KeyValueStorage';
+
+export type PlatformId = 'web' | 'crazygames';
+
+/** Called around a video ad: the game pauses its sound only once the ad really plays. */
+export interface AdHooks {
+  readonly onStart: () => void;
+  readonly onEnd: () => void;
+}
+
+/**
+ * Where the game is published: our own site, or a game portal. The game
+ * never talks to a portal SDK directly, only to this contract; each build
+ * ships one implementation (see `createPlatform`).
+ */
+export interface Platform {
+  readonly id: PlatformId;
+  /** Links out of the game (sharing a URL) are allowed. Portals forbid them. */
+  readonly allowsExternalLinks: boolean;
+  /** The player's language as the portal knows it (`en-US`…), or null. */
+  readonly locale: string | null;
+  /** The portal's save, synced with the player's account, or null for the browser's. */
+  readonly storage: KeyValueStorage | null;
+  /** The portal asks for silence (its own mute button). */
+  readonly muted: boolean;
+  onMuteChange(listener: (muted: boolean) => void): () => void;
+
+  loadingStart(): void;
+  loadingStop(): void;
+  /** The player is playing (not in a menu, a pause or a game-over screen). */
+  gameplayStart(): void;
+  gameplayStop(): void;
+  /** A moment worth celebrating (a record, a level won): use sparingly. */
+  happyTime(): void;
+  /** A natural break between two games; resolves when the game may go on. */
+  midgameAd(hooks: AdHooks): Promise<void>;
+}
+
+/** Our own site: no portal, nothing to report, no ads. */
+export class WebPlatform implements Platform {
+  readonly id = 'web';
+  readonly allowsExternalLinks = true;
+  readonly locale = null;
+  readonly storage = null;
+  readonly muted = false;
+
+  onMuteChange(): () => void {
+    return () => undefined;
+  }
+
+  loadingStart(): void {}
+  loadingStop(): void {}
+  gameplayStart(): void {}
+  gameplayStop(): void {}
+  happyTime(): void {}
+
+  midgameAd(): Promise<void> {
+    return Promise.resolve();
+  }
+}
