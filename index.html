@@ -55,7 +55,9 @@
         place-items: center;
         min-height: 100vh;
         color: #f4f1ff;
-        font: 900 clamp(2.5rem, 10vw, 5rem) / 1 system-ui, sans-serif;
+        font:
+          900 clamp(2.5rem, 10vw, 5rem) / 1 system-ui,
+          sans-serif;
         letter-spacing: -0.03em;
       }
       .splash span {
@@ -65,7 +67,9 @@
   </head>
   <body>
     <!-- Shown at once, replaced by the game when it mounts (a portal-style loading screen). -->
-    <div id="app"><div class="splash" aria-hidden="true">STACK<span>RIFT</span></div></div>
+    <div id="app">
+      <div class="splash" aria-hidden="true">STACK<span>RIFT</span></div>
+    </div>
     <noscript>
       <h1>Stackrift — le jeu de blocs réinventé</h1>
       <p>

@@ -3,6 +3,40 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.4.0] — 14/10/2026
+
+L'identité « Rift » et la version Playgama.
+
+### Ajouté
+
+- Version Playgama (`npm run package:playgama`) : Bridge SDK v2, langue, son et pause de la
+  plateforme, sauvegarde par le Bridge, `game_ready` et messages de niveau, interstitiel entre
+  deux parties ; contrôles des exigences de Playgama et de ses partenaires ; covers 1920×1080,
+  1080×1920, 800×800 ; docs/PLAYGAMA.md.
+- Écran-titre : logo fendu par la faille, grand bouton Jouer, modes inédits en tuiles, scène
+  animée ; écran de démarrage statique.
+- Première partie guidée pas à pas (déplacer, tourner, faire tomber, le but), passable.
+- Musique générative dans la tonalité du jeu, dont l'intensité suit le danger ; volume de la
+  musique dans les réglages.
+- Mots des grands moments dans le puits (×2, ×3, COMBO ×N, RIFT!) ; la faille déchire les
+  lignes effacées.
+- Lumière de famille et faille lointaine derrière le jeu.
+
+### Modifié
+
+- Thème unique sombre « Rift » (indigo, or, tons joyaux), polices Unbounded et Sora livrées
+  avec le jeu, blocs gemmes ; écran de jeu resserré autour du puits.
+- Tous les sons dans une même tonalité (ré mineur pentatonique), réverbération commune.
+- La campagne s'ouvre sur le Sable ; en Sable, les buts parlent de zones.
+- Plus d'Échap ni de Ctrl en jeu (réservées par les portails) : P pour la pause, Z (W en
+  AZERTY) pour tourner dans l'autre sens.
+- La langue d'un portail s'applique à chaque lancement.
+- Covers (CrazyGames et Playgama) redessinées dans la nouvelle identité.
+
+### Supprimé
+
+- Le thème clair et la bascule de thème.
+
 ## [1.3.0] — 13/10/2026
 
 La démo du portfolio.
