@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { effectsProfile, type EffectsLevel } from '@/fx/EffectsProfile';
 import { createSoloSession, type FallingSession } from '@/families/falling';
-import { CRACK_MS, FallingEffects } from '@/families/falling/fx/FallingEffects';
+import { CRACK_MS, clearLabel, FallingEffects } from '@/families/falling/fx/FallingEffects';
 import { FallingSoundscape } from '@/families/falling/fx/FallingSoundscape';
 import type { TonePalette } from '@/render/TonePalette';
 import type { AudioEngine } from '@/services/audio/AudioEngine';
@@ -140,5 +140,15 @@ describe('FallingSoundscape', () => {
     new Haptics({ vibrate }, () => false).pulse(20);
     expect(vibrate).not.toHaveBeenCalled();
     expect(new Haptics({}, () => true).supported).toBe(false);
+  });
+});
+
+describe('clearLabel', () => {
+  it('names the moment the same way in every language', () => {
+    expect(clearLabel(1, 0)).toBeNull();
+    expect(clearLabel(2, 0)).toBe('×2');
+    expect(clearLabel(3, 1)).toBe('×3');
+    expect(clearLabel(1, 3)).toBe('COMBO ×3');
+    expect(clearLabel(4, 5)).toBe('RIFT!');
   });
 });
