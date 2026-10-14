@@ -22,7 +22,9 @@
     "verify": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build",
     "build:crazygames": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode crazygames",
     "package:crazygames": "node scripts/package-crazygames.mjs",
-    "build:demo": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode demo"
+    "build:demo": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode demo",
+    "build:playgama": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode playgama",
+    "package:playgama": "node scripts/package-playgama.mjs"
   },
   "dependencies": {
     "vue": "3.5.43",

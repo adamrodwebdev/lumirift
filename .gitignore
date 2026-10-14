@@ -2,6 +2,7 @@ node_modules/
 dist/
 dist-crazygames/
 dist-demo/
+dist-playgama/
 release/
 coverage/
 test-results/

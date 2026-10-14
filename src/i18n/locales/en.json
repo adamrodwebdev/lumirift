@@ -7,7 +7,8 @@
     "name": "Stackrift",
     "tagline": "The rules you know. Games you have never played.",
     "privacy": "No account, no tracking: your records stay on your device.",
-    "version": "Version {version}"
+    "version": "Version {version}",
+    "privacyPortal": "No account, no tracking: the platform you play on keeps your progress."
   },
   "nav": {
     "skip": "Skip to content",

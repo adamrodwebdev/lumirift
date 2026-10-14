@@ -209,7 +209,7 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
     variant: props.variant,
     reason,
   });
-  platform.gameplayStop();
+  platform.gameOver(verdict ? verdict.won : reason === 'victory');
   // Read before the verdict is recorded: does this game beat the level's best?
   const improved = verdict?.won ? campaign.model.starsOf(verdict.levelId) < verdict.stars : false;
   // A record or a better level result is worth a celebration on the portal.
@@ -308,6 +308,11 @@ const onVisibility = () => {
   if (document.hidden) pause();
 };
 
+// The portal pauses the game (its own ad, the player switching away).
+const offPortalPause = platform.onPauseChange((paused) => {
+  if (paused) pause();
+});
+
 onMounted(() => {
   document.addEventListener('visibilitychange', onVisibility);
   window.addEventListener('blur', pause);
@@ -320,6 +325,7 @@ onBeforeUnmount(() => {
   clearTimeout(toastTimer);
   clearTimeout(outcomeTimer);
   clock.stop();
+  offPortalPause();
   platform.gameplayStop();
   dispose();
 });

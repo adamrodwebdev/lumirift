@@ -125,6 +125,13 @@ export class CrazyGamesPlatform implements Platform {
     return () => game.removeSettingsChangeListener(onChange);
   }
 
+  /** CrazyGames pauses through its own ad callbacks (see midgameAd). */
+  onPauseChange(): () => void {
+    return () => undefined;
+  }
+
+  ready(): void {}
+
   loadingStart(): void {
     this.sdk?.game.loadingStart();
   }
@@ -143,6 +150,10 @@ export class CrazyGamesPlatform implements Platform {
     if (!this.playing) return;
     this.playing = false;
     this.sdk?.game.gameplayStop();
+  }
+
+  gameOver(): void {
+    this.gameplayStop();
   }
 
   happyTime(): void {

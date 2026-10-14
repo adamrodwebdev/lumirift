@@ -1,5 +1,6 @@
-// The CrazyGames media: three covers and two preview videos.
-// Usage: node scripts/crazygames-media.mjs   →  release/crazygames-media/
+// The portal media: CrazyGames covers and preview videos, Playgama covers.
+// Usage: node scripts/crazygames-media.mjs   →  release/crazygames-media/,
+//        release/playgama-media/ (`--covers-only` skips the videos)
 //
 // Covers (docs.crazygames.com/requirements/game-covers/): 1920×1080 (16:9),
 // 800×1200 (2:3), 800×800 (1:1); the title as the only text; no border, no
@@ -129,6 +130,17 @@ const { writeFileSync } = await import('node:fs');
 writeFileSync(join(OUT, 'cover-landscape-1920x1080.png'), covers.landscape);
 writeFileSync(join(OUT, 'cover-portrait-800x1200.png'), covers.portrait);
 writeFileSync(join(OUT, 'cover-square-800x800.png'), covers.square);
+
+// Playgama (wiki.playgama.com, submission form): 1920×1080, 1080×1920 (9:16)
+// and 800×800, PNG ≤ 10 MB. Same art; the tall cover is drawn at its own size.
+const PLAYGAMA = join('release', 'playgama-media');
+mkdirSync(PLAYGAMA, { recursive: true });
+writeFileSync(join(PLAYGAMA, 'cover-landscape-1920x1080.png'), covers.landscape);
+writeFileSync(
+  join(PLAYGAMA, 'cover-portrait-1080x1920.png'),
+  await shoot(COVERS.portrait(1080, 1920), 1080, 1920),
+);
+writeFileSync(join(PLAYGAMA, 'cover-square-800x800.png'), covers.square);
 
 // --- Videos -----------------------------------------------------------------
 

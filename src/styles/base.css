@@ -143,3 +143,27 @@ button {
     transition-duration: 1ms !important;
   }
 }
+
+/*
+ * Playgama forbids a browser page scrollbar: the page stays still and each
+ * screen scrolls inside the game's own frame, under a fixed header.
+ */
+html[data-platform='playgama'],
+html[data-platform='playgama'] body {
+  height: 100%;
+  overflow: hidden;
+}
+
+html[data-platform='playgama'] #app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+html[data-platform='playgama'] #app > main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}

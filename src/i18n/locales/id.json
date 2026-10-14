@@ -7,7 +7,8 @@
     "name": "Stackrift",
     "tagline": "Aturan yang sudah kamu kenal. Permainan yang belum pernah kamu mainkan.",
     "privacy": "Tanpa akun, tanpa pelacak: rekormu tetap di perangkatmu.",
-    "version": "Versi {version}"
+    "version": "Versi {version}",
+    "privacyPortal": "Tanpa akun, tanpa pelacakan: platform tempat kamu bermain menyimpan progresmu."
   },
   "nav": {
     "skip": "Langsung ke konten",
