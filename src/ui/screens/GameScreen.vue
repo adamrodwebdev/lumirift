@@ -66,6 +66,9 @@ const HELP: Readonly<Partial<Record<string, readonly string[]>>> = {
   volume: ['tower.helpKeyboard', 'tower.helpTouch'],
 };
 const help = HELP[descriptor.family] ?? [];
+/** The keyboard help stays beside the game for the first games. */
+const FIRST_GAMES = 5;
+const showHelp = profile.current.games < FIRST_GAMES && help.length > 0;
 const modeName = computed(() => t(`modes.${props.modeId}.name`));
 /** The game's own subtitle, such as the name of the silhouette of the day. */
 const subtitle = computed(() => {
@@ -369,6 +372,10 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
+    <aside v-if="showHelp" class="game__help" :aria-label="t('game.help')">
+      <p>{{ t(help[0] ?? '') }}</p>
+    </aside>
+
     <p class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
     <div v-if="adBreak" class="game__break" role="status" aria-busy="true">
       <span class="sr-only">{{ t('game.loading') }}</span>
@@ -408,15 +415,20 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border);
   overflow: hidden;
+}
+
+.game__help {
+  display: none;
 }
 
 .game__subtitle {
   flex: none;
   padding: var(--space-1) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
   border-radius: 999px;
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-strong);
   font-family: var(--font-display);
   font-size: 0.9rem;
   font-weight: 800;
@@ -484,9 +496,8 @@ onBeforeUnmount(() => {
   z-index: 50;
 }
 
-/* Wide screens, and short landscape frames (a portal's iframe on a phone): the HUD goes to the side. */
-@media (min-width: 1024px),
-  (orientation: landscape) and (min-width: 640px) and (max-height: 540px) {
+/* Short landscape frames (a portal's iframe on a phone): the HUD goes to the side. */
+@media (orientation: landscape) and (min-width: 640px) and (max-height: 540px) {
   .game {
     grid-template-rows: minmax(0, 1fr);
     grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
@@ -495,13 +506,45 @@ onBeforeUnmount(() => {
   .game__hud {
     flex-direction: column;
     align-items: flex-start;
-    padding: var(--space-6) var(--space-4);
-    border-bottom: 0;
-    border-right: 1px solid var(--border);
+    padding: var(--space-4);
   }
 
   .game__mode {
     display: block;
+  }
+}
+
+/*
+ * Wide screens: the game in the middle, the HUD against it on the left (as
+ * close to the well as the hold piece), the keyboard help on the right.
+ */
+@media (min-width: 1024px) and (min-height: 541px) {
+  .game {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(12rem, 1fr) minmax(0, 46rem) minmax(0, 1fr);
+  }
+
+  .game__hud {
+    --hud-align: flex-end;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--space-6) 0 var(--space-6) var(--space-4);
+    text-align: end;
+  }
+
+  .game__mode {
+    display: block;
+  }
+
+  .game__help {
+    display: grid;
+    align-content: end;
+    max-width: 16rem;
+    padding: var(--space-6) var(--space-4);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
   }
 }
 </style>

@@ -221,7 +221,8 @@
     "loading": "Memuat permainan…",
     "well": "Sumur permainan",
     "stats": "Papan skor",
-    "opponent": "Sumur lawan"
+    "opponent": "Sumur lawan",
+    "help": "Kontrol"
   },
   "languages": {
     "fr": "Français",

@@ -221,7 +221,8 @@
     "loading": "Chargement de la partie…",
     "well": "Puits de jeu",
     "stats": "Tableau de bord",
-    "opponent": "Puits de l’adversaire"
+    "opponent": "Puits de l’adversaire",
+    "help": "Commandes"
   },
   "languages": {
     "fr": "Français",

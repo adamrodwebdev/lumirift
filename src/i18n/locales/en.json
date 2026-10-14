@@ -221,7 +221,8 @@
     "loading": "Loading the game…",
     "well": "Playing well",
     "stats": "Dashboard",
-    "opponent": "Opponent’s well"
+    "opponent": "Opponent’s well",
+    "help": "Controls"
   },
   "languages": {
     "fr": "Français",

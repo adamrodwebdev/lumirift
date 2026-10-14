@@ -197,6 +197,9 @@ onBeforeUnmount(() => {
   display: block;
   max-width: 100%;
   border: 2px solid var(--well-frame);
+  box-shadow:
+    0 0 3rem rgb(120 90 255 / 0.22),
+    inset 0 0 2rem rgb(120 90 255 / 0.12);
   border-radius: var(--radius-sm);
   touch-action: none;
   cursor: pointer;
