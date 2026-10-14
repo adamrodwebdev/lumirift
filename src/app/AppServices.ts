@@ -41,13 +41,13 @@ export function createBrowserServices(
   const settings = new SettingsService(storage, {
     // A portal knows the player's language; English when it does not.
     locale: detectLocale(platform.locale ? [platform.locale] : navigator.languages),
-    theme: 'system',
     ghost: true,
     // Players who ask their system for less motion start with calmer effects.
     effects: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full',
     shake: true,
     haptics: true,
     volume: 0.7,
+    musicVolume: 0.5,
     muted: false,
   });
   // A portal's language wins at each launch over the saved one (Playgama and
@@ -64,9 +64,7 @@ export function createBrowserServices(
   new AmbianceController(profile, settings, document.documentElement);
   return {
     settings,
-    theme: new ThemeController(settings, document.documentElement, (query) =>
-      window.matchMedia(query),
-    ),
+    theme: new ThemeController(document.documentElement),
     scores: new ScoreBoard(storage),
     profile,
     campaign: new CampaignService(storage),

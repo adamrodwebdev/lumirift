@@ -14,8 +14,6 @@
     "skip": "Aller au contenu",
     "home": "Retour à l'accueil",
     "settings": "Réglages",
-    "toLight": "Passer au thème clair",
-    "toDark": "Passer au thème sombre",
     "mute": "Couper le son",
     "unmute": "Activer le son"
   },
@@ -208,10 +206,6 @@
   "settings": {
     "title": "Réglages",
     "language": "Langue",
-    "theme": "Thème",
-    "system": "Système",
-    "light": "Clair",
-    "dark": "Sombre",
     "ghost": "Afficher la pièce fantôme",
     "effects": "Effets visuels",
     "effectsFull": "Complets",
@@ -220,7 +214,8 @@
     "shake": "Secousses de l'écran",
     "haptics": "Vibrations",
     "volume": "Volume des effets sonores",
-    "close": "Fermer"
+    "close": "Fermer",
+    "music": "Musique"
   },
   "game": {
     "loading": "Chargement de la partie…",
@@ -525,5 +520,17 @@
     "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet en compte treize et trente niveaux.",
     "fullGame": "Jeu complet",
     "campaignDone": "Démo terminée : la suite est dans le jeu complet."
+  },
+  "title": {
+    "tagline": "13 façons de briser un bloc.",
+    "play": "Jouer",
+    "level": "Niveau {level} · {mode}",
+    "space": "{key} pour jouer",
+    "spaceKey": "Espace",
+    "player": "Niveau {level}, {xp}. Ouvrir l’Atelier",
+    "daily": "Défi du jour · {mode} · encore {h} h {m} min",
+    "freePlay": "Jeu libre",
+    "more": "autres modes",
+    "dailyShort": "Défi du jour · {mode}"
   }
 }

@@ -1,98 +1,35 @@
 /*
- * Design tokens. Colours are only ever used through these variables.
- * `data-theme` is set on <html> before the first paint (see index.html),
- * so the dark theme never flashes.
+ * Design tokens: the "Rift" identity. Colours are only ever used through
+ * these variables. One theme, dark: deep indigo ground, one amber-gold accent
+ * (the rift, the main action), jewel tones on the pieces only.
  *
  * Piece tones (--tone-N) match `Tone` in the engine. The palette is Stackrift's
  * own: no piece wears the colour the genre's standard gives it.
  */
 :root {
-  color-scheme: light;
-
-  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
-  --font-display: ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
-
-  --bg: #f4f1ea;
-  --surface: #fffdf8;
-  --surface-2: #ebe6db;
-  --border: #d6cfc1;
-  --text: #1c1a17;
-  --text-muted: #57524a;
-  --accent: #8a5a00;
-  --accent-strong: #6b4500;
-  --on-accent: #fffaf0;
-  --accent-fill: #e8b04b;
-  --on-accent-fill: #241800;
-  --focus: #1f5fbf;
-  --danger: #b3261e;
-  /* Materials of the effects: embers and ash of the fire, clay body of the tiles. */
-  --fx-ember-hot: #f5b82e;
-  --fx-ember: #e8622a;
-  --fx-ash: #786e64;
-  --fx-clay: #f5eee1;
-  --fx-steam: #c9d4de;
-  /* Cosmetics: gold and petals (shatter signatures, gold material). */
-  --fx-gold-light: #f6dc8c;
-  --fx-gold: #c99a2e;
-  --fx-gold-dark: #8a6414;
-  --fx-petal: #f3a6c4;
-  --fx-petal-dark: #c95b87;
-
-  --well-bg: #e3ddd1;
-  --well-grid: rgb(28 26 23 / 0.07);
-  --well-frame: #c9c0ae;
-  --crack: #1c1a17;
-
-  --tone-1: #c4532f;
-  --tone-2: #3f74c2;
-  --tone-3: #c99a2e;
-  --tone-4: #c4567f;
-  --tone-5: #4f8f62;
-  --tone-6: #8b62b0;
-  --tone-7: #2f8f8a;
-  --tone-8: #d4471f;
-  --tone-9: #d9a400;
-  --tone-10: #1f8f7f;
-  --tone-11: #5a52e0;
-  --tone-12: #7b7f87;
-  --tone-13: #2f7fd0;
-  --tone-14: #e0571b;
-
-  --radius: 0.75rem;
-  --radius-sm: 0.5rem;
-  --radius-lg: 1.25rem;
-  /* Accent as a light, warm gradient (primary buttons, the campaign card). */
-  --accent-gradient: linear-gradient(135deg, #f0bd55, #e8955a);
-  --surface-raised: color-mix(in srgb, var(--surface) 92%, var(--accent-fill));
-  --star: #c98a00;
-  --star-empty: #c9c0ae;
-  --shadow: 0 0.5rem 1.5rem rgb(28 26 23 / 0.12);
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --header-h: clamp(2.75rem, 7vh, 3.25rem);
-  --touch: 2.75rem;
-}
-
-:root[data-theme='dark'] {
   color-scheme: dark;
 
-  --bg: #0b0e13;
-  --surface: #141922;
-  --surface-2: #1c2330;
-  --border: #2b3444;
-  --text: #eef1f6;
-  --text-muted: #a7b0bf;
-  --accent: #f2c35b;
-  --accent-strong: #ffd884;
-  --on-accent: #1b1300;
-  --accent-fill: #f2c35b;
-  --on-accent-fill: #1b1300;
-  --focus: #8cb8ff;
+  --font-ui: 'Sora Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Unbounded Variable', 'Sora Variable', system-ui, sans-serif;
+
+  --bg: #0d0a26;
+  /* The scene behind every screen: indigo depth, a warm leak from the rift. */
+  --bg-scene:
+    radial-gradient(45% 70% at 78% 40%, rgb(255 160 60 / 0.1), transparent 70%),
+    radial-gradient(60% 80% at 50% 50%, #24195a 0%, #120d33 55%, #07061a 100%);
+  --surface: #17123a;
+  --surface-2: #211a4d;
+  --border: #3a3170;
+  --text: #f4f1ff;
+  --text-muted: #b9b2dd;
+  --accent: #ffc35c;
+  --accent-strong: #ffd98f;
+  --on-accent: #2a1300;
+  --accent-fill: #ffb547;
+  --on-accent-fill: #2a1300;
+  --focus: #ffe2a3;
   --danger: #ff8a80;
+  /* Materials of the effects: embers and ash of the fire, clay body of the tiles. */
   --fx-ember-hot: #ffc43c;
   --fx-ember: #ff6e28;
   --fx-ash: #8a8076;
@@ -104,30 +41,47 @@
   --fx-gold-dark: #a8741a;
   --fx-petal: #ffc4dd;
   --fx-petal-dark: #e77fa9;
+  /* The rift: its hot core, its glow. */
+  --rift-core: #fff3d6;
+  --rift-glow: #ff9a3c;
 
-  --well-bg: #0e131b;
-  --well-grid: rgb(255 255 255 / 0.05);
-  --well-frame: #2b3444;
+  --well-bg: #0e0b2a;
+  --well-grid: rgb(255 255 255 / 0.04);
+  --well-frame: #4a3f86;
   --crack: #fff3d6;
 
-  --tone-1: #e8795a;
-  --tone-2: #6fa0e6;
-  --tone-3: #e6bd5a;
-  --tone-4: #e77fa6;
-  --tone-5: #74bf8b;
-  --tone-6: #b08ad6;
-  --tone-7: #4fc2bb;
-  --tone-8: #ff6a3d;
-  --tone-9: #ffcc33;
-  --tone-10: #33c2ad;
-  --tone-11: #8a84ff;
-  --tone-12: #8b919c;
-  --tone-13: #5aa9f0;
-  --tone-14: #ff7a3d;
+  --tone-1: #3de0ff;
+  --tone-2: #ffb547;
+  --tone-3: #8b6cff;
+  --tone-4: #b8f25c;
+  --tone-5: #ff4fa3;
+  --tone-6: #5b8cff;
+  --tone-7: #ff7a4d;
+  --tone-8: #ff4fa3;
+  --tone-9: #ffe15c;
+  --tone-10: #2ad1b0;
+  --tone-11: #7d5cff;
+  --tone-12: #5c5878;
+  --tone-13: #4aa8ff;
+  --tone-14: #ff6a2a;
 
+  --radius: 1rem;
+  --radius-sm: 0.625rem;
+  --radius-lg: 1.5rem;
+  /* The main action: molten gold, lit from above. */
+  --accent-gradient: linear-gradient(180deg, #ffd27a 0%, #ff9f3f 100%);
+  --surface-raised: color-mix(in srgb, var(--surface) 86%, var(--accent-fill));
+  --glass: rgb(15 11 40 / 0.6);
+  --star: #ffc35c;
+  --star-empty: #3b3366;
   --shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.45);
-  --accent-gradient: linear-gradient(135deg, #f6cd6a, #f09a62);
-  --surface-raised: color-mix(in srgb, var(--surface) 88%, var(--accent-fill));
-  --star: #f6cd6a;
-  --star-empty: #3a4456;
+  --glow-accent: 0 0 0 2px rgb(255 226 163 / 0.6), 0 0.9rem 2.5rem rgb(255 150 40 / 0.45);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --header-h: clamp(2.75rem, 7vh, 3.25rem);
+  --touch: 2.75rem;
 }

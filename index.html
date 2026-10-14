@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -8,8 +8,7 @@
       name="description"
       content="Jeu de blocs qui tombent réinventé : modes inédits, défi du jour, destructions de cristal. Gratuit, sans inscription, sur mobile et ordinateur."
     />
-    <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0b0e13" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#0d0a26" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -46,20 +45,6 @@
         "isAccessibleForFree": true,
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
       }
-    </script>
-    <script>
-      // Applies the saved theme before the first paint: no flash of the wrong theme.
-      (function () {
-        var theme = 'system';
-        try {
-          var saved = JSON.parse(localStorage.getItem('stackrift:settings') || '{}');
-          if (saved.theme === 'light' || saved.theme === 'dark') theme = saved.theme;
-        } catch (e) {}
-        if (theme === 'system') {
-          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        document.documentElement.dataset.theme = theme;
-      })();
     </script>
   </head>
   <body>

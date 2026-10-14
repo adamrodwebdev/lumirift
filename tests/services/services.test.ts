@@ -6,12 +6,12 @@ import { ShareService } from '@/services/ShareService';
 
 const DEFAULTS = {
   locale: 'fr',
-  theme: 'system',
   ghost: true,
   effects: 'full',
   shake: true,
   haptics: true,
   volume: 0.7,
+  musicVolume: 0.5,
   muted: false,
 } as const;
 
@@ -19,12 +19,12 @@ describe('SettingsService', () => {
   it('starts from the defaults and saves every change', () => {
     const storage = new MemoryStorage();
     const settings = new SettingsService(storage, DEFAULTS);
-    expect(settings.current.theme).toBe('system');
-    settings.update({ theme: 'dark', ghost: false });
-    expect(settings.current.theme).toBe('dark');
+    expect(settings.current.musicVolume).toBe(0.5);
+    settings.update({ musicVolume: 0.2, ghost: false });
+    expect(settings.current.musicVolume).toBe(0.2);
     expect(JSON.parse(storage.get(SETTINGS_KEY)!)).toEqual({
       ...DEFAULTS,
-      theme: 'dark',
+      musicVolume: 0.2,
       ghost: false,
     });
   });
@@ -33,7 +33,13 @@ describe('SettingsService', () => {
     const storage = new MemoryStorage();
     storage.set(
       SETTINGS_KEY,
-      JSON.stringify({ locale: 'id', theme: 'neon', ghost: 'yes', effects: 'reduced', volume: 3 }),
+      JSON.stringify({
+        locale: 'id',
+        theme: 'neon',
+        ghost: 'yes',
+        effects: 'reduced',
+        musicVolume: 2,
+      }),
     );
     const settings = new SettingsService(storage, DEFAULTS);
     expect(settings.current).toEqual({ ...DEFAULTS, locale: 'id', effects: 'reduced' });

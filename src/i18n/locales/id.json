@@ -14,8 +14,6 @@
     "skip": "Langsung ke konten",
     "home": "Kembali ke beranda",
     "settings": "Pengaturan",
-    "toLight": "Ganti ke tema terang",
-    "toDark": "Ganti ke tema gelap",
     "mute": "Matikan suara",
     "unmute": "Nyalakan suara"
   },
@@ -208,10 +206,6 @@
   "settings": {
     "title": "Pengaturan",
     "language": "Bahasa",
-    "theme": "Tema",
-    "system": "Sistem",
-    "light": "Terang",
-    "dark": "Gelap",
     "ghost": "Tampilkan kepingan bayangan",
     "effects": "Efek visual",
     "effectsFull": "Lengkap",
@@ -220,7 +214,8 @@
     "shake": "Guncangan layar",
     "haptics": "Getaran",
     "volume": "Volume efek suara",
-    "close": "Tutup"
+    "close": "Tutup",
+    "music": "Musik"
   },
   "game": {
     "loading": "Memuat permainan…",
@@ -525,5 +520,17 @@
     "banner": "Lima mode permainan bebas (Klasik, Pasir, Mozaik, Menara, Duel) dan bab pertama kampanye. Game lengkap punya tiga belas mode dan tiga puluh level.",
     "fullGame": "Game lengkap",
     "campaignDone": "Demo selesai: kelanjutannya ada di game lengkap."
+  },
+  "title": {
+    "tagline": "13 cara memecahkan balok.",
+    "play": "Main",
+    "level": "Level {level} · {mode}",
+    "space": "{key} untuk main",
+    "spaceKey": "Spasi",
+    "player": "Level {level}, {xp}. Buka Atelier",
+    "daily": "Tantangan harian · {mode} · sisa {h} j {m} mnt",
+    "freePlay": "Main bebas",
+    "more": "mode lain",
+    "dailyShort": "Harian · {mode}"
   }
 }

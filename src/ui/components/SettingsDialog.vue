@@ -3,7 +3,6 @@ import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, LOCALES } from '@/i18n/locales';
-import { THEME_PREFERENCES, type ThemePreference } from '@/services/SettingsService';
 import ModalDialog from './ModalDialog.vue';
 
 defineProps<{ open: boolean }>();
@@ -22,7 +21,6 @@ const onLocale = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
   if (isLocale(value)) settings.update({ locale: value });
 };
-const onTheme = (value: ThemePreference) => settings.update({ theme: value });
 const checked = (event: Event) => (event.target as HTMLInputElement).checked;
 const onGhost = (event: Event) => settings.update({ ghost: checked(event) });
 const onEffects = (value: EffectsLevel) => settings.update({ effects: value });
@@ -30,6 +28,11 @@ const onShake = (event: Event) => settings.update({ shake: checked(event) });
 const onHaptics = (event: Event) => settings.update({ haptics: checked(event) });
 const onVolume = (event: Event) =>
   settings.update({ volume: Number((event.target as HTMLInputElement).value) / 100, muted: false });
+const onMusic = (event: Event) =>
+  settings.update({
+    musicVolume: Number((event.target as HTMLInputElement).value) / 100,
+    muted: false,
+  });
 </script>
 
 <template>
@@ -43,22 +46,6 @@ const onVolume = (event: Event) =>
           </option>
         </select>
       </label>
-
-      <fieldset class="field">
-        <legend class="field__label">{{ t('settings.theme') }}</legend>
-        <div class="segmented">
-          <label v-for="option in THEME_PREFERENCES" :key="option" class="segmented__option">
-            <input
-              type="radio"
-              name="theme"
-              :value="option"
-              :checked="settings.current.theme === option"
-              @change="onTheme(option)"
-            />
-            <span>{{ t(`settings.${option}`) }}</span>
-          </label>
-        </div>
-      </fieldset>
 
       <label class="toggle">
         <input type="checkbox" :checked="settings.current.ghost" @change="onGhost" />
@@ -106,6 +93,19 @@ const onVolume = (event: Event) =>
           step="5"
           :value="Math.round(settings.current.volume * 100)"
           @input="onVolume"
+        />
+      </label>
+
+      <label class="field">
+        <span class="field__label">{{ t('settings.music') }}</span>
+        <input
+          class="range"
+          type="range"
+          min="0"
+          max="100"
+          step="5"
+          :value="Math.round(settings.current.musicVolume * 100)"
+          @input="onMusic"
         />
       </label>
 

@@ -14,8 +14,6 @@
     "skip": "Skip to content",
     "home": "Back to home",
     "settings": "Settings",
-    "toLight": "Switch to light theme",
-    "toDark": "Switch to dark theme",
     "mute": "Mute",
     "unmute": "Unmute"
   },
@@ -208,10 +206,6 @@
   "settings": {
     "title": "Settings",
     "language": "Language",
-    "theme": "Theme",
-    "system": "System",
-    "light": "Light",
-    "dark": "Dark",
     "ghost": "Show the ghost piece",
     "effects": "Visual effects",
     "effectsFull": "Full",
@@ -220,7 +214,8 @@
     "shake": "Screen shake",
     "haptics": "Vibration",
     "volume": "Sound effects volume",
-    "close": "Close"
+    "close": "Close",
+    "music": "Music"
   },
   "game": {
     "loading": "Loading the game…",
@@ -525,5 +520,17 @@
     "banner": "Five modes in free play (Classic, Sand, Mosaic, Tower, Duel) and the first chapter of the campaign. The full game has thirteen modes and thirty levels.",
     "fullGame": "Full game",
     "campaignDone": "Demo complete: the rest is in the full game."
+  },
+  "title": {
+    "tagline": "13 ways to break a block.",
+    "play": "Play",
+    "level": "Level {level} · {mode}",
+    "space": "{key} to play",
+    "spaceKey": "Space",
+    "player": "Level {level}, {xp}. Open the Atelier",
+    "daily": "Daily challenge · {mode} · {h} h {m} min left",
+    "freePlay": "Free play",
+    "more": "more modes",
+    "dailyShort": "Daily · {mode}"
   }
 }
