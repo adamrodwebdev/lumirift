@@ -18,7 +18,8 @@ export const ARR_MS = 50;
 
 /**
  * Keys by physical position (`KeyboardEvent.code`): the same places work on
- * AZERTY and QWERTY. `KeyZ` is W on AZERTY, `KeyA` is Q.
+ * AZERTY and QWERTY. `KeyZ` is W on AZERTY, `KeyA` is Q. No Esc (it leaves
+ * full screen) and no Ctrl (Ctrl+W closes the tab): game portals reserve them.
  */
 export const KEY_BINDINGS: Readonly<Record<string, FallingAction>> = {
   ArrowLeft: 'left',
@@ -31,13 +32,10 @@ export const KEY_BINDINGS: Readonly<Record<string, FallingAction>> = {
   ArrowUp: 'rotateCw',
   KeyX: 'rotateCw',
   KeyZ: 'rotateCcw',
-  ControlLeft: 'rotateCcw',
-  ControlRight: 'rotateCcw',
   KeyC: 'hold',
   ShiftLeft: 'hold',
   ShiftRight: 'hold',
   KeyF: 'ability',
-  Escape: 'pause',
   KeyP: 'pause',
 };
 

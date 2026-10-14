@@ -318,11 +318,16 @@ const onKeyDown = (event: KeyboardEvent) => {
   if (event.target instanceof HTMLElement && event.target.closest('input, select, textarea'))
     return;
   const code = event.code;
-  if (code === 'Escape' || code === 'KeyP') {
+  // Esc only cancels a choice (it also leaves full screen on portals); P pauses.
+  if (code === 'Escape' && (controller.selected !== null || controller.pendingJoker !== null)) {
     event.preventDefault();
-    if (code === 'Escape' && (controller.selected !== null || controller.pendingJoker !== null))
-      controller.cancel();
-    else emit('pause');
+    controller.cancel();
+    refresh();
+    return;
+  }
+  if (code === 'KeyP') {
+    event.preventDefault();
+    emit('pause');
     refresh();
     return;
   }

@@ -28,9 +28,10 @@ export function useCampaignText() {
   const format = useFormat();
   const duration = format.duration;
 
-  const goal = ({ goal, variant }: CampaignLevel): string =>
+  // In Sand, what clears is a region linking both walls, not a line.
+  const goal = ({ goal, variant, modeId }: CampaignLevel): string =>
     t(
-      `campaign.goal.${goal.kind}`,
+      `campaign.goal.${goal.kind === 'lines' && modeId === 'sand' ? 'regions' : goal.kind}`,
       {
         n: format.number(goal.target),
         time: duration(goal.target),

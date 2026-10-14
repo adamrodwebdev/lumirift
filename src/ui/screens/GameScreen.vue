@@ -13,11 +13,14 @@ import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
 import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
 import { allowsLevel } from '@/platform/Edition';
 import { GameTracker } from '@/progression/GameReport';
+import { Coach, type CoachStep } from '@/session/Coach';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
+import { observeCommands } from '@/session/observeCommands';
 import { ScoreBoard } from '@/services/ScoreBoard';
 import CampaignGoal from '../components/CampaignGoal.vue';
+import CoachCard from '../components/CoachCard.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import type { GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
@@ -69,6 +72,28 @@ const help = HELP[descriptor.family] ?? [];
 /** The keyboard help stays beside the game for the first games. */
 const FIRST_GAMES = 5;
 const showHelp = profile.current.games < FIRST_GAMES && help.length > 0;
+
+/**
+ * The very first game is guided (modes played with the falling controls):
+ * move, rotate, drop, then the goal, each step done by doing it.
+ */
+const GUIDED: readonly string[] = ['falling', 'sand', 'volume'];
+const coach =
+  profile.current.games === 0 && GUIDED.includes(descriptor.family) ? new Coach() : null;
+const coachStep = ref<CoachStep | null>(coach?.step ?? null);
+const coachGoal = descriptor.family === 'sand' ? 'sand' : 'lines';
+/** The goal step stays a few seconds when no line comes. */
+const COACH_GOAL_MS = 9000;
+let coachTimer: ReturnType<typeof setTimeout> | undefined;
+const coachUpdate = () => {
+  coachStep.value = coach?.step ?? null;
+  clearTimeout(coachTimer);
+  if (coachStep.value === 'goal') coachTimer = setTimeout(skipCoach, COACH_GOAL_MS);
+};
+const skipCoach = () => {
+  coach?.skip();
+  coachUpdate();
+};
 const modeName = computed(() => t(`modes.${props.modeId}.name`));
 /** The game's own subtitle, such as the name of the silhouette of the day. */
 const subtitle = computed(() => {
@@ -162,6 +187,7 @@ const listen = (current: GameSession) => {
   const { events } = current;
   unsubscribe = [
     events.on('clear', ({ lines, combo }) => {
+      if (coach?.cleared()) coachUpdate();
       const text = t('notice.lines', lines);
       announce(
         combo > 0 ? `${text} · ${t('notice.combo', { n: combo + 1 })}` : text,
@@ -244,7 +270,10 @@ const start = async () => {
   listen(created);
   showOutcome.value = false;
   round.value++;
-  session.value = created;
+  // The guide hears every command that took effect, whatever the input.
+  session.value = coach?.step
+    ? observeCommands(created, (type) => coach.command(type) && coachUpdate())
+    : created;
   indicators.value = created.indicators();
   created.start();
   phase.value = 'playing';
@@ -327,6 +356,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('blur', pause);
   clearTimeout(toastTimer);
   clearTimeout(outcomeTimer);
+  clearTimeout(coachTimer);
   clock.stop();
   offPortalPause();
   platform.gameplayStop();
@@ -364,6 +394,12 @@ onBeforeUnmount(() => {
         :active="phase === 'playing'"
         :ghost="settings.current.ghost"
         @pause="pause"
+      />
+      <CoachCard
+        v-if="coachStep && phase === 'playing'"
+        :step="coachStep"
+        :goal="coachGoal"
+        @skip="skipCoach"
       />
       <div class="game__toasts" aria-hidden="true">
         <Transition name="toast">

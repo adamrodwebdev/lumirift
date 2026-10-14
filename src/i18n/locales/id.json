@@ -167,7 +167,7 @@
     "ability": {
       "flip": "Balikkan sumur"
     },
-    "keyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Ctrl untuk memutar ke arah lain, C untuk menyimpan, F untuk kemampuan, Esc untuk jeda.",
+    "keyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Z untuk memutar ke arah lain (W pada AZERTY), C untuk menyimpan, F untuk kemampuan, P untuk jeda.",
     "touch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung."
   },
   "pause": {
@@ -298,18 +298,18 @@
     "empty": "Slot kosong",
     "pickPiece": "Ketuk kepingan yang akan diputar",
     "pickCell": "Ketuk kotak untuk dibom",
-    "helpKeyboard": "Keyboard: 1, 2, 3 untuk memilih kepingan (4 untuk kubus), panah untuk memindahkan, Enter untuk memasang, J untuk joker, Esc untuk membatalkan atau jeda.",
+    "helpKeyboard": "Keyboard: 1, 2, 3 untuk memilih kepingan (4 untuk kubus), panah untuk memindahkan, Enter untuk memasang, J untuk joker, Esc untuk membatalkan, P untuk jeda.",
     "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak.",
     "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Sumur pasir",
-    "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Ctrl untuk memutar ke arah lain, Esc untuk jeda. Area satu warna yang menghubungkan kedua dinding akan dihapus.",
+    "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Z untuk memutar ke arah lain (W pada AZERTY), P untuk jeda. Area satu warna yang menghubungkan kedua dinding akan dihapus.",
     "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung. Air mengambil warna di sekitarnya, api membakar warna yang disentuhnya."
   },
   "tower": {
     "well": "Menara kaca",
-    "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Ctrl untuk memutar ke arah lain, C untuk simpan, Q dan E (A dan E pada AZERTY) untuk memutar menara, Esc untuk jeda. Satu baris adalah cincin penuh 20 kotak.",
+    "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Z untuk memutar ke arah lain (W pada AZERTY), C untuk simpan, Q dan E (A dan E pada AZERTY) untuk memutar menara, P untuk jeda. Satu baris adalah cincin penuh 20 kotak.",
     "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung, geser dengan dua jari untuk memutar menara. Kamera mengikuti kepingan."
   },
   "profile": {
@@ -441,7 +441,8 @@
       "bigClear": "Hapus {n} baris sekaligus",
       "survive": "Bertahan {time}",
       "win": "Kalahkan {ai}",
-      "shape": "Lengkapi siluet"
+      "shape": "Lengkapi siluet",
+      "regions": "Hapus {n} area"
     },
     "starRule": {
       "timeLeft": "1 bintang jika berhasil, 2 dengan sisa waktu 15 %, 3 dengan 40 %.",
@@ -533,5 +534,19 @@
     "freePlay": "Main bebas",
     "more": "mode lain",
     "dailyShort": "Harian · {mode}"
+  },
+  "coach": {
+    "move": "Geser kepingan",
+    "rotate": "Putar",
+    "drop": "Jatuhkan",
+    "goalSand": "Hubungkan kedua dinding dengan satu warna: areanya hilang.",
+    "goalLines": "Penuhi satu baris: baris itu pecah.",
+    "skip": "Lewati panduan",
+    "moveKeys": "← →",
+    "rotateKeys": "↑",
+    "dropKeys": "Spasi",
+    "moveTouch": "Geser",
+    "rotateTouch": "Ketuk",
+    "dropTouch": "Sentil ke bawah"
   }
 }

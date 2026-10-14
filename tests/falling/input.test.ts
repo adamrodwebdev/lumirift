@@ -90,7 +90,13 @@ describe('FallingInput', () => {
     expect(KEY_BINDINGS.KeyA).toBe('left');
     expect(KEY_BINDINGS.KeyZ).toBe('rotateCcw');
     expect(KEY_BINDINGS.Space).toBe('hardDrop');
-    expect(KEY_BINDINGS.Escape).toBe('pause');
+    expect(KEY_BINDINGS.KeyP).toBe('pause');
+  });
+
+  it('leaves the keys game portals reserve: Esc (full screen) and Ctrl (Ctrl+W)', () => {
+    expect(KEY_BINDINGS.Escape).toBeUndefined();
+    expect(KEY_BINDINGS.ControlLeft).toBeUndefined();
+    expect(KEY_BINDINGS.ControlRight).toBeUndefined();
   });
 });
 
