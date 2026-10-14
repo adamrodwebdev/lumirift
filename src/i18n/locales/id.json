@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Lumirift — game balok jatuh yang diciptakan ulang",
+    "title": "Lumirift Blocks — game balok jatuh yang diciptakan ulang",
     "description": "Game balok jatuh yang diciptakan ulang: mode baru, tantangan harian, kristal yang pecah berkeping-keping. Gratis, tanpa daftar, di ponsel dan komputer."
   },
   "app": {
-    "name": "Lumirift",
+    "name": "Lumirift Blocks",
     "tagline": "Aturan yang sudah kamu kenal. Permainan yang belum pernah kamu mainkan.",
     "privacy": "Tanpa akun, tanpa pelacak: rekormu tetap di perangkatmu.",
     "version": "Versi {version}",

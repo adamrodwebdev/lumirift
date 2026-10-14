@@ -48,9 +48,9 @@ test.beforeEach(async ({ page }) => {
 test('the title screen: the logo, one big Play, the daily challenge, every mode', async ({
   page,
 }) => {
-  await expect(page).toHaveTitle('Lumirift — le jeu de blocs réinventé');
+  await expect(page).toHaveTitle('Lumirift Blocks — le jeu de blocs réinventé');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
-  await expect(page.getByRole('heading', { name: 'Lumirift', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Lumirift Blocks', level: 1 })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Jouer/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Défi du jour/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Niveau 1,/ })).toBeVisible();
@@ -126,7 +126,7 @@ test('the language is remembered; the game has one look, the Rift', async ({ pag
 
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Game modes' })).toBeVisible();
-  await expect(page).toHaveTitle('Lumirift — the falling-blocks game, reinvented');
+  await expect(page).toHaveTitle('Lumirift Blocks — the falling-blocks game, reinvented');
 });
 
 test('the Atelier shows the collection; locked items say how to earn them', async ({ page }) => {

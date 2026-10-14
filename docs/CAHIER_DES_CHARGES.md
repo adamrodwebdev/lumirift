@@ -589,6 +589,8 @@ l'identité, et le logo se fend au même endroit, LUMI | RIFT). Vérifications d
   en propriété industrielle) reste conseillée avant un dépôt ou des produits dérivés.
 - Domaines : `lumirift.com` est pris ; `.net`, `.io`, `.fr`, `.app`, `.game` étaient libres.
 - Les clés de sauvegarde restent `stackrift:…` : aucun joueur ne perd sa progression.
+- Nom complet **Lumirift Blocks** (1.5.1) : Playgama demande un titre de 2 à 4 mots, identique
+  dans le jeu et le formulaire ; le logo garde LUMI | RIFT, sous-titré BLOCKS.
 
 ### 3.8 Identité « Rift » (1.4)
 

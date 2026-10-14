@@ -29,8 +29,8 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-/** The brand name, split by the rift (never translated). */
-const LOGO = ['Lumi', 'rift'] as const;
+/** The game's name, split by the rift, then its kicker (never translated). */
+const LOGO = ['Lumi', 'rift', 'Blocks'] as const;
 const { catalog, scores, clock, platform, campaign } = useServices();
 const { edition } = platform;
 
@@ -136,7 +136,7 @@ const modes = computed(() =>
         <div class="title__copy">
           <h1 id="game-title" class="logo">
             <!-- Read as one word; the split by the rift is for the eyes only. -->
-            <span class="sr-only">{{ LOGO.join('') }}</span>
+            <span class="sr-only">{{ `${LOGO[0]}${LOGO[1]} ${LOGO[2]}` }}</span>
             <span class="logo__stack" aria-hidden="true">{{ LOGO[0] }}</span>
             <span class="logo__rift" aria-hidden="true">
               <svg class="logo__crack" viewBox="0 0 34 84" aria-hidden="true">
@@ -144,6 +144,7 @@ const modes = computed(() =>
               </svg>
               <span>{{ LOGO[1] }}</span>
             </span>
+            <span class="logo__kicker" aria-hidden="true">{{ LOGO[2] }}</span>
           </h1>
           <p class="tagline">{{ t('title.tagline') }}</p>
 
@@ -359,6 +360,15 @@ const modes = computed(() =>
   background-clip: text;
   color: transparent;
   text-shadow: none;
+}
+
+/* BLOCKS: small, widely spaced, under the name. */
+.logo__kicker {
+  margin-top: 0.35em;
+  color: var(--text-muted);
+  font-size: 0.24em;
+  font-weight: 800;
+  letter-spacing: 0.55em;
 }
 
 .logo__crack {

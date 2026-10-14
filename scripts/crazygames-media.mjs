@@ -89,9 +89,9 @@ function scene({ left, base, s, heights, riftX, riftTop, piece }) {
 
 const random = (seed) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
-/** The title, split by the rift: LUMI over RIFT (the only text a cover may carry). */
+/** The title, split by the rift: LUMI over RIFT, then BLOCKS (the only text a cover may carry). */
 const title = (x, y, size, align = 'left') =>
-  `<h1 style="position:absolute;left:${x}px;top:${y}px;${align === 'center' ? 'transform:translateX(-50%);text-align:center;' : ''}margin:0;font:900 ${size}px/0.9 'Unbounded',sans-serif;letter-spacing:${-size * 0.035}px;color:#fbf7ff;text-shadow:0 ${size * 0.05}px ${size * 0.3}px rgb(120 80 255 / .55)">LUMI<br><span style="background:linear-gradient(180deg,#ffe2a3,#ff9a3c);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none">RIFT</span></h1>`;
+  `<h1 style="position:absolute;left:${x}px;top:${y}px;${align === 'center' ? 'transform:translateX(-50%);text-align:center;' : ''}margin:0;font:900 ${size}px/0.9 'Unbounded',sans-serif;letter-spacing:${-size * 0.035}px;color:#fbf7ff;text-shadow:0 ${size * 0.05}px ${size * 0.3}px rgb(120 80 255 / .55)">LUMI<br><span style="background:linear-gradient(180deg,#ffe2a3,#ff9a3c);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none">RIFT</span><span style="display:block;margin-top:.12em;font-size:.26em;line-height:1;letter-spacing:.55em;color:#cfc8f0;text-shadow:none">BLOCKS</span></h1>`;
 
 const page = (width, height, glow, body) =>
   `<!doctype html><html><head><style>@font-face{font-family:'Unbounded';font-weight:200 900;src:url(data:font/woff2;base64,${UNBOUNDED}) format('woff2')}</style></head><body style="margin:0;width:${width}px;height:${height}px;overflow:hidden;position:relative;background:radial-gradient(70% 80% at ${glow},#2e2066 0%,#140e3a 48%,#07061a 100%)">
