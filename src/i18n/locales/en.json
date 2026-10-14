@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Stackrift — the falling-blocks game, reinvented",
+    "title": "Lumirift — the falling-blocks game, reinvented",
     "description": "The falling-blocks game reinvented: brand-new modes, a daily challenge, shattering crystal. Free, no sign-up, on mobile and desktop."
   },
   "app": {
-    "name": "Stackrift",
+    "name": "Lumirift",
     "tagline": "The rules you know. Games you have never played.",
     "privacy": "No account, no tracking: your records stay on your device.",
     "version": "Version {version}",
@@ -200,8 +200,8 @@
     "copied": "Result copied to the clipboard"
   },
   "share": {
-    "daily": "Stackrift · Challenge of {date} ({mode}): {value}. Your turn: {url}",
-    "mode": "Stackrift · {mode}: {value}. Your turn: {url}"
+    "daily": "Lumirift · Challenge of {date} ({mode}): {value}. Your turn: {url}",
+    "mode": "Lumirift · {mode}: {value}. Your turn: {url}"
   },
   "settings": {
     "title": "Settings",

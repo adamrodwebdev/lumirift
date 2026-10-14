@@ -1,4 +1,4 @@
-# Stackrift sur Playgama
+# Lumirift sur Playgama
 
 Version Playgama du jeu (Bridge SDK v2) et contrôle de chaque exigence de la plateforme,
 lue en entier le 14/10/2026 (wiki.playgama.com : exigences, FAQ, Bridge SDK v2).
@@ -22,7 +22,7 @@ npm run package:playgama                          # build, contrôles, zip dans 
 node scripts/crazygames-media.mjs --covers-only   # covers dans release/playgama-media/
 ```
 
-Le zip (`release/stackrift-playgama-<version>.zip`, 0,2 Mo environ) a `index.html` à la
+Le zip (`release/lumirift-playgama-<version>.zip`, 0,2 Mo environ) a `index.html` à la
 racine, des chemins relatifs et des séparateurs « / » (bsdtar).
 
 ## Exigences et leur contrôle
@@ -49,17 +49,17 @@ racine, des chemins relatifs et des séparateurs « / » (bsdtar).
 | Partenaires : MSN < 50 Mo, YouTube ≤ 30 Mo et ≤ 8 000 fichiers, Facebook ≤ 500 fichiers, GameSnacks < 10 Mio par fichier | ✓      | Contrôle du paquet                                                            |
 | Contenu original, pas de marque d'autrui, pas d'art IA brut                                                              | ✓      | Identité propre (Rift), aucun nom « Tetris », graphismes dessinés en code     |
 | Difficulté croissante, progression, son                                                                                  | ✓      | Niveaux de vitesse, campagne, musique générative                              |
-| Titre de 2 à 4 mots identique dans le jeu et le formulaire                                                               | ⚠      | « Stackrift » fait un mot : à trancher (voir ci-dessous)                      |
+| Titre de 2 à 4 mots identique dans le jeu et le formulaire                                                               | ⚠      | « Lumirift » fait un mot : à trancher (voir ci-dessous)                       |
 | Yandex/Playhop : russe                                                                                                   | —      | Non traduit : exclure Playhop/Yandex dans le champ Distribution               |
 
 ## Formulaire de soumission (textes en anglais)
 
-- **Title** : Stackrift (le formulaire demande 2 à 4 mots ; si la modération le refuse,
-  « Stackrift Blocks » devra aussi apparaître dans le jeu).
+- **Title** : Lumirift (le formulaire demande 2 à 4 mots ; si la modération le refuse,
+  « Lumirift Blocks » devra aussi apparaître dans le jeu).
 - **Game engine** : `js`.
 - **Description** (≥ 100 caractères) :
 
-  > Stackrift reinvents the falling-blocks game with 13 original modes across four
+  > Lumirift reinvents the falling-blocks game with 13 original modes across four
   > families. Watch pieces crumble into sand and link both walls with one colour, wrap the
   > well into a glass Tower, place ceramic pieces on a Mosaic, and duel an AI from Rookie to
   > Expert. Play a 30-level campaign with 10 upgrades, a daily challenge and new objectives

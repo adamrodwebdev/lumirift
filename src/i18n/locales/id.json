@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Stackrift — game balok jatuh yang diciptakan ulang",
+    "title": "Lumirift — game balok jatuh yang diciptakan ulang",
     "description": "Game balok jatuh yang diciptakan ulang: mode baru, tantangan harian, kristal yang pecah berkeping-keping. Gratis, tanpa daftar, di ponsel dan komputer."
   },
   "app": {
-    "name": "Stackrift",
+    "name": "Lumirift",
     "tagline": "Aturan yang sudah kamu kenal. Permainan yang belum pernah kamu mainkan.",
     "privacy": "Tanpa akun, tanpa pelacak: rekormu tetap di perangkatmu.",
     "version": "Versi {version}",
@@ -200,8 +200,8 @@
     "copied": "Hasil disalin ke papan klip"
   },
   "share": {
-    "daily": "Stackrift · Tantangan {date} ({mode}): {value}. Giliranmu: {url}",
-    "mode": "Stackrift · {mode}: {value}. Giliranmu: {url}"
+    "daily": "Lumirift · Tantangan {date} ({mode}): {value}. Giliranmu: {url}",
+    "mode": "Lumirift · {mode}: {value}. Giliranmu: {url}"
   },
   "settings": {
     "title": "Pengaturan",

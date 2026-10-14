@@ -1,4 +1,4 @@
-# Stackrift sur CrazyGames — build, médias et conformité
+# Lumirift sur CrazyGames — build, médias et conformité
 
 Sources (lues le 13/10/2026) : [Requirements](https://docs.crazygames.com/requirements/intro/)
 (technique, gameplay, publicité, covers, qualité), [Basic Launch metrics](https://docs.crazygames.com/resources/basic-launch-metrics/),
@@ -13,7 +13,7 @@ node scripts/crazygames-media.mjs   # 3 covers et 2 vidéos (≈ 10 min)
 
 | Livrable                   | Fichier                                                     |
 | -------------------------- | ----------------------------------------------------------- |
-| Build à téléverser         | `release/stackrift-crazygames-<version>.zip`                |
+| Build à téléverser         | `release/lumirift-crazygames-<version>.zip`                 |
 | Cover paysage 16:9         | `release/crazygames-media/cover-landscape-1920x1080.png`    |
 | Cover portrait 2:3         | `release/crazygames-media/cover-portrait-800x1200.png`      |
 | Cover carrée 1:1           | `release/crazygames-media/cover-square-800x800.png`         |
@@ -26,10 +26,10 @@ langue, sauvegarde, coupure du son et publicités. Notre site ne charge jamais l
 
 ## À saisir au dépôt (Developer Portal)
 
-- **Title** : Stackrift
+- **Title** : Lumirift
 - **Description** :
 
-  > Stackrift reinvents the falling-blocks game you know with 13 original modes across four
+  > Lumirift reinvents the falling-blocks game you know with 13 original modes across four
   > families.
   >
   > Shatter crystal lines in Classic, outlast the rising Tide, flip the well upside down, match
@@ -142,7 +142,7 @@ Légende : ✅ conforme, vérifié · 🟡 conforme, vérification humaine à fa
 | ---------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------- |
 | Paysage 1920 × 1080, portrait 800 × 1200, carrée 800 × 800 | ✅     | Générées aux dimensions exactes                                                                                   |
 | Visuels cohérents entre les trois                          | ✅     | Même scène : pile de cristal, fissure, éclats, titre                                                              |
-| Seul texte : le titre ; ni « Play », ni « New »            | ✅     | « Stackrift » uniquement                                                                                          |
+| Seul texte : le titre ; ni « Play », ni « New »            | ✅     | « Lumirift » uniquement                                                                                           |
 | Pas de bordure, d'icône de store ni de visuel sous droits  | ✅     | Logo du jeu seulement                                                                                             |
 | Net, pas pixelisé                                          | ✅     | Rendu vectoriel à la taille finale                                                                                |
 | Vidéo 15 à 20 s                                            | ✅     | 17,9 s (1,5 s de cover + Classique, Sable, Mosaïque, Tour : 4,1 s chacune)                                        |

@@ -50,7 +50,7 @@ const SITE_ONLY: readonly RegExp[] = [
  */
 export function portalPlugin(platform: string | undefined): Plugin {
   return {
-    name: 'stackrift-portal',
+    name: 'lumirift-portal',
     transformIndexHtml(html) {
       if (!platform) return html;
       const sdk = SDKS[platform];

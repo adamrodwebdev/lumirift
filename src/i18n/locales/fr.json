@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Stackrift — le jeu de blocs réinventé",
+    "title": "Lumirift — le jeu de blocs réinventé",
     "description": "Jeu de blocs qui tombent réinventé : modes inédits, défi du jour, destructions de cristal. Gratuit, sans inscription, sur mobile et ordinateur."
   },
   "app": {
-    "name": "Stackrift",
+    "name": "Lumirift",
     "tagline": "Les règles que vous connaissez. Des parties que vous n'avez jamais jouées.",
     "privacy": "Aucun compte, aucun traceur : vos records restent sur votre appareil.",
     "version": "Version {version}",
@@ -200,8 +200,8 @@
     "copied": "Résultat copié dans le presse-papiers"
   },
   "share": {
-    "daily": "Stackrift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",
-    "mode": "Stackrift · {mode} : {value}. À vous de jouer : {url}"
+    "daily": "Lumirift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",
+    "mode": "Lumirift · {mode} : {value}. À vous de jouer : {url}"
   },
   "settings": {
     "title": "Réglages",

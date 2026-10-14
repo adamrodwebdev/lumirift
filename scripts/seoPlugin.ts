@@ -9,7 +9,7 @@ import type { Plugin } from 'vite';
 export function seoPlugin(siteUrl: string | undefined): Plugin {
   const base = siteUrl ? siteUrl.replace(/\/?$/, '/') : null;
   return {
-    name: 'stackrift-seo',
+    name: 'lumirift-seo',
     transformIndexHtml(html) {
       if (!base) return html;
       return html

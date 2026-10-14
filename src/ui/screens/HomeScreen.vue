@@ -30,7 +30,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 /** The brand name, split by the rift (never translated). */
-const LOGO = ['Stack', 'rift'] as const;
+const LOGO = ['Lumi', 'rift'] as const;
 const { catalog, scores, clock, platform, campaign } = useServices();
 const { edition } = platform;
 

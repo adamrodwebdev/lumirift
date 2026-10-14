@@ -1,13 +1,13 @@
 // Builds the CrazyGames version, checks it against the portal's technical
 // requirements, and zips it for upload.
-// Usage: npm run package:crazygames   →  release/stackrift-crazygames-<version>.zip
+// Usage: npm run package:crazygames   →  release/lumirift-crazygames-<version>.zip
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const OUT = 'dist-crazygames';
 const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
-const ZIP = join('release', `stackrift-crazygames-${version}.zip`);
+const ZIP = join('release', `lumirift-crazygames-${version}.zip`);
 const MB = 1024 * 1024;
 
 /** Files our own site needs, not the portal (its page has its own tags and icons). */

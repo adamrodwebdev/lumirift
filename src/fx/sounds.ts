@@ -2,7 +2,7 @@ import type { SoundRecipe } from '@/services/audio/AudioEngine';
 import { degree } from './harmony';
 
 /*
- * The sound palette of Stackrift, entirely synthesised. Glass is a burst of
+ * The sound palette of Lumirift, entirely synthesised. Glass is a burst of
  * high noise plus a few inharmonic "pings"; impacts are falling sine thumps.
  * Every pitch is a degree of the game's key (D minor pentatonic, see
  * harmony.ts): the effects always sound right over the music.
