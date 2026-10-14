@@ -3,6 +3,14 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.5.1] — 14/10/2026
+
+### Modifié
+
+- Nom complet « Lumirift Blocks » (Playgama demande un titre de 2 à 4 mots, identique dans le
+  jeu et le formulaire) : en-tête, titre de la page, manifeste, logo « LUMI | RIFT » sous-titré
+  « BLOCKS », écran de démarrage, covers. La marque reste Lumirift.
+
 ## [1.5.0] — 14/10/2026
 
 Le jeu s'appelle désormais **Lumirift**.

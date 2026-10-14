@@ -49,13 +49,13 @@ racine, des chemins relatifs et des séparateurs « / » (bsdtar).
 | Partenaires : MSN < 50 Mo, YouTube ≤ 30 Mo et ≤ 8 000 fichiers, Facebook ≤ 500 fichiers, GameSnacks < 10 Mio par fichier | ✓      | Contrôle du paquet                                                            |
 | Contenu original, pas de marque d'autrui, pas d'art IA brut                                                              | ✓      | Identité propre (Rift), aucun nom « Tetris », graphismes dessinés en code     |
 | Difficulté croissante, progression, son                                                                                  | ✓      | Niveaux de vitesse, campagne, musique générative                              |
-| Titre de 2 à 4 mots identique dans le jeu et le formulaire                                                               | ⚠      | « Lumirift » fait un mot : à trancher (voir ci-dessous)                       |
+| Titre de 2 à 4 mots identique dans le jeu et le formulaire                                                               | ✓      | « Lumirift Blocks » dans le jeu et le formulaire                              |
 | Yandex/Playhop : russe                                                                                                   | —      | Non traduit : exclure Playhop/Yandex dans le champ Distribution               |
 
 ## Formulaire de soumission (textes en anglais)
 
-- **Title** : Lumirift (le formulaire demande 2 à 4 mots ; si la modération le refuse,
-  « Lumirift Blocks » devra aussi apparaître dans le jeu).
+- **Title** : Lumirift Blocks (2 à 4 mots demandés ; le même nom dans le jeu : en-tête, titre
+  de la page, logo « LUMI | RIFT » sous-titré « BLOCKS »).
 - **Game engine** : `js`.
 - **Description** (≥ 100 caractères) :
 

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Lumirift — the falling-blocks game, reinvented",
+    "title": "Lumirift Blocks — the falling-blocks game, reinvented",
     "description": "The falling-blocks game reinvented: brand-new modes, a daily challenge, shattering crystal. Free, no sign-up, on mobile and desktop."
   },
   "app": {
-    "name": "Lumirift",
+    "name": "Lumirift Blocks",
     "tagline": "The rules you know. Games you have never played.",
     "privacy": "No account, no tracking: your records stay on your device.",
     "version": "Version {version}",

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Lumirift — le jeu de blocs réinventé",
+    "title": "Lumirift Blocks — le jeu de blocs réinventé",
     "description": "Jeu de blocs qui tombent réinventé : modes inédits, défi du jour, destructions de cristal. Gratuit, sans inscription, sur mobile et ordinateur."
   },
   "app": {
-    "name": "Lumirift",
+    "name": "Lumirift Blocks",
     "tagline": "Les règles que vous connaissez. Des parties que vous n'avez jamais jouées.",
     "privacy": "Aucun compte, aucun traceur : vos records restent sur votre appareil.",
     "version": "Version {version}",
