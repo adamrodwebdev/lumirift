@@ -78,6 +78,9 @@ watchEffect(() => {
 // settings, and the portal's own mute button when there is one.
 const portalMuted = ref(platform.muted);
 const offPortalMute = platform.onMuteChange((muted) => (portalMuted.value = muted));
+const offPortalPause = platform.onPauseChange((paused) =>
+  paused ? audio.suspend() : document.hidden || audio.resume(),
+);
 const unlockAudio = () => audio.unlock();
 const onVisibility = () => (document.hidden ? audio.suspend() : audio.resume());
 watchEffect(() => {
@@ -94,6 +97,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', unlockAudio, { capture: true });
   document.removeEventListener('visibilitychange', onVisibility);
   offPortalMute();
+  offPortalPause();
 });
 </script>
 

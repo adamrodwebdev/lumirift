@@ -119,7 +119,8 @@ const modes = computed(() =>
     <AtelierDialog v-if="atelierOpen" :open="atelierOpen" @close="atelierOpen = false" />
 
     <footer class="footer">
-      <p>{{ t('app.privacy') }}</p>
+      <!-- On a portal, the save goes through the platform (sometimes its cloud). -->
+      <p>{{ t(platform.storage ? 'app.privacyPortal' : 'app.privacy') }}</p>
       <p>{{ t('app.version', { version: appVersion }) }}</p>
     </footer>
   </div>

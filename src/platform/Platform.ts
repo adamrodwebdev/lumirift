@@ -1,7 +1,7 @@
 import type { KeyValueStorage } from '@/services/KeyValueStorage';
 import { DEMO_EDITION, FULL_EDITION, type Edition } from './Edition';
 
-export type PlatformId = 'web' | 'crazygames' | 'demo';
+export type PlatformId = 'web' | 'crazygames' | 'playgama' | 'demo';
 
 /** Called around a video ad: the game pauses its sound only once the ad really plays. */
 export interface AdHooks {
@@ -27,12 +27,19 @@ export interface Platform {
   /** The portal asks for silence (its own mute button). */
   readonly muted: boolean;
   onMuteChange(listener: (muted: boolean) => void): () => void;
+  /** The portal pauses the game (an ad it shows, the player switching away), then resumes it. */
+  onPauseChange(listener: (paused: boolean) => void): () => void;
+
+  /** The first screen is drawn and the player can interact. */
+  ready(): void;
 
   loadingStart(): void;
   loadingStop(): void;
   /** The player is playing (not in a menu, a pause or a game-over screen). */
   gameplayStart(): void;
   gameplayStop(): void;
+  /** A game ended (won: a level or a duel): gameplay stops. */
+  gameOver(won: boolean): void;
   /** A moment worth celebrating (a record, a level won): use sparingly. */
   happyTime(): void;
   /** A natural break between two games; resolves when the game may go on. */
@@ -52,10 +59,16 @@ export class WebPlatform implements Platform {
     return () => undefined;
   }
 
+  onPauseChange(): () => void {
+    return () => undefined;
+  }
+
+  ready(): void {}
   loadingStart(): void {}
   loadingStop(): void {}
   gameplayStart(): void {}
   gameplayStop(): void {}
+  gameOver(): void {}
   happyTime(): void {}
 
   midgameAd(): Promise<void> {

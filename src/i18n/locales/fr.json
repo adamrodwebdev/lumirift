@@ -7,7 +7,8 @@
     "name": "Stackrift",
     "tagline": "Les règles que vous connaissez. Des parties que vous n'avez jamais jouées.",
     "privacy": "Aucun compte, aucun traceur : vos records restent sur votre appareil.",
-    "version": "Version {version}"
+    "version": "Version {version}",
+    "privacyPortal": "Aucun compte, aucun pistage : la plateforme où vous jouez garde votre progression."
   },
   "nav": {
     "skip": "Aller au contenu",

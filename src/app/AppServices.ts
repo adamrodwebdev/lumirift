@@ -50,6 +50,9 @@ export function createBrowserServices(
     volume: 0.7,
     muted: false,
   });
+  // A portal's language wins at each launch over the saved one (Playgama and
+  // CrazyGames both check that the game follows it).
+  if (platform.locale) settings.update({ locale: detectLocale([platform.locale]) });
   const catalog = new ModeCatalog();
   // Objectives only ask for modes this edition lets the player reach.
   const profile = new ProfileService(storage, () =>
