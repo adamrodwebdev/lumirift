@@ -2,7 +2,8 @@
 
 Le jeu de blocs qui tombent, réinventé : les règles que vous connaissez, **13 modes** que
 vous n'avez jamais joués, en quatre familles. Dans le navigateur, mobile d'abord, en
-**français, anglais et indonésien**, en thème clair et sombre. Gratuit, sans inscription,
+**français, anglais et indonésien**, avec son identité « Rift » (indigo, faille dorée,
+blocs gemmes) et sa musique générative. Gratuit, sans inscription,
 aucune donnée ne quitte l'appareil.
 
 Cahier des charges (règles détaillées, architecture, décisions) :
@@ -33,21 +34,23 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 | ------------------------- | -------------------------------------- | -------------------------- |
 | Déplacer                  | ← → (ou A D)                           | Glisser                    |
 | Descendre / chute franche | ↓ (ou S) / Espace                      | Glisser vers le bas / vite |
-| Tourner                   | ↑ ou X / Ctrl ou Z                     | Toucher                    |
+| Tourner                   | ↑ ou X / Z (W en AZERTY)               | Toucher                    |
 | Réserve, capacité         | C ou Maj, F                            | Boutons                    |
 | Tourner la Tour           | Q / E (A / E en AZERTY)                | Glisser à deux doigts      |
 | Mosaïque                  | 1, 2, 3 (4 : cube), flèches, Entrée, J | Glisser-déposer            |
-| Pause                     | Échap ou P                             | Bouton                     |
+| Pause                     | P                                      | Bouton                     |
 
-L'aide propre à chaque famille s'affiche dans la fenêtre de pause.
+L'aide propre à chaque famille s'affiche dans la fenêtre de pause et à côté du jeu pendant
+les cinq premières parties ; la toute première partie est guidée pas à pas. Ni Échap ni Ctrl :
+les portails les réservent (plein écran, fermeture d'onglet).
 
 ## Accessibilité
 
 Navigation complète au clavier (lien d'évitement, focus visible, focus déplacé à chaque
 écran), annonces des événements de jeu aux lecteurs d'écran, motif gravé sur chaque couleur
 (le jeu se joue sans distinguer les couleurs), cibles tactiles d'au moins 44 px, respect de
-`prefers-reduced-motion` et `prefers-color-scheme`. Chaque écran et chaque fenêtre sont
-audités automatiquement (axe-core, WCAG 2.2 AA) dans les deux thèmes.
+`prefers-reduced-motion`. Chaque écran et chaque fenêtre sont audités automatiquement
+(axe-core, WCAG 2.2 AA).
 
 ## Démarrer
 
@@ -95,6 +98,15 @@ npm run build:demo   # dist-demo : cinq modes et le premier chapitre de la campa
 ```
 
 Copiée dans `demos/stackrift/` du portfolio (adamrodwebdev.com).
+
+### Version Playgama
+
+```bash
+npm run package:playgama                          # build, contrôles, zip dans release/
+node scripts/crazygames-media.mjs --covers-only   # covers dans release/playgama-media/
+```
+
+Détail des exigences, de leur contrôle et du formulaire : [docs/PLAYGAMA.md](docs/PLAYGAMA.md).
 
 ### Version CrazyGames
 

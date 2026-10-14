@@ -13,11 +13,14 @@ import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
 import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
 import { allowsLevel } from '@/platform/Edition';
 import { GameTracker } from '@/progression/GameReport';
+import { Coach, type CoachStep } from '@/session/Coach';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
+import { observeCommands } from '@/session/observeCommands';
 import { ScoreBoard } from '@/services/ScoreBoard';
 import CampaignGoal from '../components/CampaignGoal.vue';
+import CoachCard from '../components/CoachCard.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import type { GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
@@ -66,6 +69,31 @@ const HELP: Readonly<Partial<Record<string, readonly string[]>>> = {
   volume: ['tower.helpKeyboard', 'tower.helpTouch'],
 };
 const help = HELP[descriptor.family] ?? [];
+/** The keyboard help stays beside the game for the first games. */
+const FIRST_GAMES = 5;
+const showHelp = profile.current.games < FIRST_GAMES && help.length > 0;
+
+/**
+ * The very first game is guided (modes played with the falling controls):
+ * move, rotate, drop, then the goal, each step done by doing it.
+ */
+const GUIDED: readonly string[] = ['falling', 'sand', 'volume'];
+const coach =
+  profile.current.games === 0 && GUIDED.includes(descriptor.family) ? new Coach() : null;
+const coachStep = ref<CoachStep | null>(coach?.step ?? null);
+const coachGoal = descriptor.family === 'sand' ? 'sand' : 'lines';
+/** The goal step stays a few seconds when no line comes. */
+const COACH_GOAL_MS = 9000;
+let coachTimer: ReturnType<typeof setTimeout> | undefined;
+const coachUpdate = () => {
+  coachStep.value = coach?.step ?? null;
+  clearTimeout(coachTimer);
+  if (coachStep.value === 'goal') coachTimer = setTimeout(skipCoach, COACH_GOAL_MS);
+};
+const skipCoach = () => {
+  coach?.skip();
+  coachUpdate();
+};
 const modeName = computed(() => t(`modes.${props.modeId}.name`));
 /** The game's own subtitle, such as the name of the silhouette of the day. */
 const subtitle = computed(() => {
@@ -74,6 +102,10 @@ const subtitle = computed(() => {
 });
 
 const clock = new FrameClock();
+/** Music intensity: a pause or the end of a game calms it, the danger drives it. */
+const MUSIC_PLAYING = 0.42;
+const MUSIC_DANGER = 0.58;
+const MUSIC_CALM = 0.12;
 /** One per game: the stage is rebuilt for each new session. */
 const round = ref(0);
 /** The game-over dialog waits for the stack to finish collapsing. */
@@ -130,6 +162,10 @@ clock.subscribe((delta) => {
   if (!current) return;
   if (current.state === 'running') tracker?.tick(delta);
   current.update(delta);
+  // The music follows the danger: steady while playing, tense near the top.
+  audio.setIntensity(
+    current.state === 'running' ? MUSIC_PLAYING + MUSIC_DANGER * current.pressure() : MUSIC_CALM,
+  );
   const next = current.indicators();
   if (!sameIndicators(next, indicators.value)) indicators.value = next;
   if (run && phase.value === 'playing' && current.state === 'running') {
@@ -159,6 +195,7 @@ const listen = (current: GameSession) => {
   const { events } = current;
   unsubscribe = [
     events.on('clear', ({ lines, combo }) => {
+      if (coach?.cleared()) coachUpdate();
       const text = t('notice.lines', lines);
       announce(
         combo > 0 ? `${text} · ${t('notice.combo', { n: combo + 1 })}` : text,
@@ -241,7 +278,10 @@ const start = async () => {
   listen(created);
   showOutcome.value = false;
   round.value++;
-  session.value = created;
+  // The guide hears every command that took effect, whatever the input.
+  session.value = coach?.step
+    ? observeCommands(created, (type) => coach.command(type) && coachUpdate())
+    : created;
   indicators.value = created.indicators();
   created.start();
   phase.value = 'playing';
@@ -324,6 +364,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('blur', pause);
   clearTimeout(toastTimer);
   clearTimeout(outcomeTimer);
+  clearTimeout(coachTimer);
+  audio.setIntensity(MUSIC_CALM);
   clock.stop();
   offPortalPause();
   platform.gameplayStop();
@@ -332,7 +374,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="game">
+  <div class="game" :data-family="descriptor.family">
     <h1 class="sr-only">
       {{
         level
@@ -362,12 +404,22 @@ onBeforeUnmount(() => {
         :ghost="settings.current.ghost"
         @pause="pause"
       />
+      <CoachCard
+        v-if="coachStep && phase === 'playing'"
+        :step="coachStep"
+        :goal="coachGoal"
+        @skip="skipCoach"
+      />
       <div class="game__toasts" aria-hidden="true">
         <Transition name="toast">
           <p v-if="toast" :key="toast.key" class="toast">{{ toast.text }}</p>
         </Transition>
       </div>
     </div>
+
+    <aside v-if="showHelp" class="game__help" :aria-label="t('game.help')">
+      <p>{{ t(help[0] ?? '') }}</p>
+    </aside>
 
     <p class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
     <div v-if="adBreak" class="game__break" role="status" aria-busy="true">
@@ -397,10 +449,72 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .game {
+  --family-1: rgb(139 108 255 / 0.22);
+  --family-2: rgb(61 224 255 / 0.12);
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   height: calc(100dvh - var(--header-h));
   overflow: hidden;
+}
+
+/* Each family has its own light behind the game; it drifts slowly. */
+.game[data-family='sand'] {
+  --family-1: rgb(255 181 71 / 0.2);
+  --family-2: rgb(255 122 77 / 0.14);
+}
+
+.game[data-family='placement'] {
+  --family-1: rgb(255 79 163 / 0.18);
+  --family-2: rgb(184 242 92 / 0.1);
+}
+
+.game[data-family='volume'] {
+  --family-1: rgb(61 224 255 / 0.2);
+  --family-2: rgb(91 140 255 / 0.16);
+}
+
+.game::before,
+.game::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.game::before {
+  inset: -15%;
+  background:
+    radial-gradient(35% 45% at 25% 30%, var(--family-1), transparent 70%),
+    radial-gradient(40% 50% at 78% 72%, var(--family-2), transparent 70%);
+  animation: family-drift 32s ease-in-out infinite alternate;
+}
+
+/* The rift, far behind: a faint crack of light down the right of the screen. */
+.game::after {
+  inset: 0 0 0 auto;
+  width: min(24%, 18rem);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 720' preserveAspectRatio='none'%3E%3Cpath d='M120 -10 L90 150 L140 290 L95 450 L135 580 L110 730' fill='none' stroke='%23ff9a3c' stroke-width='24' stroke-opacity='.05' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M120 -10 L90 150 L140 290 L95 450 L135 580 L110 730' fill='none' stroke='%23ffc35c' stroke-width='2' stroke-opacity='.18' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+  animation: rift-breathe 6s ease-in-out infinite;
+}
+
+@keyframes family-drift {
+  to {
+    transform: translate3d(5%, -4%, 0) scale(1.1);
+  }
+}
+
+@keyframes rift-breathe {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+:global(:root[data-motion='still']) .game::before,
+:global(:root[data-motion='still']) .game::after {
+  animation: none;
 }
 
 .game__hud {
@@ -408,15 +522,20 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border);
   overflow: hidden;
+}
+
+.game__help {
+  display: none;
 }
 
 .game__subtitle {
   flex: none;
   padding: var(--space-1) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
   border-radius: 999px;
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-strong);
   font-family: var(--font-display);
   font-size: 0.9rem;
   font-weight: 800;
@@ -484,9 +603,8 @@ onBeforeUnmount(() => {
   z-index: 50;
 }
 
-/* Wide screens, and short landscape frames (a portal's iframe on a phone): the HUD goes to the side. */
-@media (min-width: 1024px),
-  (orientation: landscape) and (min-width: 640px) and (max-height: 540px) {
+/* Short landscape frames (a portal's iframe on a phone): the HUD goes to the side. */
+@media (orientation: landscape) and (min-width: 640px) and (max-height: 540px) {
   .game {
     grid-template-rows: minmax(0, 1fr);
     grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
@@ -495,13 +613,45 @@ onBeforeUnmount(() => {
   .game__hud {
     flex-direction: column;
     align-items: flex-start;
-    padding: var(--space-6) var(--space-4);
-    border-bottom: 0;
-    border-right: 1px solid var(--border);
+    padding: var(--space-4);
   }
 
   .game__mode {
     display: block;
+  }
+}
+
+/*
+ * Wide screens: the game in the middle, the HUD against it on the left (as
+ * close to the well as the hold piece), the keyboard help on the right.
+ */
+@media (min-width: 1024px) and (min-height: 541px) {
+  .game {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(12rem, 1fr) minmax(0, 52rem) minmax(0, 1fr);
+  }
+
+  .game__hud {
+    --hud-align: flex-end;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--space-6) 0 var(--space-6) var(--space-4);
+    text-align: end;
+  }
+
+  .game__mode {
+    display: block;
+  }
+
+  .game__help {
+    display: grid;
+    align-content: end;
+    max-width: 16rem;
+    padding: var(--space-6) var(--space-4);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
   }
 }
 </style>

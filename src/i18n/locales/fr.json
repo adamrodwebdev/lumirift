@@ -14,8 +14,6 @@
     "skip": "Aller au contenu",
     "home": "Retour à l'accueil",
     "settings": "Réglages",
-    "toLight": "Passer au thème clair",
-    "toDark": "Passer au thème sombre",
     "mute": "Couper le son",
     "unmute": "Activer le son"
   },
@@ -169,7 +167,7 @@
     "ability": {
       "flip": "Renverser le puits"
     },
-    "keyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, Ctrl pour tourner dans l'autre sens, C pour la réserve, F pour la capacité, Échap pour la pause.",
+    "keyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, W pour tourner dans l'autre sens (Z en QWERTY), C pour la réserve, F pour la capacité, P pour la pause.",
     "touch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée."
   },
   "pause": {
@@ -208,10 +206,6 @@
   "settings": {
     "title": "Réglages",
     "language": "Langue",
-    "theme": "Thème",
-    "system": "Système",
-    "light": "Clair",
-    "dark": "Sombre",
     "ghost": "Afficher la pièce fantôme",
     "effects": "Effets visuels",
     "effectsFull": "Complets",
@@ -220,13 +214,15 @@
     "shake": "Secousses de l'écran",
     "haptics": "Vibrations",
     "volume": "Volume des effets sonores",
-    "close": "Fermer"
+    "close": "Fermer",
+    "music": "Musique"
   },
   "game": {
     "loading": "Chargement de la partie…",
     "well": "Puits de jeu",
     "stats": "Tableau de bord",
-    "opponent": "Puits de l’adversaire"
+    "opponent": "Puits de l’adversaire",
+    "help": "Commandes"
   },
   "languages": {
     "fr": "Français",
@@ -302,18 +298,18 @@
     "empty": "Emplacement vide",
     "pickPiece": "Touchez la pièce à tourner",
     "pickCell": "Touchez la case où lancer la bombe",
-    "helpKeyboard": "Clavier : 1, 2, 3 pour choisir une pièce (4 pour le cube), flèches pour la placer, Entrée pour la poser, J pour les jokers, Échap pour annuler ou mettre en pause.",
+    "helpKeyboard": "Clavier : 1, 2, 3 pour choisir une pièce (4 pour le cube), flèches pour la placer, Entrée pour la poser, J pour les jokers, Échap pour annuler, P pour la pause.",
     "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case.",
     "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Puits de sable",
-    "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour faire tomber, ↑ ou X pour tourner, Ctrl pour tourner dans l’autre sens, Échap pour la pause. Une zone d’une seule couleur qui relie les deux murs s’efface.",
+    "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour faire tomber, ↑ ou X pour tourner, W pour tourner dans l’autre sens (Z en QWERTY), P pour la pause. Une zone d’une seule couleur qui relie les deux murs s’efface.",
     "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour faire tomber. L’eau prend la couleur voisine, le feu brûle la couleur qu’il touche."
   },
   "tower": {
     "well": "Tour de verre",
-    "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, Ctrl pour tourner dans l’autre sens, C pour la réserve, A et E (Q et E en QWERTY) pour faire pivoter la tour, Échap pour la pause. Une ligne est un anneau complet de 20 cases.",
+    "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, W pour tourner dans l’autre sens (Z en QWERTY), C pour la réserve, A et E (Q et E en QWERTY) pour faire pivoter la tour, P pour la pause. Une ligne est un anneau complet de 20 cases.",
     "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée, glissez à deux doigts pour faire pivoter la tour. La caméra suit la pièce."
   },
   "profile": {
@@ -445,7 +441,8 @@
       "bigClear": "Effacer {n} lignes d’un coup",
       "survive": "Tenir {time}",
       "win": "Battre l’{ai}",
-      "shape": "Compléter la silhouette"
+      "shape": "Compléter la silhouette",
+      "regions": "Effacer {n} zone | Effacer {n} zones"
     },
     "starRule": {
       "timeLeft": "1 étoile en réussissant, 2 avec 15 % du temps restant, 3 avec 40 %.",
@@ -525,5 +522,31 @@
     "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet en compte treize et trente niveaux.",
     "fullGame": "Jeu complet",
     "campaignDone": "Démo terminée : la suite est dans le jeu complet."
+  },
+  "title": {
+    "tagline": "13 façons de briser un bloc.",
+    "play": "Jouer",
+    "level": "Niveau {level} · {mode}",
+    "space": "{key} pour jouer",
+    "spaceKey": "Espace",
+    "player": "Niveau {level}, {xp}. Ouvrir l’Atelier",
+    "daily": "Défi du jour · {mode} · encore {h} h {m} min",
+    "freePlay": "Jeu libre",
+    "more": "autres modes",
+    "dailyShort": "Défi du jour · {mode}"
+  },
+  "coach": {
+    "move": "Déplacez la pièce",
+    "rotate": "Tournez-la",
+    "drop": "Faites-la tomber",
+    "goalSand": "Reliez les deux murs avec une seule couleur : la zone s’efface.",
+    "goalLines": "Remplissez une ligne : elle se brise.",
+    "skip": "Passer le guide",
+    "moveKeys": "← →",
+    "rotateKeys": "↑",
+    "dropKeys": "Espace",
+    "moveTouch": "Glissez",
+    "rotateTouch": "Touchez",
+    "dropTouch": "Lancez vers le bas"
   }
 }

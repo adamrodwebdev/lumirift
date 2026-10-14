@@ -1,8 +1,8 @@
 # Cahier des charges — Stackrift
 
-| Version | Date       | Statut            |
-| ------- | ---------- | ----------------- |
-| 1.3     | 13/10/2026 | Démo du portfolio |
+| Version | Date       | Statut                  |
+| ------- | ---------- | ----------------------- |
+| 1.4     | 14/10/2026 | Identité Rift, Playgama |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -395,20 +395,23 @@ Règles détaillées :
 
 ### 3.3 Commandes
 
-| Action            | Clavier                         | Tactile                          |
-| ----------------- | ------------------------------- | -------------------------------- |
-| Gauche / droite   | ← → (ou Q D / A D)              | Boutons, ou glisser horizontal   |
-| Chute douce       | ↓ (ou S)                        | Bouton, ou glisser vers le bas   |
-| Chute instantanée | Espace                          | Bouton, ou glissement rapide bas |
-| Rotation horaire  | ↑ ou X                          | Bouton, ou toucher le puits      |
-| Rotation inverse  | Ctrl ou W (AZERTY) / Z (QWERTY) | Bouton                           |
-| Réserve           | C ou Maj                        | Bouton                           |
-| Renversement      | F                               | Bouton (mode Renversement)       |
-| Pause             | Échap ou P                      | Bouton                           |
+| Action            | Clavier                 | Tactile                          |
+| ----------------- | ----------------------- | -------------------------------- |
+| Gauche / droite   | ← → (ou Q D / A D)      | Boutons, ou glisser horizontal   |
+| Chute douce       | ↓ (ou S)                | Bouton, ou glisser vers le bas   |
+| Chute instantanée | Espace                  | Bouton, ou glissement rapide bas |
+| Rotation horaire  | ↑ ou X                  | Bouton, ou toucher le puits      |
+| Rotation inverse  | W (AZERTY) / Z (QWERTY) | Bouton                           |
+| Réserve           | C ou Maj                | Bouton                           |
+| Renversement      | F                       | Bouton (mode Renversement)       |
+| Pause             | P                       | Bouton                           |
 
 Famille Placement (Mosaïque) : glisser-déposer au doigt ou à la souris (la pièce s'affiche
 au-dessus du doigt pour rester visible) ; au clavier, 1 / 2 / 3 choisit une pièce, les
-flèches la déplacent, Entrée la pose, J ouvre les jokers, Échap annule.
+flèches la déplacent, Entrée la pose, J ouvre les jokers, Échap annule un choix.
+
+Ni Échap ni Ctrl ne servent en jeu (1.4) : les portails les réservent (Échap quitte le plein
+écran, Ctrl+W ferme l'onglet).
 
 Les touches lettres se lisent par **position physique** (`KeyboardEvent.code`) : la même
 position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale : délai
@@ -417,11 +420,10 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
 ### 3.4 Paramètres et données
 
 - Langue (FR, EN, ID ; détection de la langue du navigateur au premier lancement).
-- Thème : système, clair ou sombre.
 - Pièce fantôme : oui / non.
 - Coupure du son en un geste depuis l'en-tête.
 - Effets : complets / sobres / aucun ; secousse : oui / non ; vibrations : oui / non.
-- Volumes séparés des effets sonores et de l'ambiance ; coupure du son.
+- Volumes séparés des effets sonores et de la musique ; coupure du son.
 - Progression (expérience, objectifs, série, objets portés) et meilleurs scores par mode,
   stockés **uniquement sur l'appareil** (`localStorage`, avec repli
   en mémoire si le stockage est indisponible). Aucune donnée ne quitte l'appareil.
@@ -573,7 +575,42 @@ l'appareil** (`stackrift:profile`), comme les records.
   léger, les portails imposent de toute façon la coupure du son) ; à reprendre avec les
   portails.
 
-### 3.7 Distribution (décidé en v0.5 ; CrazyGames livré en 1.2)
+### 3.8 Identité « Rift » (1.4)
+
+CrazyGames a refusé la 1.2 sur la « qualité d'ensemble ». Diagnostic : un accueil qui
+ressemblait à une application web, un puits petit au milieu d'un écran vide, pas de musique,
+une première impression de clone (Classique partout en premier), pas de prise en main.
+Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis appliquées :
+
+- **Thème unique sombre** : fond indigo profond, un seul accent or ambré (la faille et
+  l'action principale), tons « joyaux » sur les pièces seulement. Polices livrées avec le jeu :
+  Unbounded (logo, chiffres) et Sora (interface).
+- **Blocs gemmes** : corps arrondi, liseré de lumière en haut à gauche, ombre en bas à droite,
+  reflet, motif gravé conservé.
+- **Écran-titre** : logo fendu par la faille, « 13 façons de briser un bloc », un grand bouton
+  Jouer (la campagne continue ; Espace au clavier), carte et améliorations, les modes inédits
+  en tuiles (Sable, Tour, Mosaïque, Duel), défi du jour, scène animée ; tous les modes et les
+  objectifs plus bas. Écran de démarrage statique dans `index.html`.
+- **Écran de jeu** : HUD contre le puits, score en grand chiffre doré, puits lumineux, aide
+  des commandes pendant les cinq premières parties.
+- **Effets** : la faille déchire les lignes (halo, liseré doré, cœur blanc), mots des grands
+  moments dans le puits (×2, ×3, COMBO ×N, RIFT!), identiques dans toutes les langues.
+- **Prise en main** : la première partie est guidée (déplacer, tourner, faire tomber, puis le
+  but), chaque étape validée en la faisant, quelle que soit l'entrée ; « Passer » à tout moment.
+  La campagne s'ouvre sur le **Sable** (1-1 : deux zones en trois minutes).
+- **Son** : tous les sons dans une même tonalité (ré mineur pentatonique) ; **musique
+  générative** dans cette tonalité (nappe i – VI – III – VII, puis basse, arpège et battement
+  quand l'intensité monte), dont l'intensité suit le danger (`pressure()` de chaque famille) ;
+  volumes séparés, une même réverbération.
+- **Ambiance** : derrière le jeu, la lumière de la famille dérive lentement, une faille
+  lointaine respire.
+
+### 3.7 Distribution (décidé en v0.5 ; CrazyGames livré en 1.2, Playgama en 1.4)
+
+- **Playgama (1.4)** : plateforme suivante après le refus de CrazyGames (pas de nouvelle
+  soumission à CrazyGames pour l'instant). Build `npm run package:playgama` (Bridge SDK v2),
+  covers, exigences et formulaire dans [PLAYGAMA.md](PLAYGAMA.md). Diffusion chez les
+  partenaires de Playgama (MSN, GameDistribution, YouTube Playables…), Yandex exclu.
 
 - **CrazyGames (1.2)** : build dédié (`npm run package:crazygames`), médias (covers et vidéos,
   `scripts/crazygames-media.mjs`) et contrôle de chaque exigence du portail dans
@@ -648,10 +685,11 @@ l'appareil** (`stackrift:profile`), comme les records.
 - Nombres, durées et dates formatés par `Intl` dans la langue courante ; attribut `lang` du
   document synchronisé.
 
-### 4.5 Thèmes
+### 4.5 Thème
 
-- Thème clair et thème sombre ; par défaut, celui du système. Couleurs uniquement via des
-  **jetons CSS** ; les couleurs des pièces sont déclinées par thème pour garder le contraste.
+- Un seul thème, sombre : l'identité « Rift » (§ 3.8, depuis la 1.4 ; il y avait un thème
+  clair et un thème sombre jusqu'à la 1.3). Couleurs uniquement via des **jetons CSS**
+  (`tokens.css`) : un nouveau thème ne changerait que ce fichier.
 
 ### 4.6 Confidentialité et sécurité
 
@@ -1171,3 +1209,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.1     | 13/10/2026 | Campagne et dix améliorations (§ 3.2 bis, § 5.16), nouvel accueil et carrousel des modes (§ 3.2 ter).                                                             |
 | 1.2     | 13/10/2026 | Version CrazyGames : abstraction `Platform`, build, médias et contrôle des exigences (§ 3.7, CRAZYGAMES.md).                                                      |
 | 1.3     | 13/10/2026 | Lot 12 : démo du portfolio, éditions complète et démo (§ 3.7).                                                                                                    |
+| 1.4     | 14/10/2026 | Identité « Rift » (§ 3.8), première partie guidée, musique, Playgama (§ 3.7, PLAYGAMA.md), sans Échap ni Ctrl.                                                    |

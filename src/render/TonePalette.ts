@@ -50,6 +50,8 @@ export interface EffectColors {
   readonly gold: readonly string[];
   /** Petals of the petal shatter. */
   readonly petals: readonly string[];
+  /** The glow around the rift (cracks, big moments). */
+  readonly rift: string;
 }
 
 /** Colours of the current theme, read from the CSS tokens (`--tone-N`, `--well-*`). */
@@ -85,6 +87,7 @@ export class TonePalette {
         steam: read('--fx-steam'),
         gold: [read('--fx-gold-light'), read('--fx-gold'), read('--fx-gold-dark')],
         petals: [read('--fx-petal'), read('--fx-petal-dark')],
+        rift: read('--rift-glow'),
       },
     );
   }

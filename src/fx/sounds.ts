@@ -1,22 +1,27 @@
 import type { SoundRecipe } from '@/services/audio/AudioEngine';
+import { degree } from './harmony';
 
 /*
  * The sound palette of Stackrift, entirely synthesised. Glass is a burst of
  * high noise plus a few inharmonic "pings"; impacts are falling sine thumps.
+ * Every pitch is a degree of the game's key (D minor pentatonic, see
+ * harmony.ts): the effects always sound right over the music.
  */
 
-/** Major pentatonic, in semitones: any combination of pings sounds consonant. */
-const PENTATONIC = [0, 2, 4, 7, 9] as const;
-const semitone = (frequency: number, steps: number) => frequency * 2 ** (steps / 12);
-
+let tickTurn = 0;
 export const tick: SoundRecipe = (s) =>
-  s.tone({ type: 'square', frequency: 880, duration: 0.03, gain: 0.025 });
+  s.tone({
+    type: 'square',
+    frequency: degree(13 + (tickTurn++ % 2)),
+    duration: 0.03,
+    gain: 0.022,
+  });
 
 export const rotate: SoundRecipe = (s) =>
-  s.tone({ type: 'triangle', frequency: 620, to: 930, duration: 0.06, gain: 0.05 });
+  s.tone({ type: 'triangle', frequency: degree(11), to: degree(13), duration: 0.07, gain: 0.05 });
 
 export const hold: SoundRecipe = (s) => {
-  s.tone({ frequency: 560, to: 280, duration: 0.14, gain: 0.06 });
+  s.tone({ frequency: degree(12), to: degree(7), duration: 0.14, gain: 0.06 });
   s.noise({ filter: 'bandpass', frequency: 2200, q: 2, duration: 0.09, gain: 0.03 });
 };
 
@@ -52,11 +57,11 @@ export const shatter =
   (s) => {
     s.noise({ filter: 'highpass', frequency: 3200, duration: 0.3 + 0.08 * lines, gain: 0.2 });
     s.noise({ filter: 'bandpass', frequency: 6000, q: 3, duration: 0.18, gain: 0.08, start: 0.02 });
-    const base = semitone(880, Math.min(combo, 6) * 2);
+    // Each combo starts the run one degree higher.
+    const base = 11 + Math.min(combo, 6);
     const pings = 2 + lines * 2;
     for (let i = 0; i < pings; i++) {
-      const step = PENTATONIC[i % PENTATONIC.length]! + 12 * Math.floor(i / PENTATONIC.length);
-      const frequency = semitone(base, step + (Math.random() < 0.5 ? 0 : 12));
+      const frequency = degree(base + i + (Math.random() < 0.5 ? 0 : 5));
       const start = i * 0.028 + Math.random() * 0.02;
       const duration = 0.35 + Math.random() * 0.4;
       s.tone({ frequency, duration, gain: 0.05, start });
@@ -69,18 +74,28 @@ export const shatter =
         start,
       });
     }
-    if (lines >= 4) s.tone({ frequency: 82, to: 34, duration: 0.7, gain: 0.32 });
+    // Four lines: the rift opens, a deep D under the glass.
+    if (lines >= 4) {
+      s.tone({ frequency: degree(-5), to: 36, duration: 0.8, gain: 0.32 });
+      s.tone({ type: 'triangle', frequency: degree(0), duration: 1.1, gain: 0.08, start: 0.05 });
+    }
   };
 
 export const pureLine: SoundRecipe = (s) => {
-  [1047, 1319, 1568, 2093].forEach((frequency, i) =>
-    s.tone({ frequency, duration: 0.8, gain: 0.045, start: i * 0.04 }),
+  [15, 18, 20, 21].forEach((step, i) =>
+    s.tone({ frequency: degree(step), duration: 0.8, gain: 0.045, start: i * 0.04 }),
   );
 };
 
 export const levelUp: SoundRecipe = (s) => {
-  [523, 659, 784, 1047].forEach((frequency, i) =>
-    s.tone({ type: 'triangle', frequency, duration: 0.28, gain: 0.08, start: i * 0.07 }),
+  [10, 11, 13, 15].forEach((step, i) =>
+    s.tone({
+      type: 'triangle',
+      frequency: degree(step),
+      duration: 0.28,
+      gain: 0.08,
+      start: i * 0.07,
+    }),
   );
 };
 
@@ -95,20 +110,20 @@ export const flip: SoundRecipe = (s) => {
 };
 
 export const mirror: SoundRecipe = (s) => {
-  [1320, 1760, 2640, 3520].forEach((frequency, i) =>
-    s.tone({ frequency, duration: 0.55, gain: 0.03, start: i * 0.05 }),
+  [15, 18, 20, 23].forEach((step, i) =>
+    s.tone({ frequency: degree(step), duration: 0.55, gain: 0.03, start: i * 0.05 }),
   );
   s.noise({ filter: 'highpass', frequency: 5000, duration: 0.4, gain: 0.03 });
 };
 
 export const warning: SoundRecipe = (s) => {
-  s.tone({ type: 'triangle', frequency: 880, duration: 0.09, gain: 0.06 });
-  s.tone({ type: 'triangle', frequency: 880, duration: 0.09, gain: 0.06, start: 0.16 });
+  s.tone({ type: 'triangle', frequency: degree(13), duration: 0.09, gain: 0.06 });
+  s.tone({ type: 'triangle', frequency: degree(13), duration: 0.09, gain: 0.06, start: 0.16 });
 };
 
 export const bonus: SoundRecipe = (s) => {
-  s.tone({ frequency: 1568, duration: 0.3, gain: 0.07 });
-  s.tone({ frequency: 2093, duration: 0.35, gain: 0.05, start: 0.06 });
+  s.tone({ frequency: degree(17), duration: 0.3, gain: 0.07 });
+  s.tone({ frequency: degree(20), duration: 0.35, gain: 0.05, start: 0.06 });
 };
 
 /** Fusion: a crystalline chord, one step higher for each link of the chain. */
@@ -116,16 +131,16 @@ export const fusion =
   (chain: number): SoundRecipe =>
   (s) => {
     s.noise({ filter: 'highpass', frequency: 3600, duration: 0.18, gain: 0.12 });
-    const base = semitone(659, Math.min(chain - 1, 7) * 2);
-    [0, 4, 7, 12].forEach((step, i) =>
-      s.tone({ frequency: semitone(base, step), duration: 0.5, gain: 0.05, start: i * 0.035 }),
+    const base = 10 + Math.min(chain - 1, 7);
+    [0, 2, 4, 5].forEach((step, i) =>
+      s.tone({ frequency: degree(base + step), duration: 0.5, gain: 0.05, start: i * 0.035 }),
     );
   };
 
 /** Duel: rows sent to the opponent. */
 export const attack: SoundRecipe = (s) => {
   s.noise({ filter: 'bandpass', frequency: 900, to: 4200, q: 1.2, duration: 0.22, gain: 0.1 });
-  s.tone({ type: 'square', frequency: 330, to: 660, duration: 0.12, gain: 0.03 });
+  s.tone({ type: 'square', frequency: degree(7), to: degree(12), duration: 0.12, gain: 0.03 });
 };
 
 /** Rhythm: the downbeat. */
@@ -144,14 +159,14 @@ export const onBeat =
   (s) =>
     s.tone({
       type: 'triangle',
-      frequency: semitone(1047, (level - 1) * 3),
+      frequency: degree(15 + level - 1),
       duration: 0.18,
       gain: 0.07,
     });
 
 /** Mosaic: a glazed tile set down on the tray. */
 export const tile: SoundRecipe = (s) => {
-  s.tone({ type: 'triangle', frequency: 520, to: 380, duration: 0.07, gain: 0.07 });
+  s.tone({ type: 'triangle', frequency: degree(9), to: degree(7), duration: 0.07, gain: 0.07 });
   s.noise({ filter: 'bandpass', frequency: 2400, q: 4, duration: 0.03, gain: 0.05 });
 };
 
@@ -167,12 +182,11 @@ export const ceramicBreak =
       gain: 0.2,
     });
     s.noise({ filter: 'highpass', frequency: 4500, duration: 0.12, gain: 0.07, start: 0.02 });
-    const base = semitone(392, Math.min(streak - 1, 6) * 2);
+    const base = 7 + Math.min(streak - 1, 6);
     for (let i = 0; i < 2 + lines; i++) {
-      const step = PENTATONIC[i % PENTATONIC.length]!;
       s.tone({
         type: 'triangle',
-        frequency: semitone(base, step),
+        frequency: degree(base + i),
         duration: 0.22,
         gain: 0.05,
         start: i * 0.04,
@@ -201,7 +215,7 @@ export const shuffle: SoundRecipe = (s) => {
 
 /** Mosaic: the last move taken back (undo joker). */
 export const rewind: SoundRecipe = (s) =>
-  s.tone({ type: 'triangle', frequency: 880, to: 330, duration: 0.25, gain: 0.07 });
+  s.tone({ type: 'triangle', frequency: degree(13), to: degree(6), duration: 0.25, gain: 0.07 });
 
 /** Sand: a piece crumbling into grains. */
 export const pour: SoundRecipe = (s) =>
@@ -220,8 +234,8 @@ export const splash: SoundRecipe = (s) => {
   s.noise({ filter: 'lowpass', frequency: 1400, to: 500, duration: 0.3, gain: 0.12 });
   for (let i = 0; i < 4; i++)
     s.tone({
-      frequency: 700 + i * 180,
-      to: 1100 + i * 200,
+      frequency: degree(11 + i),
+      to: degree(13 + i),
       duration: 0.06,
       gain: 0.03,
       start: i * 0.05,
@@ -240,9 +254,9 @@ export const sweep =
       gain: 0.12,
       attack: 0.05,
     });
-    [0, 4, 7, 12].slice(0, 1 + regions).forEach((step, i) =>
+    [0, 2, 4, 5].slice(0, 1 + regions).forEach((step, i) =>
       s.tone({
-        frequency: semitone(784, step),
+        frequency: degree(12 + step),
         duration: 0.45,
         gain: 0.05,
         start: 0.05 + i * 0.06,
@@ -276,7 +290,7 @@ export const gust: SoundRecipe = (s) =>
   });
 
 export const gameOver: SoundRecipe = (s) => {
-  s.tone({ type: 'sawtooth', frequency: 330, to: 55, duration: 1.2, gain: 0.05 });
+  s.tone({ type: 'sawtooth', frequency: degree(8), to: degree(-5), duration: 1.2, gain: 0.05 });
   s.noise({ filter: 'lowpass', frequency: 500, to: 120, duration: 1.1, gain: 0.16 });
   s.noise({ filter: 'highpass', frequency: 3000, duration: 0.6, gain: 0.12, start: 0.05 });
 };

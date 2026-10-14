@@ -9,9 +9,8 @@ defineProps<{ inGame: boolean }>();
 const emit = defineEmits<{ home: []; settings: [] }>();
 
 const { t } = useI18n();
-const { theme, settings } = useServices();
+const { settings } = useServices();
 const muted = computed(() => settings.current.muted);
-const isDark = computed(() => theme.resolved.value === 'dark');
 </script>
 
 <template>
@@ -39,14 +38,6 @@ const isDark = computed(() => theme.resolved.value === 'dark');
       <button
         type="button"
         class="btn btn--ghost btn--icon"
-        :aria-label="isDark ? t('nav.toLight') : t('nav.toDark')"
-        @click="theme.toggle()"
-      >
-        <AppIcon :name="isDark ? 'sun' : 'moon'" />
-      </button>
-      <button
-        type="button"
-        class="btn btn--ghost btn--icon"
         :aria-label="t('nav.settings')"
         @click="emit('settings')"
       >
@@ -63,8 +54,9 @@ const isDark = computed(() => theme.resolved.value === 'dark');
   gap: var(--space-2);
   height: var(--header-h);
   padding: 0 var(--space-2);
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .header__brand {

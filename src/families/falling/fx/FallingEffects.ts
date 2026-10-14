@@ -49,9 +49,19 @@ export interface CellFlash {
 
 export interface Popup {
   readonly text: string;
+  /** `label`: the big word of a moment (×2, RIFT!, COMBO); `points` otherwise. */
+  readonly kind?: 'points' | 'label';
   readonly x: number;
   readonly y: number;
   age: number;
+}
+
+/** Four lines are the rift itself; a chain of clears is a combo. */
+export function clearLabel(lines: number, combo: number): string | null {
+  if (lines >= 4) return 'RIFT!';
+  if (combo >= 2) return `COMBO ×${combo}`;
+  if (lines >= 2) return `×${lines}`;
+  return null;
 }
 
 export interface Wave {
@@ -264,6 +274,11 @@ export class FallingEffects {
       y: middle,
       age: 0,
     });
+    // The word of the moment, above the points: the same in every language.
+    const label = clearLabel(event.lines, event.combo);
+    if (label) {
+      this.popups.push({ text: label, kind: 'label', x: board.width / 2, y: middle - 1.4, age: 0 });
+    }
 
     if (event.lines >= 4) {
       this.kick(0.3);

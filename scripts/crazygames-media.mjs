@@ -26,86 +26,131 @@ mkdirSync(OUT, { recursive: true });
 
 // --- Covers -----------------------------------------------------------------
 
-const logo = readFileSync('public/favicon.svg', 'utf8').replace(
-  '<rect width="64" height="64" rx="14" fill="#0b0e13"/>',
-  '',
-);
-const logoUrl = `data:image/svg+xml;base64,${Buffer.from(logo).toString('base64')}`;
-/** The piece colours of the dark theme (src/styles/tokens.css). */
-const TONES = ['#e8795a', '#6fa0e6', '#e6bd5a', '#e77fa6', '#74bf8b', '#b08ad6', '#4fc2bb'];
+/** Unbounded, the identity's display face, embedded so the cover needs no network. */
+const UNBOUNDED = readFileSync(
+  'node_modules/@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2',
+).toString('base64');
+/** The piece tones of the Rift identity (src/styles/tokens.css). */
+const TONES = ['#3de0ff', '#ff4fa3', '#b8f25c', '#8b6cff', '#ffb547', '#ff7a4d', '#5b8cff'];
 
-/** A faceted crystal block, as in the game. */
-const block = (x, y, s, colour) =>
-  `<div style="position:absolute;left:${x}px;top:${y}px;width:${s}px;height:${s}px;border-radius:${s * 0.1}px;background:${colour};box-shadow:inset ${s * 0.16}px ${s * 0.16}px 0 rgb(255 255 255 / .32),inset -${s * 0.16}px -${s * 0.16}px 0 rgb(0 0 0 / .28),0 ${s * 0.12}px ${s * 0.3}px rgb(0 0 0 / .45)"></div>`;
+/** A gem block, as in the game: light band top-left, shadow bottom-right, a gloss. */
+const gem = (x, y, s, colour, tilt = 0) =>
+  `<div style="position:absolute;left:${x}px;top:${y}px;width:${s}px;height:${s}px;border-radius:${s * 0.16}px;background:${colour};transform:rotate(${tilt}deg);box-shadow:inset ${s * 0.11}px ${s * 0.11}px 0 rgb(255 255 255 / .3),inset -${s * 0.11}px -${s * 0.11}px 0 rgb(0 0 0 / .32),0 ${s * 0.1}px ${s * 0.25}px rgb(0 0 0 / .4)"><div style="position:absolute;left:${s * 0.2}px;top:${s * 0.17}px;width:${s * 0.3}px;height:${s * 0.12}px;border-radius:${s * 0.06}px;background:rgb(255 255 255 / .55)"></div></div>`;
+
+/**
+ * The scene: a stack of gems torn in two by the rift (the right half lifted),
+ * a piece about to fall, shards bursting out of the crack, sand pouring
+ * through it. Sizes in px of the cover.
+ */
+function scene({ left, base, s, heights, riftX, riftTop, piece }) {
+  const gap = s * 0.07;
+  let html = '';
+  heights.forEach((rows, c) => {
+    for (let r = 0; r < rows; r++) {
+      const x = left + c * (s + gap);
+      const side = x + s / 2 < riftX ? -s * 0.22 : s * 0.22;
+      html += gem(
+        x + side,
+        base - (r + 1) * (s + gap) - (side > 0 ? s * 0.12 : 0),
+        s,
+        TONES[(c * 3 + r * 5) % TONES.length],
+        side > 0 ? 3 : -3,
+      );
+    }
+  });
+  for (const [px, py] of [
+    [0, 0],
+    [1, 0],
+    [2, 0],
+    [1, -1],
+  ])
+    html += gem(piece.x + px * (s + gap), piece.y + py * (s + gap), s, TONES[0]);
+  // The rift: a zigzag of light from the crack down to the floor.
+  const h = base - riftTop;
+  const d = `M${riftX + s * 0.2} ${riftTop} L${riftX - s * 0.3} ${riftTop + h * 0.2} L${riftX + s * 0.35} ${riftTop + h * 0.4} L${riftX - s * 0.22} ${riftTop + h * 0.62} L${riftX + s * 0.26} ${riftTop + h * 0.82} L${riftX} ${base + s}`;
+  const stroke = (colour, width, opacity) =>
+    `<path d="${d}" fill="none" stroke="${colour}" stroke-width="${width}" stroke-opacity="${opacity}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  html += `<svg style="position:absolute;inset:0;overflow:visible" width="100%" height="100%">${stroke('#ff9a3c', s * 0.6, 0.16)}${stroke('#ffc35c', s * 0.22, 0.5)}${stroke('#fff6e0', s * 0.08, 1)}</svg>`;
+  const next = random(11);
+  for (let i = 0; i < 46; i++) {
+    const angle = next() * Math.PI * 2;
+    const distance = s * (0.6 + next() * 3.2);
+    const size = s * (0.12 + next() * 0.32);
+    html += `<div style="position:absolute;left:${riftX + Math.cos(angle) * distance * 1.15}px;top:${riftTop + h * 0.35 + Math.sin(angle) * distance * 0.7}px;width:${size}px;height:${size}px;background:${TONES[i % TONES.length]};clip-path:polygon(50% 0,100% 100%,0 70%);transform:rotate(${next() * 360}deg);opacity:${0.55 + next() * 0.45}"></div>`;
+  }
+  const pour = random(5);
+  for (let j = 0; j < 160; j++) {
+    const t = pour();
+    const size = s * (0.07 + pour() * 0.05);
+    html += `<div style="position:absolute;left:${riftX + (pour() - 0.5) * s * (0.3 + t * 1.6)}px;top:${base - s * 1.2 + t * s * 1.6}px;width:${size}px;height:${size}px;border-radius:50%;background:${['#ffb547', '#ff7a4d', '#ffd98f'][j % 3]}"></div>`;
+  }
+  return html;
+}
 
 const random = (seed) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
-/** Shards flying out of a shattered row. */
-const shards = (count, cx, cy, spread, size, seed) => {
-  const next = random(seed);
-  return Array.from({ length: count }, (_, i) => {
-    const angle = next() * Math.PI * 2;
-    const distance = spread * (0.25 + next() * 0.75);
-    const s = size * (0.4 + next());
-    return `<div style="position:absolute;left:${cx + Math.cos(angle) * distance}px;top:${cy + Math.sin(angle) * distance * 0.7}px;width:${s}px;height:${s}px;background:${TONES[i % TONES.length]};clip-path:polygon(50% 0,100% 100%,0 75%);transform:rotate(${next() * 360}deg);opacity:${0.6 + next() * 0.4};box-shadow:0 0 ${s}px rgb(255 255 255 / .2)"></div>`;
-  }).join('');
-};
-
-/** A stack of blocks, rows from the bottom, with one row shattering (the rift). */
-const stack = (left, bottom, s, columns, rows, seed) => {
-  const next = random(seed);
-  let html = '';
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < columns; c++) {
-      if (r === rows - 1 && next() < 0.45) continue;
-      if (r === rows - 2 && c === Math.floor(columns * 0.6)) continue;
-      html += block(
-        left + c * (s + 3),
-        bottom - (r + 1) * (s + 3),
-        s,
-        TONES[(c * 3 + r * 5 + seed) % TONES.length],
-      );
-    }
-  }
-  return html;
-};
-
-/** The rift: a glowing crack through the stack. */
-const rift = (x, top, height, width) => {
-  const d = `M${width} 0 L${width * 0.6} ${height * 0.25} L${width * 1.35} ${height * 0.45} L${width * 0.7} ${height * 0.7} L${width * 1.2} ${height}`;
-  // The glow is a wide, faint stroke under the bright one (no filter box).
-  const stroke = (colour, w, opacity) =>
-    `<path d="${d}" fill="none" stroke="${colour}" stroke-width="${w}" stroke-opacity="${opacity}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  return `<svg style="position:absolute;left:${x - width}px;top:${top}px;overflow:visible" width="${width * 2}" height="${height}" viewBox="0 0 ${width * 2} ${height}">${stroke('#f6cd6a', width * 0.9, 0.12)}${stroke('#f6cd6a', width * 0.5, 0.25)}${stroke('#fff3d6', width * 0.22, 1)}</svg>`;
-};
-
+/** The title, split by the rift: STACK over RIFT (the only text a cover may carry). */
 const title = (x, y, size, align = 'left') =>
-  `<div style="position:absolute;left:${x}px;top:${y}px;${align === 'center' ? 'transform:translateX(-50%);' : ''}display:flex;align-items:center;gap:${size * 0.12}px;font-family:'Segoe UI Black','Segoe UI',system-ui,sans-serif;font-weight:900;font-size:${size}px;letter-spacing:${-size * 0.02}px;color:#f7f1e6;text-shadow:0 ${size * 0.05}px ${size * 0.2}px rgb(0 0 0 / .6)"><img src="${logoUrl}" style="width:${size * 1.05}px;height:${size * 1.05}px">Stackrift</div>`;
+  `<h1 style="position:absolute;left:${x}px;top:${y}px;${align === 'center' ? 'transform:translateX(-50%);text-align:center;' : ''}margin:0;font:900 ${size}px/0.9 'Unbounded',sans-serif;letter-spacing:${-size * 0.035}px;color:#fbf7ff;text-shadow:0 ${size * 0.05}px ${size * 0.3}px rgb(120 80 255 / .55)">STACK<br><span style="background:linear-gradient(180deg,#ffe2a3,#ff9a3c);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none">RIFT</span></h1>`;
 
-const page = (width, height, body) =>
-  `<!doctype html><html><body style="margin:0;width:${width}px;height:${height}px;overflow:hidden;position:relative;background:radial-gradient(70% 70% at 70% 35%,#2a3656,#0b0e13 72%)">
-  <div style="position:absolute;inset:0;background:radial-gradient(40% 35% at 15% 85%,rgb(200 80 255 / .22),transparent 70%),radial-gradient(35% 30% at 85% 15%,rgb(80 90 255 / .2),transparent 70%)"></div>
+const page = (width, height, glow, body) =>
+  `<!doctype html><html><head><style>@font-face{font-family:'Unbounded';font-weight:200 900;src:url(data:font/woff2;base64,${UNBOUNDED}) format('woff2')}</style></head><body style="margin:0;width:${width}px;height:${height}px;overflow:hidden;position:relative;background:radial-gradient(70% 80% at ${glow},#2e2066 0%,#140e3a 48%,#07061a 100%)">
+  <div style="position:absolute;inset:0;background:radial-gradient(30% 55% at ${glow},rgb(255 170 60 / .32),transparent 75%)"></div>
   ${body}</body></html>`;
 
 const COVERS = {
-  landscape: (w = 1920, h = 1080) =>
-    page(
+  landscape: (w = 1920, h = 1080) => {
+    const s = h * 0.104;
+    return page(
       w,
       h,
-      `${stack(w * 0.52, h * 0.97, h * 0.085, 9, 4, 3)}${rift(w * 0.74, h * 0.45, h * 0.52, h * 0.05)}${shards(46, w * 0.74, h * 0.42, h * 0.42, h * 0.035, 11)}${block(w * 0.66, h * 0.18, h * 0.085, TONES[2])}${block(w * 0.66 + h * 0.088, h * 0.18, h * 0.085, TONES[2])}${block(w * 0.66 + h * 0.044, h * 0.18 - h * 0.088, h * 0.085, TONES[2])}${title(w * 0.06, h * 0.36, h * 0.15)}`,
-    ),
-  portrait: (w = 800, h = 1200) =>
-    page(
+      '72% 55%',
+      `${title(w * 0.06, h * 0.3, h * 0.176)}${scene({
+        left: w * 0.55,
+        base: h * 0.965,
+        s,
+        heights: [4, 5, 3, 0, 4, 5, 3],
+        riftX: w * 0.55 + 3.5 * s * 1.07,
+        riftTop: h * 0.3,
+        piece: { x: w * 0.68, y: h * 0.19 },
+      })}`,
+    );
+  },
+  portrait: (w = 800, h = 1200) => {
+    const s = w * 0.107;
+    return page(
       w,
       h,
-      `${stack(w * 0.07, h * 0.97, w * 0.085, 10, 6, 5)}${rift(w * 0.55, h * 0.5, h * 0.45, w * 0.06)}${shards(40, w * 0.55, h * 0.55, w * 0.45, w * 0.045, 17)}${title(w * 0.5, h * 0.12, w * 0.15, 'center')}`,
-    ),
-  square: (w = 800, h = 800) =>
-    page(
+      '50% 68%',
+      `${title(w / 2, h * 0.08, w * 0.19, 'center')}${scene({
+        left: w * 0.1,
+        base: h * 0.98,
+        s,
+        heights: [5, 6, 4, 0, 5, 6, 4],
+        riftX: w / 2,
+        riftTop: h * 0.52,
+        piece: { x: w * 0.33, y: h * 0.43 },
+      })}`,
+    );
+  },
+  square: (w = 800, h = 800) => {
+    const s = w * 0.11;
+    return page(
       w,
       h,
-      `${stack(w * 0.07, h * 0.97, w * 0.085, 10, 4, 7)}${rift(w * 0.6, h * 0.48, h * 0.48, w * 0.06)}${shards(30, w * 0.6, h * 0.6, w * 0.28, w * 0.04, 23)}${title(w * 0.5, h * 0.14, w * 0.15, 'center')}`,
-    ),
+      '50% 70%',
+      `${title(w / 2, h * 0.07, w * 0.165, 'center')}${scene({
+        left: w * 0.13,
+        base: h * 0.985,
+        s,
+        heights: [3, 3, 0, 2, 3, 2],
+        // The rift runs down the empty third column.
+        riftX: w * 0.13 + 2.5 * s * 1.07,
+        riftTop: h * 0.52,
+        piece: { x: w * 0.6, y: h * 0.5 },
+      })}`,
+    );
+  },
 };
 
 const browser = await chromium.launch({ channel: 'chrome' });

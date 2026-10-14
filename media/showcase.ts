@@ -26,7 +26,7 @@ const clock = new FrameClock(
 );
 
 const services = createBrowserServices(new WebPlatform(), new MemoryStorage());
-services.settings.update({ theme: 'dark', effects: 'full', locale: 'en' });
+services.settings.update({ effects: 'full', locale: 'en' });
 
 const app = createApp(ShowcaseView, { clock })
   .provide(APP_SERVICES, services)

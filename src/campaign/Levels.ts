@@ -62,7 +62,8 @@ const duel = (id: string, variant: AiLevel): CampaignLevel => ({
  */
 export const LEVELS: readonly CampaignLevel[] = [
   // 1. Premiers blocs
-  timed('1-1', 'classic', 2, { kind: 'lines', target: 5 }),
+  // Sand first: the campaign opens with a mode no other game has (a gentle goal).
+  timed('1-1', 'sand', 3, { kind: 'lines', target: 2 }),
   timed('1-2', 'classic', 2.5, { kind: 'lines', target: 10 }),
   timed('1-3', 'chroma', 2.5, { kind: 'score', target: 2500 }),
   timed('1-4', 'mirror', 3, { kind: 'lines', target: 12 }),

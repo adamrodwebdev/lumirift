@@ -37,10 +37,11 @@ const format = useFormat();
 }
 
 .hud__label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.18em;
 }
 
 .hud__value {
@@ -52,8 +53,10 @@ const format = useFormat();
 }
 
 .hud__item--main .hud__value {
-  font-size: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
-  color: var(--accent);
+  font-size: clamp(1.5rem, 1.1rem + 2vw, 3rem);
+  font-weight: 900;
+  color: var(--accent-strong);
+  text-shadow: 0 0 1.5rem rgb(255 160 60 / 0.45);
 }
 
 /* Small phones: a denser dashboard leaves more height to the well. */
@@ -75,13 +78,14 @@ const format = useFormat();
   }
 
   .hud__item--main .hud__value {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 }
 
 @media (min-width: 1024px) {
   .hud {
     flex-direction: column;
+    align-items: var(--hud-align, flex-start);
     gap: var(--space-4);
   }
 }

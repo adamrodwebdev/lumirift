@@ -14,8 +14,6 @@
     "skip": "Skip to content",
     "home": "Back to home",
     "settings": "Settings",
-    "toLight": "Switch to light theme",
-    "toDark": "Switch to dark theme",
     "mute": "Mute",
     "unmute": "Unmute"
   },
@@ -169,7 +167,7 @@
     "ability": {
       "flip": "Flip the well"
     },
-    "keyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Ctrl to rotate the other way, C to hold, F for the ability, Esc to pause.",
+    "keyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Z to rotate the other way (W on AZERTY), C to hold, F for the ability, P to pause.",
     "touch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop."
   },
   "pause": {
@@ -208,10 +206,6 @@
   "settings": {
     "title": "Settings",
     "language": "Language",
-    "theme": "Theme",
-    "system": "System",
-    "light": "Light",
-    "dark": "Dark",
     "ghost": "Show the ghost piece",
     "effects": "Visual effects",
     "effectsFull": "Full",
@@ -220,13 +214,15 @@
     "shake": "Screen shake",
     "haptics": "Vibration",
     "volume": "Sound effects volume",
-    "close": "Close"
+    "close": "Close",
+    "music": "Music"
   },
   "game": {
     "loading": "Loading the game…",
     "well": "Playing well",
     "stats": "Dashboard",
-    "opponent": "Opponent’s well"
+    "opponent": "Opponent’s well",
+    "help": "Controls"
   },
   "languages": {
     "fr": "Français",
@@ -302,18 +298,18 @@
     "empty": "Empty slot",
     "pickPiece": "Tap the piece to rotate",
     "pickCell": "Tap the cell to bomb",
-    "helpKeyboard": "Keyboard: 1, 2, 3 to pick a piece (4 for the cube), arrows to move it, Enter to place it, J for the jokers, Esc to cancel or pause.",
+    "helpKeyboard": "Keyboard: 1, 2, 3 to pick a piece (4 for the cube), arrows to move it, Enter to place it, J for the jokers, Esc to cancel, P to pause.",
     "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell.",
     "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Sand well",
-    "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Ctrl to rotate the other way, Esc to pause. A single-colour region linking both walls is cleared.",
+    "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Z to rotate the other way (W on AZERTY), P to pause. A single-colour region linking both walls is cleared.",
     "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop. Water takes the colour around it, fire burns the colour it touches."
   },
   "tower": {
     "well": "Glass tower",
-    "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Ctrl to rotate the other way, C to hold, Q and E (A and E on AZERTY) to turn the tower, Esc to pause. A line is a full ring of 20 cells.",
+    "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Z to rotate the other way (W on AZERTY), C to hold, Q and E (A and E on AZERTY) to turn the tower, P to pause. A line is a full ring of 20 cells.",
     "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop, drag with two fingers to turn the tower. The camera follows the piece."
   },
   "profile": {
@@ -445,7 +441,8 @@
       "bigClear": "Clear {n} lines at once",
       "survive": "Last {time}",
       "win": "Beat the {ai}",
-      "shape": "Complete the silhouette"
+      "shape": "Complete the silhouette",
+      "regions": "Clear {n} region | Clear {n} regions"
     },
     "starRule": {
       "timeLeft": "1 star for winning, 2 with 15 % of the time left, 3 with 40 %.",
@@ -525,5 +522,31 @@
     "banner": "Five modes in free play (Classic, Sand, Mosaic, Tower, Duel) and the first chapter of the campaign. The full game has thirteen modes and thirty levels.",
     "fullGame": "Full game",
     "campaignDone": "Demo complete: the rest is in the full game."
+  },
+  "title": {
+    "tagline": "13 ways to break a block.",
+    "play": "Play",
+    "level": "Level {level} · {mode}",
+    "space": "{key} to play",
+    "spaceKey": "Space",
+    "player": "Level {level}, {xp}. Open the Atelier",
+    "daily": "Daily challenge · {mode} · {h} h {m} min left",
+    "freePlay": "Free play",
+    "more": "more modes",
+    "dailyShort": "Daily · {mode}"
+  },
+  "coach": {
+    "move": "Move the piece",
+    "rotate": "Rotate it",
+    "drop": "Drop it",
+    "goalSand": "Link both walls with a single colour: the region vanishes.",
+    "goalLines": "Fill a row: it breaks.",
+    "skip": "Skip the guide",
+    "moveKeys": "← →",
+    "rotateKeys": "↑",
+    "dropKeys": "Space",
+    "moveTouch": "Swipe",
+    "rotateTouch": "Tap",
+    "dropTouch": "Flick down"
   }
 }

@@ -85,6 +85,7 @@ const unlockAudio = () => audio.unlock();
 const onVisibility = () => (document.hidden ? audio.suspend() : audio.resume());
 watchEffect(() => {
   audio.setVolume(settings.current.volume);
+  audio.setMusicVolume(settings.current.musicVolume);
   audio.setMuted(settings.current.muted || portalMuted.value);
 });
 onMounted(() => {

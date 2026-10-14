@@ -318,11 +318,16 @@ const onKeyDown = (event: KeyboardEvent) => {
   if (event.target instanceof HTMLElement && event.target.closest('input, select, textarea'))
     return;
   const code = event.code;
-  if (code === 'Escape' || code === 'KeyP') {
+  // Esc only cancels a choice (it also leaves full screen on portals); P pauses.
+  if (code === 'Escape' && (controller.selected !== null || controller.pendingJoker !== null)) {
     event.preventDefault();
-    if (code === 'Escape' && (controller.selected !== null || controller.pendingJoker !== null))
-      controller.cancel();
-    else emit('pause');
+    controller.cancel();
+    refresh();
+    return;
+  }
+  if (code === 'KeyP') {
+    event.preventDefault();
+    emit('pause');
     refresh();
     return;
   }
@@ -457,6 +462,9 @@ onBeforeUnmount(() => {
   display: block;
   max-width: 100%;
   border: 2px solid var(--well-frame);
+  box-shadow:
+    0 0 3rem rgb(120 90 255 / 0.22),
+    inset 0 0 2rem rgb(120 90 255 / 0.12);
   border-radius: var(--radius);
   touch-action: none;
   cursor: pointer;

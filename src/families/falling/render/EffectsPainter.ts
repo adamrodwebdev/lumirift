@@ -22,10 +22,12 @@ export class EffectsPainter {
         if (tone !== Tone.Empty) ctx.drawImage(sprites.get(tone as Tone), x * cell, top);
       });
       const progress = Math.min(1, crack.age / (CRACK_MS * 0.75));
+      // The row heats up as the rift crosses it.
+      ctx.fillStyle = `rgb(255 243 214 / ${0.35 * progress})`;
+      ctx.fillRect(0, top, crack.tones.length * cell, cell);
       const points = Math.max(2, Math.ceil((crack.path.length / 2) * progress));
-      ctx.strokeStyle = palette.crack;
-      ctx.lineWidth = Math.max(1.5, cell * 0.07);
       ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
       ctx.beginPath();
       for (let i = 0; i < points; i++) {
         const x = crack.path[i * 2]! * cell;
@@ -33,6 +35,18 @@ export class EffectsPainter {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
+      // The rift: a wide glow, a gold halo, a white-hot core.
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = palette.effects.rift;
+      ctx.lineWidth = cell * 0.55;
+      ctx.stroke();
+      ctx.globalAlpha = 0.7;
+      ctx.strokeStyle = palette.accent;
+      ctx.lineWidth = cell * 0.2;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = palette.crack;
+      ctx.lineWidth = Math.max(1.5, cell * 0.08);
       ctx.stroke();
     }
   }
@@ -124,18 +138,27 @@ export class EffectsPainter {
   private popups(effects: FallingEffects, palette: TonePalette, cell: number): void {
     if (effects.popups.length === 0) return;
     const { ctx } = this;
-    ctx.font = `800 ${Math.round(cell * 0.75)}px ui-rounded, system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = Math.max(2, cell * 0.12);
     ctx.strokeStyle = palette.wellBackground;
-    ctx.fillStyle = palette.accent;
     for (const popup of effects.popups) {
       const t = popup.age / POPUP_MS;
-      const y = (popup.y + 0.5 - t * 1.6) * cell;
+      const label = popup.kind === 'label';
+      // Labels pop in (a quick overshoot), then rise slower than the points.
+      const pop = label ? 1 + 0.35 * Math.max(0, 1 - t * 6) : 1;
+      const size = Math.round(cell * (label ? 1.05 : 0.75) * pop);
+      ctx.font = `${label ? 900 : 800} ${size}px 'Unbounded Variable', ui-rounded, system-ui, sans-serif`;
+      const y = (popup.y + 0.5 - t * (label ? 0.8 : 1.6)) * cell;
       ctx.globalAlpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
       ctx.strokeText(popup.text, popup.x * cell, y);
+      if (label) {
+        ctx.shadowColor = palette.effects.rift;
+        ctx.shadowBlur = cell * 0.7;
+      }
+      ctx.fillStyle = label ? palette.crack : palette.accent;
       ctx.fillText(popup.text, popup.x * cell, y);
+      ctx.shadowBlur = 0;
     }
     ctx.globalAlpha = 1;
   }
