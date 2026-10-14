@@ -374,7 +374,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="game">
+  <div class="game" :data-family="descriptor.family">
     <h1 class="sr-only">
       {{
         level
@@ -449,10 +449,72 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .game {
+  --family-1: rgb(139 108 255 / 0.22);
+  --family-2: rgb(61 224 255 / 0.12);
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   height: calc(100dvh - var(--header-h));
   overflow: hidden;
+}
+
+/* Each family has its own light behind the game; it drifts slowly. */
+.game[data-family='sand'] {
+  --family-1: rgb(255 181 71 / 0.2);
+  --family-2: rgb(255 122 77 / 0.14);
+}
+
+.game[data-family='placement'] {
+  --family-1: rgb(255 79 163 / 0.18);
+  --family-2: rgb(184 242 92 / 0.1);
+}
+
+.game[data-family='volume'] {
+  --family-1: rgb(61 224 255 / 0.2);
+  --family-2: rgb(91 140 255 / 0.16);
+}
+
+.game::before,
+.game::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.game::before {
+  inset: -15%;
+  background:
+    radial-gradient(35% 45% at 25% 30%, var(--family-1), transparent 70%),
+    radial-gradient(40% 50% at 78% 72%, var(--family-2), transparent 70%);
+  animation: family-drift 32s ease-in-out infinite alternate;
+}
+
+/* The rift, far behind: a faint crack of light down the right of the screen. */
+.game::after {
+  inset: 0 0 0 auto;
+  width: min(24%, 18rem);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 720' preserveAspectRatio='none'%3E%3Cpath d='M120 -10 L90 150 L140 290 L95 450 L135 580 L110 730' fill='none' stroke='%23ff9a3c' stroke-width='24' stroke-opacity='.05' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M120 -10 L90 150 L140 290 L95 450 L135 580 L110 730' fill='none' stroke='%23ffc35c' stroke-width='2' stroke-opacity='.18' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+  animation: rift-breathe 6s ease-in-out infinite;
+}
+
+@keyframes family-drift {
+  to {
+    transform: translate3d(5%, -4%, 0) scale(1.1);
+  }
+}
+
+@keyframes rift-breathe {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+:global(:root[data-motion='still']) .game::before,
+:global(:root[data-motion='still']) .game::after {
+  animation: none;
 }
 
 .game__hud {
@@ -566,7 +628,7 @@ onBeforeUnmount(() => {
 @media (min-width: 1024px) and (min-height: 541px) {
   .game {
     grid-template-rows: minmax(0, 1fr);
-    grid-template-columns: minmax(12rem, 1fr) minmax(0, 46rem) minmax(0, 1fr);
+    grid-template-columns: minmax(12rem, 1fr) minmax(0, 52rem) minmax(0, 1fr);
   }
 
   .game__hud {
