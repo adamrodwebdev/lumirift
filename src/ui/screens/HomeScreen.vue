@@ -135,8 +135,10 @@ const modes = computed(() =>
       <div class="title__main">
         <div class="title__copy">
           <h1 id="game-title" class="logo">
-            <span class="logo__stack">{{ LOGO[0] }}</span>
-            <span class="logo__rift">
+            <!-- Read as one word; the split by the rift is for the eyes only. -->
+            <span class="sr-only">{{ LOGO.join('') }}</span>
+            <span class="logo__stack" aria-hidden="true">{{ LOGO[0] }}</span>
+            <span class="logo__rift" aria-hidden="true">
               <svg class="logo__crack" viewBox="0 0 34 84" aria-hidden="true">
                 <path d="M22 2 L8 30 L26 44 L10 82" />
               </svg>

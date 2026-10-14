@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 /*
  * Automatic WCAG 2.2 AA audits (axe-core) of every screen and dialog, in
- * both themes. They complement Lighthouse, which only audits the home page.
+ * the game's one theme (the Rift). They complement Lighthouse, which only audits the home page.
  */
 
 const audit = async (page: Page) => {
@@ -25,7 +25,7 @@ const openMode = async (page: Page, name: string) => {
   await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
 };
 
-for (const theme of ['light', 'dark'] as const) {
+for (const theme of ['dark'] as const) {
   test.describe(`${theme} theme`, () => {
     test.beforeEach(async ({ page }) => {
       await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
@@ -59,7 +59,7 @@ for (const theme of ['light', 'dark'] as const) {
       test(`${mode}: game, pause and end`, async ({ page }) => {
         await openMode(page, mode);
         await audit(page);
-        await page.keyboard.press('Escape');
+        await page.keyboard.press('KeyP');
         await expect(page.getByRole('dialog', { name: 'Pause' })).toBeVisible();
         await audit(page);
       });
@@ -78,7 +78,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
-for (const theme of ['light', 'dark'] as const) {
+for (const theme of ['dark'] as const) {
   test(`${theme} theme: campaign map, level and upgrades`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
     await page.goto('/');

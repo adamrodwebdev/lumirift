@@ -45,13 +45,28 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
-test('the home page presents the game, the daily challenge and every mode', async ({ page }) => {
+test('the title screen: the logo, one big Play, the daily challenge, every mode', async ({
+  page,
+}) => {
   await expect(page).toHaveTitle('Stackrift — le jeu de blocs réinventé');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
-  await expect(page.getByRole('heading', { name: 'Défi du jour' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Niveau 1' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Stackrift', level: 1 })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Jouer/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Défi du jour/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Niveau 1,/ })).toBeVisible();
   for (const name of MODES) await expect(modeButton(page, name)).toBeVisible();
   await expectNoHorizontalScroll(page);
+});
+
+test('the first game is guided, step by step, and the guide can be skipped', async ({ page }) => {
+  await page.getByRole('button', { name: /^Jouer/ }).click();
+  await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
+  const coach = page.getByRole('status').filter({ hasText: 'Déplacez la pièce' });
+  await expect(coach).toBeVisible();
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.getByText('Tournez-la')).toBeVisible();
+  await page.getByRole('button', { name: 'Passer le guide' }).click();
+  await expect(page.getByText('Tournez-la')).toBeHidden();
 });
 
 for (const name of MODES) {
@@ -59,12 +74,12 @@ for (const name of MODES) {
     await openMode(page, name);
     await expect(page.getByRole('definition').first()).toBeVisible();
     await expectNoHorizontalScroll(page);
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('KeyP');
     const pause = page.getByRole('dialog', { name: 'Pause' });
     await expect(pause).toBeVisible();
     await pause.getByRole('button', { name: 'Reprendre' }).click();
     await expect(pause).toBeHidden();
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('KeyP');
     await page
       .getByRole('dialog', { name: 'Pause' })
       .getByRole('button', { name: 'Quitter' })
@@ -88,7 +103,7 @@ test('a classic game is played with the keyboard to the end, then counted', asyn
 });
 
 test('the daily challenge is timed', async ({ page }) => {
-  await page.getByRole('button', { name: 'Relever le défi' }).click();
+  await page.getByRole('button', { name: /Défi du jour/ }).click();
   await expect(page.getByText('Temps restant')).toBeVisible();
 });
 
@@ -101,21 +116,17 @@ test('the Mosaic is played with the keyboard', async ({ page }) => {
   await expect(score).not.toHaveText('0');
 });
 
-test('the language and the theme are remembered', async ({ page }) => {
+test('the language is remembered; the game has one look, the Rift', async ({ page }) => {
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.getByRole('button', { name: 'Réglages' }).click();
   const settings = page.getByRole('dialog', { name: 'Réglages' });
   await settings.getByLabel('Langue').selectOption('en');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await page.keyboard.press('Escape');
-  const theme = await page.locator('html').getAttribute('data-theme');
-  await page.getByRole('button', { name: /Switch to (light|dark) theme/ }).click();
-  const switched = theme === 'dark' ? 'light' : 'dark';
-  await expect(page.locator('html')).toHaveAttribute('data-theme', switched);
 
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Game modes' })).toBeVisible();
   await expect(page).toHaveTitle('Stackrift — the falling-blocks game, reinvented');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', switched);
 });
 
 test('the Atelier shows the collection; locked items say how to earn them', async ({ page }) => {
@@ -159,7 +170,7 @@ test('keyboard users skip to the content and land on each new screen', async ({ 
   await expect(page.locator('canvas[role="img"]')).toBeVisible();
   await expect(page.locator('main')).toBeFocused();
   // The game still answers the keyboard with the focus on the main region.
-  await page.keyboard.press('Escape');
+  await page.keyboard.press('KeyP');
   await expect(page.getByRole('dialog', { name: 'Pause' })).toBeVisible();
 });
 
@@ -196,12 +207,13 @@ test('the campaign: map, a level, its goal, then back to the map', async ({ page
   // Only the first level is open.
   await expect(page.getByRole('button', { name: /1-2/ })).toHaveAttribute('aria-disabled', 'true');
   await page.getByRole('button', { name: /1-1/ }).click();
-  const detail = page.getByRole('dialog', { name: 'Niveau 1-1 · Classique' });
-  await expect(detail).toContainText('Effacer 5 lignes');
+  // The campaign opens with Sand, a mode no other game has.
+  const detail = page.getByRole('dialog', { name: 'Niveau 1-1 · Sable' });
+  await expect(detail).toContainText('Effacer 2 zones');
   await detail.getByRole('button', { name: 'Jouer' }).click();
-  await expect(page.getByRole('group', { name: 'Objectif' })).toContainText('0 / 5');
+  await expect(page.getByRole('group', { name: 'Objectif' })).toContainText('0 / 2');
   await expect(page.locator('canvas[role="img"]')).toBeVisible();
-  await page.keyboard.press('Escape');
+  await page.keyboard.press('KeyP');
   await page
     .getByRole('dialog', { name: 'Pause' })
     .getByRole('button', { name: 'Quitter' })
