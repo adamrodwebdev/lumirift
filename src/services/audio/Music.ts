@@ -12,7 +12,7 @@ const TICK_MS = 120;
 const SMOOTHING = 0.08;
 
 /**
- * Stackrift's music, generated live in the game's key (D minor pentatonic):
+ * Lumirift's music, generated live in the game's key (D minor pentatonic):
  * a pad on the progression i – VI – III – VII, then, as the intensity rises,
  * a pulsing bass, a crystal arpeggio and a light beat. The intensity follows
  * the game (calm in menus, tense when the stack is high). Notes are scheduled

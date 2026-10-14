@@ -1,13 +1,13 @@
 // Builds the Playgama version, checks it against the platform's measurable
 // requirements (and its partners'), and zips it for upload.
-// Usage: npm run package:playgama   →  release/stackrift-playgama-<version>.zip
+// Usage: npm run package:playgama   →  release/lumirift-playgama-<version>.zip
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 const OUT = 'dist-playgama';
 const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
-const ZIP = join('release', `stackrift-playgama-${version}.zip`);
+const ZIP = join('release', `lumirift-playgama-${version}.zip`);
 const MB = 1024 * 1024;
 /** The only external file a Playgama build may load. */
 const BRIDGE = 'https://bridge.playgama.com/v2/stable/playgama-bridge.js';

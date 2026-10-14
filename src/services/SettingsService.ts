@@ -16,6 +16,7 @@ export interface Settings {
   readonly muted: boolean;
 }
 
+/** The game's first name (Stackrift) stays in the save keys: no player loses progress. */
 export const SETTINGS_KEY = 'stackrift:settings';
 
 const isUnit = (value: unknown): value is number =>

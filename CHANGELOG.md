@@ -3,6 +3,16 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.5.0] — 14/10/2026
+
+Le jeu s'appelle désormais **Lumirift**.
+
+### Modifié
+
+- Nouveau nom partout : logo (LUMI | RIFT), titres et descriptions en trois langues, écran de
+  démarrage, manifeste, covers, paquets des portails (`lumirift-playgama-<version>.zip`…),
+  documentation. Les clés de sauvegarde ne changent pas : aucune progression n'est perdue.
+
 ## [1.4.0] — 14/10/2026
 
 L'identité « Rift » et la version Playgama.

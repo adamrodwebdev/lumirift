@@ -1,5 +1,5 @@
 /**
- * The key of Stackrift: D minor pentatonic (D F G A C). Every pitched sound
+ * The key of Lumirift: D minor pentatonic (D F G A C). Every pitched sound
  * and the music share it, so effects never clash with the music, whatever
  * plays at the same time.
  */

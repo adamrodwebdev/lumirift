@@ -1,4 +1,4 @@
-# Stackrift
+# Lumirift
 
 Le jeu de blocs qui tombent, réinventé : les règles que vous connaissez, **13 modes** que
 vous n'avez jamais joués, en quatre familles. Dans le navigateur, mobile d'abord, en
@@ -84,7 +84,7 @@ Les images de partage (`public/og-image.png`, icônes) se régénèrent avec
 Le build est un site statique, servi depuis n'importe quel dossier (chemins relatifs).
 
 ```bash
-SITE_URL=https://exemple.fr/stackrift/ npm run build
+SITE_URL=https://exemple.fr/lumirift/ npm run build
 ```
 
 `SITE_URL` (facultatif) ajoute le lien canonique, les adresses absolues des cartes de
@@ -97,7 +97,7 @@ partage, `sitemap.xml` et sa mention dans `robots.txt`. Sans lui, le build reste
 npm run build:demo   # dist-demo : cinq modes et le premier chapitre de la campagne
 ```
 
-Copiée dans `demos/stackrift/` du portfolio (adamrodwebdev.com).
+Copiée dans `demos/lumirift/` du portfolio (adamrodwebdev.com).
 
 ### Version Playgama
 

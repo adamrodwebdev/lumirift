@@ -1,8 +1,8 @@
-# Cahier des charges — Stackrift
+# Cahier des charges — Lumirift
 
-| Version | Date       | Statut                  |
-| ------- | ---------- | ----------------------- |
-| 1.4     | 14/10/2026 | Identité Rift, Playgama |
+| Version | Date       | Statut                 |
+| ------- | ---------- | ---------------------- |
+| 1.5     | 14/10/2026 | Nouveau nom : Lumirift |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -12,7 +12,7 @@ Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journ
 
 Le jeu de blocs qui tombent est l'un des genres les plus joués au monde. Tout le monde en
 connaît les règles, mais l'offre web gratuite se résume le plus souvent à des clones du mode
-« Marathon ». **Stackrift** part de ces règles connues et ajoute des **modes de jeu inédits**
+« Marathon ». **Lumirift** part de ces règles connues et ajoute des **modes de jeu inédits**
 qui changent la façon de penser la pile, sans changer la prise en main.
 
 Objectifs :
@@ -65,9 +65,9 @@ Différenciation :
   **jamais utilisés** : marques détenues par The Tetris Company. Le jeu dit « pièce » et
   « ligne ».
 - Les règles d'un jeu ne sont pas protégeables, mais **l'apparence** l'est (jurisprudence
-  _Tetris Holding v. Xio Interactive_, 2012) : Stackrift utilise sa **propre palette**, son
+  _Tetris Holding v. Xio Interactive_, 2012) : Lumirift utilise sa **propre palette**, son
   propre habillage du puits et ses propres noms de modes.
-- Nom de travail : **Stackrift** (« la faille dans la pile »), prononçable dans les trois
+- Nom de travail : **Lumirift** (« la faille dans la pile »), prononçable dans les trois
   langues. Vérification de disponibilité (marque, domaine, réseaux) à faire avant lancement.
 
 ## 3. Périmètre fonctionnel
@@ -430,7 +430,7 @@ position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale
 
 ### 3.5 Direction artistique et son (décidé en v0.5)
 
-Stackrift est destiné à être monétisé sur des portails de jeux : il lui faut une identité
+Lumirift est destiné à être monétisé sur des portails de jeux : il lui faut une identité
 **unique, vendeuse et spectaculaire**, reconnaissable sur une vignette comme dans une vidéo
 de dix secondes.
 
@@ -465,7 +465,7 @@ fissure) et sur l'écran de fin de partie.
   surface (Miroir), surface d'eau qui monte (Marée), éclat en prisme d'une ligne pure (Chroma),
   ondes de choc de maillon en maillon (Fusion).
 
-**Palette** : propre à Stackrift (terre cuite, sable, sauge, azur, mauve, rose…), déclinée par
+**Palette** : propre à Lumirift (terre cuite, sable, sauge, azur, mauve, rose…), déclinée par
 thème, volontairement éloignée des couleurs standard du genre. Chaque couleur porte un **motif
 gravé** dans ses facettes, pour rester lisible par les daltoniens.
 
@@ -575,6 +575,21 @@ l'appareil** (`stackrift:profile`), comme les records.
   léger, les portails imposent de toute façon la coupure du son) ; à reprendre avec les
   portails.
 
+### 3.9 Nom du jeu (1.5)
+
+Le jeu s'appelait **Stackrift** jusqu'à la 1.4 ; ce nom était déjà employé sur le web. Il
+s'appelle **Lumirift** depuis la 1.5 (lumière + faille : il garde la faille, signature de
+l'identité, et le logo se fend au même endroit, LUMI | RIFT). Vérifications du 14/10/2026 :
+
+- Aucun jeu ni aucune appli de ce nom (Steam, itch.io, magasins d'applis, presse jeu).
+- Marques (TMview : UE, France, Royaume-Uni, États-Unis, Chine…) : une seule, **LUMIRIFT au
+  Royaume-Uni** (UK00004314704, déposée le 23/12/2025 par Guangzhou Jinshiguang E-commerce),
+  pour des sacs (classe 18) et du mobilier (classe 20), pas pour des jeux (classes 9, 28, 41).
+  Choix confirmé par l'utilisateur en connaissance de cause ; une consultation (INPI, conseil
+  en propriété industrielle) reste conseillée avant un dépôt ou des produits dérivés.
+- Domaines : `lumirift.com` est pris ; `.net`, `.io`, `.fr`, `.app`, `.game` étaient libres.
+- Les clés de sauvegarde restent `stackrift:…` : aucun joueur ne perd sa progression.
+
 ### 3.8 Identité « Rift » (1.4)
 
 CrazyGames a refusé la 1.2 sur la « qualité d'ensemble ». Diagnostic : un accueil qui
@@ -620,7 +635,7 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 
 - **Maintenant** : le jeu de base, sur notre propre site, sans publicité ni SDK tiers.
 - **Démo pour le portfolio (1.3)** : `npm run build:demo` produit `dist-demo`, servi par
-  adamrodwebdev.com dans `/demos/stackrift/` (chemins relatifs, aucune balise de référencement :
+  adamrodwebdev.com dans `/demos/lumirift/` (chemins relatifs, aucune balise de référencement :
   la page du portfolio porte les siennes). Une **édition** (`src/platform/Edition.ts`) dit ce
   que le build ouvre ; la plateforme `DemoPlatform` porte l'édition démo :
   - jeu libre : **Classique, Sable, Mosaïque, Tour et Duel** (un mode par famille, plus le
@@ -695,7 +710,7 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 
 - Version de notre site : aucun cookie, aucun traceur, aucune requête tierce, donc pas de
   bannière de consentement. Les versions portails (§ 3.7) embarqueront le SDK du portail, qui
-  gère lui-même le consentement ; Stackrift n'ajoute jamais de traceur.
+  gère lui-même le consentement ; Lumirift n'ajoute jamais de traceur.
 - Messages i18n précompilés au build (pas d'`eval`).
 - Alertes `npm audit` (12/10/2026) : 5 alertes « high » sur `braces`, dépendance de
   l'outillage de développement uniquement (lint, plugin i18n), sans entrée non fiable ; rien
@@ -770,7 +785,7 @@ src/engine/
 
 ### 5.4 Familles de jeux (décidé en v0.3)
 
-Avec le Sable, la Mosaïque et la Tour, Stackrift réunit plusieurs jeux. L'architecture passe
+Avec le Sable, la Mosaïque et la Tour, Lumirift réunit plusieurs jeux. L'architecture passe
 à deux niveaux :
 
 1. **`GameSession`** : contrat commun à toutes les familles, le seul que connaît l'écran de
@@ -1210,3 +1225,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.2     | 13/10/2026 | Version CrazyGames : abstraction `Platform`, build, médias et contrôle des exigences (§ 3.7, CRAZYGAMES.md).                                                      |
 | 1.3     | 13/10/2026 | Lot 12 : démo du portfolio, éditions complète et démo (§ 3.7).                                                                                                    |
 | 1.4     | 14/10/2026 | Identité « Rift » (§ 3.8), première partie guidée, musique, Playgama (§ 3.7, PLAYGAMA.md), sans Échap ni Ctrl.                                                    |
+| 1.5     | 14/10/2026 | Nouveau nom : Lumirift (§ 3.9), vérification des marques et des domaines.                                                                                         |
