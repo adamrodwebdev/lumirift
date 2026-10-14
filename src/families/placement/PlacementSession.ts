@@ -84,6 +84,12 @@ export class PlacementSession implements GameSession<MosaicCommand> {
     return this.game.useJoker(index, target);
   }
 
+  /** A full tray is the danger of the Mosaic. */
+  pressure(): number {
+    const { grid } = this.view;
+    return grid.tileCount() / (grid.size * grid.size);
+  }
+
   indicators(): readonly Indicator[] {
     const game = this.game;
     const indicators: Indicator[] = [

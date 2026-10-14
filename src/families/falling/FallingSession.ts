@@ -107,6 +107,11 @@ export class FallingSession implements GameSession<FallingCommand> {
     return handle(command);
   }
 
+  pressure(): number {
+    const { board } = this.view;
+    return Math.min(1, board.stackHeight() / (board.height - board.hiddenRows));
+  }
+
   indicators(): readonly Indicator[] {
     const game = this.game;
     const common: Indicator[] = [

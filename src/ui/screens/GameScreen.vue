@@ -102,6 +102,10 @@ const subtitle = computed(() => {
 });
 
 const clock = new FrameClock();
+/** Music intensity: a pause or the end of a game calms it, the danger drives it. */
+const MUSIC_PLAYING = 0.42;
+const MUSIC_DANGER = 0.58;
+const MUSIC_CALM = 0.12;
 /** One per game: the stage is rebuilt for each new session. */
 const round = ref(0);
 /** The game-over dialog waits for the stack to finish collapsing. */
@@ -158,6 +162,10 @@ clock.subscribe((delta) => {
   if (!current) return;
   if (current.state === 'running') tracker?.tick(delta);
   current.update(delta);
+  // The music follows the danger: steady while playing, tense near the top.
+  audio.setIntensity(
+    current.state === 'running' ? MUSIC_PLAYING + MUSIC_DANGER * current.pressure() : MUSIC_CALM,
+  );
   const next = current.indicators();
   if (!sameIndicators(next, indicators.value)) indicators.value = next;
   if (run && phase.value === 'playing' && current.state === 'running') {
@@ -357,6 +365,7 @@ onBeforeUnmount(() => {
   clearTimeout(toastTimer);
   clearTimeout(outcomeTimer);
   clearTimeout(coachTimer);
+  audio.setIntensity(MUSIC_CALM);
   clock.stop();
   offPortalPause();
   platform.gameplayStop();

@@ -92,6 +92,10 @@ export class DuelSession implements GameSession<FallingCommand> {
     return this.outcome ? false : this.player.execute(command);
   }
 
+  pressure(): number {
+    return this.player.pressure();
+  }
+
   indicators(): readonly Indicator[] {
     return [
       ...this.player.indicators(),

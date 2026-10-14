@@ -91,6 +91,11 @@ export class SandSession implements GameSession<FallingCommand> {
     return handle(command);
   }
 
+  pressure(): number {
+    const { grid } = this.view;
+    return Math.min(1, grid.sandHeight() / grid.height);
+  }
+
   indicators(): readonly Indicator[] {
     const game = this.game;
     const indicators: Indicator[] = [

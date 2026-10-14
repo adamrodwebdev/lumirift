@@ -68,6 +68,8 @@ export interface GameSession<C extends Command = Command> {
   execute(command: C): boolean;
   /** HUD values, the main one first. */
   indicators(): readonly Indicator[];
+  /** How close the game is to its end: 0 calm, 1 about to be lost (the music follows it). */
+  pressure(): number;
   result(): SessionResult;
   /** Translation key of a subtitle for this game (the silhouette of the day…), or null. */
   subtitleKey(): string | null;
