@@ -22,6 +22,10 @@ export const PLAYGAMA_CONFIG = {
       placementFallback: 'game_over',
       placements: [{ id: 'game_over' }],
     },
+    rewarded: {
+      placementFallback: 'double_xp',
+      placements: [{ id: 'double_xp' }],
+    },
   },
   device: {
     useBuiltInOrientationPopup: false,

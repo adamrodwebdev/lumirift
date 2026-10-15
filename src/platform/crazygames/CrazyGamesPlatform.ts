@@ -166,25 +166,39 @@ export class CrazyGamesPlatform implements Platform {
    * on at once. The SDK itself spaces ads (3 minutes at least).
    */
   midgameAd(hooks: AdHooks): Promise<void> {
+    return this.requestAd('midgame', hooks).then(() => undefined);
+  }
+
+  get supportsRewarded(): boolean {
+    return this.sdk !== null;
+  }
+
+  /** Rewarded only on `adFinished`: an error or an unfilled ad gives nothing. */
+  rewardedAd(hooks: AdHooks): Promise<boolean> {
+    return this.requestAd('rewarded', hooks);
+  }
+
+  /** Resolves true when the ad played to its end. */
+  private requestAd(type: 'midgame' | 'rewarded', hooks: AdHooks): Promise<boolean> {
     const sdk = this.sdk;
-    if (!sdk) return Promise.resolve();
+    if (!sdk) return Promise.resolve(false);
     return new Promise((resolve) => {
       let started = false;
-      const done = () => {
+      const done = (watched: boolean) => {
         if (started) hooks.onEnd();
-        resolve();
+        resolve(watched);
       };
       try {
-        sdk.ad.requestAd('midgame', {
+        sdk.ad.requestAd(type, {
           adStarted: () => {
             started = true;
             hooks.onStart();
           },
-          adFinished: done,
-          adError: done,
+          adFinished: () => done(true),
+          adError: () => done(false),
         });
       } catch {
-        resolve();
+        resolve(false);
       }
     });
   }

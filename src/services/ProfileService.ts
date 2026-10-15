@@ -53,6 +53,13 @@ export class ProfileService {
     return progress;
   }
 
+  /** A rewarded ad was watched: the game's experience counts twice. */
+  doubleExperience(progress: GameProgress): GameProgress {
+    const doubled = this.profile.doubleExperience(progress);
+    if (doubled !== progress) this.save();
+    return doubled;
+  }
+
   equip(kind: CosmeticKind, id: string): boolean {
     const done = this.profile.equip(kind, id);
     if (done) this.save();

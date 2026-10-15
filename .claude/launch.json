@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "preview", "--", "--port", "4175"],
       "port": 4175
+    },
+    {
+      "name": "lumirift-playgama",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--mode", "playgama", "--port", "5176", "--strictPort"],
+      "port": 5176
     }
   ]
 }

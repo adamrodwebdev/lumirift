@@ -3,6 +3,7 @@ import { FULL_EDITION } from '../Edition';
 import type { AdHooks, Platform } from '../Platform';
 
 type InterstitialState = 'loading' | 'opened' | 'closed' | 'failed';
+type RewardedState = InterstitialState | 'rewarded';
 
 /** The part of the Playgama Bridge SDK (v2) the game uses. */
 export interface PlaygamaBridge {
@@ -11,6 +12,7 @@ export interface PlaygamaBridge {
     readonly AUDIO_STATE_CHANGED: string;
     readonly PAUSE_STATE_CHANGED: string;
     readonly INTERSTITIAL_STATE_CHANGED: string;
+    readonly REWARDED_STATE_CHANGED: string;
   };
   readonly platform: {
     readonly language: string;
@@ -24,8 +26,10 @@ export interface PlaygamaBridge {
   };
   readonly advertisement: {
     readonly isInterstitialSupported: boolean;
-    on(event: string, listener: (state: InterstitialState) => void): void;
+    readonly isRewardedSupported: boolean;
+    on(event: string, listener: (state: RewardedState) => void): void;
     showInterstitial(placement?: string): void;
+    showRewarded(placement?: string): void;
   };
 }
 
@@ -49,6 +53,8 @@ const SAVE_DELAY_MS = 300;
 const AD_START_TIMEOUT_MS = 1500;
 /** An ad that loads but never opens: the game goes on. */
 const AD_LOAD_TIMEOUT_MS = 8000;
+/** The one rewarded ad: double the experience of the game just played. */
+export const REWARDED_PLACEMENT = 'double_xp';
 
 /**
  * The Bridge storage as the game's storage. Playgama asks for one read of
@@ -126,6 +132,7 @@ export class PlaygamaPlatform implements Platform {
   private readonly muteListeners = new Set<(muted: boolean) => void>();
   private readonly pauseListeners = new Set<(paused: boolean) => void>();
   private adListener: ((state: InterstitialState) => void) | null = null;
+  private rewardedListener: ((state: RewardedState) => void) | null = null;
   private level: 'none' | 'playing' | 'paused' = 'none';
   private isReady = false;
 
@@ -146,8 +153,11 @@ export class PlaygamaPlatform implements Platform {
       if (paused) storage.flush();
       this.pauseListeners.forEach((listener) => listener(paused));
     });
-    bridge.advertisement.on(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, (state) =>
-      this.adListener?.(state),
+    bridge.advertisement.on(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, (state) => {
+      if (state !== 'rewarded') this.adListener?.(state);
+    });
+    bridge.advertisement.on(EVENT_NAME.REWARDED_STATE_CHANGED, (state) =>
+      this.rewardedListener?.(state),
     );
     // Hidden page: the save leaves now, the player may never come back.
     if (typeof document !== 'undefined') {
@@ -248,6 +258,50 @@ export class PlaygamaPlatform implements Platform {
       };
       try {
         bridge.advertisement.showInterstitial('game_over');
+      } catch {
+        done();
+      }
+    });
+  }
+
+  get supportsRewarded(): boolean {
+    return this.bridge?.advertisement.isRewardedSupported === true;
+  }
+
+  /**
+   * A rewarded ad the player asked for. The reward is due only on the
+   * `rewarded` state (never on `closed`: closing early gives nothing); the
+   * promise settles when the ad is closed or failed.
+   */
+  rewardedAd(hooks: AdHooks): Promise<boolean> {
+    const bridge = this.bridge;
+    if (!this.supportsRewarded || !bridge) return Promise.resolve(false);
+    return new Promise((resolve) => {
+      let opened = false;
+      let rewarded = false;
+      let timer = setTimeout(() => done(), AD_START_TIMEOUT_MS);
+      const done = () => {
+        clearTimeout(timer);
+        this.rewardedListener = null;
+        if (opened) hooks.onEnd();
+        resolve(rewarded);
+      };
+      this.rewardedListener = (state) => {
+        if (state === 'loading') {
+          clearTimeout(timer);
+          timer = setTimeout(() => done(), AD_LOAD_TIMEOUT_MS);
+        } else if (state === 'opened') {
+          clearTimeout(timer);
+          opened = true;
+          hooks.onStart();
+        } else if (state === 'rewarded') {
+          rewarded = true;
+        } else {
+          done();
+        }
+      };
+      try {
+        bridge.advertisement.showRewarded(REWARDED_PLACEMENT);
       } catch {
         done();
       }

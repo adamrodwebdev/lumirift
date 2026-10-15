@@ -3,6 +3,23 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.6.0] — 15/10/2026
+
+### Ajouté
+
+- **Pub récompensée facultative** en fin de partie : un bouton « PUB · Doubler l'XP » double
+  l'expérience de la partie. La récompense n'est donnée que si le portail confirme que la pub a
+  été vue jusqu'au bout (Playgama : état `rewarded`, CrazyGames : `adFinished`). Une pub
+  fermée trop tôt ou absente ne donne rien et le jeu continue normalement. Une seule fois par
+  partie, jamais pendant le jeu.
+
+### Modifié
+
+- L'interstitiel peut aussi passer quand le joueur quitte l'écran de fin de partie vers
+  l'accueil ou la carte de campagne, plus seulement sur « Rejouer » et « Niveau suivant ». Le
+  portail espace toujours les pubs (120 s au moins sur Playgama), et il n'y a jamais
+  d'interstitiel juste après une pub récompensée.
+
 ## [1.5.1] — 14/10/2026
 
 ### Modifié

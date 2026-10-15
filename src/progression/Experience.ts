@@ -21,7 +21,8 @@ export const VICTORY_XP: Readonly<Record<string, number>> = {
   expert: 50,
 };
 
-export type XpSource = 'game' | 'time' | 'clears' | 'daily' | 'victory' | 'objective';
+/** `bonus`: the experience of a game doubled by a rewarded ad. */
+export type XpSource = 'game' | 'time' | 'clears' | 'daily' | 'victory' | 'objective' | 'bonus';
 
 export interface XpLine {
   readonly source: XpSource;

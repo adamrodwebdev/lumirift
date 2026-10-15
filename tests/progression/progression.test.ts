@@ -107,6 +107,19 @@ describe('Profile', () => {
     }
   });
 
+  it("doubles a game's experience once, for a watched rewarded ad", () => {
+    const profile = new Profile();
+    const progress = profile.recordGame(report(), '20261012', MODES);
+    const doubled = profile.doubleExperience(progress);
+    expect(doubled.total).toBe(progress.total * 2);
+    expect(doubled.xp.at(-1)).toEqual({ source: 'bonus', amount: progress.total });
+    expect(profile.snapshot.xp).toBe(progress.total * 2);
+    expect(profile.doubleExperience(doubled)).toBe(doubled);
+    expect(profile.snapshot.xp).toBe(progress.total * 2);
+    const nothing = { ...progress, xp: [], total: 0 };
+    expect(profile.doubleExperience(nothing)).toBe(nothing);
+  });
+
   it('never completes an objective twice', () => {
     const profile = new Profile();
     const day = '20261012';
