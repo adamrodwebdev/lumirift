@@ -57,7 +57,11 @@ const phase = ref<Phase>('loading');
 const session = shallowRef<GameSession | null>(null);
 const indicators = shallowRef<readonly Indicator[]>([]);
 const outcome = ref<GameOutcome | null>(null);
-const shareStatus = ref('');
+const status = ref('');
+/** The rewarded ad of this game's end: offered, playing, or not (used, refused, unsupported). */
+const reward = ref<'offer' | 'busy' | 'none'>('none');
+/** A rewarded ad was just watched: no interstitial on top of it at this break. */
+let rewardWatched = false;
 const announcement = ref('');
 const toast = ref<{ text: string; key: number } | null>(null);
 const stage = stageFor(descriptor);
@@ -261,7 +265,9 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
       : { xp: [], total: 0, levelBefore: 1, levelAfter: 1, completed: [], unlocked: [], streak: 0 },
     ...(verdict ? { campaign: judge(verdict) } : {}),
   };
-  shareStatus.value = '';
+  status.value = '';
+  rewardWatched = false;
+  reward.value = platform.supportsRewarded && outcome.value.progress.total > 0 ? 'offer' : 'none';
   phase.value = 'over';
   const { gameOverDelayMs } = effectsProfile(settings.current.effects, settings.current.shake);
   outcomeTimer = setTimeout(() => (showOutcome.value = true), gameOverDelayMs);
@@ -290,19 +296,42 @@ const start = async () => {
 };
 
 /**
- * Between two games (play again, next level): the portal may show an ad.
- * The sound pauses only while an ad really plays.
+ * Leaving a game's end (play again, next level, home, campaign map): the
+ * portal may show an ad, which it spaces itself. The sound pauses only while
+ * an ad really plays; never two ads in a row.
  */
 const adBreak = ref(false);
+const adHooks = { onStart: () => audio.suspend(), onEnd: () => audio.resume() };
 const afterBreak = async (next: () => void) => {
   // The interface stays blocked until the ad ends (or does not come).
   showOutcome.value = false;
   adBreak.value = true;
-  await platform.midgameAd({ onStart: () => audio.suspend(), onEnd: () => audio.resume() });
+  if (!rewardWatched) await platform.midgameAd(adHooks);
   adBreak.value = false;
   next();
 };
 const again = () => afterBreak(() => void start());
+const toHome = () => afterBreak(() => emit('home'));
+const toCampaign = () => afterBreak(() => emit('campaign'));
+
+/** The player chose the rewarded ad: the reward comes only if the portal confirms it. */
+const doubleExperience = async () => {
+  const ended = outcome.value;
+  if (!ended || reward.value !== 'offer') return;
+  reward.value = 'busy';
+  status.value = '';
+  const watched = await platform.rewardedAd(adHooks);
+  reward.value = 'none';
+  if (!watched || outcome.value !== ended) {
+    status.value = watched ? '' : t('over.noAd');
+    return;
+  }
+  rewardWatched = true;
+  const progress = profile.doubleExperience(ended.progress);
+  outcome.value = { ...ended, progress };
+  status.value = t('over.doubled', { n: progress.total - ended.progress.total });
+  platform.happyTime();
+};
 
 const dispose = () => {
   clearTimeout(outcomeTimer);
@@ -341,7 +370,7 @@ const onShare = async () => {
       })
     : t('share.mode', { mode: modeName.value, value: outcome.value.value, url });
   const result = await share.share(text);
-  shareStatus.value = result === 'copied' ? t('over.copied') : '';
+  status.value = result === 'copied' ? t('over.copied') : '';
 };
 
 const onVisibility = () => {
@@ -436,12 +465,14 @@ onBeforeUnmount(() => {
     <GameOverDialog
       :open="phase === 'over' && showOutcome"
       :outcome="outcome"
-      :share-status="shareStatus"
+      :status="status"
       :can-share="platform.allowsExternalLinks"
+      :reward="reward"
       @again="again"
-      @home="emit('home')"
+      @home="toHome"
       @share="onShare"
-      @campaign="emit('campaign')"
+      @campaign="toCampaign"
+      @double="doubleExperience"
       @next="(next) => afterBreak(() => emit('next', next))"
     />
   </div>

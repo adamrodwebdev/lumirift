@@ -197,7 +197,12 @@
     "again": "Play again",
     "home": "Home",
     "share": "Share",
-    "copied": "Result copied to the clipboard"
+    "copied": "Result copied to the clipboard",
+    "adBadge": "AD",
+    "doubleXp": "Double the XP: +{n}",
+    "doubleXpLabel": "Watch an ad to double this game’s experience (+{n} XP)",
+    "doubled": "Experience doubled: +{n} XP!",
+    "noAd": "No ad available right now. Try again after another game."
   },
   "share": {
     "daily": "Lumirift · Challenge of {date} ({mode}): {value}. Your turn: {url}",
@@ -344,7 +349,8 @@
       "clears": "Clears",
       "daily": "Daily challenge",
       "victory": "Victory",
-      "objective": "Objective"
+      "objective": "Objective",
+      "bonus": "Bonus (ad watched)"
     },
     "tooShort": "Play for at least 20 seconds to earn experience."
   },

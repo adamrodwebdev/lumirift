@@ -171,6 +171,27 @@ export class Profile {
     };
   }
 
+  /**
+   * Doubles what a game brought (a rewarded ad watched): its experience once
+   * more, as a `bonus` line. A game already doubled, or worth nothing, is
+   * returned unchanged.
+   */
+  doubleExperience(progress: GameProgress): GameProgress {
+    if (progress.total <= 0 || progress.xp.some((line) => line.source === 'bonus')) return progress;
+    const unlockedBefore = new Set(COSMETICS.filter((c) => this.isUnlocked(c)).map(cosmeticKey));
+    this.data = { ...this.data, xp: this.data.xp + progress.total };
+    const unlocked = COSMETICS.filter(
+      (cosmetic) => this.isUnlocked(cosmetic) && !unlockedBefore.has(cosmeticKey(cosmetic)),
+    );
+    return {
+      ...progress,
+      xp: [...progress.xp, { source: 'bonus', amount: progress.total }],
+      total: progress.total * 2,
+      levelAfter: this.level,
+      unlocked: [...progress.unlocked, ...unlocked],
+    };
+  }
+
   /** Wears a cosmetic; refused when it is not unlocked (or does not exist). */
   equip(kind: CosmeticKind, id: string): boolean {
     const cosmetic = findCosmetic(kind, id);

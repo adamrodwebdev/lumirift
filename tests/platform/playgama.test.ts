@@ -24,6 +24,7 @@ function fakeBridge(saved: Record<string, string> = {}) {
       AUDIO_STATE_CHANGED: 'audio',
       PAUSE_STATE_CHANGED: 'pause',
       INTERSTITIAL_STATE_CHANGED: 'interstitial',
+      REWARDED_STATE_CHANGED: 'rewarded',
     },
     platform: {
       language: 'fr',
@@ -41,8 +42,10 @@ function fakeBridge(saved: Record<string, string> = {}) {
     },
     advertisement: {
       isInterstitialSupported: true,
+      isRewardedSupported: true,
       on: (event, listener) => listeners.set(event, listener),
       showInterstitial: (placement) => ads.push(placement ?? ''),
+      showRewarded: (placement) => ads.push(`rewarded:${placement ?? ''}`),
     },
   };
   const fire = (event: string, value: unknown) => listeners.get(event)?.(value as never);
@@ -143,6 +146,38 @@ describe('PlaygamaPlatform', () => {
     expect(hooks.onEnd).not.toHaveBeenCalled();
   });
 
+  it('rewards only once the Bridge confirms the rewarded ad was watched', async () => {
+    const fake = fakeBridge();
+    const platform = await PlaygamaPlatform.create(fake.bridge);
+    expect(platform.supportsRewarded).toBe(true);
+    const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
+    const watched = platform.rewardedAd(hooks);
+    expect(fake.ads).toEqual(['rewarded:double_xp']);
+    fake.fire('rewarded', 'loading');
+    fake.fire('rewarded', 'opened');
+    expect(hooks.onStart).toHaveBeenCalledOnce();
+    fake.fire('rewarded', 'rewarded');
+    fake.fire('rewarded', 'closed');
+    await expect(watched).resolves.toBe(true);
+    expect(hooks.onEnd).toHaveBeenCalledOnce();
+  });
+
+  it('gives nothing for a rewarded ad closed early, failed or never shown', async () => {
+    const fake = fakeBridge();
+    const platform = await PlaygamaPlatform.create(fake.bridge);
+    const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
+    const closed = platform.rewardedAd(hooks);
+    fake.fire('rewarded', 'opened');
+    fake.fire('rewarded', 'closed');
+    await expect(closed).resolves.toBe(false);
+    const failed = platform.rewardedAd(hooks);
+    fake.fire('rewarded', 'failed');
+    await expect(failed).resolves.toBe(false);
+    const silent = platform.rewardedAd(hooks);
+    vi.advanceTimersByTime(1500);
+    await expect(silent).resolves.toBe(false);
+  });
+
   it('runs without the SDK: no messages, a save in memory', async () => {
     const platform = await PlaygamaPlatform.create(null);
     platform.ready();
@@ -150,5 +185,7 @@ describe('PlaygamaPlatform', () => {
     expect(platform.storage.get('stackrift:settings')).toBe('x');
     expect(platform.locale).toBeNull();
     await expect(platform.midgameAd({ onStart: vi.fn(), onEnd: vi.fn() })).resolves.toBe(undefined);
+    expect(platform.supportsRewarded).toBe(false);
+    await expect(platform.rewardedAd({ onStart: vi.fn(), onEnd: vi.fn() })).resolves.toBe(false);
   });
 });

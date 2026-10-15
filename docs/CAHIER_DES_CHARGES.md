@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                 |
-| ------- | ---------- | ---------------------- |
-| 1.5     | 14/10/2026 | Nouveau nom : Lumirift |
+| Version | Date       | Statut          |
+| ------- | ---------- | --------------- |
+| 1.6     | 15/10/2026 | Pub récompensée |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -628,6 +628,10 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   soumission à CrazyGames pour l'instant). Build `npm run package:playgama` (Bridge SDK v2),
   covers, exigences et formulaire dans [PLAYGAMA.md](PLAYGAMA.md). Diffusion chez les
   partenaires de Playgama (MSN, GameDistribution, YouTube Playables…), Yandex exclu.
+  Publicités (1.6) : un interstitiel peut passer à la sortie de chaque fin de partie (rejouer,
+  niveau suivant, accueil, campagne), espacé par le portail ; une **pub récompensée
+  facultative** double l'expérience de la partie (bouton étiqueté « PUB », récompense seulement
+  une fois la pub confirmée vue, une fois par partie, jamais d'interstitiel juste après).
 
 - **CrazyGames (1.2)** : build dédié (`npm run package:crazygames`), médias (covers et vidéos,
   `scripts/crazygames-media.mjs`) et contrôle de chaque exigence du portail dans
@@ -1228,3 +1232,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.3     | 13/10/2026 | Lot 12 : démo du portfolio, éditions complète et démo (§ 3.7).                                                                                                    |
 | 1.4     | 14/10/2026 | Identité « Rift » (§ 3.8), première partie guidée, musique, Playgama (§ 3.7, PLAYGAMA.md), sans Échap ni Ctrl.                                                    |
 | 1.5     | 14/10/2026 | Nouveau nom : Lumirift (§ 3.9), vérification des marques et des domaines.                                                                                         |
+| 1.6     | 15/10/2026 | Publicités : pub récompensée facultative (doubler l'XP), interstitiel à toute sortie de fin de partie (§ 3.7).                                                    |

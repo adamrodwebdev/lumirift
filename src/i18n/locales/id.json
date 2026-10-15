@@ -197,7 +197,12 @@
     "again": "Main lagi",
     "home": "Beranda",
     "share": "Bagikan",
-    "copied": "Hasil disalin ke papan klip"
+    "copied": "Hasil disalin ke papan klip",
+    "adBadge": "IKLAN",
+    "doubleXp": "Gandakan XP: +{n}",
+    "doubleXpLabel": "Tonton iklan untuk menggandakan pengalaman permainan ini (+{n} XP)",
+    "doubled": "Pengalaman digandakan: +{n} XP!",
+    "noAd": "Belum ada iklan saat ini. Coba lagi setelah permainan berikutnya."
   },
   "share": {
     "daily": "Lumirift · Tantangan {date} ({mode}): {value}. Giliranmu: {url}",
@@ -344,7 +349,8 @@
       "clears": "Penghapusan",
       "daily": "Tantangan harian",
       "victory": "Kemenangan",
-      "objective": "Tujuan"
+      "objective": "Tujuan",
+      "bonus": "Bonus (iklan ditonton)"
     },
     "tooShort": "Bermainlah minimal 20 detik untuk mendapat pengalaman."
   },

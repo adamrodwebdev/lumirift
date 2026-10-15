@@ -11,9 +11,12 @@ import StarRow from './StarRow.vue';
 const props = defineProps<{
   open: boolean;
   outcome: GameOutcome | null;
-  shareStatus: string;
+  /** A message for the player: link copied, experience doubled… */
+  status: string;
   /** False on portals, which forbid links out of the game. */
   canShare?: boolean;
+  /** The rewarded ad offered (double the experience), or waiting for it. */
+  reward?: 'offer' | 'busy' | 'none';
 }>();
 const emit = defineEmits<{
   again: [];
@@ -21,6 +24,8 @@ const emit = defineEmits<{
   share: [];
   campaign: [];
   next: [level: CampaignLevel];
+  /** The player chooses to watch an ad for the bonus. */
+  double: [];
 }>();
 
 const { t } = useI18n();
@@ -62,6 +67,19 @@ const title = computed(() => {
       </div>
       <section v-if="outcome.progress.total > 0" class="progress" :aria-label="t('progress.title')">
         <p class="progress__total">{{ t('progress.gained', { n: outcome.progress.total }) }}</p>
+        <button
+          v-if="reward === 'offer' || reward === 'busy'"
+          type="button"
+          class="btn reward"
+          :disabled="reward === 'busy'"
+          :aria-label="t('over.doubleXpLabel', { n: outcome.progress.total })"
+          @click="emit('double')"
+        >
+          <span class="reward__badge" aria-hidden="true">
+            <AppIcon name="play" :size="14" />{{ t('over.adBadge') }}
+          </span>
+          <span aria-hidden="true">{{ t('over.doubleXp', { n: outcome.progress.total }) }}</span>
+        </button>
         <ul class="progress__lines">
           <li v-for="line in outcome.progress.xp" :key="line.source + line.amount">
             <span>{{ t(`progress.source.${line.source}`) }}</span>
@@ -128,7 +146,7 @@ const title = computed(() => {
         <AppIcon name="back" :size="20" />{{ t('over.home') }}
       </button>
     </div>
-    <p class="status" role="status">{{ shareStatus }}</p>
+    <p class="status" role="status">{{ status }}</p>
   </ModalDialog>
 </template>
 
@@ -194,6 +212,25 @@ const title = computed(() => {
 .progress__total {
   font-weight: 800;
   color: var(--accent);
+}
+
+/* The rewarded ad: an option, labelled as an ad, never the main action. */
+.reward {
+  justify-self: center;
+  gap: var(--space-2);
+}
+
+.reward__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  background: var(--accent-fill);
+  color: var(--on-accent-fill);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
 }
 
 .progress__lines {

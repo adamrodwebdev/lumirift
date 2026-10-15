@@ -44,6 +44,10 @@ export interface Platform {
   happyTime(): void;
   /** A natural break between two games; resolves when the game may go on. */
   midgameAd(hooks: AdHooks): Promise<void>;
+  /** The portal can show an ad the player chooses to watch for a bonus. */
+  readonly supportsRewarded: boolean;
+  /** An ad the player asked for; true only once the portal confirms it was watched. */
+  rewardedAd(hooks: AdHooks): Promise<boolean>;
 }
 
 /** Our own site: no portal, nothing to report, no ads. */
@@ -73,6 +77,12 @@ export class WebPlatform implements Platform {
 
   midgameAd(): Promise<void> {
     return Promise.resolve();
+  }
+
+  readonly supportsRewarded: boolean = false;
+
+  rewardedAd(): Promise<boolean> {
+    return Promise.resolve(false);
   }
 }
 

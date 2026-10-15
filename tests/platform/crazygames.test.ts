@@ -104,6 +104,21 @@ describe('CrazyGamesPlatform', () => {
     expect(hooks.onEnd).not.toHaveBeenCalled();
   });
 
+  it('rewards on adFinished only, never on an error', async () => {
+    const sdk = fakeSdk();
+    const platform = await CrazyGamesPlatform.create();
+    expect(platform.supportsRewarded).toBe(true);
+    const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
+    const watched = platform.rewardedAd(hooks);
+    expect(sdk.calls).toContain('ad:rewarded');
+    sdk.ad()!.adStarted();
+    sdk.ad()!.adFinished();
+    await expect(watched).resolves.toBe(true);
+    const failed = platform.rewardedAd(hooks);
+    sdk.ad()!.adError('unfilled');
+    await expect(failed).resolves.toBe(false);
+  });
+
   it('follows the portal mute button', async () => {
     const sdk = fakeSdk();
     const platform = await CrazyGamesPlatform.create();
@@ -144,5 +159,7 @@ describe('WebPlatform', () => {
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
     await platform.midgameAd();
     expect(hooks.onStart).not.toHaveBeenCalled();
+    expect(platform.supportsRewarded).toBe(false);
+    await expect(platform.rewardedAd()).resolves.toBe(false);
   });
 });

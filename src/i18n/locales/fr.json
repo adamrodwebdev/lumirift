@@ -197,7 +197,12 @@
     "again": "Rejouer",
     "home": "Accueil",
     "share": "Partager",
-    "copied": "Résultat copié dans le presse-papiers"
+    "copied": "Résultat copié dans le presse-papiers",
+    "adBadge": "PUB",
+    "doubleXp": "Doubler l’XP : +{n}",
+    "doubleXpLabel": "Regarder une pub pour doubler l’expérience de cette partie (+{n} XP)",
+    "doubled": "Expérience doublée : +{n} XP !",
+    "noAd": "Aucune pub disponible pour le moment. Réessayez après une autre partie."
   },
   "share": {
     "daily": "Lumirift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",
@@ -344,7 +349,8 @@
       "clears": "Effacements",
       "daily": "Défi du jour",
       "victory": "Victoire",
-      "objective": "Objectif"
+      "objective": "Objectif",
+      "bonus": "Bonus (pub regardée)"
     },
     "tooShort": "Jouez au moins 20 secondes pour gagner de l’expérience."
   },
