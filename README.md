@@ -47,9 +47,10 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 Sur écran tactile, les boutons ne s'affichent que si on les choisit (Réglages, Commandes).
 La partie se joue en portrait comme en paysage, sans en-tête ni défilement.
 
-L'aide propre à chaque famille s'affiche dans la fenêtre de pause et à côté du jeu pendant
-les cinq premières parties ; la toute première partie est guidée pas à pas. Ni Échap ni Ctrl :
-les portails les réservent (plein écran, fermeture d'onglet).
+Les touches de chaque famille s'affichent dessinées (selon la disposition du clavier) dans
+la fenêtre de pause et à côté du jeu pendant les cinq premières parties ; la toute première
+partie est guidée pas à pas, sur un Sable calme. Ni Échap ni Ctrl : les portails les
+réservent (plein écran, fermeture d'onglet).
 
 ## Accessibilité
 

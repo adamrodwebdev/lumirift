@@ -9,7 +9,8 @@ import AppIcon from './AppIcon.vue';
  * a short cascade; it slides away when closed. Built on the native modal
  * dialog: focus trapping, Escape and the inert background come from the
  * browser. Escape (or the close button) emits `dismiss`; the parent decides
- * what it means. Laid out to fit the screen without scrolling. Its content is
+ * what it means. On a portal, Escape is the portal's (see `App`): only the
+ * buttons close a window there. Laid out to fit the screen without scrolling. Its content is
  * built the first time it opens: a closed window costs nothing to the screen
  * behind it.
  */

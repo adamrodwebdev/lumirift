@@ -127,6 +127,7 @@ export class PlaygamaPlatform implements Platform {
   readonly edition = FULL_EDITION;
   // Playgama forbids links to other sites (and returns false for them).
   readonly allowsExternalLinks = false;
+  readonly reservesEscape = true;
   readonly locale: string | null;
   private audioEnabled: boolean;
   private readonly muteListeners = new Set<(muted: boolean) => void>();
@@ -232,6 +233,7 @@ export class PlaygamaPlatform implements Platform {
    * game go on at once. Gameplay is already stopped (game-over screen); the
    * platform's pause and sound events cover the ad itself too.
    */
+  /** An interstitial at every break, towards a game or a menu: Playgama allows both. */
   midgameAd(hooks: AdHooks): Promise<void> {
     const bridge = this.bridge;
     if (!bridge?.advertisement.isInterstitialSupported) return Promise.resolve();

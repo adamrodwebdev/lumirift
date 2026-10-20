@@ -118,6 +118,14 @@ const offPortalPause = platform.onPauseChange((paused) =>
   paused ? audio.suspend() : document.hidden || audio.resume(),
 );
 const unlockAudio = () => audio.unlock();
+/**
+ * On a portal, Escape belongs to the portal (it leaves full screen): cancelling
+ * the key keeps the browser from turning it into a window's close request, so
+ * the game never reacts to it.
+ */
+const keepEscapeForPortal = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') event.preventDefault();
+};
 const onVisibility = () => (document.hidden ? audio.suspend() : audio.resume());
 watchEffect(() => {
   audio.setVolume(settings.current.volume);
@@ -125,11 +133,14 @@ watchEffect(() => {
   audio.setMuted(settings.current.muted || portalMuted.value);
 });
 onMounted(() => {
+  if (platform.reservesEscape)
+    window.addEventListener('keydown', keepEscapeForPortal, { capture: true });
   window.addEventListener('pointerdown', unlockAudio, { capture: true });
   window.addEventListener('keydown', unlockAudio, { capture: true });
   document.addEventListener('visibilitychange', onVisibility);
 });
 onBeforeUnmount(() => {
+  window.removeEventListener('keydown', keepEscapeForPortal, { capture: true });
   window.removeEventListener('pointerdown', unlockAudio, { capture: true });
   window.removeEventListener('keydown', unlockAudio, { capture: true });
   document.removeEventListener('visibilitychange', onVisibility);

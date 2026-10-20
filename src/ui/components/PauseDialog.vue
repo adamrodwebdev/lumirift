@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { FamilyId, ModeId } from '@/session/ModeId';
 import AppIcon, { type IconName } from './AppIcon.vue';
+import KeyLegend from './KeyLegend.vue';
 import ModalDialog from './ModalDialog.vue';
 
 /**
  * The pause: resume, restart, the settings (no page header during a game),
- * quit. On a touch screen, the gestures of the family, drawn; with a
- * keyboard, the keys (`help`: translation keys of the family's help).
+ * quit. On a touch screen, the gestures of the family, drawn (`help`: words
+ * where no drawing says it, the Mosaic); with a keyboard, the keys, drawn.
  */
 const props = defineProps<{
   open: boolean;
   help: readonly string[];
   touch: boolean;
-  family: string;
+  family: FamilyId;
+  modeId: ModeId;
 }>();
 const emit = defineEmits<{ resume: []; restart: []; settings: []; quit: [] }>();
 
@@ -41,20 +44,17 @@ const gestures = computed<readonly Gesture[]>(() => {
     list.push({ icon: 'gestureTurn', gesture: 'gestures.twoFingerDrag', action: 'tower.turn' });
   return list;
 });
-/** Words for the keyboard, or for what the drawings cannot say (the Mosaic). */
-const texts = computed(() => {
-  if (!props.touch) return props.help.filter((key) => /keyboard/i.test(key));
-  return gestures.value.length > 0 ? [] : props.help.filter((key) => /touch/i.test(key));
-});
+/** Words for what the drawings cannot say (the Mosaic's touch controls). */
+const texts = computed(() => (props.touch && gestures.value.length === 0 ? props.help : []));
 </script>
 
 <template>
   <ModalDialog
     class="pause"
-    :class="{ 'pause--legend': gestures.length > 0 }"
+    :class="{ 'pause--legend': gestures.length > 0 || !touch }"
     :open="open"
     :title="t('pause.title')"
-    :wide="gestures.length > 0"
+    :wide="gestures.length > 0 || !touch"
     @dismiss="emit('resume')"
   >
     <button
@@ -85,6 +85,7 @@ const texts = computed(() => {
         </span>
       </li>
     </ul>
+    <KeyLegend v-if="!touch" class="pause__legend" :family="family" :mode-id="modeId" />
     <div v-if="texts.length > 0" class="pause__keys">
       <p v-for="key in texts" :key="key" class="sheet-note">{{ t(key) }}</p>
     </div>
@@ -155,6 +156,12 @@ const texts = computed(() => {
   .pause--legend .pause__resume,
   .pause--legend .pause__more {
     grid-column: 1;
+  }
+
+  .pause--legend .pause__legend {
+    grid-column: 2;
+    grid-row: 2 / span 3;
+    align-self: center;
   }
 
   .pause--legend .gestures {

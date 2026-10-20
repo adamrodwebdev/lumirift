@@ -166,7 +166,6 @@
     "ability": {
       "flip": "Flip the well"
     },
-    "keyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Z to rotate the other way (W on AZERTY), C to hold, F for the ability, P to pause.",
     "touch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop.",
     "move": "Move",
     "groupMove": "Move and drop",
@@ -309,18 +308,15 @@
     "empty": "Empty slot",
     "pickPiece": "Tap the piece to rotate",
     "pickCell": "Tap the cell to bomb",
-    "helpKeyboard": "Keyboard: 1, 2, 3 to pick a piece (4 for the cube), arrows to move it, Enter to place it, J for the jokers, Esc to cancel, P to pause.",
     "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell.",
     "jokerCount": "× {n}"
   },
   "sand": {
     "well": "Sand well",
-    "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Z to rotate the other way (W on AZERTY), P to pause. A single-colour region linking both walls is cleared.",
     "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop. Water takes the colour around it, fire burns the colour it touches."
   },
   "tower": {
     "well": "Glass tower",
-    "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Z to rotate the other way (W on AZERTY), C to hold, Q and E (A and E on AZERTY) to turn the tower, P to pause. A line is a full ring of 20 cells.",
     "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop, drag with two fingers to turn the tower. The camera follows the piece.",
     "turn": "Turn the tower"
   },
@@ -575,5 +571,20 @@
       "shatter": "Shatter"
     },
     "newLooks": "{n} new look | {n} new looks"
+  },
+  "keys": {
+    "legend": "Keys",
+    "left": "Left arrow",
+    "right": "Right arrow",
+    "up": "Up arrow",
+    "down": "Down arrow",
+    "backspace": "Backspace",
+    "space": "Space",
+    "enter": "Enter",
+    "pick": "Pick a piece",
+    "aim": "Aim",
+    "place": "Place",
+    "joker": "Jokers",
+    "cancel": "Cancel"
   }
 }

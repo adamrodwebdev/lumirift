@@ -3,6 +3,33 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.10.0] — 20/10/2026
+
+Prêt pour une nouvelle soumission à CrazyGames : revue complète du build comme un modérateur,
+puis corrections.
+
+### Ajouté
+
+- **Touches dessinées** : à côté du jeu pendant les cinq premières parties et dans la pause,
+  chaque commande au clavier s'affiche en touches (flèches, Espace, X, Z…), selon la disposition
+  du clavier du joueur (sur AZERTY, la touche « tourner dans l'autre sens » s'affiche W).
+  Elles remplacent le paragraphe d'aide.
+
+### Modifié
+
+- **Niveau 1-1 calme** : le Sable de la toute première partie n'a ni vent, ni eau, ni feu (ils
+  arrivent au chapitre 2) : la première partie n'enseigne qu'une idée, relier les deux murs.
+- **Une console au centre** (paysage, ordinateur) : le tableau de bord se range en colonne
+  contre le puits, les pièces suivantes de l'autre côté, au lieu d'être aux bords de l'écran.
+- L'objectif d'un niveau tient sur deux lignes au lieu d'être coupé (téléphone).
+- **Échap n'est plus utilisé du tout sur les portails** (il y quitte le plein écran) : ni dans
+  la Mosaïque (Retour arrière annule le choix), ni pour fermer une fenêtre (seuls ses boutons
+  la ferment). Sur notre site, Échap ferme toujours une fenêtre.
+- **CrazyGames** : aucune pub en allant vers l'accueil ou la carte (le portail interdit les
+  pubs sur les boutons de navigation) ; pas de pub récompensée (les pubs sont coupées pendant
+  le Basic Launch, et la récompense devrait aussi s'obtenir sans pub). Playgama inchangé.
+- Vidéos de présentation refaites avec le jeu actuel (elles montraient l'ancien look).
+
 ## [1.9.0] — 20/10/2026
 
 Les fenêtres deviennent des feuilles : rien ne défile, même sur un petit téléphone.

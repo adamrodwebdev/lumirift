@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                       |
-| ------- | ---------- | ---------------------------- |
-| 1.9     | 20/10/2026 | Des feuilles sans défilement |
+| Version | Date       | Statut               |
+| ------- | ---------- | -------------------- |
+| 1.10    | 20/10/2026 | Prêt pour CrazyGames |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -432,7 +432,17 @@ jeu, sauf d'un bouton : le doigt ne cache pas le puits.
 
 Famille Placement (Mosaïque) : glisser-déposer au doigt ou à la souris (la pièce s'affiche
 au-dessus du doigt pour rester visible) ; au clavier, 1 / 2 / 3 choisit une pièce, les
-flèches la déplacent, Entrée la pose, J ouvre les jokers, Échap annule un choix.
+flèches la déplacent, Entrée la pose, J ouvre les jokers, Retour arrière annule un choix.
+
+**Échap n'appartient qu'au portail** (1.10) : sur CrazyGames et Playgama, il quitte le plein
+écran ; le jeu annule la touche (`reservesEscape` de la plateforme) pour que le navigateur
+n'en fasse pas une demande de fermeture de fenêtre : seuls leurs boutons les ferment. Sur
+notre site, Échap ferme une fenêtre, comme partout sur le web.
+
+**Touches dessinées** (1.10) : la légende de chaque mode (`keyLegendFor`) s'affiche en
+touches à côté du jeu pendant les cinq premières parties et dans la pause ; les lettres
+suivent la disposition du clavier du joueur quand le navigateur la donne
+(`navigator.keyboard.getLayoutMap()`, Chrome et Edge), sinon la lettre QWERTY.
 
 Ni Échap ni Ctrl ne servent en jeu (1.4) : les portails les réservent (Échap quitte le plein
 écran, Ctrl+W ferme l'onglet).
@@ -638,7 +648,9 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   moments dans le puits (×2, ×3, COMBO ×N, RIFT!), identiques dans toutes les langues.
 - **Prise en main** : la première partie est guidée (déplacer, tourner, faire tomber, puis le
   but), chaque étape validée en la faisant, quelle que soit l'entrée ; « Passer » à tout moment.
-  La campagne s'ouvre sur le **Sable** (1-1 : deux zones en trois minutes).
+  La campagne s'ouvre sur le **Sable** (1-1 : deux zones en trois minutes), en version
+  **calme** (1.10) : ni vent, ni eau, ni feu, qui arrivent au chapitre 2 (`calm` du niveau,
+  `hazards: false` du jeu).
 - **Son** : tous les sons dans une même tonalité (ré mineur pentatonique) ; **musique
   générative** dans cette tonalité (nappe i – VI – III – VII, puis basse, arpège et battement
   quand l'intensité monte), dont l'intensité suit le danger (`pressure()` de chaque famille) ;
@@ -661,7 +673,10 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   `scripts/crazygames-media.mjs`) et contrôle de chaque exigence du portail dans
   [CRAZYGAMES.md](CRAZYGAMES.md). Le jeu passe par l'abstraction `Platform` : événements de
   jeu, langue, sauvegarde du portail, coupure du son, publicité entre deux parties ; aucun
-  lien sortant.
+  lien sortant. Refusé en 1.2.0 sur la qualité ; **resoumission préparée en 1.10** (revue
+  complète du build, corrections, médias refaits). Chaque portail décide de ses pubs
+  (`midgameAd(hooks, moment)`) : CrazyGames n'en montre jamais en allant vers un menu (boutons
+  de navigation) et n'offre pas de pub récompensée.
 
 - **Maintenant** : le jeu de base, sur notre propre site, sans publicité ni SDK tiers.
 - **Démo pour le portfolio (1.3)** : `npm run build:demo` produit `dist-demo`, servi par
@@ -1300,3 +1315,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.7     | 20/10/2026 | La partie au doigt : gestes partout, boutons sur demande (§ 3.3), écran de jeu sans en-tête ni défilement, paysage (§ 4.2), chute et effacement animés (§ 5.6).   |
 | 1.8     | 20/10/2026 | Le menu à onglets : Accueil, Modes, Carte, Atelier sans défilement, glissement, rail en paysage, transition de la faille (§ 3.2 ter, § 5.6).                      |
 | 1.9     | 20/10/2026 | Les fenêtres en feuilles sans défilement, résultats mis en scène, garde à l'ouverture (§ 4.2, § 5.6).                                                             |
+| 1.10    | 20/10/2026 | Prêt pour CrazyGames : 1-1 calme, touches dessinées, console centrée, pubs par portail (§ 3.7), vidéos refaites.                                                  |

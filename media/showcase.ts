@@ -4,8 +4,10 @@ import { FrameClock } from '@/app/FrameClock';
 import { createAppI18n } from '@/i18n';
 import { WebPlatform } from '@/platform/Platform';
 import { MemoryStorage } from '@/services/KeyValueStorage';
+import '@/styles/fonts.css';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
+import '@/styles/stage.css';
 import '@/styles/ambiances.css';
 import { SCENES, type SceneName } from './scenes';
 import ShowcaseView from './ShowcaseView.vue';
@@ -24,6 +26,12 @@ const clock = new FrameClock(
   },
   () => (pending = null),
 );
+
+// A canvas sized by its box may trip the browser's harmless "ResizeObserver loop"
+// notice: it must not reach the dev server's error overlay in the middle of a video.
+window.addEventListener('error', (event) => {
+  if (event.message.includes('ResizeObserver loop')) event.stopImmediatePropagation();
+});
 
 const services = createBrowserServices(new WebPlatform(), new MemoryStorage());
 services.settings.update({ effects: 'full', locale: 'en' });
