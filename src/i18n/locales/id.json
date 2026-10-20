@@ -408,7 +408,8 @@
     "nowWorn": "Kamu memakai {name}.",
     "nowWornGame": "Kamu memakai {name}. Mulai permainan untuk melihatnya.",
     "unlocksWith": "Untuk membuka {name}: {rule}.",
-    "trying": "Pratinjau"
+    "trying": "Pratinjau",
+    "new": "Baru"
   },
   "campaign": {
     "chapter": "Bab {n}",
@@ -572,6 +573,7 @@
       "material": "Blok",
       "ambiance": "Suasana",
       "shatter": "Pecahan"
-    }
+    },
+    "newLooks": "{n} tampilan baru"
   }
 }

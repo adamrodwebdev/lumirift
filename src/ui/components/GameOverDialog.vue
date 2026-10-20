@@ -280,7 +280,7 @@ const shownScore = computed(() =>
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
   background: var(--tone-5);
-  color: var(--text);
+  color: var(--bg);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.06em;

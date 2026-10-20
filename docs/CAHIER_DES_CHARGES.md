@@ -401,7 +401,10 @@ Règles détaillées :
   utiles ; ce qui ouvre un niveau fermé) ; améliorations.
 - **Atelier** : vitrine (un petit puits qui porte la matière, l'ambiance ou les éclats
   essayés) au-dessus d'une étagère en trois familles ; premier toucher : essayer, second :
-  porter ; un objet verrouillé dit comment l'obtenir.
+  porter ; un objet verrouillé dit comment l'obtenir. **Nouveautés** (1.9) : une pastille
+  sur l'onglet compte les objets gagnés et pas encore vus, un point marque leur famille, une
+  étiquette « Nouveau » chaque objet ; l'Atelier s'ouvre sur la famille qui a du nouveau ;
+  un objet est vu une fois essayé ou quand on quitte son étagère.
 - **Transitions** : la faille s'ouvre depuis le bouton touché et couvre l'écran le temps de
   charger le mode (écran de jeu, famille et plateau préchargés derrière la lumière) ; au
   retour, les pages remontent en place. Coupe franche si le système demande moins
@@ -1149,7 +1152,9 @@ src/progression/
   Experience      Barème de l'expérience, courbe des niveaux
   Objectives      Objectifs du jour : une règle par sorte (stratégies), tirage par la date
   Cosmetics       Catalogue des objets et règles de déblocage
-  Profile         Entité : recordGame, objectivesFor, equip ; protège ses règles
+  Profile         Entité : recordGame, objectivesFor, equip, markSeen ; protège ses règles ;
+                  newCosmetics (objets gagnés pas encore vus, 1.9 ; une ancienne
+                  sauvegarde compte comme vu ce qu'elle avait déjà gagné)
 src/services/
   ProfileService  Profil réactif, sauvegardé sur l'appareil
   AmbianceController  data-ambiance et data-motion sur <html>

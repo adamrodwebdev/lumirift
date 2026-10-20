@@ -193,6 +193,35 @@ test('in the Atelier, a first tap tries a look on the stage, a second wears it',
   expect(saved).toContain('"material":"neon"');
 });
 
+test('looks earned since the last visit are new: a badge on the Atelier, until seen', async ({
+  page,
+}) => {
+  // Level 3, only the starting looks seen: Neon and Aurora are new.
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'stackrift:profile',
+      JSON.stringify({ xp: 300, seen: ['material.crystal', 'ambiance.night', 'shatter.shards'] }),
+    ),
+  );
+  await page.reload();
+  await expect(tab(page, 'Atelier')).toHaveAccessibleName(/2 nouveautés/);
+  await tab(page, 'Atelier').click();
+  const atelier = panel(page, 'Atelier');
+  // The shelf opens on a kind with something new; trying a look counts as seeing it.
+  const neon = atelier.getByRole('button', { name: /^Néon, Nouveau/ });
+  await expect(neon).toBeVisible();
+  await neon.click();
+  await expect(atelier.getByRole('button', { name: /^Néon/ })).not.toHaveAccessibleName(/Nouveau/);
+  await expect(tab(page, 'Atelier')).toHaveAccessibleName(/1 nouveauté/);
+  // Aurora waits on the Ambiance shelf; leaving the Atelier after it counts as seen.
+  await atelier.getByRole('button', { name: /^Ambiance/ }).click();
+  await expect(atelier.getByRole('button', { name: /^Aurore, Nouveau/ })).toBeVisible();
+  await tab(page, 'Accueil').click();
+  await expect(tab(page, 'Atelier')).toHaveAccessibleName('Atelier');
+  await page.reload();
+  await expect(tab(page, 'Atelier')).toHaveAccessibleName('Atelier');
+});
+
 test('no error reaches the console while playing', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (message) => {

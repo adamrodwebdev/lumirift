@@ -408,7 +408,8 @@
     "nowWorn": "Vous portez : {name}.",
     "nowWornGame": "Vous portez : {name}. Lancez une partie pour voir l’effet.",
     "unlocksWith": "Pour débloquer {name} : {rule}.",
-    "trying": "Aperçu"
+    "trying": "Aperçu",
+    "new": "Nouveau"
   },
   "campaign": {
     "chapter": "Chapitre {n}",
@@ -572,6 +573,7 @@
       "material": "Blocs",
       "ambiance": "Ambiance",
       "shatter": "Éclats"
-    }
+    },
+    "newLooks": "{n} nouveauté | {n} nouveautés"
   }
 }

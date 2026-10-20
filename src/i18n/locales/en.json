@@ -408,7 +408,8 @@
     "nowWorn": "You now wear {name}.",
     "nowWornGame": "You now wear {name}: start a game to see it.",
     "unlocksWith": "To unlock {name}: {rule}.",
-    "trying": "Preview"
+    "trying": "Preview",
+    "new": "New"
   },
   "campaign": {
     "chapter": "Chapter {n}",
@@ -572,6 +573,7 @@
       "material": "Blocks",
       "ambiance": "Ambiance",
       "shatter": "Shatter"
-    }
+    },
+    "newLooks": "{n} new look | {n} new looks"
   }
 }

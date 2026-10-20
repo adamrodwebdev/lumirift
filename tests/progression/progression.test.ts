@@ -5,7 +5,7 @@ import { COSMETICS, isUnlocked } from '@/progression/Cosmetics';
 import { experienceFor, levelProgress, MIN_GAME_MS } from '@/progression/Experience';
 import { GameTracker, type GameReport } from '@/progression/GameReport';
 import { objectivesOfDay } from '@/progression/Objectives';
-import { Profile } from '@/progression/Profile';
+import { newCosmetics, Profile } from '@/progression/Profile';
 import { MemoryStorage } from '@/services/KeyValueStorage';
 import { PROFILE_KEY, ProfileService } from '@/services/ProfileService';
 import type { GameSession, SessionEventMap } from '@/session/GameSession';
@@ -170,6 +170,39 @@ describe('Profile', () => {
     expect(profile.snapshot.equipment.material).toBe('neon');
   });
 
+  it('marks the looks earned as new until the player has seen them', () => {
+    const profile = new Profile();
+    expect(newCosmetics(profile.snapshot)).toEqual([]);
+    for (let i = 0; i < 6; i++)
+      profile.recordGame(
+        report({ durationMs: 400_000, clears: 40, lines: 60 }),
+        `202610${10 + i}`,
+        MODES,
+      );
+    const fresh = newCosmetics(profile.snapshot);
+    expect(fresh.map((cosmetic) => cosmetic.id)).toContain('neon');
+    const materials = fresh.filter((cosmetic) => cosmetic.kind === 'material');
+    expect(profile.markSeen(materials)).toBe(true);
+    expect(newCosmetics(profile.snapshot).some((c) => c.kind === 'material')).toBe(false);
+    expect(profile.markSeen(materials)).toBe(false);
+    // A look still locked is not seen: it will be new once earned.
+    const gold = COSMETICS.find((c) => c.kind === 'material' && c.id === 'gold')!;
+    expect(profile.markSeen([gold])).toBe(false);
+  });
+
+  it('counts what an old save had earned as seen, and keeps the seen list valid', () => {
+    const old = Profile.parse({ xp: 2000 });
+    expect(old.level).toBe(9);
+    expect(newCosmetics(old.snapshot)).toEqual([]);
+    const parsed = Profile.parse({ xp: 2000, seen: ['material.neon', 'nope', 3, 'material.neon'] });
+    expect(parsed.snapshot.seen).toEqual(['material.neon']);
+    const fresh = newCosmetics(parsed.snapshot).map((cosmetic) => cosmetic.id);
+    expect(fresh).toContain('paper');
+    expect(fresh).not.toContain('neon');
+    // What every player starts with is never news.
+    expect(fresh).not.toContain('crystal');
+  });
+
   it('reads saved data defensively', () => {
     const profile = Profile.parse({
       xp: -5,
@@ -205,5 +238,18 @@ describe('ProfileService', () => {
     const again = new ProfileService(storage, () => MODES);
     expect(again.current.games).toBe(1);
     expect(again.current.xp).toBe(service.current.xp);
+  });
+
+  it('remembers the looks the player has seen', () => {
+    const storage = new MemoryStorage();
+    storage.set(PROFILE_KEY, JSON.stringify({ xp: 300, seen: ['material.crystal'] }));
+    const service = new ProfileService(storage, () => MODES);
+    const fresh = newCosmetics(service.current);
+    expect(fresh.map((cosmetic) => cosmetic.id)).toEqual(
+      expect.arrayContaining(['neon', 'aurora']),
+    );
+    service.markSeen(fresh);
+    expect(newCosmetics(service.current)).toEqual([]);
+    expect(newCosmetics(new ProfileService(storage, () => MODES).current)).toEqual([]);
   });
 });

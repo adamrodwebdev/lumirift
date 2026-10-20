@@ -5,11 +5,13 @@ import { useServices } from '@/app/AppServices';
 import {
   COSMETIC_KINDS,
   COSMETICS,
+  cosmeticKey,
   type Cosmetic,
   type CosmeticKind,
   type MaterialId,
   type ShatterId,
 } from '@/progression/Cosmetics';
+import { newCosmetics } from '@/progression/Profile';
 import AppIcon from '../components/AppIcon.vue';
 import { useProgressText } from '../useProgressText';
 import { isTouchScreen } from '../useOrientation';
@@ -20,8 +22,14 @@ import { loadGemArt } from './loadArt';
 /**
  * The Atelier: a stage that shows a look before it is worn, over a shelf of
  * every cosmetic. A first tap tries a look on the stage, a second wears it;
- * a locked one says how to earn it. Nothing here changes the game.
+ * a locked one says how to earn it. Nothing here changes the game. Looks
+ * earned since the last visit are marked new until the player has seen them.
  */
+const props = defineProps<{
+  /** Shown (its tab chosen): what is on the shelf then has been seen. */
+  active: boolean;
+}>();
+
 const { t } = useI18n();
 const { profile } = useServices();
 const text = useProgressText();
@@ -36,11 +44,35 @@ const status = ref('');
 const worn = computed(() => profile.current.equipment);
 const shownId = computed(() => trying.value[kind.value] ?? worn.value[kind.value]);
 
+// --- New looks: earned, not seen yet ------------------------------------------
+
+const fresh = computed(() => new Set(newCosmetics(profile.current).map(cosmeticKey)));
+const isNew = (cosmetic: Cosmetic) => fresh.value.has(cosmeticKey(cosmetic));
+const kindIsNew = (id: CosmeticKind) =>
+  COSMETICS.some((cosmetic) => cosmetic.kind === id && isNew(cosmetic));
+/** The new looks of a kind have been on the shelf: they are not new any more. */
+const seeKind = (id: CosmeticKind) =>
+  profile.markSeen(COSMETICS.filter((cosmetic) => cosmetic.kind === id && isNew(cosmetic)));
+
+watch(
+  () => props.active,
+  (active, was) => {
+    // The shelf opens on a kind with something new; leaving, the player has seen it.
+    if (active) kind.value = COSMETIC_KINDS.find(kindIsNew) ?? kind.value;
+    else if (was) seeKind(kind.value);
+  },
+  { immediate: true },
+);
+onBeforeUnmount(() => {
+  if (props.active) seeKind(kind.value);
+});
+
 interface ShelfItem {
   readonly cosmetic: Cosmetic;
   readonly unlocked: boolean;
   readonly worn: boolean;
   readonly shown: boolean;
+  readonly isNew: boolean;
 }
 const items = computed<ShelfItem[]>(() =>
   COSMETICS.filter((cosmetic) => cosmetic.kind === kind.value).map((cosmetic) => ({
@@ -48,6 +80,7 @@ const items = computed<ShelfItem[]>(() =>
     unlocked: profile.model.isUnlocked(cosmetic),
     worn: worn.value[kind.value] === cosmetic.id,
     shown: shownId.value === cosmetic.id,
+    isNew: isNew(cosmetic),
   })),
 );
 const shown = computed(() => items.value.find((item) => item.shown) ?? items.value[0]!);
@@ -62,11 +95,18 @@ const note = (item: ShelfItem): string =>
         ? again
         : t('cosmetics.wear');
 
+/** What a screen reader says of an item: its name, new or not, its note. */
+const itemLabel = (item: ShelfItem): string =>
+  [text.cosmeticName(item.cosmetic), item.isNew ? t('cosmetics.new') : null, note(item)]
+    .filter(Boolean)
+    .join(', ');
+
 /** The same, shorter, under an item on the shelf (the stage says the rest). */
 const shortNote = (item: ShelfItem): string =>
   item.shown && item.unlocked && !item.worn ? t('cosmetics.trying') : note(item);
 
 const setKind = (next: CosmeticKind) => {
+  if (next !== kind.value && props.active) seeKind(kind.value);
   kind.value = next;
   status.value = '';
 };
@@ -77,6 +117,7 @@ const nudge = (element: HTMLElement, keyframes: Keyframe[], duration: number) =>
 
 const choose = (item: ShelfItem, element: HTMLElement) => {
   const { cosmetic } = item;
+  if (item.isNew) profile.markSeen([cosmetic]);
   const name = text.cosmeticName(cosmetic);
   const second = item.shown;
   trying.value = { ...trying.value, [cosmetic.kind]: cosmetic.id };
@@ -167,6 +208,9 @@ watch([material, shatter, ambiance], async () => {
             @click="setKind(id)"
           >
             {{ t(`hub.kinds.${id}`) }}
+            <span v-if="kindIsNew(id)" class="kinds__new">
+              <span class="sr-only">{{ t('cosmetics.new') }}</span>
+            </span>
           </button>
         </div>
 
@@ -181,7 +225,7 @@ watch([material, shatter, ambiance], async () => {
               'item--locked': !item.unlocked,
             }"
             :aria-pressed="item.worn"
-            :aria-label="`${text.cosmeticName(item.cosmetic)}, ${note(item)}`"
+            :aria-label="itemLabel(item)"
             @click="choose(item, $event.currentTarget as HTMLElement)"
           >
             <GemCanvas
@@ -199,6 +243,9 @@ watch([material, shatter, ambiance], async () => {
             <small>{{ shortNote(item) }}</small>
             <span v-if="!item.unlocked" class="item__lock" aria-hidden="true">
               <AppIcon name="lock" :size="15" />
+            </span>
+            <span v-if="item.isNew" class="item__new" aria-hidden="true">
+              {{ t('cosmetics.new') }}
             </span>
           </button>
         </div>
@@ -282,6 +329,7 @@ watch([material, shatter, ambiance], async () => {
 }
 
 .kinds button {
+  position: relative;
   min-height: var(--touch);
   padding: 0 0.4rem;
   border: 0;
@@ -393,6 +441,33 @@ watch([material, shatter, ambiance], async () => {
 .item--locked .item__art {
   opacity: 0.35;
   filter: grayscale(0.6);
+}
+
+/* Something new: a pink dot on its kind, a chip on the item. */
+.kinds__new {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--tone-5);
+  box-shadow: 0 0 0.5rem color-mix(in srgb, var(--tone-5) 70%, transparent);
+}
+
+.item__new {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--tone-5);
+  color: var(--bg);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 0.25rem 0.7rem color-mix(in srgb, var(--tone-5) 45%, transparent);
 }
 
 .item__lock {

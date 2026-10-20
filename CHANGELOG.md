@@ -19,6 +19,11 @@ Les fenêtres deviennent des feuilles : rien ne défile, même sur un petit tél
 - **Garde à l'ouverture** : une fenêtre qui vient d'apparaître ignore un instant les
   touchers, Entrée et Espace, pour qu'un joueur qui martèle Espace en fin de partie ne
   relance pas sans le vouloir.
+- **Nouveautés de l'Atelier** : une pastille sur l'onglet Atelier compte les matières,
+  ambiances et éclats gagnés depuis la dernière visite ; un point marque leur famille et une
+  étiquette « Nouveau » chaque objet. L'Atelier s'ouvre sur la famille qui a du nouveau ;
+  un objet n'est plus nouveau une fois essayé, ou quand on quitte son étagère. Les objets
+  déjà gagnés avant cette version ne sont pas comptés.
 
 ### Modifié
 
