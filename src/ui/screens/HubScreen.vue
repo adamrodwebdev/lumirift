@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
@@ -46,6 +46,44 @@ const go = (target: number) => {
   if (next) page.value = next;
 };
 
+/**
+ * The pages are built when first needed: the one shown at once, a neighbour
+ * as soon as a swipe heads for it, the others once the menu has settled (one
+ * per idle moment). The first screen does not wait for the three others.
+ */
+const built = reactive(new Set<HubPage>([page.value]));
+const build = (id: HubPage | undefined) => {
+  if (id) built.add(id);
+};
+watch(page, build);
+/** A page's place in the tabs pattern; only the page shown is reachable. */
+const panel = (id: HubPage) => ({
+  id: `hub-panel-${id}`,
+  role: 'tabpanel',
+  'aria-labelledby': `hub-tab-${id}`,
+  inert: page.value !== id,
+});
+const SETTLE_MS = 2500;
+let settled = false;
+let settleTimer: number | undefined;
+/** Safari has no idle callbacks: a short timer stands in. */
+const idleCallback = (window as Partial<Pick<Window, 'requestIdleCallback'>>).requestIdleCallback;
+const whenIdle = (run: () => void) =>
+  idleCallback ? idleCallback.call(window, run, { timeout: 2000 }) : window.setTimeout(run, 200);
+onMounted(() => {
+  const queue = HUB_PAGES.filter((id) => !built.has(id));
+  const next = () => {
+    if (settled) return;
+    build(queue.shift());
+    if (queue.length > 0) whenIdle(next);
+  };
+  settleTimer = window.setTimeout(() => whenIdle(next), SETTLE_MS);
+});
+onBeforeUnmount(() => {
+  settled = true;
+  window.clearTimeout(settleTimer);
+});
+
 const muted = computed(() => settings.current.muted);
 const stars = computed(() => campaign.model.totalStars);
 
@@ -61,6 +99,7 @@ const position = computed(() => index.value - drag.value / (pages.value?.clientW
 useSwipe(pages, {
   move(dx) {
     dragging.value = true;
+    build(HUB_PAGES[index.value + (dx < 0 ? 1 : -1)]);
     const pastEdge =
       (dx > 0 && index.value === 0) || (dx < 0 && index.value === HUB_PAGES.length - 1);
     drag.value = pastEdge ? dx / 3 : dx;
@@ -152,35 +191,28 @@ onMounted(() => {
         :style="{ '--index': index, '--drag': `${drag}px` }"
       >
         <HomePage
-          id="hub-panel-home"
-          role="tabpanel"
-          aria-labelledby="hub-tab-home"
-          :inert="page !== 'home'"
+          v-if="built.has('home')"
+          v-bind="panel('home')"
           :active="page === 'home'"
           @play="(modeId, origin) => emit('play', modeId, null, origin)"
           @daily="(challenge, origin) => emit('daily', challenge, origin)"
           @level="(level, origin) => emit('level', level, origin)"
         />
+        <section v-else v-bind="panel('home')" class="page" />
         <ModesPage
-          id="hub-panel-modes"
-          role="tabpanel"
-          aria-labelledby="hub-tab-modes"
-          :inert="page !== 'modes'"
+          v-if="built.has('modes')"
+          v-bind="panel('modes')"
           @play="(modeId, variant, origin) => emit('play', modeId, variant, origin)"
         />
+        <section v-else v-bind="panel('modes')" class="page" />
         <MapPage
-          id="hub-panel-map"
-          role="tabpanel"
-          aria-labelledby="hub-tab-map"
-          :inert="page !== 'map'"
+          v-if="built.has('map')"
+          v-bind="panel('map')"
           @play="(level, origin) => emit('level', level, origin)"
         />
-        <AtelierPage
-          id="hub-panel-atelier"
-          role="tabpanel"
-          aria-labelledby="hub-tab-atelier"
-          :inert="page !== 'atelier'"
-        />
+        <section v-else v-bind="panel('map')" class="page" />
+        <AtelierPage v-if="built.has('atelier')" v-bind="panel('atelier')" />
+        <section v-else v-bind="panel('atelier')" class="page" />
       </div>
     </div>
 

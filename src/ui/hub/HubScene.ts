@@ -1,4 +1,5 @@
 import { Tone } from '@/core/Tone';
+import type { BlockSprites } from '@/families/falling/render/BlockSprites';
 import { fitCanvas, type GemArt } from './GemArt';
 
 /** The shapes of the seven pieces, in cells (one rotation each, turned by the scene). */
@@ -73,11 +74,23 @@ const SHAPES: readonly {
 const PIECES = 12;
 /** The scene runs at half the screen's density at most: it is a backdrop. */
 const MAX_RATIO = 1.5;
+/** One image every two of a 60 Hz screen (a little less, for timing jitter). */
+const FRAME_MS = 30;
+/** Three depths, far (small, dim, slow) to near: three sizes of gems to draw. */
+const LAYERS = [0.15, 0.5, 0.9] as const;
+const cellOf = (depth: number) => 8 + depth * 15;
+/** The rift's strokes at their brightest (glow, light, core); it breathes below. */
+const RIFT_STROKES = [
+  { width: 30, alpha: 0.08 },
+  { width: 7, alpha: 0.15 },
+  { width: 1.4, alpha: 0.42 },
+] as const;
 
 interface Falling {
   shape: (typeof SHAPES)[number];
   cells: (readonly [number, number])[];
-  /** 0 far (small, dim, slow) to 1 near. */
+  /** Its depth: an index of `LAYERS`. */
+  layer: number;
   depth: number;
   cell: number;
   x: number;
@@ -110,7 +123,13 @@ export class HubScene {
   private height = 0;
   private ratio = 1;
   private rift: [number, number][] = [];
+  /** The rift, painted once per size; each frame only sets how bright it is. */
+  private riftLayer: HTMLCanvasElement | null = null;
+  /** The gems of each depth, at the screen's density. */
+  private layerSprites: BlockSprites[] = [];
   private readonly pieces: Falling[] = [];
+  /** A piece came back at another depth: the far ones must be drawn first again. */
+  private unsorted = true;
   private sparks: Spark[] = [];
   private running = false;
   private generation = 0;
@@ -135,9 +154,36 @@ export class HubScene {
     this.width = fit.width;
     this.height = fit.height;
     this.rift = this.makeRift();
+    this.riftLayer = this.paintRift(fit.ctx);
+    this.layerSprites = LAYERS.map((depth) =>
+      this.art.sprites('crystal', cellOf(depth) * this.ratio),
+    );
     if (this.pieces.length === 0)
       for (let i = 0; i < PIECES; i++) this.pieces.push(this.spawn(true));
     this.draw();
+  }
+
+  /** Paints the rift's three strokes on a canvas of the scene's size. */
+  private paintRift(like: CanvasRenderingContext2D): HTMLCanvasElement | null {
+    const layer = document.createElement('canvas');
+    layer.width = this.canvas.width;
+    layer.height = this.canvas.height;
+    const ctx = layer.getContext('2d');
+    if (!ctx) return null;
+    ctx.setTransform(like.getTransform());
+    const { palette } = this.art;
+    const colours = [palette.effects.rift, palette.accent, palette.crack];
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    this.rift.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+    RIFT_STROKES.forEach(({ width, alpha }, i) => {
+      ctx.strokeStyle = colours[i]!;
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = width;
+      ctx.stroke();
+    });
+    return layer;
   }
 
   start(): void {
@@ -150,10 +196,12 @@ export class HubScene {
     this.last = performance.now();
     const frame = (now: number) => {
       if (!this.running || generation !== this.generation) return;
+      requestAnimationFrame(frame);
+      // A slow backdrop: 30 images a second are enough, and cost half.
+      if (now - this.last < FRAME_MS) return;
       this.step(Math.min(50, now - this.last));
       this.last = now;
       this.draw();
-      requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
   }
@@ -174,13 +222,16 @@ export class HubScene {
 
   private spawn(anywhere: boolean): Falling {
     const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)]!;
-    const depth = Math.random();
-    const cell = 8 + depth * 15;
+    const layer = Math.floor(Math.random() * LAYERS.length);
+    const depth = LAYERS[layer]!;
+    const cell = cellOf(depth);
+    this.unsorted = true;
     let cells = [...shape.cells];
     for (let r = Math.floor(Math.random() * 4); r > 0; r--) cells = turn(cells);
     return {
       shape,
       cells,
+      layer,
       depth,
       cell,
       x: Math.random() * this.width,
@@ -251,29 +302,20 @@ export class HubScene {
     const { ctx } = this;
     if (!ctx) return;
     ctx.clearRect(0, 0, this.width, this.height);
-    const { palette } = this.art;
     const breath = 0.5 + 0.5 * Math.sin(this.clock * 2.2);
 
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    this.rift.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
-    ctx.strokeStyle = palette.effects.rift;
-    ctx.globalAlpha = 0.05 + 0.03 * breath;
-    ctx.lineWidth = 30;
-    ctx.stroke();
-    ctx.strokeStyle = palette.accent;
-    ctx.globalAlpha = 0.1 + 0.05 * breath;
-    ctx.lineWidth = 7;
-    ctx.stroke();
-    ctx.strokeStyle = palette.crack;
-    ctx.globalAlpha = 0.28 + 0.14 * breath;
-    ctx.lineWidth = 1.4;
-    ctx.stroke();
+    if (this.riftLayer) {
+      ctx.globalAlpha = (2 + breath) / 3;
+      ctx.drawImage(this.riftLayer, 0, 0, this.width, this.height);
+    }
 
-    const pieces = [...this.pieces].sort((a, b) => a.depth - b.depth);
-    for (const piece of pieces) {
-      const sprite = this.art.sprites('crystal', piece.cell * this.ratio).get(piece.shape.tone);
+    if (this.unsorted) {
+      this.pieces.sort((a, b) => a.depth - b.depth);
+      this.unsorted = false;
+    }
+    for (const piece of this.pieces) {
+      const sprite = this.layerSprites[piece.layer]?.get(piece.shape.tone);
+      if (!sprite) continue;
       ctx.globalAlpha = 0.18 + piece.depth * 0.5;
       for (const [x, y] of piece.cells)
         ctx.drawImage(
@@ -284,7 +326,7 @@ export class HubScene {
           piece.cell,
         );
     }
-    ctx.fillStyle = palette.accent;
+    ctx.fillStyle = this.art.palette.accent;
     for (const spark of this.sparks) {
       ctx.globalAlpha = 1 - spark.age / spark.life;
       ctx.fillRect(spark.x - 1.5, spark.y - 1.5, 3, 3);
