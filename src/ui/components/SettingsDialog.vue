@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
@@ -7,12 +8,18 @@ import { CONTROL_SCHEMES, type ControlScheme } from '@/services/SettingsService'
 import { isTouchScreen } from '../useOrientation';
 import ModalDialog from './ModalDialog.vue';
 
+/**
+ * The settings, one row each: language, controls (touch screens), ghost
+ * piece, effects, shake, vibration, the two volumes. Two columns on a wide
+ * screen; nothing to scroll.
+ */
 defineProps<{ open: boolean }>();
 const emit = defineEmits<{ close: [] }>();
 
 const { t } = useI18n();
 const { settings, haptics, platform } = useServices();
 const appVersion = __APP_VERSION__;
+const ids = { controls: useId(), effects: useId() };
 
 const EFFECT_LABELS: Readonly<Record<EffectsLevel, string>> = {
   full: 'settings.effectsFull',
@@ -47,20 +54,30 @@ const onMusic = (event: Event) =>
 </script>
 
 <template>
-  <ModalDialog :open="open" :title="t('settings.title')" @dismiss="emit('close')">
-    <div class="settings">
-      <label class="field">
-        <span class="field__label">{{ t('settings.language') }}</span>
-        <select class="field__control" :value="settings.current.locale" @change="onLocale">
+  <ModalDialog
+    class="settings"
+    :open="open"
+    :title="t('settings.title')"
+    closable
+    wide
+    @dismiss="emit('close')"
+  >
+    <div class="rows">
+      <label class="row">
+        <span class="row__label">{{ t('settings.language') }}</span>
+        <select class="select" :value="settings.current.locale" @change="onLocale">
           <option v-for="code in LOCALES" :key="code" :value="code" :lang="code">
             {{ t(`languages.${code}`) }}
           </option>
         </select>
       </label>
 
-      <fieldset v-if="touch" class="field">
-        <legend class="field__label">{{ t('settings.controls') }}</legend>
-        <div class="segmented">
+      <div v-if="touch" class="row row--wrap" role="radiogroup" :aria-labelledby="ids.controls">
+        <span :id="ids.controls" class="row__label">
+          {{ t('settings.controls') }}
+          <small>{{ t('settings.controlsHint') }}</small>
+        </span>
+        <span class="segmented">
           <label v-for="scheme in CONTROL_SCHEMES" :key="scheme" class="segmented__option">
             <input
               type="radio"
@@ -71,18 +88,23 @@ const onMusic = (event: Event) =>
             />
             <span>{{ t(CONTROL_LABELS[scheme]) }}</span>
           </label>
-        </div>
-        <p class="field__hint">{{ t('settings.controlsHint') }}</p>
-      </fieldset>
+        </span>
+      </div>
 
-      <label class="toggle">
-        <input type="checkbox" :checked="settings.current.ghost" @change="onGhost" />
-        <span>{{ t('settings.ghost') }}</span>
+      <label class="row">
+        <span class="row__label">{{ t('settings.ghost') }}</span>
+        <input
+          class="switch"
+          type="checkbox"
+          role="switch"
+          :checked="settings.current.ghost"
+          @change="onGhost"
+        />
       </label>
 
-      <fieldset class="field">
-        <legend class="field__label">{{ t('settings.effects') }}</legend>
-        <div class="segmented">
+      <div class="row row--wrap" role="radiogroup" :aria-labelledby="ids.effects">
+        <span :id="ids.effects" class="row__label">{{ t('settings.effects') }}</span>
+        <span class="segmented">
           <label v-for="level in EFFECT_LEVELS" :key="level" class="segmented__option">
             <input
               type="radio"
@@ -93,26 +115,34 @@ const onMusic = (event: Event) =>
             />
             <span>{{ t(EFFECT_LABELS[level]) }}</span>
           </label>
-        </div>
-      </fieldset>
+        </span>
+      </div>
 
-      <label class="toggle">
+      <label class="row" :class="{ 'row--off': settings.current.effects !== 'full' }">
+        <span class="row__label">{{ t('settings.shake') }}</span>
         <input
+          class="switch"
           type="checkbox"
+          role="switch"
           :checked="settings.current.shake"
           :disabled="settings.current.effects !== 'full'"
           @change="onShake"
         />
-        <span>{{ t('settings.shake') }}</span>
       </label>
 
-      <label v-if="haptics.supported" class="toggle">
-        <input type="checkbox" :checked="settings.current.haptics" @change="onHaptics" />
-        <span>{{ t('settings.haptics') }}</span>
+      <label v-if="haptics.supported" class="row">
+        <span class="row__label">{{ t('settings.haptics') }}</span>
+        <input
+          class="switch"
+          type="checkbox"
+          role="switch"
+          :checked="settings.current.haptics"
+          @change="onHaptics"
+        />
       </label>
 
-      <label class="field">
-        <span class="field__label">{{ t('settings.volume') }}</span>
+      <label class="row">
+        <span class="row__label">{{ t('settings.volume') }}</span>
         <input
           class="range"
           type="range"
@@ -124,8 +154,8 @@ const onMusic = (event: Event) =>
         />
       </label>
 
-      <label class="field">
-        <span class="field__label">{{ t('settings.music') }}</span>
+      <label class="row">
+        <span class="row__label">{{ t('settings.music') }}</span>
         <input
           class="range"
           type="range"
@@ -136,69 +166,89 @@ const onMusic = (event: Event) =>
           @input="onMusic"
         />
       </label>
-
-      <button type="button" class="btn btn--primary" @click="emit('close')">
-        {{ t('settings.close') }}
-      </button>
-
-      <footer class="about">
-        <!-- On a portal, the save goes through the platform (sometimes its cloud). -->
-        <p>{{ t(platform.storage ? 'app.privacyPortal' : 'app.privacy') }}</p>
-        <p>{{ t('app.version', { version: appVersion }) }}</p>
-      </footer>
     </div>
+
+    <button
+      type="button"
+      class="btn btn--primary btn--raised btn--block settings__done"
+      @click="emit('close')"
+    >
+      {{ t('settings.close') }}
+    </button>
+
+    <!-- On a portal, the save goes through the platform (sometimes its cloud). -->
+    <p class="sheet-note settings__about">
+      {{ t(platform.storage ? 'app.privacyPortal' : 'app.privacy') }}
+      {{ t('app.version', { version: appVersion }) }}
+    </p>
   </ModalDialog>
 </template>
 
 <style scoped>
-.settings {
+.rows {
   display: grid;
-  gap: var(--space-4);
+  gap: 0.375rem;
 }
 
-.about {
-  display: grid;
-  gap: var(--space-1);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--border);
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 2.85rem;
+  padding: 0.2rem 0.375rem 0.2rem var(--space-3);
+  border-radius: 1rem;
+  background: var(--highlight);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* A label and a long control: the control goes under the label when it lacks room. */
+.row--wrap {
+  flex-wrap: wrap;
+  cursor: default;
+}
+
+.row--off {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  cursor: default;
 }
 
-.field {
+.row__label {
   display: grid;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  border: 0;
+  min-width: 0;
 }
 
-.field__label {
+.row--wrap .row__label {
+  flex: 1 1 6rem;
+}
+
+.row__label small {
+  color: var(--text-muted);
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 0;
 }
 
-.field__hint {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.field__control {
-  min-height: var(--touch);
+.select {
+  min-height: 2.5rem;
   padding: 0 var(--space-3);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  font-weight: 700;
 }
 
+/* Two or three choices in a pill; the chosen one is gold. */
 .segmented {
   display: grid;
+  grid-auto-columns: auto;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: var(--space-1);
-  padding: var(--space-1);
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  gap: 0.2rem;
+  margin-left: auto;
+  padding: 0.2rem;
+  border-radius: 0.75rem;
+  background: var(--well-bg);
 }
 
 .segmented__option {
@@ -209,22 +259,25 @@ const onMusic = (event: Event) =>
 .segmented__option input {
   position: absolute;
   inset: 0;
-  opacity: 0;
   margin: 0;
+  opacity: 0;
   cursor: pointer;
 }
 
 .segmented__option span {
   display: grid;
   place-items: center;
-  min-height: var(--touch);
-  border-radius: calc(var(--radius-sm) - 2px);
-  font-weight: 600;
+  min-height: 2.35rem;
+  padding: 0 0.55rem;
+  border-radius: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 .segmented__option input:checked + span {
-  background: var(--surface);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+  background: var(--accent-fill);
+  color: var(--on-accent-fill);
 }
 
 .segmented__option input:focus-visible + span {
@@ -232,27 +285,94 @@ const onMusic = (event: Event) =>
   outline-offset: 1px;
 }
 
-.toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: var(--touch);
+/* A switch: a checkbox drawn as a sliding knob. */
+.switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 3.25rem;
+  height: 2rem;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--border);
   cursor: pointer;
+  transition: background-color 200ms ease;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 2px 6px var(--shade);
+  transition: transform 240ms var(--ease-spring);
+}
+
+.switch:checked {
+  background: var(--accent-fill);
+}
+
+.switch:checked::after {
+  transform: translateX(1.25rem);
+}
+
+.switch:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .range {
-  width: 100%;
-  min-height: var(--touch);
+  width: min(48%, 12rem);
+  min-height: 2.5rem;
+  margin: 0;
   accent-color: var(--accent-fill);
 }
 
-.toggle input:disabled + span {
-  color: var(--text-muted);
+/* Short phones: the corner button closes, the room goes to the rows. */
+@media (max-height: 44rem) {
+  .settings__done {
+    display: none;
+  }
 }
 
-.toggle input {
-  width: 1.25rem;
-  height: 1.25rem;
-  accent-color: var(--accent-fill);
+/* Landscape: the rows in two columns; the corner button closes. */
+@media (orientation: landscape) {
+  .rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+    column-gap: var(--space-2);
+  }
+
+  .row {
+    min-height: 2.75rem;
+  }
+
+  /* The choices in a pill take a whole line, so that they never wrap. */
+  .row--wrap {
+    grid-column: 1 / -1;
+  }
+
+  .row__label small {
+    display: none;
+  }
+
+  .settings__done {
+    display: none;
+  }
+
+  .settings__about {
+    font-size: 0.72rem;
+  }
+}
+
+/* The smallest landscape screens: only the settings. */
+@media (orientation: landscape) and (max-height: 23.75rem) {
+  .settings__about {
+    display: none;
+  }
 }
 </style>

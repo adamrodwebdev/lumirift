@@ -148,6 +148,61 @@ button {
   padding: 0;
 }
 
+/* A raised button: it stands on its lower edge and sinks into it. */
+.btn--raised {
+  box-shadow:
+    0 4px 0 var(--surface-edge),
+    inset 0 1px 0 var(--highlight);
+  transition:
+    transform 90ms ease,
+    box-shadow 90ms ease;
+}
+
+.btn--raised:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 var(--surface-edge),
+    inset 0 1px 0 var(--highlight);
+}
+
+.btn--primary.btn--raised {
+  box-shadow:
+    0 4px 0 var(--accent-edge),
+    0 0.6rem 1.4rem color-mix(in srgb, var(--rift-glow) 30%, transparent),
+    inset 0 2px 0 var(--highlight-strong);
+}
+
+.btn--primary.btn--raised:active {
+  box-shadow:
+    0 1px 0 var(--accent-edge),
+    inset 0 2px 0 var(--highlight-strong);
+}
+
+.btn--raised:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* A square icon button with soft corners (the round `.btn--icon` is for text rows). */
+.btn--square {
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border-radius: 0.875rem;
+}
+
+.btn--square:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn--raised:active {
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -159,8 +214,9 @@ button {
 }
 
 /*
- * Playgama forbids a browser page scrollbar: the page stays still and each
- * screen scrolls inside the game's own frame, under a fixed header.
+ * Playgama forbids a browser page scrollbar: the page stays still; the menu
+ * and the game fill the frame, and only a window too tall for a tiny screen
+ * would scroll, inside itself.
  */
 html[data-platform='playgama'],
 html[data-platform='playgama'] body {

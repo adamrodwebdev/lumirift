@@ -83,6 +83,19 @@ for (const theme of ['dark'] as const) {
   });
 }
 
+test('new looks: the badge of the Atelier tab and the marks on the shelf', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.evaluate(() =>
+    localStorage.setItem('stackrift:profile', JSON.stringify({ xp: 300, seen: [] })),
+  );
+  await page.reload();
+  await audit(page);
+  await page.getByRole('tab', { name: 'Atelier' }).click();
+  await expect(page.getByRole('button', { name: /^Néon, Nouveau/ })).toBeVisible();
+  await audit(page);
+});
+
 for (const theme of ['dark'] as const) {
   test(`${theme} theme: campaign map, level and upgrades`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });

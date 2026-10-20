@@ -28,7 +28,8 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde.
 - **Menu en quatre pages** (Accueil, Modes, Carte, Atelier) : onglets sous le pouce ou rail
-  en paysage, glissement d'une page à l'autre, rien à faire défiler.
+  en paysage, glissement d'une page à l'autre, rien à faire défiler ; les fenêtres sont des
+  feuilles qui tiennent à l'écran, et la fin de partie se dévoile pas à pas.
 
 ### Commandes
 

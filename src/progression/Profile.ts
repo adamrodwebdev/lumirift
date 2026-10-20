@@ -47,6 +47,8 @@ export interface ProfileData {
   readonly objectivesDay: string | null;
   readonly objectives: readonly ObjectiveProgress[];
   readonly equipment: Equipment;
+  /** The cosmetics the player has looked at in the Atelier (`kind.id`): the others earned are new. */
+  readonly seen: readonly string[];
 }
 
 /** What a game brought, for the end-of-game dialog. */
@@ -68,7 +70,35 @@ export const EMPTY_PROFILE: ProfileData = {
   objectivesDay: null,
   objectives: [],
   equipment: DEFAULT_EQUIPMENT,
+  // What a new player starts with is not news.
+  seen: COSMETICS.filter((cosmetic) => cosmetic.unlock.by === 'default').map(cosmeticKey),
 };
+
+const COSMETIC_KEYS = new Set(COSMETICS.map(cosmeticKey));
+
+/** What the unlock rules look at, in saved data. */
+export function achievementsOf(data: ProfileData): Achievements {
+  return {
+    level: levelProgress(data.xp).level,
+    bestStreak: data.streak.best,
+    objectivesDone: data.objectivesDone,
+  };
+}
+
+/**
+ * The cosmetics earned and not looked at yet: the Atelier marks them new.
+ * What every player starts with is never news.
+ */
+export function newCosmetics(data: ProfileData): readonly Cosmetic[] {
+  const achievements = achievementsOf(data);
+  const seen = new Set(data.seen);
+  return COSMETICS.filter(
+    (cosmetic) =>
+      cosmetic.unlock.by !== 'default' &&
+      isUnlocked(cosmetic, achievements) &&
+      !seen.has(cosmeticKey(cosmetic)),
+  );
+}
 
 /**
  * The player's progression: experience and level, objectives of the day,
@@ -91,11 +121,7 @@ export class Profile {
   }
 
   get achievements(): Achievements {
-    return {
-      level: this.level,
-      bestStreak: this.data.streak.best,
-      objectivesDone: this.data.objectivesDone,
-    };
+    return achievementsOf(this.data);
   }
 
   isUnlocked(cosmetic: Cosmetic): boolean {
@@ -192,6 +218,22 @@ export class Profile {
     };
   }
 
+  /**
+   * The player has looked at these cosmetics: they are not new any more.
+   * Only earned ones count (one still locked will be new once earned).
+   * Returns whether anything changed.
+   */
+  markSeen(cosmetics: readonly Cosmetic[]): boolean {
+    const seen = new Set(this.data.seen);
+    const fresh = cosmetics
+      .filter((cosmetic) => this.isUnlocked(cosmetic))
+      .map(cosmeticKey)
+      .filter((key) => !seen.has(key));
+    if (fresh.length === 0) return false;
+    this.data = { ...this.data, seen: [...this.data.seen, ...new Set(fresh)] };
+    return true;
+  }
+
   /** Wears a cosmetic; refused when it is not unlocked (or does not exist). */
   equip(kind: CosmeticKind, id: string): boolean {
     const cosmetic = findCosmetic(kind, id);
@@ -208,7 +250,7 @@ export class Profile {
       const n = record[key];
       return typeof n === 'number' && Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
     };
-    return new Profile({
+    const data: ProfileData = {
       xp: count('xp'),
       games: count('games'),
       objectivesDone: count('objectivesDone'),
@@ -216,7 +258,15 @@ export class Profile {
       objectivesDay: typeof record.objectivesDay === 'string' ? record.objectivesDay : null,
       objectives: parseObjectives(record.objectives),
       equipment: parseEquipment(record.equipment),
-    });
+      seen: [],
+    };
+    // Saved before the Atelier marked its new looks: what was earned then is not new.
+    const seen = Array.isArray(record.seen)
+      ? record.seen.filter(
+          (key: unknown): key is string => typeof key === 'string' && COSMETIC_KEYS.has(key),
+        )
+      : COSMETICS.filter((cosmetic) => isUnlocked(cosmetic, achievementsOf(data))).map(cosmeticKey);
+    return new Profile({ ...data, seen: [...new Set(seen)] });
   }
 }
 

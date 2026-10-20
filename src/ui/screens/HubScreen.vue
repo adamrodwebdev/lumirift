@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
 import { MAX_STARS, type CampaignLevel } from '@/campaign/Levels';
+import { newCosmetics } from '@/progression/Profile';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { ModeId } from '@/session/ModeId';
 import AppIcon from '../components/AppIcon.vue';
@@ -37,7 +38,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const format = useFormat();
-const { settings, campaign } = useServices();
+const { settings, campaign, profile } = useServices();
 const landscape = useLandscape();
 
 const index = computed(() => HUB_PAGES.indexOf(page.value));
@@ -85,6 +86,8 @@ onBeforeUnmount(() => {
 });
 
 const muted = computed(() => settings.current.muted);
+/** Looks earned and not seen in the Atelier yet: a badge on its tab. */
+const newLooks = computed(() => newCosmetics(profile.current).length);
 const stars = computed(() => campaign.model.totalStars);
 
 // --- Swiping between pages ---------------------------------------------------
@@ -211,7 +214,11 @@ onMounted(() => {
           @play="(level, origin) => emit('level', level, origin)"
         />
         <section v-else v-bind="panel('map')" class="page" />
-        <AtelierPage v-if="built.has('atelier')" v-bind="panel('atelier')" />
+        <AtelierPage
+          v-if="built.has('atelier')"
+          v-bind="panel('atelier')"
+          :active="page === 'atelier'"
+        />
         <section v-else v-bind="panel('atelier')" class="page" />
       </div>
     </div>
@@ -240,6 +247,10 @@ onMounted(() => {
         >
           <AppIcon :name="HUB_ICONS[id]" :size="25" />
           <span>{{ t(`hub.tabs.${id}`) }}</span>
+          <span v-if="id === 'atelier' && newLooks > 0" class="tab__badge">
+            <span aria-hidden="true">{{ format.number(newLooks) }}</span>
+            <span class="sr-only">{{ t('hub.newLooks', { n: newLooks }, newLooks) }}</span>
+          </span>
         </button>
       </div>
     </nav>
@@ -413,6 +424,23 @@ onMounted(() => {
 
 .tab[aria-selected='true'] {
   color: var(--text);
+}
+
+.tab .tab__badge {
+  position: absolute;
+  top: 0.35rem;
+  left: calc(50% + 0.45rem);
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--tone-5);
+  color: var(--bg);
+  font-size: 0.65rem;
+  line-height: 1.1rem;
+  letter-spacing: 0;
+  text-align: center;
+  box-shadow: 0 0.2rem 0.6rem color-mix(in srgb, var(--tone-5) 50%, transparent);
 }
 
 .tab[aria-selected='true'] :deep(svg) {

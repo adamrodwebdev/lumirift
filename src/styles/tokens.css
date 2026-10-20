@@ -78,6 +78,9 @@
   /* Raised tiles: a light top edge, a dark lower edge they sink into when pressed. */
   --highlight: rgb(255 255 255 / 0.08);
   --highlight-strong: rgb(255 255 255 / 0.55);
+  /* Windows: the veil over the screen behind, the shade under a sheet. */
+  --veil: rgb(5 4 18 / 0.64);
+  --shade: rgb(0 0 0 / 0.5);
   --surface-edge: #0b0823;
   /* Motion: things arrive fast and settle; a spring for what pops. */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);

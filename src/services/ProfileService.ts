@@ -1,6 +1,6 @@
 import { shallowRef, type Ref } from 'vue';
 import type { ModeId } from '@/session/ModeId';
-import type { CosmeticKind } from '@/progression/Cosmetics';
+import type { Cosmetic, CosmeticKind } from '@/progression/Cosmetics';
 import type { GameReport } from '@/progression/GameReport';
 import {
   Profile,
@@ -64,6 +64,11 @@ export class ProfileService {
     const done = this.profile.equip(kind, id);
     if (done) this.save();
     return done;
+  }
+
+  /** The player has looked at these cosmetics in the Atelier. */
+  markSeen(cosmetics: readonly Cosmetic[]): void {
+    if (this.profile.markSeen(cosmetics)) this.save();
   }
 
   private save(): void {

@@ -193,6 +193,35 @@ test('in the Atelier, a first tap tries a look on the stage, a second wears it',
   expect(saved).toContain('"material":"neon"');
 });
 
+test('looks earned since the last visit are new: a badge on the Atelier, until seen', async ({
+  page,
+}) => {
+  // Level 3, only the starting looks seen: Neon and Aurora are new.
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'stackrift:profile',
+      JSON.stringify({ xp: 300, seen: ['material.crystal', 'ambiance.night', 'shatter.shards'] }),
+    ),
+  );
+  await page.reload();
+  await expect(tab(page, 'Atelier')).toHaveAccessibleName(/2 nouveautés/);
+  await tab(page, 'Atelier').click();
+  const atelier = panel(page, 'Atelier');
+  // The shelf opens on a kind with something new; trying a look counts as seeing it.
+  const neon = atelier.getByRole('button', { name: /^Néon, Nouveau/ });
+  await expect(neon).toBeVisible();
+  await neon.click();
+  await expect(atelier.getByRole('button', { name: /^Néon/ })).not.toHaveAccessibleName(/Nouveau/);
+  await expect(tab(page, 'Atelier')).toHaveAccessibleName(/1 nouveauté/);
+  // Aurora waits on the Ambiance shelf; leaving the Atelier after it counts as seen.
+  await atelier.getByRole('button', { name: /^Ambiance/ }).click();
+  await expect(atelier.getByRole('button', { name: /^Aurore, Nouveau/ })).toBeVisible();
+  await tab(page, 'Accueil').click();
+  await expect(tab(page, 'Atelier')).toHaveAccessibleName('Atelier');
+  await page.reload();
+  await expect(tab(page, 'Atelier')).toHaveAccessibleName('Atelier');
+});
+
 test('no error reaches the console while playing', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (message) => {
@@ -319,11 +348,14 @@ test('the upgrades are bought with campaign stars, and refunded', async ({ page 
     .click();
   const shop = page.getByRole('dialog', { name: 'Améliorations' });
   await expect(shop).toContainText('5 étoiles disponibles');
+  // The upgrade chosen in the grid is bought below it.
   const phoenix = shop.getByRole('listitem').filter({ hasText: 'Phénix' });
-  await phoenix.getByRole('button', { name: /Améliorer/ }).click();
+  await phoenix.getByRole('button').click();
+  await expect(phoenix.getByRole('button')).toHaveAttribute('aria-pressed', 'true');
+  await shop.getByRole('button', { name: /Améliorer/ }).click();
   await expect(shop).toContainText('3 étoiles disponibles');
   await expect(phoenix.getByRole('img', { name: 'Rang 1 sur 3' })).toBeVisible();
-  await shop.getByRole('button', { name: 'Rendre toutes les étoiles' }).click();
+  await shop.getByRole('button', { name: 'Tout reprendre' }).click();
   await expect(shop).toContainText('5 étoiles disponibles');
 });
 
@@ -371,4 +403,70 @@ test('a tap on the hold box keeps the piece for later', async ({ page }) => {
   await expect(hold).not.toHaveClass(/stage__box--used/);
   await hold.click();
   await expect(hold).toHaveClass(/stage__box--used/);
+});
+
+test('every window fits the screen, without scrolling, from 360 × 640 to the desktop', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'One sweep is enough');
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.evaluate(() => {
+    localStorage.setItem(
+      'stackrift:campaign',
+      JSON.stringify({ stars: { '1-1': 3, '1-2': 2, '1-3': 3 }, ranks: { phoenix: 1 } }),
+    );
+  });
+  /** The window on top scrolls by this much (0: it fits). */
+  const overflow = async () => {
+    await page.waitForTimeout(250);
+    return page.evaluate(() => {
+      const open = [...document.querySelectorAll('dialog[open]')].at(-1);
+      return open ? open.scrollHeight - open.clientHeight : -1;
+    });
+  };
+  for (const [width, height] of [
+    [360, 640],
+    [390, 844],
+    [640, 360],
+    [844, 390],
+    [1280, 800],
+  ] as const) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/');
+    const size = `${width} × ${height}`;
+    await page.getByRole('button', { name: 'Réglages' }).click();
+    expect(await overflow(), `${size}: settings`).toBe(0);
+    await page.keyboard.press('Escape');
+    await panel(page, 'Accueil')
+      .getByRole('button', { name: /Objectifs du jour/ })
+      .click();
+    expect(await overflow(), `${size}: objectives`).toBe(0);
+    await page.keyboard.press('Escape');
+    await tab(page, 'Modes').click();
+    await modeTile(page, 'Duel').click();
+    await panel(page, 'Modes').getByRole('button', { name: 'Jouer' }).click();
+    expect(await overflow(), `${size}: opponents`).toBe(0);
+    await page.keyboard.press('Escape');
+    await tab(page, 'Carte').click();
+    await panel(page, 'Carte').getByRole('button', { name: /1-4/ }).click();
+    expect(await overflow(), `${size}: level`).toBe(0);
+    await page.keyboard.press('Escape');
+    await panel(page, 'Carte')
+      .getByRole('button', { name: /^Améliorations/ })
+      .click();
+    expect(await overflow(), `${size}: upgrades`).toBe(0);
+    await page.keyboard.press('Escape');
+    await openMode(page, 'Classique');
+    await page.keyboard.press('KeyP');
+    expect(await overflow(), `${size}: pause`).toBe(0);
+    await page.keyboard.press('Escape');
+    const over = page.getByRole('dialog', { name: 'Partie terminée' });
+    for (let i = 0; i < 80 && !(await over.isVisible()); i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(60);
+    }
+    await expect(over).toBeVisible({ timeout: 5000 });
+    expect(await overflow(), `${size}: end of the game`).toBe(0);
+  }
 });

@@ -1,0 +1,248 @@
+/*
+ * The game's windows (`ModalDialog`): a sheet that rises from the bottom of
+ * a phone held upright, a card that pops in the middle of a wide screen.
+ * Their content is laid out to fit without scrolling; the scroll stays as a
+ * last resort (zoomed text, very small screens). The open sheet is a grid
+ * whose items are the title row and each block of content (the body only
+ * groups them): a window sets its own columns on a wide screen. Shared
+ * blocks of content follow: rows of buttons, facts, notes.
+ */
+.sheet {
+  position: fixed;
+  inset: auto 0 0;
+  width: min(100%, 30rem);
+  max-width: 100%;
+  max-height: calc(100dvh - env(safe-area-inset-top) - var(--space-2));
+  margin: 0 auto;
+  padding: 1.1rem calc(1.1rem + env(safe-area-inset-right))
+    calc(1.1rem + env(safe-area-inset-bottom)) calc(1.1rem + env(safe-area-inset-left));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 1.75rem 1.75rem 0 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface-2) 86%, var(--tone-3)),
+    var(--surface) 70%
+  );
+  color: var(--text);
+  box-shadow:
+    0 -1.25rem 3.75rem var(--shade),
+    inset 0 1px 0 var(--highlight);
+  animation: sheet-up 420ms var(--ease-out);
+}
+
+.sheet[open] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--space-3);
+}
+
+.sheet::backdrop {
+  background: var(--veil);
+  animation: veil-in 240ms ease-out;
+}
+
+.sheet--closing {
+  pointer-events: none;
+  animation: sheet-down 200ms ease-in forwards;
+}
+
+/* Arriving: its buttons wait a moment before they take a tap. */
+.sheet--settling .sheet__body {
+  pointer-events: none;
+}
+
+.sheet--closing::backdrop {
+  animation: veil-out 200ms ease-in forwards;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes veil-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.sheet__head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sheet__title {
+  font-size: 1.375rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.sheet__close {
+  flex: none;
+  margin: -0.25rem -0.25rem -0.25rem 0;
+}
+
+.sheet--hero .sheet__head {
+  justify-content: center;
+  margin-bottom: calc(var(--space-2) * -1);
+}
+
+.sheet--hero .sheet__title {
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 1.75rem);
+  text-align: center;
+}
+
+.sheet__body {
+  display: contents;
+}
+
+/* The content follows the sheet in a short cascade. */
+.sheet[open]:not(.sheet--closing) > .sheet__body > * {
+  animation: sheet-rise 420ms var(--ease-out) both;
+}
+
+.sheet[open] > .sheet__body > :nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.sheet[open] > .sheet__body > :nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.sheet[open] > .sheet__body > :nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.sheet[open] > .sheet__body > :nth-child(n + 5) {
+  animation-delay: 160ms;
+}
+
+@keyframes sheet-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.9rem);
+  }
+}
+
+/* Landscape and desktop: a card in the middle, which pops in. */
+@media (orientation: landscape) {
+  .sheet {
+    inset: 0;
+    width: min(100% - 2rem, 30rem);
+    max-height: calc(100dvh - 1.25rem);
+    margin: auto;
+    padding: 1rem 1.15rem;
+    border-bottom: 1px solid var(--border);
+    border-radius: 1.6rem;
+    animation: sheet-pop 380ms var(--ease-spring);
+  }
+
+  .sheet--wide {
+    width: min(100% - 2rem, 46rem);
+  }
+
+  .sheet--closing {
+    animation: sheet-away 180ms ease-in forwards;
+  }
+
+  .sheet[open] {
+    gap: var(--space-2) var(--space-4);
+  }
+}
+
+@keyframes sheet-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes sheet-away {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+/* --- Shared content ------------------------------------------------------ */
+
+/* A full-width button: the main action of a window. */
+.btn--block {
+  width: 100%;
+}
+
+/* Two or three buttons side by side, equal. */
+.sheet-buttons {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--space-2);
+}
+
+.sheet-buttons .btn {
+  min-width: 0;
+  padding-inline: var(--space-2);
+  white-space: nowrap;
+}
+
+/* Name and value, one fact per row. */
+.sheet-facts {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+}
+
+.sheet-facts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: 0.6rem var(--space-3);
+  border-radius: 0.875rem;
+  background: var(--highlight);
+  font-size: 0.875rem;
+}
+
+.sheet-facts dt {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.sheet-facts dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: end;
+}
+
+.sheet-note {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+@media (orientation: landscape) {
+  .sheet-facts > div {
+    padding-block: 0.4rem;
+  }
+}
