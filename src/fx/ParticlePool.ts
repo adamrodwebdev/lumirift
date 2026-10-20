@@ -43,6 +43,10 @@ export class ParticlePool {
   readonly color: Uint16Array;
   /** Shard triangles, six coordinates per particle, relative to its centre. */
   readonly shape: Float32Array;
+  /** A shard cut from a block keeps its picture: the block's tone, or -1 for a plain colour. */
+  readonly texture: Int16Array;
+  /** Where the shard's centre sat in its block: two coordinates per particle, in cells. */
+  readonly uv: Float32Array;
 
   private _count = 0;
   private _limit: number;
@@ -60,6 +64,8 @@ export class ParticlePool {
     this.kind = new Uint8Array(capacity);
     this.color = new Uint16Array(capacity);
     this.shape = new Float32Array(capacity * 6);
+    this.texture = new Int16Array(capacity).fill(-1);
+    this.uv = new Float32Array(capacity * 2);
     this._limit = capacity;
   }
 
@@ -96,7 +102,15 @@ export class ParticlePool {
     this.color[i] = color;
     this.angle[i] = 0;
     this.spin[i] = 0;
+    this.texture[i] = -1;
     return i;
+  }
+
+  /** Gives a shard the picture of the block it was cut from, its centre at (`u`, `v`) in that block. */
+  setTexture(i: number, tone: number, u: number, v: number): void {
+    this.texture[i] = tone;
+    this.uv[i * 2] = u;
+    this.uv[i * 2 + 1] = v;
   }
 
   setTriangle(
@@ -197,5 +211,7 @@ export class ParticlePool {
     this.kind[i] = this.kind[last]!;
     this.color[i] = this.color[last]!;
     this.shape.copyWithin(i * 6, last * 6, last * 6 + 6);
+    this.texture[i] = this.texture[last]!;
+    this.uv.copyWithin(i * 2, last * 2, last * 2 + 2);
   }
 }

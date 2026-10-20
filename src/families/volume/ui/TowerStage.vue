@@ -15,6 +15,8 @@ import TouchControls from '@/families/falling/ui/TouchControls.vue';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
+import { useGameSurface } from '@/ui/useGameSurface';
+import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { TowerCamera, TURN_STEP } from '../camera/TowerCamera';
 import { TowerRenderer } from '../render/TowerRenderer';
 
@@ -41,6 +43,10 @@ const CAMERA_KEYS: Readonly<Record<string, -1 | 1>> = { KeyQ: -1, KeyE: 1 };
 const { t } = useI18n();
 const { theme, settings, audio, haptics, profile: progression } = useServices();
 const format = useFormat();
+const landscape = useLandscape();
+/** The on-screen buttons, for the touch players who chose them. */
+const touch = isTouchScreen();
+const pad = computed(() => touch && settings.current.controls === 'buttons');
 
 const wellArea = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -48,7 +54,12 @@ const palette = shallowRef<TonePalette | null>(null);
 const held = shallowRef<PieceSpec | null>(null);
 const canHold = ref(true);
 const queue = shallowRef<readonly PieceSpec[]>([]);
-const previewSize = ref(48);
+/** Width of a column face on, in CSS pixels: one swipe step. */
+const columnSize = ref(24);
+/** Previews: small in the portrait band above the tower, larger beside it. */
+const previewSize = computed(() =>
+  landscape.value ? Math.round(Math.min(84, Math.max(40, columnSize.value * 2.6))) : 38,
+);
 
 const profile = computed(() => effectsProfile(settings.current.effects, settings.current.shake));
 const effects = new FallingEffects(
@@ -69,20 +80,21 @@ const camera = new TowerCamera(session.view.board.width);
 const detachSpawn = session.onGame('spawn', () => camera.recentre());
 
 let renderer: TowerRenderer | null = null;
-/** Width of a column face on, in CSS pixels: one swipe step. */
-let columnCss = 24;
 
 const execute = (command: FallingCommand) => {
   if (props.active) session.execute(command);
 };
 const input = new FallingInput(execute, () => emit('pause'));
-const gestures = new WellGestures(execute, () => columnCss);
+const gestures = new WellGestures(execute, () => columnSize.value);
 
 const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
-  columnCss = renderer.layout(width - 4, height - 4, Math.min(2, window.devicePixelRatio || 1));
-  previewSize.value = Math.round(Math.min(84, Math.max(36, columnCss * 2.6)));
+  columnSize.value = renderer.layout(
+    width - 4,
+    height - 4,
+    Math.min(2, window.devicePixelRatio || 1),
+  );
   renderer.render();
 });
 
@@ -100,7 +112,10 @@ watch(
 watch(
   () => props.active,
   (active) => {
-    if (!active) input.releaseAll();
+    if (!active) {
+      input.releaseAll();
+      gestures.cancel();
+    }
   },
 );
 
@@ -148,45 +163,42 @@ const onKey = (event: KeyboardEvent, down: boolean) => {
 const onKeyDown = (event: KeyboardEvent) => onKey(event, true);
 const onKeyUp = (event: KeyboardEvent) => onKey(event, false);
 
-// --- Pointer: one finger plays, two fingers turn the tower ------------------
+// --- Touch: one finger plays, two fingers turn the tower (or rotate on a tap) --
 
 const pointers = new Map<number, number>();
 let turning = false;
 
 const middle = () => [...pointers.values()].reduce((sum, x) => sum + x, 0) / pointers.size;
 
-const onPointerDown = (event: PointerEvent) => {
-  canvas.value?.setPointerCapture(event.pointerId);
-  pointers.set(event.pointerId, event.clientX);
-  if (pointers.size >= 2) {
-    turning = true;
-    gestures.cancel();
-    return;
-  }
-  if (!turning) gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp);
-};
-const onPointerMove = (event: PointerEvent) => {
-  if (!pointers.has(event.pointerId)) return;
-  if (!turning) {
+useGameSurface({
+  down: (event) => {
     pointers.set(event.pointerId, event.clientX);
+    if (pointers.size >= 2) turning = true;
+    gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp);
+  },
+  move: (event) => {
+    if (!pointers.has(event.pointerId)) return;
+    if (turning) {
+      const before = middle();
+      pointers.set(event.pointerId, event.clientX);
+      // The surface follows the fingers: dragging right brings the left columns forward.
+      if (props.active) camera.turn(-(middle() - before) / columnSize.value);
+    } else {
+      pointers.set(event.pointerId, event.clientX);
+    }
     gestures.move(event.pointerId, event.clientX, event.clientY);
-    return;
-  }
-  const before = middle();
-  pointers.set(event.pointerId, event.clientX);
-  // The surface follows the fingers: dragging right brings the left columns forward.
-  if (props.active) camera.turn(-(middle() - before) / columnCss);
-};
-const onPointerUp = (event: PointerEvent) => {
-  pointers.delete(event.pointerId);
-  if (!turning) gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp);
-  if (pointers.size === 0) turning = false;
-};
-const onPointerCancel = (event: PointerEvent) => {
-  pointers.delete(event.pointerId);
-  gestures.cancel();
-  if (pointers.size === 0) turning = false;
-};
+  },
+  up: (event) => {
+    pointers.delete(event.pointerId);
+    gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp);
+    if (pointers.size === 0) turning = false;
+  },
+  cancel: (event) => {
+    pointers.delete(event.pointerId);
+    gestures.cancel();
+    if (pointers.size === 0) turning = false;
+  },
+});
 
 onMounted(() => {
   if (canvas.value) renderer = new TowerRenderer(canvas.value, session.view, camera, effects);
@@ -210,26 +222,30 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="stage">
-    <section class="stage__side stage__side--hold" :aria-label="t('hud.hold')">
-      <p class="stage__label">{{ t('hud.hold') }}</p>
-      <PiecePreview :spec="held" :palette="palette" :size="previewSize" :dimmed="!canHold" />
+    <section class="stage__hold" :aria-label="t('hud.hold')">
+      <button
+        type="button"
+        class="stage__box stage__box--hold"
+        :class="{ 'stage__box--used': !canHold }"
+        :aria-label="t('controls.hold')"
+        @click="execute({ type: 'hold' })"
+      >
+        <span class="stage__label" aria-hidden="true">{{ t('hud.hold') }}</span>
+        <PiecePreview :spec="held" :palette="palette" :size="previewSize" :dimmed="!canHold" />
+      </button>
     </section>
 
     <div ref="wellArea" class="stage__well">
       <canvas
         ref="canvas"
-        class="stage__canvas"
+        class="stage__canvas stage__canvas--glass"
         role="img"
         :aria-label="t('tower.well')"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointercancel="onPointerCancel"
       />
     </div>
 
-    <section class="stage__side stage__side--next" :aria-label="t('hud.next')">
-      <p class="stage__label">{{ t('hud.next') }}</p>
+    <section class="stage__next stage__box" :aria-label="t('hud.next')">
+      <p class="stage__label" aria-hidden="true">{{ t('hud.next') }}</p>
       <PiecePreview
         v-for="(spec, index) in queue"
         :key="index"
@@ -239,82 +255,32 @@ onBeforeUnmount(() => {
       />
     </section>
 
-    <TouchControls
-      class="stage__controls"
-      :ability="null"
-      @press="input.press($event)"
-      @release="input.release($event)"
-    />
+    <TouchControls v-if="pad" @press="input.press($event)" @release="input.release($event)" />
   </div>
 </template>
 
 <style scoped>
-.stage {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'hold well next'
-    'controls controls controls';
-  gap: var(--space-2);
-  height: 100%;
-  padding: var(--space-2) var(--space-2) 0;
-}
-
-.stage__side {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.stage__side--hold {
+.stage__hold {
   grid-area: hold;
+  display: flex;
 }
 
-.stage__side--next {
-  grid-area: next;
-}
-
-.stage__label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stage__well {
-  grid-area: well;
-  display: grid;
-  place-items: center;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.stage__canvas {
-  display: block;
-  max-width: 100%;
-  border-radius: var(--radius-sm);
-  touch-action: none;
+.stage__box--hold {
+  flex-direction: column;
+  gap: 0.15rem;
   cursor: pointer;
 }
 
-.stage__controls {
-  grid-area: controls;
-  display: none;
+.stage__box--hold:active {
+  transform: scale(0.94);
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .stage__controls {
-    display: grid;
-  }
+.stage__box--used {
+  border-color: transparent;
 }
 
-@media (min-width: 768px) {
-  .stage {
-    gap: var(--space-6);
-    padding: var(--space-4);
-  }
+/* The glass tower draws its own edges: no frame around its canvas. */
+.stage__canvas--glass {
+  box-shadow: none;
 }
 </style>

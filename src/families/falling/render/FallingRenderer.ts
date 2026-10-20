@@ -105,11 +105,14 @@ export class FallingRenderer {
     this.drawGrid(palette.wellGrid);
 
     if (!effects?.stackHidden) {
+      // A hard-dropped piece is drawn falling until it lands, not in the stack.
+      const covered = effects?.coveredCells() ?? null;
       for (let y = hidden; y < board.height; y++) {
         const top = (y - hidden + (effects?.rowOffset[y] ?? 0)) * cell;
         for (let x = 0; x < board.width; x++) {
           const tone = board.get(x, y);
-          if (tone !== 0) ctx.drawImage(sprites.get(tone), x * cell, top);
+          if (tone !== 0 && !covered?.has(y * board.width + x))
+            ctx.drawImage(sprites.get(tone), x * cell, top);
         }
       }
     }
@@ -117,6 +120,7 @@ export class FallingRenderer {
     if (effects) {
       this.painter.cracks(effects, sprites, palette, cell);
       this.painter.underlays(effects, palette, this.columns, this.rows, cell);
+      this.painter.drops(effects, sprites, palette, cell);
     }
 
     const active = this.view.active;
@@ -125,7 +129,7 @@ export class FallingRenderer {
       this.drawPiece(active, 0);
     }
 
-    if (effects) this.painter.overlays(effects, palette, cell, this.dark);
+    if (effects) this.painter.overlays(effects, palette, cell, this.dark, sprites);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.drawDanger(palette);
     if (effects && effects.beatGlow > 0) {
@@ -142,8 +146,11 @@ export class FallingRenderer {
       ctx.globalAlpha = 1;
     }
     if (effects && effects.wellFlash > 0) {
-      ctx.fillStyle = `rgb(255 255 255 / ${effects.wellFlash})`;
+      // The rift's own light: warm, added to the picture rather than a white veil.
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = `rgb(255 170 80 / ${effects.wellFlash})`;
       ctx.fillRect(0, 0, width, height);
+      ctx.globalCompositeOperation = 'source-over';
     }
   }
 

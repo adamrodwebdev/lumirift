@@ -165,4 +165,46 @@ describe('WellGestures', () => {
       { type: 'softDrop', active: false },
     ]);
   });
+
+  it('rotates the other way on a two-finger tap', () => {
+    const { gestures, commands } = setupGestures();
+    gestures.down(1, 100, 100, 0);
+    gestures.down(2, 180, 100, 30);
+    gestures.up(1, 101, 100, 140);
+    expect(commands).toEqual([]);
+    gestures.up(2, 181, 101, 160);
+    expect(commands).toEqual([{ type: 'rotate', direction: -1 }]);
+  });
+
+  it('does nothing when two fingers drag (the Tower turns its camera with them)', () => {
+    const { gestures, commands } = setupGestures();
+    gestures.down(1, 100, 100, 0);
+    gestures.down(2, 180, 100, 20);
+    gestures.move(1, 160, 100);
+    gestures.move(2, 240, 100);
+    gestures.up(1, 160, 100, 200);
+    gestures.up(2, 240, 100, 210);
+    expect(commands).toEqual([]);
+  });
+
+  it('ends a soft drop when a second finger comes', () => {
+    const { gestures, commands } = setupGestures();
+    gestures.down(1, 100, 100, 0);
+    gestures.move(1, 100, 150);
+    gestures.down(2, 200, 100, 300);
+    expect(commands).toEqual([
+      { type: 'softDrop', active: true },
+      { type: 'softDrop', active: false },
+    ]);
+  });
+
+  it('holds on a fast flick up, not on a slow drag up', () => {
+    const { gestures, commands } = setupGestures();
+    gestures.down(1, 100, 300, 0);
+    gestures.up(1, 102, 200, 80);
+    expect(commands).toEqual([{ type: 'hold' }]);
+    gestures.down(1, 100, 300, 1000);
+    gestures.up(1, 100, 200, 1900);
+    expect(commands).toEqual([{ type: 'hold' }]);
+  });
 });

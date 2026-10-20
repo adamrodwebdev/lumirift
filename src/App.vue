@@ -104,7 +104,13 @@ onBeforeUnmount(() => {
 
 <template>
   <a class="skip" href="#main">{{ t('nav.skip') }}</a>
-  <AppHeader :in-game="screen.kind !== 'home'" @home="home" @settings="settingsOpen = true" />
+  <!-- No page header during a game: it keeps its own pause and sound buttons. -->
+  <AppHeader
+    v-if="screen.kind !== 'game'"
+    :in-game="screen.kind !== 'home'"
+    @home="home"
+    @settings="settingsOpen = true"
+  />
   <main id="main" ref="main" tabindex="-1">
     <HomeScreen
       v-if="screen.kind === 'home'"
@@ -124,6 +130,7 @@ onBeforeUnmount(() => {
       @home="home"
       @campaign="campaignMap"
       @next="playLevel"
+      @settings="settingsOpen = true"
     />
   </main>
   <SettingsDialog :open="settingsOpen" @close="settingsOpen = false" />

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { effectsProfile, type EffectsLevel } from '@/fx/EffectsProfile';
 import { createSoloSession, type FallingSession } from '@/families/falling';
-import { CRACK_MS, clearLabel, FallingEffects } from '@/families/falling/fx/FallingEffects';
+import { CRACK_MS, clearLabel, fallMs, FallingEffects } from '@/families/falling/fx/FallingEffects';
 import { FallingSoundscape } from '@/families/falling/fx/FallingSoundscape';
 import type { TonePalette } from '@/render/TonePalette';
 import type { AudioEngine } from '@/services/audio/AudioEngine';
@@ -93,6 +93,36 @@ describe('FallingEffects', () => {
     session.execute({ type: 'hardDrop' });
     expect(effects.trails.length).toBeGreaterThan(0);
     expect(effects.pool.count).toBeGreaterThan(0);
+  });
+
+  it('shows a hard drop falling, then landing: dust and trail wait for it', () => {
+    const { session, effects } = setup();
+    effects.animateDrops = true;
+    const distance = session.view.dropDistance();
+    session.execute({ type: 'hardDrop' });
+    const wait = fallMs(distance);
+    expect(effects.drops).toHaveLength(1);
+    // The rules locked it at once; the picture keeps it out of the stack until it lands.
+    expect(effects.coveredCells()?.size).toBe(4);
+    expect(effects.trails.every((trail) => trail.age === -wait)).toBe(true);
+    expect(effects.pool.count).toBe(0);
+    effects.update(wait);
+    expect(effects.drops).toHaveLength(0);
+    expect(effects.coveredCells()).toBeNull();
+    expect(effects.pool.count).toBeGreaterThan(0);
+  });
+
+  it('falls quickly over a short drop and never more than 230 ms; Rhythm and calm effects drop at once', () => {
+    expect(fallMs(0)).toBe(0);
+    expect(fallMs(1)).toBe(88);
+    expect(fallMs(20)).toBe(230);
+    const { effects } = setup('reduced');
+    effects.animateDrops = true;
+    expect(effects.dropWait(10)).toBe(0);
+    const full = setup();
+    expect(full.effects.dropWait(10)).toBe(0);
+    full.effects.animateDrops = true;
+    expect(full.effects.dropWait(10)).toBe(160);
   });
 
   it('shatters the whole stack at game over', () => {

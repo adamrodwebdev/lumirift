@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { FrameClock } from '@/app/FrameClock';
@@ -19,6 +19,7 @@ import type { GameSession, Indicator, SessionOptions } from '@/session/GameSessi
 import type { ModeId } from '@/session/ModeId';
 import { observeCommands } from '@/session/observeCommands';
 import { ScoreBoard } from '@/services/ScoreBoard';
+import AppIcon from '../components/AppIcon.vue';
 import CampaignGoal from '../components/CampaignGoal.vue';
 import CoachCard from '../components/CoachCard.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
@@ -26,6 +27,8 @@ import type { GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
 import PauseDialog from '../components/PauseDialog.vue';
 import { stageFor } from '../stages';
+import { GAME_SURFACE } from '../useGameSurface';
+import { isTouchScreen } from '../useOrientation';
 
 const props = defineProps<{
   modeId: ModeId;
@@ -35,7 +38,13 @@ const props = defineProps<{
   /** The campaign level played, or null outside the campaign. */
   level: CampaignLevel | null;
 }>();
-const emit = defineEmits<{ home: []; campaign: []; next: [level: CampaignLevel] }>();
+const emit = defineEmits<{
+  home: [];
+  campaign: [];
+  next: [level: CampaignLevel];
+  /** The player opens the settings from the pause. */
+  settings: [];
+}>();
 
 const { t } = useI18n();
 const format = useFormat();
@@ -65,6 +74,17 @@ let rewardWatched = false;
 const announcement = ref('');
 const toast = ref<{ text: string; key: number } | null>(null);
 const stage = stageFor(descriptor);
+/** The whole screen takes the gestures of touch players (see useGameSurface). */
+const root = ref<HTMLElement | null>(null);
+provide(GAME_SURFACE, root);
+const touch = isTouchScreen();
+/** Where the parts go: one well, a duel (the opponent beside it), or the Mosaic's board and hand. */
+const layout =
+  descriptor.family === 'placement' ? 'mosaic' : props.modeId === 'duel' ? 'duel' : 'well';
+/** A duel names its opponent over the opponent's well already. */
+const shownSubtitle = computed(() => (layout === 'duel' ? null : subtitle.value));
+const muted = computed(() => settings.current.muted);
+const toggleMute = () => settings.update({ muted: !muted.value });
 /** Controls help shown in the pause dialog, by family. */
 const HELP: Readonly<Partial<Record<string, readonly string[]>>> = {
   falling: ['controls.keyboard', 'controls.touch'],
@@ -403,7 +423,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="game" :data-family="descriptor.family">
+  <div ref="root" class="game" :data-family="descriptor.family" :data-layout="layout">
     <h1 class="sr-only">
       {{
         level
@@ -413,26 +433,45 @@ onBeforeUnmount(() => {
             : modeName
       }}
     </h1>
-    <aside class="game__hud">
-      <p class="game__mode">{{ modeName }}</p>
-      <!-- Part of the game (the shape to fill): shown at every screen size. -->
-      <p v-if="subtitle" class="game__subtitle">{{ subtitle }}</p>
-      <CampaignGoal v-if="level && goal" :level="level" :value="goal.value" />
-      <HudPanel :indicators="indicators" />
-    </aside>
 
-    <div class="game__stage">
+    <button
+      type="button"
+      class="btn btn--icon game__pause"
+      :aria-label="t('controls.pause')"
+      @click="pause"
+    >
+      <AppIcon name="pause" />
+    </button>
+    <HudPanel class="game__score" :indicators="indicators.slice(0, 1)" />
+    <button
+      type="button"
+      class="btn btn--icon game__sound"
+      :aria-label="muted ? t('nav.unmute') : t('nav.mute')"
+      :aria-pressed="muted"
+      @click="toggleMute"
+    >
+      <AppIcon :name="muted ? 'mute' : 'sound'" />
+    </button>
+    <HudPanel class="game__stats" :indicators="indicators.slice(1)" :main-first="false" />
+    <div v-if="shownSubtitle || (level && goal)" class="game__goal">
+      <!-- Part of the game (the shape to fill): shown at every screen size. -->
+      <p v-if="shownSubtitle" class="game__subtitle">{{ shownSubtitle }}</p>
+      <CampaignGoal v-if="level && goal" :level="level" :value="goal.value" />
+    </div>
+
+    <component
+      :is="stage"
+      v-if="session"
+      :key="round"
+      :session="session"
+      :clock="clock"
+      :active="phase === 'playing'"
+      :ghost="settings.current.ghost"
+      @pause="pause"
+    />
+
+    <div class="game__overlay">
       <p v-if="phase === 'loading'" class="game__loading">{{ t('game.loading') }}</p>
-      <component
-        :is="stage"
-        v-if="session"
-        :key="round"
-        :session="session"
-        :clock="clock"
-        :active="phase === 'playing'"
-        :ghost="settings.current.ghost"
-        @pause="pause"
-      />
       <CoachCard
         v-if="coachStep && phase === 'playing'"
         :step="coachStep"
@@ -446,7 +485,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <aside v-if="showHelp" class="game__help" :aria-label="t('game.help')">
+    <aside v-if="showHelp && !touch" class="game__help" :aria-label="t('game.help')">
       <p>{{ t(help[0] ?? '') }}</p>
     </aside>
 
@@ -457,9 +496,12 @@ onBeforeUnmount(() => {
 
     <PauseDialog
       :help="help"
+      :touch="touch"
+      :family="descriptor.family"
       :open="phase === 'paused'"
       @resume="resume"
       @restart="start"
+      @settings="emit('settings')"
       @quit="level ? emit('campaign') : emit('home')"
     />
     <GameOverDialog
@@ -479,15 +521,63 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/*
+ * One grid for every family. The game screen names the areas; the stage's
+ * parts (hold, well, next, side, pads, hand…) sit in them. Portrait: a band
+ * at the top (pause, score, sound; hold, stats, next), then the well as wide
+ * as the screen. Landscape: the well in the middle, full height, the band
+ * split into the two side columns. No page header during a game.
+ */
 .game {
   --family-1: rgb(139 108 255 / 0.22);
   --family-2: rgb(61 224 255 / 0.12);
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  height: calc(100dvh - var(--header-h));
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'pause score sound'
+    'hold goal next'
+    'stats stats stats'
+    'well well well'
+    'padm padm padm'
+    'pada pada pada';
+  gap: 0.375rem var(--space-2);
+  height: 100dvh;
+  padding: calc(var(--space-2) + env(safe-area-inset-top))
+    calc(var(--space-2) + env(safe-area-inset-right))
+    calc(var(--space-2) + env(safe-area-inset-bottom))
+    calc(var(--space-2) + env(safe-area-inset-left));
   overflow: hidden;
+  /* A touch screen plays here: no page panning, zoom, selection or callout. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.game[data-layout='duel'] {
+  grid-template-columns: auto minmax(0, 1fr) auto clamp(3.5rem, 18vw, 6rem);
+  grid-template-areas:
+    'pause score sound sound'
+    'hold goal next next'
+    'stats stats stats stats'
+    'well well well side'
+    'padm padm padm padm'
+    'pada pada pada pada';
+}
+
+.game[data-layout='mosaic'] {
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto auto;
+  grid-template-areas:
+    'pause score sound'
+    'goal goal goal'
+    'stats stats stats'
+    'well well well'
+    'prompt prompt prompt'
+    'hand hand hand'
+    'jokers jokers jokers';
 }
 
 /* Each family has its own light behind the game; it drifts slowly. */
@@ -548,16 +638,45 @@ onBeforeUnmount(() => {
   animation: none;
 }
 
-.game__hud {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-2) var(--space-3);
-  overflow: hidden;
+.game__pause {
+  grid-area: pause;
+  justify-self: start;
+  align-self: center;
 }
 
-.game__help {
-  display: none;
+.game__sound {
+  grid-area: sound;
+  justify-self: end;
+  align-self: center;
+}
+
+.game__pause,
+.game__sound {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--glass);
+}
+
+.game__score {
+  grid-area: score;
+  justify-self: center;
+  align-self: center;
+}
+
+.game__stats {
+  grid-area: stats;
+  justify-self: center;
+  align-self: center;
+}
+
+.game__goal {
+  grid-area: goal;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .game__subtitle {
@@ -572,16 +691,12 @@ onBeforeUnmount(() => {
   font-weight: 800;
 }
 
-.game__mode {
-  display: none;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.3rem;
-}
-
-.game__stage {
+/* The coach, the words of a clear, the loading line: over the well, never taking its input. */
+.game__overlay {
+  grid-area: well;
   position: relative;
   min-height: 0;
+  pointer-events: none;
 }
 
 .game__loading {
@@ -596,7 +711,6 @@ onBeforeUnmount(() => {
   inset: 0;
   display: grid;
   place-items: center;
-  pointer-events: none;
 }
 
 .toast {
@@ -628,61 +742,127 @@ onBeforeUnmount(() => {
   }
 }
 
+.game__help {
+  display: none;
+}
+
 .game__break {
   position: fixed;
   inset: 0;
   z-index: 50;
 }
 
-/* Short landscape frames (a portal's iframe on a phone): the HUD goes to the side. */
-@media (orientation: landscape) and (min-width: 640px) and (max-height: 540px) {
-  .game {
-    grid-template-rows: minmax(0, 1fr);
-    grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
-  }
-
-  .game__hud {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: var(--space-4);
-  }
-
-  .game__mode {
-    display: block;
-  }
+/* The parts of the stages, aligned in the band (portrait). */
+.game :deep(.stage__next) {
+  justify-self: end;
 }
 
-/*
- * Wide screens: the game in the middle, the HUD against it on the left (as
- * close to the well as the hold piece), the keyboard help on the right.
- */
-@media (min-width: 1024px) and (min-height: 541px) {
+.game :deep(.controls__move),
+.game :deep(.controls__act) {
+  width: 100%;
+}
+
+.game :deep(.controls__move) {
+  grid-area: padm;
+}
+
+.game :deep(.controls__act) {
+  grid-area: pada;
+}
+
+@media (orientation: landscape) {
   .game {
-    grid-template-rows: minmax(0, 1fr);
-    grid-template-columns: minmax(12rem, 1fr) minmax(0, 52rem) minmax(0, 1fr);
+    grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.3fr) minmax(9rem, 1fr);
+    grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
+    grid-template-areas:
+      'pause well sound'
+      'score well next'
+      'stats well next'
+      'goal well next'
+      'hold well next'
+      'help well next'
+      'padm well pada';
+    column-gap: var(--space-4);
+    row-gap: var(--space-2);
+    padding: calc(var(--space-3) + env(safe-area-inset-top))
+      calc(var(--space-4) + env(safe-area-inset-right))
+      calc(var(--space-3) + env(safe-area-inset-bottom))
+      calc(var(--space-4) + env(safe-area-inset-left));
   }
 
-  .game__hud {
-    --hud-align: flex-end;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
-    padding: var(--space-6) 0 var(--space-6) var(--space-4);
-    text-align: end;
+  /* The opponent's well stands beside the coming pieces, not under them. */
+  .game[data-layout='duel'] {
+    grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.3fr) auto minmax(4.5rem, 0.6fr);
+    grid-template-areas:
+      'pause well sound sound'
+      'score well next side'
+      'stats well next side'
+      'goal well next side'
+      'hold well next side'
+      'help well next side'
+      'padm well pada pada';
   }
 
-  .game__mode {
-    display: block;
+  .game[data-layout='mosaic'] {
+    grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.6fr) minmax(9rem, 1fr);
+    grid-template-rows: repeat(4, minmax(0, auto)) minmax(0, 1fr) minmax(0, auto);
+    grid-template-areas:
+      'pause well sound'
+      'score well hand'
+      'stats well hand'
+      'goal well hand'
+      'jokers well hand'
+      'prompt well hand';
+  }
+
+  .game__pause {
+    justify-self: start;
+    align-self: start;
+  }
+
+  .game__sound {
+    align-self: start;
+  }
+
+  .game__score,
+  .game__stats {
+    justify-self: start;
+  }
+
+  .game__goal {
+    justify-content: flex-start;
   }
 
   .game__help {
+    grid-area: help;
     display: grid;
     align-content: end;
     max-width: 16rem;
-    padding: var(--space-6) var(--space-4);
     color: var(--text-muted);
     font-size: 0.85rem;
     line-height: 1.6;
+  }
+
+  .game :deep(.stage__side) {
+    justify-self: end;
+    width: min(100%, 10rem);
+  }
+
+  .game__score,
+  .game__stats,
+  .game__goal {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .game :deep(.controls__move),
+  .game :deep(.controls__act) {
+    width: min(100%, 15rem);
+    align-self: end;
+  }
+
+  .game :deep(.controls__act) {
+    justify-self: end;
   }
 }
 </style>

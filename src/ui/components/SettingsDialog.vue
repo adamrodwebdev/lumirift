@@ -3,6 +3,8 @@ import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, LOCALES } from '@/i18n/locales';
+import { CONTROL_SCHEMES, type ControlScheme } from '@/services/SettingsService';
+import { isTouchScreen } from '../useOrientation';
 import ModalDialog from './ModalDialog.vue';
 
 defineProps<{ open: boolean }>();
@@ -16,6 +18,14 @@ const EFFECT_LABELS: Readonly<Record<EffectsLevel, string>> = {
   reduced: 'settings.effectsReduced',
   off: 'settings.effectsOff',
 };
+
+const CONTROL_LABELS: Readonly<Record<ControlScheme, string>> = {
+  gestures: 'settings.controlsGestures',
+  buttons: 'settings.controlsButtons',
+};
+/** The choice of controls only means something on a touch screen. */
+const touch = isTouchScreen();
+const onControls = (value: ControlScheme) => settings.update({ controls: value });
 
 const onLocale = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
@@ -46,6 +56,23 @@ const onMusic = (event: Event) =>
           </option>
         </select>
       </label>
+
+      <fieldset v-if="touch" class="field">
+        <legend class="field__label">{{ t('settings.controls') }}</legend>
+        <div class="segmented">
+          <label v-for="scheme in CONTROL_SCHEMES" :key="scheme" class="segmented__option">
+            <input
+              type="radio"
+              name="controls"
+              :value="scheme"
+              :checked="settings.current.controls === scheme"
+              @change="onControls(scheme)"
+            />
+            <span>{{ t(CONTROL_LABELS[scheme]) }}</span>
+          </label>
+        </div>
+        <p class="field__hint">{{ t('settings.controlsHint') }}</p>
+      </fieldset>
 
       <label class="toggle">
         <input type="checkbox" :checked="settings.current.ghost" @change="onGhost" />
@@ -135,6 +162,11 @@ const onMusic = (event: Event) =>
   padding: 0;
 }
 
+.field__hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
 .field__control {
   min-height: var(--touch);
   padding: 0 var(--space-3);
@@ -145,7 +177,8 @@ const onMusic = (event: Event) =>
 
 .segmented {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: var(--space-1);
   padding: var(--space-1);
   border-radius: var(--radius-sm);

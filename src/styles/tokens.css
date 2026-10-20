@@ -49,6 +49,8 @@
   --well-grid: rgb(255 255 255 / 0.04);
   --well-frame: #4a3f86;
   --crack: #fff3d6;
+  --well-glow: rgb(120 90 255 / 0.22);
+  --well-halo: rgb(74 63 134 / 0.18);
 
   --tone-1: #3de0ff;
   --tone-2: #ffb547;
@@ -70,6 +72,8 @@
   --radius-lg: 1.5rem;
   /* The main action: molten gold, lit from above. */
   --accent-gradient: linear-gradient(180deg, #ffd27a 0%, #ff9f3f 100%);
+  /* The lower edge of a raised gold button (pressed: it sinks into it). */
+  --accent-edge: #b5601c;
   --surface-raised: color-mix(in srgb, var(--surface) 86%, var(--accent-fill));
   --glass: rgb(15 11 40 / 0.6);
   --star: #ffc35c;

@@ -48,6 +48,7 @@ export function createBrowserServices(
     haptics: true,
     volume: 0.7,
     musicVolume: 0.5,
+    controls: 'gestures',
     muted: false,
   });
   // A portal's language wins at each launch over the saved one (Playgama and

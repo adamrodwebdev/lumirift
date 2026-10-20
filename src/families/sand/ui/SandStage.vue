@@ -11,6 +11,8 @@ import TouchControls from '@/families/falling/ui/TouchControls.vue';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
+import { useGameSurface } from '@/ui/useGameSurface';
+import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import type { PieceSpec } from '../engine/SandGame';
 import { SandEffects } from '../fx/SandEffects';
 import { SandSoundscape } from '../fx/SandSoundscape';
@@ -18,7 +20,11 @@ import { SandRenderer } from '../render/SandRenderer';
 import { SandSession } from '../SandSession';
 import SandPreview from './SandPreview.vue';
 
-/** The sand well: the falling family's controls, a pixel-drawn well, the next pieces. */
+/**
+ * The sand well: the falling family's controls, a pixel-drawn well, the next
+ * pieces. Its parts name their areas of the game screen's grid (well, next,
+ * pads); on a touch screen the whole game screen takes the gestures.
+ */
 const props = defineProps<{
   session: GameSession;
   clock: FrameClock;
@@ -33,12 +39,20 @@ const session: SandSession = props.session;
 const { t } = useI18n();
 const format = useFormat();
 const { theme, settings, audio, haptics } = useServices();
+const landscape = useLandscape();
+/** The on-screen buttons, for the touch players who chose them. */
+const touch = isTouchScreen();
+const pad = computed(() => touch && settings.current.controls === 'buttons');
 
 const wellArea = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const palette = shallowRef<TonePalette | null>(null);
 const queue = shallowRef<readonly PieceSpec[]>([]);
-const previewSize = ref(48);
+const cellSize = ref(24);
+/** Previews: small in the portrait band above the well, larger beside it. */
+const previewSize = computed(() =>
+  landscape.value ? Math.round(Math.min(84, Math.max(40, cellSize.value * 2.6))) : 38,
+);
 
 const profile = computed(() => effectsProfile(settings.current.effects, settings.current.shake));
 const effects = new SandEffects(
@@ -51,19 +65,21 @@ const detachEffects = effects.attach(session);
 const detachSounds = new SandSoundscape(audio, haptics).attach(session);
 
 let renderer: SandRenderer | null = null;
-let cellCss = 24;
 
 const execute = (command: FallingCommand) => {
   if (props.active) session.execute(command);
 };
 const input = new FallingInput(execute, () => emit('pause'));
-const gestures = new WellGestures(execute, () => cellCss);
+const gestures = new WellGestures(execute, () => cellSize.value);
 
 const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
-  cellCss = renderer.layout(width - 4, height - 4, Math.min(2, window.devicePixelRatio || 1));
-  previewSize.value = Math.round(Math.min(84, Math.max(36, cellCss * 2.6)));
+  cellSize.value = renderer.layout(
+    width - 4,
+    height - 4,
+    Math.min(2, window.devicePixelRatio || 1),
+  );
 });
 
 const refreshPalette = async () => {
@@ -79,7 +95,10 @@ watch(
 watch(
   () => props.active,
   (active) => {
-    if (!active) input.releaseAll();
+    if (!active) {
+      input.releaseAll();
+      gestures.cancel();
+    }
   },
 );
 
@@ -107,14 +126,12 @@ const onKey = (event: KeyboardEvent, down: boolean) => {
 const onKeyDown = (event: KeyboardEvent) => onKey(event, true);
 const onKeyUp = (event: KeyboardEvent) => onKey(event, false);
 
-const onPointerDown = (event: PointerEvent) => {
-  canvas.value?.setPointerCapture(event.pointerId);
-  gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp);
-};
-const onPointerMove = (event: PointerEvent) =>
-  gestures.move(event.pointerId, event.clientX, event.clientY);
-const onPointerUp = (event: PointerEvent) =>
-  gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp);
+useGameSurface({
+  down: (event) => gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp),
+  move: (event) => gestures.move(event.pointerId, event.clientX, event.clientY),
+  up: (event) => gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp),
+  cancel: () => gestures.cancel(),
+});
 
 onMounted(() => {
   if (canvas.value) renderer = new SandRenderer(canvas.value, session.view, effects);
@@ -138,20 +155,11 @@ onBeforeUnmount(() => {
 <template>
   <div class="stage">
     <div ref="wellArea" class="stage__well">
-      <canvas
-        ref="canvas"
-        class="stage__canvas"
-        role="img"
-        :aria-label="t('sand.well')"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointercancel="gestures.cancel()"
-      />
+      <canvas ref="canvas" class="stage__canvas" role="img" :aria-label="t('sand.well')" />
     </div>
 
-    <section class="stage__next" :aria-label="t('hud.next')">
-      <p class="stage__label">{{ t('hud.next') }}</p>
+    <section class="stage__next stage__box" :aria-label="t('hud.next')">
+      <p class="stage__label" aria-hidden="true">{{ t('hud.next') }}</p>
       <SandPreview
         v-for="(spec, index) in queue"
         :key="index"
@@ -161,80 +169,6 @@ onBeforeUnmount(() => {
       />
     </section>
 
-    <TouchControls
-      class="stage__controls"
-      :ability="null"
-      :can-hold="false"
-      @press="input.press($event)"
-      @release="input.release($event)"
-    />
+    <TouchControls v-if="pad" @press="input.press($event)" @release="input.release($event)" />
   </div>
 </template>
-
-<style scoped>
-.stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'well next'
-    'controls controls';
-  gap: var(--space-2);
-  height: 100%;
-  padding: var(--space-2) var(--space-2) 0;
-}
-
-.stage__well {
-  grid-area: well;
-  display: grid;
-  place-items: center;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.stage__canvas {
-  display: block;
-  max-width: 100%;
-  border: 2px solid var(--well-frame);
-  box-shadow:
-    0 0 3rem rgb(120 90 255 / 0.22),
-    inset 0 0 2rem rgb(120 90 255 / 0.12);
-  border-radius: var(--radius-sm);
-  touch-action: none;
-  cursor: pointer;
-}
-
-.stage__next {
-  grid-area: next;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.stage__label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stage__controls {
-  grid-area: controls;
-  display: none;
-}
-
-@media (hover: none) and (pointer: coarse) {
-  .stage__controls {
-    display: grid;
-  }
-}
-
-@media (min-width: 768px) {
-  .stage {
-    gap: var(--space-6);
-    padding: var(--space-4);
-  }
-}
-</style>

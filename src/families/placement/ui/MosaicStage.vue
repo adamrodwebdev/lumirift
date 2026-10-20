@@ -8,6 +8,7 @@ import { effectsProfile } from '@/fx/EffectsProfile';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
 import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
+import { useLandscape } from '@/ui/useOrientation';
 import type { OfferedPiece } from '../engine/Dealer';
 import type { SlotId } from '../engine/MosaicGame';
 import { MosaicEffects } from '../fx/MosaicEffects';
@@ -113,6 +114,8 @@ const pieceLabel = (entry: HandSlot, index: number) => {
 // --- Board rendering -------------------------------------------------------------
 
 const boardArea = ref<HTMLElement | null>(null);
+const handArea = ref<HTMLElement | null>(null);
+const landscape = useLandscape();
 const canvas = ref<HTMLCanvasElement | null>(null);
 const ghostCanvas = ref<HTMLCanvasElement | null>(null);
 let renderer: MosaicRenderer | null = null;
@@ -126,11 +129,18 @@ const observer = new ResizeObserver(([entry]) => {
   const { width, height } = entry.contentRect;
   // Minus the 2 px frame on each side.
   cellCss = renderer.layout(Math.min(width, height) - 4, Math.min(2, window.devicePixelRatio || 1));
-  // Four pieces (with the cube) must fit side by side. The size depends on the
-  // screen only, never on the board: the board's room depends on the hand, and a
-  // loop between the two would resize (and clear) the board every frame.
-  const handRoom = (width - 3 * 12) / 4;
-  pieceSize.value = Math.round(Math.max(48, Math.min(120, handRoom, window.innerHeight * 0.17)));
+});
+/**
+ * Four pieces (with the cube) must fit: side by side under the board in
+ * portrait, one above the other beside it in landscape. The hand's room comes
+ * from the grid, never from the pieces: no loop between the two.
+ */
+const handObserver = new ResizeObserver(([entry]) => {
+  if (!entry) return;
+  const { width, height } = entry.contentRect;
+  const room = landscape.value ? Math.min(width - 8, (height - 3 * 8) / 4) : (width - 3 * 12) / 4;
+  const cap = landscape.value ? 120 : Math.min(120, window.innerHeight * 0.15);
+  pieceSize.value = Math.round(Math.max(44, Math.min(cap, room)));
 });
 
 const refreshPalette = async () => {
@@ -241,7 +251,8 @@ const endDrag = () => {
 const moveGhost = (clientX: number, clientY: number, piece: OfferedPiece, visible: boolean) => {
   const ghost = ghostCanvas.value;
   const tiles = renderer?.tiles;
-  const host = ghost?.parentElement?.getBoundingClientRect();
+  // The ghost is placed in the game screen (the stage has no box of its own).
+  const host = (ghost?.offsetParent ?? ghost?.parentElement)?.getBoundingClientRect();
   if (!ghost || !tiles || !host) return;
   if (!visible) {
     hideGhost();
@@ -362,6 +373,7 @@ watch(
 onMounted(() => {
   if (canvas.value) renderer = new MosaicRenderer(canvas.value, session.view, effects);
   if (boardArea.value) observer.observe(boardArea.value);
+  if (handArea.value) handObserver.observe(handArea.value);
   void refreshPalette();
   refresh();
   window.addEventListener('keydown', onKeyDown);
@@ -374,13 +386,14 @@ onBeforeUnmount(() => {
   detachSounds();
   detachRefresh.forEach((off) => off());
   observer.disconnect();
+  handObserver.disconnect();
   window.removeEventListener('keydown', onKeyDown);
 });
 </script>
 
 <template>
-  <div class="mosaic">
-    <div ref="boardArea" class="mosaic__board">
+  <div class="stage mosaic">
+    <div ref="boardArea" class="stage__well mosaic__board">
       <canvas
         ref="canvas"
         class="mosaic__canvas"
@@ -393,7 +406,7 @@ onBeforeUnmount(() => {
 
     <p class="mosaic__prompt" aria-live="polite">{{ prompt }}</p>
 
-    <div class="mosaic__hand" role="group" :aria-label="t('mosaic.hand')">
+    <div ref="handArea" class="mosaic__hand" role="group" :aria-label="t('mosaic.hand')">
       <HandPiece
         v-for="(entry, index) in hand"
         :key="entry.slot"
@@ -436,54 +449,43 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.mosaic {
-  position: relative;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto auto auto;
-  /* minmax(0, 1fr): the canvas must never widen the column it sits in. */
-  grid-template-columns: minmax(0, 1fr);
-  justify-items: center;
-  gap: var(--space-2);
-  height: 100%;
-  padding: var(--space-2) var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
-  overflow: hidden;
-}
-
+/* The shared parts are in styles/stage.css; each part names its grid area. */
 .mosaic__board {
-  display: grid;
-  place-items: center;
   width: 100%;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .mosaic__canvas {
   display: block;
   max-width: 100%;
-  border: 2px solid var(--well-frame);
-  box-shadow:
-    0 0 3rem rgb(120 90 255 / 0.22),
-    inset 0 0 2rem rgb(120 90 255 / 0.12);
   border-radius: var(--radius);
+  box-shadow:
+    0 0 0 2px var(--well-frame),
+    0 0 3rem var(--well-glow),
+    0 0 0 7px var(--well-halo);
   touch-action: none;
   cursor: pointer;
 }
 
 .mosaic__prompt {
+  grid-area: prompt;
+  text-align: center;
   min-height: 1.4em;
   font-weight: 700;
   color: var(--accent);
 }
 
 .mosaic__hand {
+  grid-area: hand;
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: var(--space-3);
-  width: min(100%, 34rem);
+  min-width: 0;
+  min-height: 0;
 }
 
 .mosaic__jokers {
+  grid-area: jokers;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -527,5 +529,18 @@ onBeforeUnmount(() => {
   pointer-events: none;
   opacity: 0.85;
   filter: drop-shadow(0 0.5rem 0.75rem rgb(0 0 0 / 0.35));
+}
+
+/* Landscape: the hand stands in a column beside the board. */
+@media (orientation: landscape) {
+  .mosaic__hand {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .mosaic__jokers {
+    justify-content: flex-start;
+    align-content: flex-start;
+  }
 }
 </style>
