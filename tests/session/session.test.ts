@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DAILY_TIME_LIMIT_MS, DailyChallenge } from '@/session/DailyChallenge';
 import { ModeCatalog } from '@/session/ModeCatalog';
 import { MODE_IDS } from '@/session/ModeId';
@@ -40,6 +40,15 @@ describe('ModeCatalog', () => {
   it('fails clearly when a family is not available', async () => {
     const empty = new ModeCatalog(catalog.list(), new Map());
     await expect(empty.create('classic', dailyOptions())).rejects.toThrow(/falling/);
+  });
+
+  it('downloads the family of a mode ahead of its game', async () => {
+    const { createSandSession } = await import('@/families/sand');
+    const load = vi.fn(() => Promise.resolve(createSandSession));
+    const ahead = new ModeCatalog(catalog.list(), new Map([['sand' as const, load]]));
+    await ahead.preload('sand');
+    expect(load).toHaveBeenCalledOnce();
+    await expect(ahead.preload('classic')).rejects.toThrow(/falling/);
   });
 });
 

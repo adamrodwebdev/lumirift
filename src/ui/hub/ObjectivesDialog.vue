@@ -6,9 +6,12 @@ import { useFormat } from '@/app/useFormat';
 import { dayKey } from '@/core/Day';
 import { OBJECTIVE_XP } from '@/progression/Objectives';
 import { useProgressText } from '../useProgressText';
-import AppIcon from './AppIcon.vue';
+import AppIcon from '../components/AppIcon.vue';
+import ModalDialog from '../components/ModalDialog.vue';
 
-/** The three objectives of the day, with their progress and reward. */
+/** The three objectives of the day, with their progress and reward (from the title screen). */
+defineProps<{ open: boolean }>();
+const emit = defineEmits<{ close: [] }>();
 const { t } = useI18n();
 const format = useFormat();
 const { profile, clock } = useServices();
@@ -20,8 +23,7 @@ const objectives = computed(() => profile.current.objectives);
 </script>
 
 <template>
-  <section class="objectives card" aria-labelledby="objectives-title">
-    <h2 id="objectives-title" class="section-title">{{ t('profile.objectives') }}</h2>
+  <ModalDialog :open="open" :title="t('profile.objectives')" @dismiss="emit('close')">
     <ul class="list">
       <li
         v-for="entry in objectives"
@@ -52,16 +54,13 @@ const objectives = computed(() => profile.current.objectives);
         />
       </li>
     </ul>
-  </section>
+    <button type="button" class="btn btn--primary close" @click="emit('close')">
+      {{ t('settings.close') }}
+    </button>
+  </ModalDialog>
 </template>
 
 <style scoped>
-.objectives {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
-}
-
 .list {
   display: grid;
   gap: var(--space-2);
@@ -110,6 +109,11 @@ const objectives = computed(() => profile.current.objectives);
   grid-column: 2 / -1;
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+.close {
+  width: 100%;
+  margin-top: var(--space-4);
 }
 
 .objective__bar {

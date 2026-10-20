@@ -1,0 +1,103 @@
+/*
+ * The menu's shared parts: each page fills the screen between the top bar
+ * and the tabs, with nothing to scroll; raised buttons and tiles sink when
+ * pressed. Sizes follow the hub's box (`cq` units of the `hub` container).
+ */
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  padding: var(--space-1) var(--space-4) var(--space-3);
+}
+
+/* Wide screens: the content keeps a readable width, centred (`cqw`: the pages' width). */
+@media (min-width: 1280px) {
+  .page {
+    padding-inline: max(var(--space-6), (100cqw - 84rem) / 2);
+  }
+}
+
+.page__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0.125rem 0.125rem var(--space-3);
+}
+
+.page__title {
+  font-size: clamp(1.25rem, 6.2cqw, 1.75rem);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.page__lead {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-align: end;
+}
+
+@container hub (max-height: 44rem) {
+  .page__lead {
+    display: none;
+  }
+}
+
+/* A raised button: it stands on its lower edge and sinks into it. */
+.btn--raised {
+  box-shadow:
+    0 4px 0 var(--surface-edge),
+    inset 0 1px 0 var(--highlight);
+  transition:
+    transform 90ms ease,
+    box-shadow 90ms ease;
+}
+
+.btn--raised:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 var(--surface-edge),
+    inset 0 1px 0 var(--highlight);
+}
+
+.btn--primary.btn--raised {
+  box-shadow:
+    0 4px 0 var(--accent-edge),
+    0 0.6rem 1.4rem color-mix(in srgb, var(--rift-glow) 30%, transparent),
+    inset 0 2px 0 var(--highlight-strong);
+}
+
+.btn--primary.btn--raised:active {
+  box-shadow:
+    0 1px 0 var(--accent-edge),
+    inset 0 2px 0 var(--highlight-strong);
+}
+
+.btn--raised:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* A square icon button with soft corners (the round `.btn--icon` is for text rows). */
+.btn--square {
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border-radius: 0.875rem;
+}
+
+.btn--square:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn--raised:active {
+    transform: none;
+  }
+}

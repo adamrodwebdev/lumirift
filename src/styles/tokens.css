@@ -75,6 +75,13 @@
   /* The lower edge of a raised gold button (pressed: it sinks into it). */
   --accent-edge: #b5601c;
   --surface-raised: color-mix(in srgb, var(--surface) 86%, var(--accent-fill));
+  /* Raised tiles: a light top edge, a dark lower edge they sink into when pressed. */
+  --highlight: rgb(255 255 255 / 0.08);
+  --highlight-strong: rgb(255 255 255 / 0.55);
+  --surface-edge: #0b0823;
+  /* Motion: things arrive fast and settle; a spring for what pops. */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.3, 1.45, 0.45, 1);
   --glass: rgb(15 11 40 / 0.6);
   --star: #ffc35c;
   --star-empty: #3b3366;

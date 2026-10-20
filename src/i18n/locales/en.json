@@ -12,14 +12,12 @@
   },
   "nav": {
     "skip": "Skip to content",
-    "home": "Back to home",
     "settings": "Settings",
     "mute": "Mute",
     "unmute": "Unmute"
   },
   "home": {
     "play": "Play",
-    "modes": "Game modes",
     "best": "Best: {value}",
     "noBest": "No record yet",
     "quick": "A game of Classic, right now"
@@ -410,22 +408,15 @@
       "level": "Level {n}",
       "streak": "{n}-day daily streak",
       "objectives": "{n} objectives done"
-    }
-  },
-  "families": {
-    "all": "All",
-    "falling": "Falling",
-    "sand": "Sand",
-    "placement": "Placement",
-    "volume": "Volume"
-  },
-  "carousel": {
-    "previous": "Previous modes",
-    "next": "Next modes",
-    "filter": "Filter by family"
+    },
+    "tapToWear": "Tap again to wear",
+    "clickToWear": "Click again to wear",
+    "nowWorn": "You now wear {name}.",
+    "nowWornGame": "You now wear {name}: start a game to see it.",
+    "unlocksWith": "To unlock {name}: {rule}.",
+    "trying": "Preview"
   },
   "campaign": {
-    "title": "Campaign",
     "chapter": "Chapter {n}",
     "chapters": {
       "1": "First blocks",
@@ -434,10 +425,8 @@
       "4": "Vertigo",
       "5": "The Rift"
     },
-    "stars": "{n} / {max} stars",
     "chapterStars": "{n} / {max} stars",
     "continue": "Continue · {level} {mode}",
-    "open": "Map and upgrades",
     "spare": "{n} star to spend | {n} stars to spend",
     "starsWon": "No star | {n} star | {n} stars",
     "levelTitle": "Level {level} · {mode}",
@@ -470,7 +459,8 @@
     "noBetter": "No better than your best result.",
     "nextLevel": "Level {level}",
     "retry": "Try again",
-    "map": "Campaign map"
+    "map": "Campaign map",
+    "lockedNote": "Win level {level} to open this one."
   },
   "upgrades": {
     "title": "Upgrades",
@@ -545,9 +535,6 @@
     "space": "{key} to play",
     "spaceKey": "Space",
     "player": "Level {level}, {xp}. Open the Atelier",
-    "daily": "Daily challenge · {mode} · {h} h {m} min left",
-    "freePlay": "Free play",
-    "more": "more modes",
     "dailyShort": "Daily · {mode}"
   },
   "coach": {
@@ -573,5 +560,28 @@
     "dragDown": "Drag down",
     "flickDown": "Flick down",
     "twoFingerDrag": "Two-finger drag"
+  },
+  "hub": {
+    "pages": "Menu pages",
+    "tabs": {
+      "home": "Home",
+      "modes": "Modes",
+      "map": "Map",
+      "atelier": "Atelier"
+    },
+    "timeLeft": "{h} h {m} min left",
+    "objectivesDone": "{n} / {total}",
+    "stars": "{n} of {max} stars. Open the map",
+    "prevChapter": "Previous chapter",
+    "nextChapter": "Next chapter",
+    "locked": "locked",
+    "next": "to play",
+    "atelierLead": "Looks only, same rules.",
+    "kindsLabel": "Collection",
+    "kinds": {
+      "material": "Blocks",
+      "ambiance": "Ambiance",
+      "shatter": "Shatter"
+    }
   }
 }

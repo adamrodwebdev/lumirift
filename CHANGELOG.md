@@ -3,6 +3,43 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.8.0] — 20/10/2026
+
+Le menu devient un jeu : quatre pages en onglets, sans défilement, au doigt comme au clavier.
+
+### Ajouté
+
+- **Menu à onglets** : Accueil, Modes, Carte et Atelier, côte à côte. On passe de l'une à
+  l'autre par les onglets ou d'un **glissement du doigt** ; la pastille de l'onglet suit le
+  doigt. Les onglets sont sous le pouce en portrait et deviennent un **rail à gauche** en
+  paysage et sur ordinateur. Au clavier, les flèches vont d'onglet en onglet.
+- **Accueil vivant** : les gemmes du jeu tombent à plusieurs profondeurs devant la faille,
+  qui respire et jette des étincelles ; le logo, le défi du jour, un grand bouton Jouer à
+  portée du pouce et les objectifs du jour (dans une fenêtre).
+- **Page Modes** : les 13 modes sur un seul écran, les quatre qui n'existent nulle part
+  ailleurs en grand, chacun illustré avec les vraies gemmes du jeu ; le mode choisi montre son
+  principe, son record et le bouton Jouer.
+- **Carte de campagne** : un chapitre par écran, ses six niveaux sur un chemin sinueux qui
+  s'illumine à mesure qu'on avance, le prochain niveau qui pulse ; flèches pour changer de
+  chapitre. Un niveau encore fermé dit ce qui l'ouvre.
+- **Atelier en page** : une vitrine au-dessus d'une étagère. Un premier toucher essaie la
+  matière, l'ambiance ou les éclats sur la vitrine ; un second la porte.
+- **Transition de la faille** : en lançant une partie, la faille s'ouvre depuis le bouton
+  touché et inonde l'écran de sa lumière, le temps de charger le mode ; au retour, les pages
+  remontent en place.
+- La barre du haut garde le joueur (niveau, expérience : ouvre l'Atelier), les étoiles
+  (ouvrent la carte), le son et les réglages.
+
+### Modifié
+
+- Plus d'en-tête de page ni de pied de page : la confidentialité et la version passent dans
+  les réglages.
+- Après une partie, on revient sur la page d'où on l'a lancée (la carte pour la campagne).
+
+### Retiré
+
+- L'ancien accueil défilant, le carrousel des modes et l'écran de campagne séparé.
+
 ## [1.7.0] — 20/10/2026
 
 La partie sur téléphone : tout au doigt, sans défilement, dans les deux orientations.

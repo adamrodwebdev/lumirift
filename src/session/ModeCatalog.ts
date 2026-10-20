@@ -77,10 +77,19 @@ export class ModeCatalog {
   }
 
   async create(id: ModeId, options: SessionOptions): Promise<GameSession> {
+    const factory = await this.loaderOf(id)();
+    return factory(id, options);
+  }
+
+  /** Downloads a mode's family ahead of time (while the screen changes), once. */
+  async preload(id: ModeId): Promise<void> {
+    await this.loaderOf(id)();
+  }
+
+  private loaderOf(id: ModeId): FamilyLoader {
     const { family } = this.get(id);
     const load = this.loaders.get(family);
     if (!load) throw new Error(`Family "${family}" is not available`);
-    const factory = await load();
-    return factory(id, options);
+    return load;
   }
 }
