@@ -3,6 +3,40 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.7.0] — 20/10/2026
+
+La partie sur téléphone : tout au doigt, sans défilement, dans les deux orientations.
+
+### Ajouté
+
+- **Gestes partout sur l'écran de jeu**, plus seulement sur le puits (le doigt ne cache plus
+  les pièces) : glisser sur le côté pour déplacer, toucher pour tourner, **toucher à deux
+  doigts pour tourner dans l'autre sens**, **glisser vite vers le haut pour la réserve**,
+  glisser vers le bas pour descendre, d'un coup sec pour la chute instantanée. La case de la
+  réserve se touche aussi, et le pouvoir de Renversement a son bouton à côté.
+- **Réglage « Commandes : Gestes / Boutons »** sur écran tactile : les boutons ne s'affichent
+  plus par défaut ; choisis, ils reviennent en deux groupes, un par pouce (sous le puits en
+  portrait, de chaque côté en paysage).
+- **Paysage jouable** pour toutes les familles : le puits au centre sur toute la hauteur, le
+  tableau de bord et la réserve à gauche, les pièces suivantes à droite (le Duel ajoute
+  l'adversaire à côté d'elles, la Mosaïque pose sa main à droite).
+- **La chute instantanée se voit** : la pièce tombe en accélérant (90 à 230 ms selon la
+  hauteur, avec une traînée) puis se pose avec une lueur ; les règles, l'IA et le Rythme ne
+  changent pas (la chute reste instantanée en Rythme, pour sonner sur le temps).
+- **Effacement de ligne** : la faille part de la pièce qui a complété la ligne et court dans
+  les deux sens ; chaque brique s'éclaire et se fissure à son passage, puis éclate **le long de
+  ses fissures en morceaux de la gemme elle-même** (image de la brique, pas une couleur unie) ;
+  un « RIFT! » allume le puits d'une lueur chaude.
+- La pause montre les **gestes en images** sur écran tactile, et donne accès aux réglages.
+
+### Modifié
+
+- Pendant une partie, **plus d'en-tête de page** : une barre minimale (pause, son) ; le puits
+  gagne la place. Au téléphone (390 × 844), les cases passent de 23 à 32 px ; en paysage
+  (844 × 390), de 7 à 18 px.
+- Le guide de la première partie montre le geste par un doigt animé.
+- Plus de surlignage bleu au toucher (celui d'Android) ; le contour doré reste pour le clavier.
+
 ## [1.6.0] — 15/10/2026
 
 ### Ajouté

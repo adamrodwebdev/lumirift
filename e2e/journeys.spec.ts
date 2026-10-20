@@ -34,6 +34,15 @@ async function expectNoHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
+/** A game has no page header: the pause leads home. */
+async function quitGame(page: Page) {
+  await page.keyboard.press('KeyP');
+  await page
+    .getByRole('dialog', { name: 'Pause' })
+    .getByRole('button', { name: 'Quitter' })
+    .click();
+}
+
 async function openMode(page: Page, name: string) {
   await modeButton(page, name).click();
   if (name === 'Duel') await page.getByRole('button', { name: /IA normale/ }).click();
@@ -157,7 +166,7 @@ test('no error reaches the console while playing', async ({ page }) => {
     await openMode(page, name);
     await page.keyboard.press('Space');
     await page.waitForTimeout(300);
-    await page.getByRole('button', { name: 'Accueil' }).click();
+    await quitGame(page);
   }
   expect(errors).toEqual([]);
 });
@@ -185,7 +194,7 @@ test('no horizontal scroll from 320 to 1920 px, at home and in every family', as
     for (const name of ['Classique', 'Duel', 'Sable', 'Mosaïque', 'Tour']) {
       await openMode(page, name);
       await expectNoHorizontalScroll(page);
-      await page.getByRole('button', { name: 'Accueil' }).click();
+      await quitGame(page);
     }
   }
 });
@@ -239,4 +248,50 @@ test('the upgrades are bought with campaign stars, and refunded', async ({ page 
   await expect(phoenix.getByRole('img', { name: 'Rang 1 sur 3' })).toBeVisible();
   await shop.getByRole('button', { name: 'Rendre toutes les étoiles' }).click();
   await expect(shop).toContainText('5 étoiles disponibles');
+});
+
+test('a game fills the screen: no page header, its own pause and sound buttons', async ({
+  page,
+}) => {
+  await openMode(page, 'Classique');
+  await expect(page.getByRole('banner')).toHaveCount(0);
+  const sound = page.getByRole('button', { name: 'Couper le son' });
+  await sound.click();
+  await expect(page.getByRole('button', { name: 'Activer le son' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: 'Pause' }).click();
+  const pause = page.getByRole('dialog', { name: 'Pause' });
+  await pause.getByRole('button', { name: 'Réglages' }).click();
+  await expect(page.getByRole('dialog', { name: 'Réglages' })).toBeVisible();
+  // The page itself never scrolls during a game.
+  const overflow = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test('touch screens play with gestures; the buttons come back from the settings', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'mobile', 'Touch screens only');
+  await openMode(page, 'Classique');
+  await expect(page.getByRole('group', { name: 'Déplacer et descendre' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Pause' }).click();
+  const pause = page.getByRole('dialog', { name: 'Pause' });
+  await expect(pause.getByText('Toucher à deux doigts')).toBeVisible();
+  await pause.getByRole('button', { name: 'Réglages' }).click();
+  const settings = page.getByRole('dialog', { name: 'Réglages' });
+  await settings.getByRole('radio', { name: 'Boutons' }).check();
+  await page.keyboard.press('Escape');
+  await pause.getByRole('button', { name: 'Reprendre' }).click();
+  await expect(page.getByRole('group', { name: 'Déplacer et descendre' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Tourner et faire tomber' })).toBeVisible();
+});
+
+test('a tap on the hold box keeps the piece for later', async ({ page }) => {
+  await openMode(page, 'Classique');
+  const hold = page.getByRole('button', { name: 'Réserve' });
+  await expect(hold).not.toHaveClass(/stage__box--used/);
+  await hold.click();
+  await expect(hold).toHaveClass(/stage__box--used/);
 });

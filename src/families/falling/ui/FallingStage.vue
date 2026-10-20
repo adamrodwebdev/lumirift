@@ -6,18 +6,28 @@ import type { FrameClock } from '@/app/FrameClock';
 import { useFormat } from '@/app/useFormat';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import type { GameSession } from '@/session/GameSession';
+import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
+import { useGameSurface } from '@/ui/useGameSurface';
+import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { FallingSession, type FallingCommand } from '../FallingSession';
 import { FallingEffects } from '../fx/FallingEffects';
 import { FallingSoundscape } from '../fx/FallingSoundscape';
 import type { PieceSpec } from '../game/Game';
 import { FallingInput, KEY_BINDINGS } from '../input/FallingInput';
 import { WellGestures } from '../input/WellGestures';
+import type { AbilityId } from '../modes/GameMode';
 import { FallingRenderer } from '../render/FallingRenderer';
 import { TonePalette } from '@/render/TonePalette';
 import { decorFor } from '../render/WellDecor';
 import PiecePreview from './PiecePreview.vue';
 import TouchControls from './TouchControls.vue';
 
+/**
+ * A falling-family game: the well, the hold and the coming pieces. Each part
+ * names its area of the game screen's grid (hold, well, next, side, pads);
+ * the game screen places them for the orientation. On a touch screen the
+ * whole game screen takes the gestures, so the finger never hides the well.
+ */
 const props = defineProps<{
   session: GameSession;
   clock: FrameClock;
@@ -31,11 +41,17 @@ if (!(props.session instanceof FallingSession))
   throw new Error('FallingStage needs a FallingSession');
 const session: FallingSession = props.session;
 
+const ABILITY_ICONS: Readonly<Record<AbilityId, IconName>> = { flip: 'flip' };
+
 const { t } = useI18n();
 const { theme, settings, audio, haptics, profile: progression } = useServices();
 /** The cosmetics the player wears. */
 const equipment = computed(() => progression.current.equipment);
 const format = useFormat();
+const landscape = useLandscape();
+/** The on-screen buttons, for the touch players who chose them. */
+const touch = isTouchScreen();
+const pad = computed(() => touch && settings.current.controls === 'buttons');
 
 const wellArea = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -43,11 +59,14 @@ const palette = shallowRef<TonePalette | null>(null);
 const held = shallowRef<PieceSpec | null>(null);
 const canHold = ref(true);
 const queue = shallowRef<readonly PieceSpec[]>([]);
-const previewSize = ref(48);
+const cellSize = ref(24);
+/** Previews: small in the portrait band above the well, larger beside it. */
+const previewSize = computed(() =>
+  landscape.value ? Math.round(Math.min(84, Math.max(40, cellSize.value * 2.6))) : 38,
+);
 const wellLabel = computed(() => `${t('game.well')} · ${t(`modes.${session.modeId}.name`)}`);
 
 let renderer: FallingRenderer | null = null;
-let cellCss = 24;
 
 /** Visual effects and sounds, driven by the engine's events. */
 const profile = computed(() => effectsProfile(settings.current.effects, settings.current.shake));
@@ -57,13 +76,17 @@ const effects = new FallingEffects(
   () => palette.value,
   (points) => format.number(points),
 );
+// Hard drops are shown falling; Rhythm keeps them instant, its landings sound on the beat.
+effects.animateDrops = session.modeId !== 'rhythm';
 const detachEffects = effects.attach(session);
 watch(
   () => equipment.value.shatter,
   (shatter) => effects.setShatter(shatter),
   { immediate: true },
 );
-const detachSounds = new FallingSoundscape(audio, haptics).attach(session);
+const detachSounds = new FallingSoundscape(audio, haptics, (distance) =>
+  effects.dropWait(distance),
+).attach(session);
 
 /** Whole-well moments (flip, mirror) are CSS animations of the canvas. */
 const moment = ref<'flip' | 'mirror' | 'tilt' | null>(null);
@@ -85,7 +108,7 @@ const execute = (command: FallingCommand) => {
   if (props.active) session.execute(command);
 };
 const input = new FallingInput(execute, () => emit('pause'));
-const gestures = new WellGestures(execute, () => cellCss);
+const gestures = new WellGestures(execute, () => cellSize.value);
 
 // --- Layout and theme -------------------------------------------------------
 
@@ -93,8 +116,11 @@ const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
   // Minus the 2 px frame on each side.
-  cellCss = renderer.layout(width - 4, height - 4, Math.min(2, window.devicePixelRatio || 1));
-  previewSize.value = Math.round(Math.min(84, Math.max(36, cellCss * 2.6)));
+  cellSize.value = renderer.layout(
+    width - 4,
+    height - 4,
+    Math.min(2, window.devicePixelRatio || 1),
+  );
   renderer.render();
 });
 
@@ -124,7 +150,10 @@ watch(
 watch(
   () => props.active,
   (active) => {
-    if (!active) input.releaseAll();
+    if (!active) {
+      input.releaseAll();
+      gestures.cancel();
+    }
   },
 );
 
@@ -149,7 +178,7 @@ const offFrame = props.clock.subscribe((delta) => {
   renderer?.render();
 });
 
-// --- Keyboard and pointer ---------------------------------------------------
+// --- Keyboard and touch -----------------------------------------------------
 
 const onKey = (event: KeyboardEvent, down: boolean) => {
   const action = KEY_BINDINGS[event.code];
@@ -166,15 +195,12 @@ const onKey = (event: KeyboardEvent, down: boolean) => {
 const onKeyDown = (event: KeyboardEvent) => onKey(event, true);
 const onKeyUp = (event: KeyboardEvent) => onKey(event, false);
 
-const onPointerDown = (event: PointerEvent) => {
-  canvas.value?.setPointerCapture(event.pointerId);
-  gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp);
-};
-const onPointerMove = (event: PointerEvent) =>
-  gestures.move(event.pointerId, event.clientX, event.clientY);
-const onPointerUp = (event: PointerEvent) =>
-  gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp);
-const onPointerCancel = () => gestures.cancel();
+useGameSurface({
+  down: (event) => gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp),
+  move: (event) => gestures.move(event.pointerId, event.clientX, event.clientY),
+  up: (event) => gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp),
+  cancel: () => gestures.cancel(),
+});
 
 onMounted(() => {
   if (canvas.value) renderer = new FallingRenderer(canvas.value, session.view);
@@ -202,17 +228,32 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="stage">
-    <section class="stage__side stage__side--hold" :aria-label="t('hud.hold')">
-      <p class="stage__label">{{ t('hud.hold') }}</p>
-      <PiecePreview
-        :spec="held"
-        :palette="palette"
-        :material="equipment.material"
-        :size="previewSize"
-        :dimmed="!canHold"
-      />
-      <!-- Extra panels of a mode (the opponent of a duel). -->
-      <slot name="side" />
+    <section class="stage__hold" :aria-label="t('hud.hold')">
+      <button
+        type="button"
+        class="stage__box stage__box--hold"
+        :class="{ 'stage__box--used': !canHold }"
+        :aria-label="t('controls.hold')"
+        @click="execute({ type: 'hold' })"
+      >
+        <span class="stage__label" aria-hidden="true">{{ t('hud.hold') }}</span>
+        <PiecePreview
+          :spec="held"
+          :palette="palette"
+          :material="equipment.material"
+          :size="previewSize"
+          :dimmed="!canHold"
+        />
+      </button>
+      <button
+        v-if="session.ability"
+        type="button"
+        class="stage__ability"
+        :aria-label="t(`controls.ability.${session.ability}`)"
+        @click="execute({ type: 'ability' })"
+      >
+        <AppIcon :name="ABILITY_ICONS[session.ability]" />
+      </button>
     </section>
 
     <div ref="wellArea" class="stage__well">
@@ -222,15 +263,11 @@ onBeforeUnmount(() => {
         :class="moment && `stage__canvas--${moment}`"
         role="img"
         :aria-label="wellLabel"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointercancel="onPointerCancel"
       />
     </div>
 
-    <section class="stage__side stage__side--next" :aria-label="t('hud.next')">
-      <p class="stage__label">{{ t('hud.next') }}</p>
+    <section class="stage__next stage__box" :aria-label="t('hud.next')">
+      <p class="stage__label" aria-hidden="true">{{ t('hud.next') }}</p>
       <PiecePreview
         v-for="(spec, index) in queue"
         :key="index"
@@ -241,69 +278,60 @@ onBeforeUnmount(() => {
       />
     </section>
 
-    <TouchControls
-      class="stage__controls"
-      :ability="session.ability"
-      @press="input.press($event)"
-      @release="input.release($event)"
-    />
+    <!-- Extra panels of a mode (the opponent of a duel). -->
+    <div v-if="$slots.side" class="stage__side"><slot name="side" /></div>
+
+    <TouchControls v-if="pad" @press="input.press($event)" @release="input.release($event)" />
   </div>
 </template>
 
 <style scoped>
-.stage {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'hold well next'
-    'controls controls controls';
-  gap: var(--space-2);
-  height: 100%;
-  padding: var(--space-2) var(--space-2) 0;
-}
-
-.stage__side {
+/* The shared parts (well, boxes, labels, next) are in styles/stage.css. */
+.stage__hold {
+  grid-area: hold;
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: var(--space-2);
 }
 
-.stage__side--hold {
-  grid-area: hold;
-}
-
-.stage__side--next {
-  grid-area: next;
-}
-
-.stage__label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-}
-
-.stage__well {
-  grid-area: well;
-  display: grid;
-  place-items: center;
+.stage__side {
+  grid-area: side;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
 }
 
-.stage__canvas {
-  display: block;
-  border: 2px solid var(--well-frame);
-  box-shadow:
-    0 0 3rem rgb(120 90 255 / 0.22),
-    inset 0 0 2rem rgb(120 90 255 / 0.12);
-  border-radius: var(--radius-sm);
-  touch-action: none;
+.stage__box--hold {
+  flex-direction: column;
+  gap: 0.15rem;
   cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 160ms ease;
+}
+
+.stage__box--hold:active {
+  transform: scale(0.94);
+}
+
+.stage__box--used {
+  border-color: transparent;
+}
+
+.stage__ability {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: var(--on-accent-fill);
+  box-shadow: 0 3px 0 var(--accent-edge);
+}
+
+.stage__ability:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--accent-edge);
 }
 
 .stage__canvas--flip {
@@ -336,21 +364,10 @@ onBeforeUnmount(() => {
   }
 }
 
-.stage__controls {
-  grid-area: controls;
-  display: none;
-}
-
-@media (hover: none) and (pointer: coarse) {
-  .stage__controls {
-    display: grid;
-  }
-}
-
-@media (min-width: 768px) {
-  .stage {
-    gap: var(--space-6);
-    padding: var(--space-4);
+/* Landscape: the hold box and the ability side by side, under the stats. */
+@media (orientation: landscape) {
+  .stage__hold {
+    align-items: flex-end;
   }
 }
 </style>

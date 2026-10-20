@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut          |
-| ------- | ---------- | --------------- |
-| 1.6     | 15/10/2026 | Pub récompensée |
+| Version | Date       | Statut             |
+| ------- | ---------- | ------------------ |
+| 1.7     | 20/10/2026 | La partie au doigt |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -395,16 +395,21 @@ Règles détaillées :
 
 ### 3.3 Commandes
 
-| Action            | Clavier                 | Tactile                          |
-| ----------------- | ----------------------- | -------------------------------- |
-| Gauche / droite   | ← → (ou Q D / A D)      | Boutons, ou glisser horizontal   |
-| Chute douce       | ↓ (ou S)                | Bouton, ou glisser vers le bas   |
-| Chute instantanée | Espace                  | Bouton, ou glissement rapide bas |
-| Rotation horaire  | ↑ ou X                  | Bouton, ou toucher le puits      |
-| Rotation inverse  | W (AZERTY) / Z (QWERTY) | Bouton                           |
-| Réserve           | C ou Maj                | Bouton                           |
-| Renversement      | F                       | Bouton (mode Renversement)       |
-| Pause             | P                       | Bouton                           |
+| Action            | Clavier                 | Tactile (gestes, partout sur l'écran de jeu)  |
+| ----------------- | ----------------------- | --------------------------------------------- |
+| Gauche / droite   | ← → (ou Q D / A D)      | Glisser sur le côté, case par case            |
+| Chute douce       | ↓ (ou S)                | Glisser vers le bas                           |
+| Chute instantanée | Espace                  | Glisser vite vers le bas                      |
+| Rotation horaire  | ↑ ou X                  | Toucher                                       |
+| Rotation inverse  | W (AZERTY) / Z (QWERTY) | Toucher à deux doigts                         |
+| Réserve           | C ou Maj                | Glisser vite vers le haut, ou toucher la case |
+| Renversement      | F                       | Bouton à côté de la réserve                   |
+| Pause             | P                       | Bouton en haut de l'écran                     |
+
+Sur écran tactile, **les gestes sont la règle** (1.7) : le réglage « Commandes » fait revenir
+des boutons, en deux groupes (déplacer et descendre ; tourner et faire tomber), sous le puits
+en portrait et de chaque côté en paysage. Les gestes partent de n'importe où sur l'écran de
+jeu, sauf d'un bouton : le doigt ne cache pas le puits.
 
 Famille Placement (Mosaïque) : glisser-déposer au doigt ou à la souris (la pièce s'affiche
 au-dessus du doigt pour rester visible) ; au clavier, 1 / 2 / 3 choisit une pièce, les
@@ -677,6 +682,13 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 - Aucun défilement horizontal de 320 à 1920 px ; largeurs fluides (`%`, `fr`, `clamp()`,
   `min()`), typographie fluide, espacements en `rem`.
 - Le puits occupe la hauteur disponible (`dvh`) en gardant son rapport 1:2.
+- **Écran de jeu** (1.7) : aucune page ne défile ni n'a d'en-tête pendant une partie. Une
+  seule grille, aux zones nommées : en **portrait**, une bande en haut (pause, score, son ;
+  réserve, objectif, suivantes ; indicateurs), puis le puits sur toute la largeur ; en
+  **paysage**, le puits au centre sur toute la hauteur, le tableau de bord et la réserve à
+  gauche, les suivantes (et l'adversaire du Duel) à droite. Les scènes des familles n'ont pas
+  de boîte (`display: contents`) : chaque partie nomme sa zone. Mesures : cases de 32 px en
+  390 × 844 (23 en 1.6), 22 px en 360 × 640 (18), 18 px en 844 × 390 (7), 38 px sur ordinateur.
 - Cibles tactiles ≥ 44 × 44 px ; aucune action réservée au survol.
 
 ### 4.3 Accessibilité (complétée au lot 11)
@@ -882,9 +894,19 @@ src/
   distincts réservés aux couleurs de Chroma : la couleur ne porte jamais seule l'information.
 - **Commandes** : les appareils ne signalent que des **actions** (`left`, `hardDrop`…) ;
   `FallingInput` les traduit en commandes et gère seul la répétition (170 ms, puis 50 ms).
-  Gestes sur le puits (`WellGestures`) : glisser d'une case par case, toucher pour tourner,
-  balayer vite vers le bas pour la chute instantanée, glisser lentement pour la chute douce.
-  Boutons tactiles affichés seulement sur écran tactile (`hover: none` et `pointer: coarse`).
+  Gestes (`WellGestures`), reçus par tout l'écran de jeu (`useGameSurface`) : glisser d'une
+  case par case, toucher pour tourner, toucher à deux doigts pour l'autre sens, glisser vite
+  vers le bas pour la chute instantanée ou vers le haut pour la réserve, glisser lentement pour
+  la chute douce. Boutons tactiles seulement sur écran tactile et sur demande (réglage
+  « Commandes », 1.7).
+- **Chute instantanée animée** (1.7) : les règles verrouillent la pièce aussitôt ; seule
+  l'image la montre tomber (`fallMs`, 90 à 230 ms, en accélérant), la retire du tas jusqu'à
+  l'atterrissage et diffère d'autant la fissure, les points et le son. Pas en Rythme (les
+  atterrissages y sonnent sur le temps) ni avec les effets sobres.
+- **Effacement** (1.7) : la faille part du centre de la pièce qui a complété la ligne ; chaque
+  brique s'éclaire et se fissure depuis son point de rupture, puis éclate en éclats découpés
+  le long de ces fissures, qui gardent l'image de la brique (motif de canevas transformé, sans
+  découpage coûteux).
 - **Pause automatique** quand l'onglet est masqué ou perd le focus ; mettre en pause relâche
   la chute douce (une touche tenue ne fait pas tomber la pièce à la reprise).
 - **Thème sans flash** : un court script dans `index.html` pose `data-theme` avant le premier
@@ -1233,3 +1255,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.4     | 14/10/2026 | Identité « Rift » (§ 3.8), première partie guidée, musique, Playgama (§ 3.7, PLAYGAMA.md), sans Échap ni Ctrl.                                                    |
 | 1.5     | 14/10/2026 | Nouveau nom : Lumirift (§ 3.9), vérification des marques et des domaines.                                                                                         |
 | 1.6     | 15/10/2026 | Publicités : pub récompensée facultative (doubler l'XP), interstitiel à toute sortie de fin de partie (§ 3.7).                                                    |
+| 1.7     | 20/10/2026 | La partie au doigt : gestes partout, boutons sur demande (§ 3.3), écran de jeu sans en-tête ni défilement, paysage (§ 4.2), chute et effacement animés (§ 5.6).   |

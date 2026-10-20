@@ -30,15 +30,19 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 
 ### Commandes
 
-| Action                    | Clavier                                | Tactile                    |
-| ------------------------- | -------------------------------------- | -------------------------- |
-| Déplacer                  | ← → (ou A D)                           | Glisser                    |
-| Descendre / chute franche | ↓ (ou S) / Espace                      | Glisser vers le bas / vite |
-| Tourner                   | ↑ ou X / Z (W en AZERTY)               | Toucher                    |
-| Réserve, capacité         | C ou Maj, F                            | Boutons                    |
-| Tourner la Tour           | Q / E (A / E en AZERTY)                | Glisser à deux doigts      |
-| Mosaïque                  | 1, 2, 3 (4 : cube), flèches, Entrée, J | Glisser-déposer            |
-| Pause                     | P                                      | Bouton                     |
+| Action                    | Clavier                                | Tactile (partout sur l'écran de jeu)          |
+| ------------------------- | -------------------------------------- | --------------------------------------------- |
+| Déplacer                  | ← → (ou A D)                           | Glisser sur le côté                           |
+| Descendre / chute franche | ↓ (ou S) / Espace                      | Glisser vers le bas / vite vers le bas        |
+| Tourner / autre sens      | ↑ ou X / Z (W en AZERTY)               | Toucher / toucher à deux doigts               |
+| Réserve                   | C ou Maj                               | Glisser vite vers le haut, ou toucher la case |
+| Capacité (Renversement)   | F                                      | Bouton à côté de la réserve                   |
+| Tourner la Tour           | Q / E (A / E en AZERTY)                | Glisser à deux doigts                         |
+| Mosaïque                  | 1, 2, 3 (4 : cube), flèches, Entrée, J | Glisser-déposer                               |
+| Pause                     | P                                      | Bouton en haut de l'écran                     |
+
+Sur écran tactile, les boutons ne s'affichent que si on les choisit (Réglages, Commandes).
+La partie se joue en portrait comme en paysage, sans en-tête ni défilement.
 
 L'aide propre à chaque famille s'affiche dans la fenêtre de pause et à côté du jeu pendant
 les cinq premières parties ; la toute première partie est guidée pas à pas. Ni Échap ni Ctrl :

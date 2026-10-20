@@ -168,13 +168,17 @@
       "flip": "Flip the well"
     },
     "keyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Z to rotate the other way (W on AZERTY), C to hold, F for the ability, P to pause.",
-    "touch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop."
+    "touch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop.",
+    "move": "Move",
+    "groupMove": "Move and drop",
+    "groupAct": "Rotate and hard drop"
   },
   "pause": {
     "title": "Paused",
     "resume": "Resume",
     "restart": "Restart",
-    "quit": "Quit"
+    "quit": "Quit",
+    "settings": "Settings"
   },
   "over": {
     "title": "Game over",
@@ -220,7 +224,11 @@
     "haptics": "Vibration",
     "volume": "Sound effects volume",
     "close": "Close",
-    "music": "Music"
+    "music": "Music",
+    "controls": "Controls",
+    "controlsGestures": "Gestures",
+    "controlsButtons": "Buttons",
+    "controlsHint": "On a touch screen, the buttons come back under the well."
   },
   "game": {
     "loading": "Loading the game…",
@@ -315,7 +323,8 @@
   "tower": {
     "well": "Glass tower",
     "helpKeyboard": "Keyboard: arrows to move and drop, Space for a hard drop, ↑ or X to rotate, Z to rotate the other way (W on AZERTY), C to hold, Q and E (A and E on AZERTY) to turn the tower, P to pause. A line is a full ring of 20 cells.",
-    "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop, drag with two fingers to turn the tower. The camera follows the piece."
+    "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop, drag with two fingers to turn the tower. The camera follows the piece.",
+    "turn": "Turn the tower"
   },
   "profile": {
     "level": "Level {n}",
@@ -554,5 +563,15 @@
     "moveTouch": "Swipe",
     "rotateTouch": "Tap",
     "dropTouch": "Flick down"
+  },
+  "gestures": {
+    "label": "Gestures",
+    "drag": "Drag sideways",
+    "tap": "Tap",
+    "twoFingers": "Two-finger tap",
+    "flickUp": "Flick up",
+    "dragDown": "Drag down",
+    "flickDown": "Flick down",
+    "twoFingerDrag": "Two-finger drag"
   }
 }

@@ -1,0 +1,71 @@
+/*
+ * The parts every game stage shares. A stage has no box of its own
+ * (`display: contents`): each part names its area of the game screen's grid
+ * (well, hold, next, side, hand…), and the game screen places the areas for
+ * the orientation and the family.
+ */
+.stage {
+  display: contents;
+}
+
+.stage__well {
+  grid-area: well;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.stage__canvas {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  box-shadow:
+    0 0 0 2px var(--well-frame),
+    0 0 3rem var(--well-glow),
+    0 0 0 7px var(--well-halo);
+}
+
+.stage__next {
+  grid-area: next;
+}
+
+.stage__box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--glass);
+  color: var(--text);
+}
+
+.stage__label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* Portrait: the coming pieces in a row, their label written upward. */
+.stage__next .stage__label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* Landscape: the coming pieces stand in a column beside the well. */
+@media (orientation: landscape) {
+  .stage__next {
+    flex-direction: column;
+    align-self: start;
+    padding: var(--space-2);
+  }
+
+  .stage__next .stage__label {
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+}

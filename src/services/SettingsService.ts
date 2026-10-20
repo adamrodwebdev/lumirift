@@ -3,6 +3,10 @@ import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, type Locale } from '@/i18n/locales';
 import { readJson, type KeyValueStorage } from './KeyValueStorage';
 
+/** On a touch screen: gestures anywhere on the game, or the on-screen buttons. */
+export type ControlScheme = 'gestures' | 'buttons';
+export const CONTROL_SCHEMES: readonly ControlScheme[] = ['gestures', 'buttons'];
+
 export interface Settings {
   readonly locale: Locale;
   readonly ghost: boolean;
@@ -14,6 +18,7 @@ export interface Settings {
   /** Music volume, 0 to 1. */
   readonly musicVolume: number;
   readonly muted: boolean;
+  readonly controls: ControlScheme;
 }
 
 /** The game's first name (Stackrift) stays in the save keys: no player loses progress. */
@@ -21,6 +26,9 @@ export const SETTINGS_KEY = 'stackrift:settings';
 
 const isUnit = (value: unknown): value is number =>
   typeof value === 'number' && value >= 0 && value <= 1;
+
+const isControlScheme = (value: unknown): value is ControlScheme =>
+  typeof value === 'string' && (CONTROL_SCHEMES as readonly string[]).includes(value);
 
 const isEffectsLevel = (value: unknown): value is EffectsLevel =>
   typeof value === 'string' && (EFFECT_LEVELS as readonly string[]).includes(value);
@@ -62,6 +70,7 @@ export class SettingsService {
     if (typeof record.muted === 'boolean') settings.muted = record.muted;
     if (isUnit(record.volume)) settings.volume = record.volume;
     if (isUnit(record.musicVolume)) settings.musicVolume = record.musicVolume;
+    if (isControlScheme(record.controls)) settings.controls = record.controls;
     return settings;
   }
 }

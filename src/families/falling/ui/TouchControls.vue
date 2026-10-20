@@ -2,12 +2,14 @@
 import { useI18n } from 'vue-i18n';
 import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
 import type { FallingAction } from '../input/FallingInput';
-import type { AbilityId } from '../modes/GameMode';
 
-/** `canHold`: false for families without a hold slot (Sand). */
-const props = withDefaults(defineProps<{ ability: AbilityId | null; canHold?: boolean }>(), {
-  canHold: true,
-});
+/**
+ * The on-screen buttons, for the players who choose them over gestures
+ * (Settings, Controls). Two groups, one per thumb: the moves on the left, the
+ * rotations and the drop on the right. The game screen places them, under
+ * the well in portrait and on each side of it in landscape. The hold and the
+ * ability have their own buttons next to the well; the pause is at the top.
+ */
 const emit = defineEmits<{ press: [action: FallingAction]; release: [action: FallingAction] }>();
 
 const { t } = useI18n();
@@ -18,32 +20,15 @@ interface Control {
   readonly label: string;
 }
 
-const ABILITY_ICONS: Readonly<Record<AbilityId, IconName>> = { flip: 'flip' };
-
-const rows = (): Control[][] => [
-  [
-    ...(props.canHold
-      ? [{ action: 'hold', icon: 'hold', label: t('controls.hold') } as const]
-      : []),
-    { action: 'rotateCcw', icon: 'rotateCcw', label: t('controls.rotateCcw') },
-    { action: 'rotateCw', icon: 'rotateCw', label: t('controls.rotateCw') },
-    ...(props.ability
-      ? [
-          {
-            action: 'ability',
-            icon: ABILITY_ICONS[props.ability],
-            label: t(`controls.ability.${props.ability}`),
-          } as const,
-        ]
-      : []),
-    { action: 'pause', icon: 'pause', label: t('controls.pause') },
-  ],
-  [
-    { action: 'left', icon: 'left', label: t('controls.left') },
-    { action: 'softDrop', icon: 'down', label: t('controls.softDrop') },
-    { action: 'hardDrop', icon: 'drop', label: t('controls.hardDrop') },
-    { action: 'right', icon: 'right', label: t('controls.right') },
-  ],
+const moves = (): Control[] => [
+  { action: 'left', icon: 'left', label: t('controls.left') },
+  { action: 'softDrop', icon: 'down', label: t('controls.softDrop') },
+  { action: 'right', icon: 'right', label: t('controls.right') },
+];
+const acts = (): Control[] => [
+  { action: 'rotateCcw', icon: 'rotateCcw', label: t('controls.rotateCcw') },
+  { action: 'rotateCw', icon: 'rotateCw', label: t('controls.rotateCw') },
+  { action: 'hardDrop', icon: 'drop', label: t('controls.hardDrop') },
 ];
 
 const press = (event: PointerEvent, action: FallingAction) => {
@@ -53,10 +38,17 @@ const press = (event: PointerEvent, action: FallingAction) => {
 </script>
 
 <template>
-  <div class="controls" role="group" :aria-label="t('controls.label')">
-    <div v-for="(row, index) in rows()" :key="index" class="controls__row">
+  <div class="controls">
+    <div
+      v-for="(group, index) in [moves(), acts()]"
+      :key="index"
+      class="controls__group"
+      :class="index === 0 ? 'controls__move' : 'controls__act'"
+      role="group"
+      :aria-label="index === 0 ? t('controls.groupMove') : t('controls.groupAct')"
+    >
       <button
-        v-for="control in row"
+        v-for="control in group"
         :key="control.action"
         type="button"
         class="control"
@@ -74,41 +66,56 @@ const press = (event: PointerEvent, action: FallingAction) => {
 </template>
 
 <style scoped>
+/* The game screen's grid places each group. */
 .controls {
+  display: contents;
+}
+
+.controls__group {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom));
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
 }
 
-.controls__row {
-  display: flex;
-  gap: var(--space-2);
-}
-
 .control {
-  flex: 1;
   display: grid;
   place-items: center;
   min-height: 3.25rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
+  border: 0;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.14),
+    0 4px 0 rgb(0 0 0 / 0.45);
+  color: var(--text);
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease;
 }
 
 .control:active {
-  background: var(--surface-2);
-  transform: scale(0.96);
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.14),
+    0 1px 0 rgb(0 0 0 / 0.45);
 }
 
-.control--hardDrop,
-.control--ability {
-  background: var(--accent-fill);
-  border-color: var(--accent-fill);
+.control--hardDrop {
+  background: var(--accent-gradient);
   color: var(--on-accent-fill);
+  box-shadow:
+    0 4px 0 var(--accent-edge),
+    inset 0 2px 0 rgb(255 255 255 / 0.6);
+}
+
+.control--hardDrop:active {
+  box-shadow:
+    0 1px 0 var(--accent-edge),
+    inset 0 2px 0 rgb(255 255 255 / 0.6);
 }
 </style>

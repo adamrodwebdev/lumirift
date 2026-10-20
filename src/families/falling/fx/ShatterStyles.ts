@@ -15,6 +15,8 @@ export interface ShatterStyle {
   readonly spin: number;
   /** Multiplies their upward speed. */
   readonly lift: number;
+  /** Each shard is a piece of the block itself (its picture), not a plain colour. */
+  readonly textured: boolean;
 }
 
 const VIVID: readonly Tone[] = [
@@ -34,23 +36,27 @@ export const SHATTER_STYLES: Readonly<Record<ShatterId, ShatterStyle>> = {
     colour: (tone, palette) => shade(palette.color(tone), random(-0.28, 0.32)),
     spin: 1,
     lift: 1,
+    textured: true,
   },
   /** Every colour of the game, spinning fast. */
   confetti: {
     colour: (_tone, palette) => shade(palette.color(pick(VIVID)), random(0, 0.2)),
     spin: 2,
     lift: 1.25,
+    textured: false,
   },
   /** Pink petals, slow and gentle. */
   petals: {
     colour: (_tone, palette) => pick(palette.effects.petals),
     spin: 0.5,
     lift: 0.7,
+    textured: false,
   },
   /** Gold leaf. */
   gold: {
     colour: (_tone, palette) => pick(palette.effects.gold),
     spin: 1.3,
     lift: 1.1,
+    textured: false,
   },
 };

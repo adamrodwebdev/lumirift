@@ -168,13 +168,17 @@
       "flip": "Balikkan sumur"
     },
     "keyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Z untuk memutar ke arah lain (W pada AZERTY), C untuk menyimpan, F untuk kemampuan, P untuk jeda.",
-    "touch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung."
+    "touch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung.",
+    "move": "Geser",
+    "groupMove": "Geser dan turunkan",
+    "groupAct": "Putar dan jatuhkan"
   },
   "pause": {
     "title": "Jeda",
     "resume": "Lanjutkan",
     "restart": "Mulai ulang",
-    "quit": "Keluar"
+    "quit": "Keluar",
+    "settings": "Pengaturan"
   },
   "over": {
     "title": "Permainan selesai",
@@ -220,7 +224,11 @@
     "haptics": "Getaran",
     "volume": "Volume efek suara",
     "close": "Tutup",
-    "music": "Musik"
+    "music": "Musik",
+    "controls": "Kontrol",
+    "controlsGestures": "Gestur",
+    "controlsButtons": "Tombol",
+    "controlsHint": "Di layar sentuh, tombol muncul kembali di bawah sumur."
   },
   "game": {
     "loading": "Memuat permainan…",
@@ -315,7 +323,8 @@
   "tower": {
     "well": "Menara kaca",
     "helpKeyboard": "Keyboard: panah untuk bergerak dan turun, Spasi untuk jatuh langsung, ↑ atau X untuk memutar, Z untuk memutar ke arah lain (W pada AZERTY), C untuk simpan, Q dan E (A dan E pada AZERTY) untuk memutar menara, P untuk jeda. Satu baris adalah cincin penuh 20 kotak.",
-    "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung, geser dengan dua jari untuk memutar menara. Kamera mengikuti kepingan."
+    "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung, geser dengan dua jari untuk memutar menara. Kamera mengikuti kepingan.",
+    "turn": "Putar menara"
   },
   "profile": {
     "level": "Level {n}",
@@ -554,5 +563,15 @@
     "moveTouch": "Geser",
     "rotateTouch": "Ketuk",
     "dropTouch": "Sentil ke bawah"
+  },
+  "gestures": {
+    "label": "Gestur",
+    "drag": "Geser ke samping",
+    "tap": "Ketuk",
+    "twoFingers": "Ketuk dua jari",
+    "flickUp": "Sentil ke atas",
+    "dragDown": "Geser ke bawah",
+    "flickDown": "Sentil ke bawah",
+    "twoFingerDrag": "Geser dua jari"
   }
 }

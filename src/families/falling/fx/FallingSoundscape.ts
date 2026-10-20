@@ -21,10 +21,14 @@ const NOTICE_SOUNDS: Readonly<Record<string, SoundRecipe>> = {
 export class FallingSoundscape {
   private readonly timers = new Set<ReturnType<typeof setTimeout>>();
   private hardDropped = false;
+  /** While a hard-dropped piece is shown falling, its landing and clear sound when it lands. */
+  private landingIn = 0;
 
+  /** `fall`: how long the picture of a hard drop takes to land (0: drawn at once). */
   constructor(
     private readonly audio: AudioEngine,
     private readonly haptics: Haptics,
+    private readonly fall: (distance: number) => number = () => 0,
   ) {}
 
   attach(session: FallingSession): () => void {
@@ -35,8 +39,11 @@ export class FallingSoundscape {
       session.onGame('hold', () => audio.play(sounds.hold)),
       session.onGame('hardDrop', ({ distance }) => {
         this.hardDropped = true;
-        audio.play(sounds.hardDrop(distance));
-        haptics.pulse(14);
+        this.landingIn = this.fall(distance);
+        this.after(this.landingIn, () => {
+          audio.play(sounds.hardDrop(distance));
+          haptics.pulse(14);
+        });
       }),
       session.onGame('lock', () => {
         // A hard drop already made its own, heavier impact.
@@ -47,12 +54,18 @@ export class FallingSoundscape {
         this.hardDropped = false;
       }),
       session.onGame('clear', ({ lines, combo, pureLines }) => {
-        audio.play(sounds.crack);
-        this.later(() => {
+        const landing = this.landingIn;
+        this.after(landing, () => {
+          audio.play(sounds.crack);
+          haptics.pulse(lines >= 4 ? [30, 40, 80] : 18 + lines * 8);
+        });
+        this.after(landing + CRACK_MS, () => {
           audio.play(sounds.shatter(lines, combo));
           if (pureLines > 0) audio.play(sounds.pureLine);
         });
-        haptics.pulse(lines >= 4 ? [30, 40, 80] : 18 + lines * 8);
+      }),
+      session.onGame('spawn', () => {
+        this.landingIn = 0;
       }),
       session.onGame('levelUp', () => audio.play(sounds.levelUp)),
       session.onGame('garbage', () => {
@@ -92,12 +105,16 @@ export class FallingSoundscape {
     };
   }
 
-  /** Runs when the crack turns into shards, like the visuals. */
-  private later(play: () => void): void {
+  /** Plays now, or after `delayMs`, in step with the visuals (a landing, the crack turning into shards). */
+  private after(delayMs: number, play: () => void): void {
+    if (delayMs <= 0) {
+      play();
+      return;
+    }
     const timer = setTimeout(() => {
       this.timers.delete(timer);
       play();
-    }, CRACK_MS);
+    }, delayMs);
     this.timers.add(timer);
   }
 }

@@ -63,8 +63,9 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  width: clamp(3.75rem, 13vw, 10rem);
-  margin: var(--space-2) 0 0;
+  width: 100%;
+  max-width: 10rem;
+  margin: 0;
 }
 
 .opponent__label {

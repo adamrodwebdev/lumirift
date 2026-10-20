@@ -168,13 +168,17 @@
       "flip": "Renverser le puits"
     },
     "keyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, W pour tourner dans l'autre sens (Z en QWERTY), C pour la réserve, F pour la capacité, P pour la pause.",
-    "touch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée."
+    "touch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée.",
+    "move": "Déplacer",
+    "groupMove": "Déplacer et descendre",
+    "groupAct": "Tourner et faire tomber"
   },
   "pause": {
     "title": "Pause",
     "resume": "Reprendre",
     "restart": "Recommencer",
-    "quit": "Quitter"
+    "quit": "Quitter",
+    "settings": "Réglages"
   },
   "over": {
     "title": "Partie terminée",
@@ -220,7 +224,11 @@
     "haptics": "Vibrations",
     "volume": "Volume des effets sonores",
     "close": "Fermer",
-    "music": "Musique"
+    "music": "Musique",
+    "controls": "Commandes",
+    "controlsGestures": "Gestes",
+    "controlsButtons": "Boutons",
+    "controlsHint": "Sur écran tactile, les boutons reviennent sous le puits."
   },
   "game": {
     "loading": "Chargement de la partie…",
@@ -315,7 +323,8 @@
   "tower": {
     "well": "Tour de verre",
     "helpKeyboard": "Clavier : flèches pour déplacer et descendre, Espace pour la chute instantanée, ↑ ou X pour tourner, W pour tourner dans l’autre sens (Z en QWERTY), C pour la réserve, A et E (Q et E en QWERTY) pour faire pivoter la tour, P pour la pause. Une ligne est un anneau complet de 20 cases.",
-    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée, glissez à deux doigts pour faire pivoter la tour. La caméra suit la pièce."
+    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée, glissez à deux doigts pour faire pivoter la tour. La caméra suit la pièce.",
+    "turn": "Faire pivoter la tour"
   },
   "profile": {
     "level": "Niveau {n}",
@@ -554,5 +563,15 @@
     "moveTouch": "Glissez",
     "rotateTouch": "Touchez",
     "dropTouch": "Lancez vers le bas"
+  },
+  "gestures": {
+    "label": "Gestes",
+    "drag": "Glisser sur le côté",
+    "tap": "Toucher",
+    "twoFingers": "Toucher à deux doigts",
+    "flickUp": "Glisser vite vers le haut",
+    "dragDown": "Glisser vers le bas",
+    "flickDown": "Glisser vite vers le bas",
+    "twoFingerDrag": "Glisser à deux doigts"
   }
 }

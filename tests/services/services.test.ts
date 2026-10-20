@@ -12,6 +12,7 @@ const DEFAULTS = {
   haptics: true,
   volume: 0.7,
   musicVolume: 0.5,
+  controls: 'gestures',
   muted: false,
 } as const;
 
@@ -39,10 +40,17 @@ describe('SettingsService', () => {
         ghost: 'yes',
         effects: 'reduced',
         musicVolume: 2,
+        controls: 'joystick',
       }),
     );
     const settings = new SettingsService(storage, DEFAULTS);
     expect(settings.current).toEqual({ ...DEFAULTS, locale: 'id', effects: 'reduced' });
+  });
+
+  it('remembers the touch controls chosen: gestures or buttons', () => {
+    const storage = new MemoryStorage();
+    new SettingsService(storage, DEFAULTS).update({ controls: 'buttons' });
+    expect(new SettingsService(storage, DEFAULTS).current.controls).toBe('buttons');
   });
 
   it('survives corrupt storage', () => {
