@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppIcon from './AppIcon.vue';
 
@@ -9,7 +9,9 @@ import AppIcon from './AppIcon.vue';
  * a short cascade; it slides away when closed. Built on the native modal
  * dialog: focus trapping, Escape and the inert background come from the
  * browser. Escape (or the close button) emits `dismiss`; the parent decides
- * what it means. Laid out to fit the screen without scrolling.
+ * what it means. Laid out to fit the screen without scrolling. Its content is
+ * built the first time it opens: a closed window costs nothing to the screen
+ * behind it.
  */
 const props = defineProps<{
   open: boolean;
@@ -39,14 +41,22 @@ const settling = ref(false);
 const SETTLE_MS = 350;
 let settleTimer: ReturnType<typeof setTimeout> | undefined;
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rendered = ref(props.open);
+/** Asked open and not shown yet (asked again after a wait: it may have changed). */
+const toOpen = (element: HTMLDialogElement) => props.open && !element.open;
 
-const sync = () => {
+const sync = async () => {
   const element = dialog.value;
   if (!element) return;
   if (props.open) {
     clearTimeout(closeTimer);
     closing.value = false;
-    if (!element.open) {
+    if (!rendered.value) {
+      rendered.value = true;
+      // The content (and its autofocus) is in place before the dialog opens.
+      await nextTick();
+    }
+    if (toOpen(element)) {
       element.showModal();
       if (!reducedMotion()) {
         settling.value = true;
@@ -68,8 +78,11 @@ const sync = () => {
   }, CLOSE_MS);
 };
 
-onMounted(sync);
-watch(() => props.open, sync);
+onMounted(() => void sync());
+watch(
+  () => props.open,
+  () => void sync(),
+);
 onBeforeUnmount(() => {
   clearTimeout(closeTimer);
   clearTimeout(settleTimer);
@@ -117,7 +130,7 @@ const onCancel = (event: Event) => {
       </button>
     </header>
     <div class="sheet__body">
-      <slot />
+      <slot v-if="rendered" />
     </div>
   </dialog>
 </template>

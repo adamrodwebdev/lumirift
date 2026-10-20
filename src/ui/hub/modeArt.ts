@@ -24,6 +24,144 @@ export const ART_WIDTH = 120;
 export const ART_HEIGHT = 80;
 /** One block of the grid, in art units; a block leaves a 1-unit gap around it. */
 export const ART_CELL = 10;
+/** The width of the strokes, in art units. */
+export const ART_STROKE = 2.5;
+/** Room left around a picture once cropped to what it shows (art units). */
+export const ART_MARGIN = 4;
+
+/** A rectangle of the 120 × 80 box. */
+export interface ArtBox {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+type Point = readonly [x: number, y: number];
+
+/**
+ * The points an SVG path goes through or bends towards: its ends and its
+ * control points (a curve stays inside them). Commands M L H V Q T C Z, in
+ * absolute or relative form, as the pictures use them.
+ */
+export function pathPoints(d: string): Point[] {
+  const tokens = d.match(/[a-z]|-?\d*\.?\d+/gi) ?? [];
+  const points: Point[] = [];
+  let x = 0;
+  let y = 0;
+  let startX = 0;
+  let startY = 0;
+  /** The last quadratic control point, mirrored by T. */
+  let control: Point | null = null;
+  let command = '';
+  let i = 0;
+  const next = () => Number(tokens[i++]);
+  while (i < tokens.length) {
+    if (/[a-z]/i.test(tokens[i]!)) command = tokens[i++]!;
+    const relative = command === command.toLowerCase();
+    const ox = relative ? x : 0;
+    const oy = relative ? y : 0;
+    switch (command.toUpperCase()) {
+      case 'M':
+        x = ox + next();
+        y = oy + next();
+        [startX, startY] = [x, y];
+        points.push([x, y]);
+        control = null;
+        // More pairs after a move are lines.
+        command = relative ? 'l' : 'L';
+        break;
+      case 'L':
+        x = ox + next();
+        y = oy + next();
+        points.push([x, y]);
+        control = null;
+        break;
+      case 'H':
+        x = ox + next();
+        points.push([x, y]);
+        control = null;
+        break;
+      case 'V':
+        y = oy + next();
+        points.push([x, y]);
+        control = null;
+        break;
+      case 'Q': {
+        const bend: Point = [ox + next(), oy + next()];
+        x = ox + next();
+        y = oy + next();
+        points.push(bend, [x, y]);
+        control = bend;
+        break;
+      }
+      case 'T': {
+        const bend: Point = control ? [2 * x - control[0], 2 * y - control[1]] : [x, y];
+        x = ox + next();
+        y = oy + next();
+        points.push(bend, [x, y]);
+        control = bend;
+        break;
+      }
+      case 'C': {
+        const first: Point = [ox + next(), oy + next()];
+        const second: Point = [ox + next(), oy + next()];
+        x = ox + next();
+        y = oy + next();
+        points.push(first, second, [x, y]);
+        control = null;
+        break;
+      }
+      case 'Z':
+        [x, y] = [startX, startY];
+        control = null;
+        break;
+      default:
+        throw new Error(`Unsupported path command "${command}"`);
+    }
+  }
+  return points;
+}
+
+/**
+ * The part of the box a picture covers, with a margin: the pictures are
+ * cropped to it, so that each one fills its tile.
+ */
+export function artBounds(shapes: readonly ArtShape[]): ArtBox {
+  let left = Infinity;
+  let top = Infinity;
+  let right = -Infinity;
+  let bottom = -Infinity;
+  const take = (x0: number, y0: number, x1: number, y1: number) => {
+    left = Math.min(left, x0);
+    top = Math.min(top, y0);
+    right = Math.max(right, x1);
+    bottom = Math.max(bottom, y1);
+  };
+  const half = ART_STROKE / 2;
+  for (const shape of shapes) {
+    if (shape.kind === 'blocks')
+      for (const [x, y] of shape.cells)
+        take(x * ART_CELL + 1, y * ART_CELL - 9, x * ART_CELL + ART_CELL - 1, y * ART_CELL - 1);
+    else if (shape.kind === 'ellipse')
+      take(
+        shape.cx - shape.rx - half,
+        shape.cy - shape.ry - half,
+        shape.cx + shape.rx + half,
+        shape.cy + shape.ry + half,
+      );
+    else for (const [x, y] of pathPoints(shape.d)) take(x - half, y - half, x + half, y + half);
+  }
+  if (right < left) return { x: 0, y: 0, width: ART_WIDTH, height: ART_HEIGHT };
+  const x = Math.max(0, left - ART_MARGIN);
+  const y = Math.max(0, top - ART_MARGIN);
+  return {
+    x,
+    y,
+    width: Math.min(ART_WIDTH, right + ART_MARGIN) - x,
+    height: Math.min(ART_HEIGHT, bottom + ART_MARGIN) - y,
+  };
+}
 
 const row = (y: number, from: number, to: number, skip: readonly number[] = []) =>
   Array.from({ length: to - from + 1 }, (_, i) => [from + i, y] as const).filter(

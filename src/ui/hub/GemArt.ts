@@ -4,21 +4,12 @@ import type { BlockSprites } from '@/families/falling/render/BlockSprites';
 import type { MaterialId, ShatterId } from '@/progression/Cosmetics';
 import { TonePalette } from '@/render/TonePalette';
 import type { ModeId } from '@/session/ModeId';
-import { ART_CELL, ART_HEIGHT, ART_WIDTH, MODE_ART } from './modeArt';
+import { ART_CELL, ART_STROKE, artBounds, MODE_ART, type ArtBox } from './modeArt';
 
 /** The menus draw with the game's own blocks: the same gems, the same light. */
 const MAX_SPRITE_SETS = 40;
-/** Room left around a mode's picture once cropped (art units). */
-const ART_MARGIN = 4;
 /** A mode's picture never grows past blocks of about 26 px: big tiles get room, not giants. */
 const MAX_ART_SCALE = 3.2;
-
-interface ArtBox {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-}
 
 const random = (seed: number) => {
   let state = seed;
@@ -51,6 +42,16 @@ export function fitCanvas(
 export class GemArt {
   private readonly sets = new Map<string, BlockSprites>();
   private readonly bounds = new Map<ModeId, ArtBox>();
+
+  /** The part of a mode's picture that shows something (computed from its data, once). */
+  private boundsOf(mode: ModeId): ArtBox {
+    let box = this.bounds.get(mode);
+    if (!box) {
+      box = artBounds(MODE_ART[mode]);
+      this.bounds.set(mode, box);
+    }
+    return box;
+  }
 
   constructor(readonly palette: TonePalette) {}
 
@@ -116,7 +117,7 @@ export class GemArt {
       ctx.save();
       ctx.translate(ox, oy);
       ctx.scale(k, k);
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = ART_STROKE;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.strokeStyle = `rgb(${r} ${g} ${b})`;
@@ -129,47 +130,6 @@ export class GemArt {
       }
       ctx.restore();
     }
-  }
-
-  /**
-   * The part of a mode's 120 × 80 picture that holds something, with a small
-   * margin: found once by painting it and reading where the ink went.
-   */
-  private boundsOf(mode: ModeId): ArtBox {
-    const known = this.bounds.get(mode);
-    if (known) return known;
-    let box: ArtBox = { x: 0, y: 0, width: ART_WIDTH, height: ART_HEIGHT };
-    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-    if (ctx) {
-      ctx.canvas.width = ART_WIDTH;
-      ctx.canvas.height = ART_HEIGHT;
-      this.paintMode(ctx, mode, 1, 0, 0, 1);
-      const { data } = ctx.getImageData(0, 0, ART_WIDTH, ART_HEIGHT);
-      let left = ART_WIDTH;
-      let top = ART_HEIGHT;
-      let right = -1;
-      let bottom = -1;
-      for (let y = 0; y < ART_HEIGHT; y++)
-        for (let x = 0; x < ART_WIDTH; x++) {
-          if (data[(y * ART_WIDTH + x) * 4 + 3]! < 24) continue;
-          left = Math.min(left, x);
-          right = Math.max(right, x);
-          top = Math.min(top, y);
-          bottom = Math.max(bottom, y);
-        }
-      if (right >= 0) {
-        const x = Math.max(0, left - ART_MARGIN);
-        const y = Math.max(0, top - ART_MARGIN);
-        box = {
-          x,
-          y,
-          width: Math.min(ART_WIDTH, right + 1 + ART_MARGIN) - x,
-          height: Math.min(ART_HEIGHT, bottom + 1 + ART_MARGIN) - y,
-        };
-      }
-    }
-    this.bounds.set(mode, box);
-    return box;
   }
 
   /** Four blocks of a material, as on the Atelier's shelf. */
