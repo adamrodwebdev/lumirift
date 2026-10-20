@@ -277,6 +277,8 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
   if (record.isNewBest || improved) platform.happyTime();
   outcome.value = {
     reason,
+    amount: Math.round(result.value),
+    kind: result.kind,
     value: format.result(result.kind, result.value),
     best: format.result(result.kind, record.best),
     isNewBest: record.isNewBest,

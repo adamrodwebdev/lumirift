@@ -23,7 +23,7 @@ const objectives = computed(() => profile.current.objectives);
 </script>
 
 <template>
-  <ModalDialog :open="open" :title="t('profile.objectives')" @dismiss="emit('close')">
+  <ModalDialog :open="open" :title="t('profile.objectives')" closable @dismiss="emit('close')">
     <ul class="list">
       <li
         v-for="entry in objectives"
@@ -54,9 +54,7 @@ const objectives = computed(() => profile.current.objectives);
         />
       </li>
     </ul>
-    <button type="button" class="btn btn--primary close" @click="emit('close')">
-      {{ t('settings.close') }}
-    </button>
+    <p class="sheet-note">{{ t('profile.objectivesNote') }}</p>
   </ModalDialog>
 </template>
 
@@ -72,21 +70,23 @@ const objectives = computed(() => profile.current.objectives);
 .objective {
   position: relative;
   display: grid;
-  grid-template-columns: 1.25rem 1fr auto;
+  grid-template-columns: 1.75rem 1fr auto;
   align-items: center;
-  gap: var(--space-1) var(--space-2);
-  padding: var(--space-3);
-  border-radius: var(--radius);
-  background: var(--surface-2);
+  gap: 0.1rem var(--space-3);
+  min-height: 3.4rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 1rem;
+  background: var(--highlight);
   overflow: hidden;
 }
 
 .objective__mark {
+  grid-row: 1 / span 2;
   display: grid;
   place-items: center;
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
-  border: 2px solid var(--border);
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border: 2px solid var(--well-frame);
   border-radius: 50%;
 }
 
@@ -100,20 +100,25 @@ const objectives = computed(() => profile.current.objectives);
   color: var(--text-muted);
 }
 
-.objective__progress {
+.objective__text {
+  font-size: 0.88rem;
   font-weight: 700;
+}
+
+.objective__progress {
+  grid-row: 1 / span 2;
+  grid-column: 3;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
 .objective__reward {
-  grid-column: 2 / -1;
-  font-size: 0.78rem;
+  grid-column: 2;
+  font-size: 0.75rem;
   color: var(--text-muted);
-}
-
-.close {
-  width: 100%;
-  margin-top: var(--space-4);
 }
 
 .objective__bar {

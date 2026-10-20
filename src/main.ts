@@ -7,6 +7,7 @@ import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/stage.css';
+import './styles/sheet.css';
 import './styles/ambiances.css';
 
 // The portal's SDK first (portal builds): it provides the language and the save.

@@ -14,7 +14,8 @@
     "skip": "Aller au contenu",
     "settings": "Réglages",
     "mute": "Couper le son",
-    "unmute": "Activer le son"
+    "unmute": "Activer le son",
+    "close": "Fermer"
   },
   "home": {
     "play": "Jouer",
@@ -220,7 +221,7 @@
     "effectsOff": "Aucun",
     "shake": "Secousses de l'écran",
     "haptics": "Vibrations",
-    "volume": "Volume des effets sonores",
+    "volume": "Effets sonores",
     "close": "Fermer",
     "music": "Musique",
     "controls": "Commandes",
@@ -274,7 +275,6 @@
   },
   "variants": {
     "title": "Choisissez votre adversaire",
-    "cancel": "Annuler",
     "duel": {
       "rookie": "IA débutante",
       "easy": "IA facile",
@@ -332,7 +332,8 @@
     "streak": "Série : {n} jour | Série : {n} jours",
     "objectives": "Objectifs du jour",
     "done": "Fait",
-    "reward": "+{n} XP"
+    "reward": "+{n} XP",
+    "objectivesNote": "De nouveaux objectifs chaque jour à minuit."
   },
   "objectives": {
     "play": "Jouer une partie | Jouer {n} parties",
@@ -363,19 +364,12 @@
   },
   "cosmetics": {
     "title": "Atelier",
-    "intro": "Tout est cosmétique : rien ne change le jeu. Jouez pour débloquer la suite.",
     "scope": {
       "material": "Pour les modes de chute (la Tour garde son verre).",
       "shatter": "Pour les modes de chute et la Tour."
     },
     "worn": "Porté",
     "wear": "Porter",
-    "close": "Fermer",
-    "kinds": {
-      "material": "Matières",
-      "ambiance": "Ambiances",
-      "shatter": "Signatures de bris"
-    },
     "one": {
       "material": "matière",
       "ambiance": "ambiance",
@@ -434,10 +428,8 @@
     "goalLabel": "Objectif",
     "timeLabel": "Temps",
     "timeBonus": "(dont {time} du sablier)",
-    "starsLabel": "Étoiles",
     "bestLabel": "Meilleur résultat",
     "helpingLabel": "Améliorations utiles",
-    "back": "Retour",
     "play": "Jouer",
     "goal": {
       "lines": "Effacer {n} ligne | Effacer {n} lignes",
@@ -464,15 +456,12 @@
   },
   "upgrades": {
     "title": "Améliorations",
-    "intro": "Dépensez vos étoiles de campagne : chaque amélioration a trois rangs. Elles ne servent qu’en campagne ; vous pouvez tout rendre pour essayer autre chose.",
     "available": "{n} étoile disponible | {n} étoiles disponibles",
-    "none": "Pas encore achetée",
     "next": "Rang suivant : {effect}",
     "rank": "Rang {n} sur {max}",
     "max": "Au maximum",
     "buy": "Améliorer · {n}",
-    "refund": "Rendre toutes les étoiles",
-    "close": "Fermer",
+    "refund": "Tout reprendre",
     "scope": {
       "all": "Tous les modes",
       "falling": "Chute, Tour et Sable",
@@ -520,7 +509,8 @@
     "rampart": {
       "name": "Rempart",
       "effect": "Rangées adverses retardées de {value} s"
-    }
+    },
+    "note": "Seulement en campagne. Chaque étoile se reprend."
   },
   "demo": {
     "title": "Démo.",

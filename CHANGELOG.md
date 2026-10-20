@@ -3,6 +3,36 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.9.0] — 20/10/2026
+
+Les fenêtres deviennent des feuilles : rien ne défile, même sur un petit téléphone.
+
+### Ajouté
+
+- **Feuilles** : chaque fenêtre monte du bas de l'écran sur un téléphone tenu droit et
+  apparaît au centre en paysage et sur ordinateur ; son contenu suit en cascade, et elle
+  redescend en se fermant. Un bouton de fermeture dans le coin pour celles qui informent ou
+  règlent.
+- **Fin de partie mise en scène** : le résultat défile jusqu'à sa valeur, « Nouveau record »
+  surgit, la barre d'expérience se remplit (jusqu'au bout puis de nouveau quand un niveau
+  est franchi, avec son badge), puis ce que la partie a débloqué ; deux colonnes en paysage.
+- **Garde à l'ouverture** : une fenêtre qui vient d'apparaître ignore un instant les
+  touchers, Entrée et Espace, pour qu'un joueur qui martèle Espace en fin de partie ne
+  relance pas sans le vouloir.
+
+### Modifié
+
+- **Pause** : Reprendre en grand, puis Recommencer, Réglages et Quitter ; les gestes à
+  droite en paysage.
+- **Réglages** en lignes compactes (interrupteurs, choix en pastille), deux colonnes en
+  paysage ; la confidentialité et la version tiennent en une ligne.
+- **Améliorations** : les dix dans une grille ; celle qu'on choisit montre son effet et
+  s'achète en dessous. « Tout reprendre » à côté des étoiles.
+- **Fiche de niveau**, **choix de l'adversaire** (deux colonnes en paysage) et **objectifs du
+  jour** passent aussi en feuilles.
+- L'Atelier dit où se voit chaque matière et chaque signature d'éclats.
+- Un test de bout en bout vérifie qu'aucune fenêtre ne défile de 360 × 640 à l'ordinateur.
+
 ## [1.8.0] — 20/10/2026
 
 Le menu devient un jeu : quatre pages en onglets, sans défilement, au doigt comme au clavier.

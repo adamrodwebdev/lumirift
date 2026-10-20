@@ -14,7 +14,8 @@
     "skip": "Langsung ke konten",
     "settings": "Pengaturan",
     "mute": "Matikan suara",
-    "unmute": "Nyalakan suara"
+    "unmute": "Nyalakan suara",
+    "close": "Tutup"
   },
   "home": {
     "play": "Main",
@@ -220,7 +221,7 @@
     "effectsOff": "Tidak ada",
     "shake": "Guncangan layar",
     "haptics": "Getaran",
-    "volume": "Volume efek suara",
+    "volume": "Efek suara",
     "close": "Tutup",
     "music": "Musik",
     "controls": "Kontrol",
@@ -274,7 +275,6 @@
   },
   "variants": {
     "title": "Pilih lawanmu",
-    "cancel": "Batal",
     "duel": {
       "rookie": "AI pemula",
       "easy": "AI mudah",
@@ -332,7 +332,8 @@
     "streak": "Beruntun: {n} hari",
     "objectives": "Tujuan hari ini",
     "done": "Selesai",
-    "reward": "+{n} XP"
+    "reward": "+{n} XP",
+    "objectivesNote": "Tujuan baru setiap hari pukul 00.00."
   },
   "objectives": {
     "play": "Mainkan {n} permainan",
@@ -363,19 +364,12 @@
   },
   "cosmetics": {
     "title": "Atelier",
-    "intro": "Semuanya kosmetik: tidak ada yang mengubah permainan. Bermainlah untuk membuka lebih banyak.",
     "scope": {
       "material": "Untuk mode jatuh (Menara tetap kaca).",
       "shatter": "Untuk mode jatuh dan Menara."
     },
     "worn": "Dipakai",
     "wear": "Pakai",
-    "close": "Tutup",
-    "kinds": {
-      "material": "Material",
-      "ambiance": "Suasana",
-      "shatter": "Gaya pecahan"
-    },
     "one": {
       "material": "material",
       "ambiance": "suasana",
@@ -434,10 +428,8 @@
     "goalLabel": "Tujuan",
     "timeLabel": "Waktu",
     "timeBonus": "(termasuk {time} dari jam pasir)",
-    "starsLabel": "Bintang",
     "bestLabel": "Hasil terbaik",
     "helpingLabel": "Peningkatan yang membantu",
-    "back": "Kembali",
     "play": "Main",
     "goal": {
       "lines": "Hapus {n} baris",
@@ -464,15 +456,12 @@
   },
   "upgrades": {
     "title": "Peningkatan",
-    "intro": "Belanjakan bintang kampanye Anda: setiap peningkatan punya tiga tingkat. Hanya berlaku di kampanye; semua bintang bisa dikembalikan untuk mencoba yang lain.",
     "available": "{n} bintang tersedia",
-    "none": "Belum dibeli",
     "next": "Tingkat berikutnya: {effect}",
     "rank": "Tingkat {n} dari {max}",
     "max": "Maksimal",
     "buy": "Tingkatkan · {n}",
-    "refund": "Kembalikan semua bintang",
-    "close": "Tutup",
+    "refund": "Ambil semua kembali",
     "scope": {
       "all": "Semua mode",
       "falling": "Jatuh, Menara dan Pasir",
@@ -520,7 +509,8 @@
     "rampart": {
       "name": "Benteng",
       "effect": "Baris lawan tertunda {value} dtk"
-    }
+    },
+    "note": "Hanya di kampanye. Setiap bintang bisa diambil kembali."
   },
   "demo": {
     "title": "Demo.",

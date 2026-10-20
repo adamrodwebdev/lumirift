@@ -203,7 +203,11 @@ watch([material, shatter, ambiance], async () => {
           </button>
         </div>
 
-        <p class="status" aria-live="polite">{{ status }}</p>
+        <p class="status">
+          <span aria-live="polite">{{ status }}</span>
+          <!-- Until something happens: where this kind of look shows. -->
+          <span v-if="!status && kind !== 'ambiance'">{{ t(`cosmetics.scope.${kind}`) }}</span>
+        </p>
       </div>
     </div>
   </section>

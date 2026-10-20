@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut            |
-| ------- | ---------- | ----------------- |
-| 1.8     | 20/10/2026 | Le menu à onglets |
+| Version | Date       | Statut                       |
+| ------- | ---------- | ---------------------------- |
+| 1.9     | 20/10/2026 | Des feuilles sans défilement |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -705,6 +705,11 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   gauche, les suivantes (et l'adversaire du Duel) à droite. Les scènes des familles n'ont pas
   de boîte (`display: contents`) : chaque partie nomme sa zone. Mesures : cases de 32 px en
   390 × 844 (23 en 1.6), 22 px en 360 × 640 (18), 18 px en 844 × 390 (7), 38 px sur ordinateur.
+- **Fenêtres** (1.9) : des feuilles qui montent du bas en portrait, des cartes au centre en
+  paysage et sur ordinateur, composées pour tenir sans défilement de 360 × 640 à l'ordinateur
+  (vérifié par un test de bout en bout ; le défilement interne ne reste qu'en dernier
+  recours, texte agrandi ou très petit écran). En paysage, les plus chargées passent sur deux
+  colonnes (pause et gestes, réglages, résultats, améliorations, fiche de niveau).
 - Cibles tactiles ≥ 44 × 44 px ; aucune action réservée au survol.
 
 ### 4.3 Accessibilité (complétée au lot 11)
@@ -932,6 +937,13 @@ src/
   code de rendu des gemmes, chargé après le premier affichage ; la scène ne tourne que
   visible. `RiftWipe` couvre le changement d'écran, précharge (`ModeCatalog.preload`,
   `preloadStage`) puis se retire une fois le nouvel écran peint.
+- **Fenêtres** (1.9, `ModalDialog`) : la boîte de dialogue native (`showModal`) garde le
+  focus, Échap et l'arrière-plan inerte ; ouverte, c'est une grille dont les éléments sont la
+  ligne de titre et chaque bloc de contenu, et chaque fenêtre y place ses colonnes en paysage.
+  Fermeture animée (200 ms) avant `close()` ; à l'ouverture, 350 ms pendant lesquels touchers,
+  Entrée et Espace sont ignorés. Résultats : `useCountUp` (le résultat défile, valeur finale
+  lue par les lecteurs d'écran) et `useXpReveal` (la barre se remplit, franchit un niveau,
+  repart de zéro). Mouvements réduits : tout apparaît à sa place, sans délai.
 - **Pause automatique** quand l'onglet est masqué ou perd le focus ; mettre en pause relâche
   la chute douce (une touche tenue ne fait pas tomber la pièce à la reprise).
 - **Thème sans flash** : un court script dans `index.html` pose `data-theme` avant le premier
@@ -1282,3 +1294,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.6     | 15/10/2026 | Publicités : pub récompensée facultative (doubler l'XP), interstitiel à toute sortie de fin de partie (§ 3.7).                                                    |
 | 1.7     | 20/10/2026 | La partie au doigt : gestes partout, boutons sur demande (§ 3.3), écran de jeu sans en-tête ni défilement, paysage (§ 4.2), chute et effacement animés (§ 5.6).   |
 | 1.8     | 20/10/2026 | Le menu à onglets : Accueil, Modes, Carte, Atelier sans défilement, glissement, rail en paysage, transition de la faille (§ 3.2 ter, § 5.6).                      |
+| 1.9     | 20/10/2026 | Les fenêtres en feuilles sans défilement, résultats mis en scène, garde à l'ouverture (§ 4.2, § 5.6).                                                             |

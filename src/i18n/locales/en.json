@@ -14,7 +14,8 @@
     "skip": "Skip to content",
     "settings": "Settings",
     "mute": "Mute",
-    "unmute": "Unmute"
+    "unmute": "Unmute",
+    "close": "Close"
   },
   "home": {
     "play": "Play",
@@ -220,7 +221,7 @@
     "effectsOff": "None",
     "shake": "Screen shake",
     "haptics": "Vibration",
-    "volume": "Sound effects volume",
+    "volume": "Sound effects",
     "close": "Close",
     "music": "Music",
     "controls": "Controls",
@@ -274,7 +275,6 @@
   },
   "variants": {
     "title": "Choose your opponent",
-    "cancel": "Cancel",
     "duel": {
       "rookie": "Rookie AI",
       "easy": "Easy AI",
@@ -332,7 +332,8 @@
     "streak": "Streak: {n} day | Streak: {n} days",
     "objectives": "Today’s objectives",
     "done": "Done",
-    "reward": "+{n} XP"
+    "reward": "+{n} XP",
+    "objectivesNote": "New objectives every day at midnight."
   },
   "objectives": {
     "play": "Play a game | Play {n} games",
@@ -363,19 +364,12 @@
   },
   "cosmetics": {
     "title": "Atelier",
-    "intro": "Everything here is cosmetic: none of it changes the game. Play to unlock more.",
     "scope": {
       "material": "For the falling modes (the Tower keeps its glass).",
       "shatter": "For the falling modes and the Tower."
     },
     "worn": "Worn",
     "wear": "Wear",
-    "close": "Close",
-    "kinds": {
-      "material": "Materials",
-      "ambiance": "Ambiances",
-      "shatter": "Shatter signatures"
-    },
     "one": {
       "material": "material",
       "ambiance": "ambiance",
@@ -434,10 +428,8 @@
     "goalLabel": "Goal",
     "timeLabel": "Time",
     "timeBonus": "({time} from the hourglass)",
-    "starsLabel": "Stars",
     "bestLabel": "Best result",
     "helpingLabel": "Helpful upgrades",
-    "back": "Back",
     "play": "Play",
     "goal": {
       "lines": "Clear {n} line | Clear {n} lines",
@@ -464,15 +456,12 @@
   },
   "upgrades": {
     "title": "Upgrades",
-    "intro": "Spend your campaign stars: each upgrade has three ranks. They only work in the campaign; you can take every star back to try something else.",
     "available": "{n} star available | {n} stars available",
-    "none": "Not bought yet",
     "next": "Next rank: {effect}",
     "rank": "Rank {n} of {max}",
     "max": "Maxed out",
     "buy": "Upgrade · {n}",
-    "refund": "Take every star back",
-    "close": "Close",
+    "refund": "Take all back",
     "scope": {
       "all": "Every mode",
       "falling": "Falling, Tower and Sand",
@@ -520,7 +509,8 @@
     "rampart": {
       "name": "Rampart",
       "effect": "Opponent rows delayed by {value} s"
-    }
+    },
+    "note": "Only in the campaign. Every star can be taken back."
   },
   "demo": {
     "title": "Demo.",
