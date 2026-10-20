@@ -1,6 +1,6 @@
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
 import { FULL_EDITION } from '../Edition';
-import type { AdHooks, Platform } from '../Platform';
+import type { AdHooks, BreakMoment, Platform } from '../Platform';
 
 /** The part of the CrazyGames HTML5 SDK (v3) the game uses. */
 interface CrazyGamesSdk {
@@ -92,6 +92,7 @@ export class CrazyGamesPlatform implements Platform {
   readonly id = 'crazygames';
   readonly edition = FULL_EDITION;
   readonly allowsExternalLinks = false;
+  readonly reservesEscape = true;
   readonly locale: string | null;
   readonly storage: KeyValueStorage | null;
   private playing = false;
@@ -161,17 +162,22 @@ export class CrazyGamesPlatform implements Platform {
   }
 
   /**
-   * A midgame ad between two games. The sound stops only when the ad really
-   * starts; an unfilled ad (or ads off, as in Basic Launch) lets the game go
-   * on at once. The SDK itself spaces ads (3 minutes at least).
+   * A midgame ad between two games, never on the way to a menu (the portal
+   * forbids ads on navigation buttons). The sound stops only when the ad
+   * really starts; an unfilled ad (or ads off, as in Basic Launch) lets the
+   * game go on at once. The SDK itself spaces ads (3 minutes at least).
    */
-  midgameAd(hooks: AdHooks): Promise<void> {
+  midgameAd(hooks: AdHooks, moment: BreakMoment): Promise<void> {
+    if (moment === 'leave') return Promise.resolve();
     return this.requestAd('midgame', hooks).then(() => undefined);
   }
 
-  get supportsRewarded(): boolean {
-    return this.sdk !== null;
-  }
+  /**
+   * No rewarded ad on CrazyGames: ads are off during the Basic Launch (the
+   * button would do nothing), and at Full Launch the reward must also be
+   * earnable without an ad.
+   */
+  readonly supportsRewarded = false;
 
   /** Rewarded only on `adFinished`: an error or an unfilled ad gives nothing. */
   rewardedAd(hooks: AdHooks): Promise<boolean> {

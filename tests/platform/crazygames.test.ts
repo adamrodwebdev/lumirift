@@ -77,13 +77,15 @@ describe('CrazyGamesPlatform', () => {
     const platform = await CrazyGamesPlatform.create();
     expect(platform.locale).toBe('id-ID');
     expect(platform.allowsExternalLinks).toBe(false);
+    // Escape is the portal's: it leaves full screen.
+    expect(platform.reservesEscape).toBe(true);
   });
 
   it('stops the sound only while an ad really plays, and goes on after it', async () => {
     const sdk = fakeSdk();
     const platform = await CrazyGamesPlatform.create();
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
-    const done = platform.midgameAd(hooks);
+    const done = platform.midgameAd(hooks, 'replay');
     expect(sdk.calls).toContain('ad:midgame');
     expect(hooks.onStart).not.toHaveBeenCalled();
     sdk.ad()!.adStarted();
@@ -97,17 +99,27 @@ describe('CrazyGamesPlatform', () => {
     const sdk = fakeSdk();
     const platform = await CrazyGamesPlatform.create();
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
-    const done = platform.midgameAd(hooks);
+    const done = platform.midgameAd(hooks, 'replay');
     sdk.ad()!.adError('unfilled');
     await done;
     expect(hooks.onStart).not.toHaveBeenCalled();
     expect(hooks.onEnd).not.toHaveBeenCalled();
   });
 
-  it('rewards on adFinished only, never on an error', async () => {
+  it('never shows an ad on the way to a menu (navigation buttons)', async () => {
     const sdk = fakeSdk();
     const platform = await CrazyGamesPlatform.create();
-    expect(platform.supportsRewarded).toBe(true);
+    const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
+    await platform.midgameAd(hooks, 'leave');
+    expect(sdk.calls).not.toContain('ad:midgame');
+    expect(hooks.onStart).not.toHaveBeenCalled();
+  });
+
+  it('offers no rewarded ad, and would reward on adFinished only, never on an error', async () => {
+    const sdk = fakeSdk();
+    const platform = await CrazyGamesPlatform.create();
+    // Off: ads are disabled in Basic Launch, and the reward needs a way without an ad.
+    expect(platform.supportsRewarded).toBe(false);
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
     const watched = platform.rewardedAd(hooks);
     expect(sdk.calls).toContain('ad:rewarded');
@@ -143,7 +155,7 @@ describe('CrazyGamesPlatform', () => {
     const sdk = fakeSdk('disabled');
     const platform = await CrazyGamesPlatform.create();
     platform.gameplayStart();
-    await platform.midgameAd({ onStart: vi.fn(), onEnd: vi.fn() });
+    await platform.midgameAd({ onStart: vi.fn(), onEnd: vi.fn() }, 'replay');
     expect(sdk.calls).toEqual([]);
     expect(platform.storage).toBeNull();
     delete (globalThis as unknown as { window?: unknown }).window;
@@ -156,6 +168,7 @@ describe('WebPlatform', () => {
   it('has no portal: links allowed, no ad, nothing reported', async () => {
     const platform = new WebPlatform();
     expect(platform.allowsExternalLinks).toBe(true);
+    expect(platform.reservesEscape).toBe(false);
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
     await platform.midgameAd();
     expect(hooks.onStart).not.toHaveBeenCalled();

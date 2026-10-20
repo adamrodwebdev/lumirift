@@ -109,6 +109,32 @@ describe('SandGame', () => {
     expect(notices.some((id) => id.startsWith('windSoon'))).toBe(true);
   });
 
+  it('leaves out wind, water and fire in a calm game (the first level)', () => {
+    const game = new SandGame({ random: new SeededRandom(9), hazards: false });
+    game.start();
+    const phases: string[] = [];
+    game.events.on('wind', ({ phase }) => phases.push(phase));
+    const tones = Array.from({ length: 300 }, () => {
+      const spec = game.preview(1)[0]!;
+      (game as unknown as { upcoming: unknown[] }).upcoming.shift();
+      return spec.tone;
+    });
+    expect(tones).not.toContain(Tone.Water);
+    expect(tones).not.toContain(Tone.Fire);
+    for (let t = 0; t < WIND_EVERY_MS * 2 && game.state === 'running'; t += 100) {
+      game.update(100);
+      if (game.active && game.active.y > 10) game.hardDrop();
+    }
+    expect(phases).toEqual([]);
+    expect(game.windInMs).toBeNull();
+    const session = createSandSession('sand', {
+      random: new SeededRandom(2),
+      timeLimitMs: null,
+      calm: true,
+    });
+    expect(session.indicators().map((indicator) => indicator.id)).not.toContain('windIn');
+  });
+
   it('ends when a new piece cannot appear', () => {
     const game = new SandGame({ random: new SeededRandom(1) });
     for (let y = 0; y < 3 * G; y++)

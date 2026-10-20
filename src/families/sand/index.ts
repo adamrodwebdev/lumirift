@@ -13,6 +13,7 @@ export function createSandSession(modeId: ModeId, options: SessionOptions): Game
     new SandGame({
       random: options.random,
       timeLimitMs: options.timeLimitMs,
+      hazards: options.calm !== true,
       ...(options.boosts ? { boosts: options.boosts } : {}),
     }),
   );

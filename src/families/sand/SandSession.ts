@@ -102,8 +102,9 @@ export class SandSession implements GameSession<FallingCommand> {
       { id: 'score', value: game.score, format: 'count' },
       { id: 'regions', value: game.clears, format: 'count' },
       { id: 'level', value: game.level, format: 'count' },
-      { id: 'windIn', value: game.windInMs, format: 'duration' },
     ];
+    const windIn = game.windInMs;
+    if (windIn !== null) indicators.push({ id: 'windIn', value: windIn, format: 'duration' });
     const timeLeft = game.timeLeftMs;
     if (timeLeft !== null)
       indicators.splice(1, 0, { id: 'timeLeft', value: timeLeft, format: 'duration' });

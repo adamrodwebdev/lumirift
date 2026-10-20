@@ -127,6 +127,23 @@ test('a classic game is played with the keyboard to the end, then counted', asyn
   await expect(panel(page, 'Modes')).toContainText('Record');
 });
 
+test('the first level is calm Sand, with the keys drawn beside the game', async ({
+  page,
+}, info) => {
+  await panel(page, 'Accueil')
+    .getByRole('button', { name: /^Jouer/ })
+    .click();
+  await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Objectif' })).toContainText('Niveau 1-1');
+  // One idea at a time: no wind (nor water or fire) in the first level.
+  await expect(page.getByText('Prochain coup de vent')).toHaveCount(0);
+  if (info.project.name === 'desktop') {
+    const keys = page.getByRole('list', { name: 'Touches' });
+    await expect(keys).toBeVisible();
+    await expect(keys).toContainText('Chute instantanée');
+  }
+});
+
 test('the daily challenge is timed', async ({ page }) => {
   await panel(page, 'Accueil')
     .getByRole('button', { name: /Défi du jour/ })

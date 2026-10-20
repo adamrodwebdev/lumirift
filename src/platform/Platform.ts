@@ -3,6 +3,13 @@ import { DEMO_EDITION, FULL_EDITION, type Edition } from './Edition';
 
 export type PlatformId = 'web' | 'crazygames' | 'playgama' | 'demo';
 
+/**
+ * Where a break between two games leads: another game (play again, next
+ * level) or a menu (home, campaign map). Some portals forbid an ad on the way
+ * to a menu (CrazyGames: never on a navigation button).
+ */
+export type BreakMoment = 'replay' | 'leave';
+
 /** Called around a video ad: the game pauses its sound only once the ad really plays. */
 export interface AdHooks {
   readonly onStart: () => void;
@@ -20,6 +27,11 @@ export interface Platform {
   readonly edition: Edition;
   /** Links out of the game (sharing a URL) are allowed. Portals forbid them. */
   readonly allowsExternalLinks: boolean;
+  /**
+   * The portal keeps the Escape key (it leaves its full screen): the game must
+   * never react to it, not even its windows closing.
+   */
+  readonly reservesEscape: boolean;
   /** The player's language as the portal knows it (`en-US`…), or null. */
   readonly locale: string | null;
   /** The portal's save, synced with the player's account, or null for the browser's. */
@@ -43,7 +55,7 @@ export interface Platform {
   /** A moment worth celebrating (a record, a level won): use sparingly. */
   happyTime(): void;
   /** A natural break between two games; resolves when the game may go on. */
-  midgameAd(hooks: AdHooks): Promise<void>;
+  midgameAd(hooks: AdHooks, moment: BreakMoment): Promise<void>;
   /** The portal can show an ad the player chooses to watch for a bonus. */
   readonly supportsRewarded: boolean;
   /** An ad the player asked for; true only once the portal confirms it was watched. */
@@ -55,6 +67,8 @@ export class WebPlatform implements Platform {
   readonly id: PlatformId = 'web';
   readonly edition: Edition = FULL_EDITION;
   readonly allowsExternalLinks = true;
+  /** On our own site, Escape closes a window, as everywhere on the web. */
+  readonly reservesEscape = false;
   readonly locale = null;
   readonly storage = null;
   readonly muted = false;

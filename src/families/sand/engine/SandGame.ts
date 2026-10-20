@@ -81,6 +81,8 @@ export interface SandOptions {
   readonly grid?: SandGrid;
   /** Campaign upgrades (none by default). */
   readonly boosts?: Boosts;
+  /** Wind, water and fire shake the game up (true by default); false teaches Sand alone. */
+  readonly hazards?: boolean;
 }
 
 /**
@@ -106,6 +108,7 @@ export class SandGame {
   private _elapsedMs = 0;
   private dealt = 0;
   private readonly boosts: Boosts;
+  private readonly hazards: boolean;
   /** The second chance has not been used yet. */
   private rescueReady: boolean;
   /** Sand pieces dealt since the last element. */
@@ -129,6 +132,7 @@ export class SandGame {
     this.bag = new Bag(this.random);
     this.timeLimitMs = options.timeLimitMs ?? null;
     this.boosts = options.boosts ?? NO_BOOSTS;
+    this.hazards = options.hazards ?? true;
     this.rescueReady = this.boosts.rescueRows > 0;
     this.wind = {
       direction: this.random.next() < 0.5 ? -1 : 1,
@@ -163,8 +167,9 @@ export class SandGame {
   get timeLeftMs(): number | null {
     return this.timeLimitMs === null ? null : Math.max(0, this.timeLimitMs - this._elapsedMs);
   }
-  /** Milliseconds before the next gust, or 0 while it blows. */
-  get windInMs(): number {
+  /** Milliseconds before the next gust, 0 while it blows; null in a game without wind. */
+  get windInMs(): number | null {
+    if (!this.hazards) return null;
     return this.wind.phase === 'blowing' ? 0 : Math.max(0, this.wind.at - this._elapsedMs);
   }
 
@@ -501,6 +506,7 @@ export class SandGame {
   }
 
   private updateWind(): void {
+    if (!this.hazards) return;
     const wind = this.wind;
     const now = this._elapsedMs;
     if (wind.phase === 'waiting' && now >= wind.at - WIND_WARNING_MS) {
@@ -566,7 +572,7 @@ export class SandGame {
       const type = this.bag.next();
       this.dealt++;
       let tone = SAND_TONES[this.random.nextInt(SAND_TONES.length)]!;
-      if (this.dealt > ELEMENTS_AFTER && this.sinceElement >= ELEMENT_GAP) {
+      if (this.hazards && this.dealt > ELEMENTS_AFTER && this.sinceElement >= ELEMENT_GAP) {
         const roll = this.random.next();
         if (roll < WATER_CHANCE) tone = Tone.Water;
         else if (roll < WATER_CHANCE + FIRE_CHANCE + this.boosts.fireBonus) tone = Tone.Fire;

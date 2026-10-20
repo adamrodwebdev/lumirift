@@ -12,6 +12,7 @@ import type { LiveState } from '@/campaign/Goals';
 import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
 import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
 import { allowsLevel } from '@/platform/Edition';
+import type { BreakMoment } from '@/platform/Platform';
 import { GameTracker } from '@/progression/GameReport';
 import { Coach, type CoachStep } from '@/session/Coach';
 import type { DailyChallenge } from '@/session/DailyChallenge';
@@ -25,6 +26,7 @@ import CoachCard from '../components/CoachCard.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import type { GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
+import KeyLegend from '../components/KeyLegend.vue';
 import PauseDialog from '../components/PauseDialog.vue';
 import { stageFor } from '../stages';
 import { GAME_SURFACE } from '../useGameSurface';
@@ -85,17 +87,17 @@ const layout =
 const shownSubtitle = computed(() => (layout === 'duel' ? null : subtitle.value));
 const muted = computed(() => settings.current.muted);
 const toggleMute = () => settings.update({ muted: !muted.value });
-/** Controls help shown in the pause dialog, by family. */
+/** Touch help in words, shown in the pause where no drawing says it (by family). */
 const HELP: Readonly<Partial<Record<string, readonly string[]>>> = {
-  falling: ['controls.keyboard', 'controls.touch'],
-  sand: ['sand.helpKeyboard', 'sand.helpTouch'],
-  placement: ['mosaic.helpKeyboard', 'mosaic.helpTouch'],
-  volume: ['tower.helpKeyboard', 'tower.helpTouch'],
+  falling: ['controls.touch'],
+  sand: ['sand.helpTouch'],
+  placement: ['mosaic.helpTouch'],
+  volume: ['tower.helpTouch'],
 };
 const help = HELP[descriptor.family] ?? [];
-/** The keyboard help stays beside the game for the first games. */
+/** The keys stay drawn beside the game for the first games. */
 const FIRST_GAMES = 5;
-const showHelp = profile.current.games < FIRST_GAMES && help.length > 0;
+const showHelp = profile.current.games < FIRST_GAMES;
 
 /**
  * The very first game is guided (modes played with the falling controls):
@@ -159,6 +161,7 @@ const sessionOptions = (): SessionOptions => {
       today: today(),
       boosts: boostsFor(campaign.current.ranks),
       ...(level.variant ? { variant: level.variant } : {}),
+      ...(level.calm ? { calm: true } : {}),
     };
   }
   return {
@@ -324,17 +327,17 @@ const start = async () => {
  */
 const adBreak = ref(false);
 const adHooks = { onStart: () => audio.suspend(), onEnd: () => audio.resume() };
-const afterBreak = async (next: () => void) => {
+const afterBreak = async (moment: BreakMoment, next: () => void) => {
   // The interface stays blocked until the ad ends (or does not come).
   showOutcome.value = false;
   adBreak.value = true;
-  if (!rewardWatched) await platform.midgameAd(adHooks);
+  if (!rewardWatched) await platform.midgameAd(adHooks, moment);
   adBreak.value = false;
   next();
 };
-const again = () => afterBreak(() => void start());
-const toHome = () => afterBreak(() => emit('home'));
-const toCampaign = () => afterBreak(() => emit('campaign'));
+const again = () => afterBreak('replay', () => void start());
+const toHome = () => afterBreak('leave', () => emit('home'));
+const toCampaign = () => afterBreak('leave', () => emit('campaign'));
 
 /** The player chose the rewarded ad: the reward comes only if the portal confirms it. */
 const doubleExperience = async () => {
@@ -488,7 +491,7 @@ onBeforeUnmount(() => {
     </div>
 
     <aside v-if="showHelp && !touch" class="game__help" :aria-label="t('game.help')">
-      <p>{{ t(help[0] ?? '') }}</p>
+      <KeyLegend :family="descriptor.family" :mode-id="modeId" />
     </aside>
 
     <p class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
@@ -497,6 +500,7 @@ onBeforeUnmount(() => {
     </div>
 
     <PauseDialog
+      :mode-id="modeId"
       :help="help"
       :touch="touch"
       :family="descriptor.family"
@@ -517,7 +521,7 @@ onBeforeUnmount(() => {
       @share="onShare"
       @campaign="toCampaign"
       @double="doubleExperience"
-      @next="(next) => afterBreak(() => emit('next', next))"
+      @next="(next) => afterBreak('replay', () => emit('next', next))"
     />
   </div>
 </template>
@@ -826,23 +830,49 @@ onBeforeUnmount(() => {
     align-self: start;
   }
 
+  /*
+   * The dashboard stands against the well in one column, the next pieces on
+   * the other side: one console in the middle of the screen.
+   */
   .game__score,
-  .game__stats {
-    justify-self: start;
+  .game__stats,
+  .game__goal,
+  .game__help,
+  .game :deep(.stage__hold) {
+    justify-self: end;
+    width: min(100%, 15rem);
   }
 
   .game__goal {
     justify-content: flex-start;
   }
 
+  .game :deep(.stage__next) {
+    justify-self: start;
+  }
+
   .game__help {
     grid-area: help;
     display: grid;
     align-content: end;
-    max-width: 16rem;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    line-height: 1.6;
+  }
+}
+
+/* Short landscape screens (821 × 462 on CrazyGames): smaller keys, the essential ones only. */
+@media (orientation: landscape) and (max-height: 32rem) {
+  .game__help :deep(.legend) {
+    gap: 0.2rem;
+  }
+
+  .game__help :deep(.legend__row--minor) {
+    display: none;
+  }
+
+  .game__help :deep(.legend__key) {
+    min-width: 1.3rem;
+    height: 1.3rem;
+    border-bottom-width: 2px;
+    font-size: 0.6rem;
   }
 
   .game :deep(.stage__side) {

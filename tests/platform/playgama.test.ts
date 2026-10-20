@@ -65,6 +65,8 @@ describe('PlaygamaPlatform', () => {
     expect(platform.storage.get('stackrift:records')).toBe('{"classic":10}');
     expect(platform.storage.get('stackrift:profile')).toBeNull();
     expect(platform.locale).toBe('fr');
+    // Escape is the portal's: it leaves full screen.
+    expect(platform.reservesEscape).toBe(true);
   });
 
   it('groups a burst of saves into one Bridge call', async () => {

@@ -329,8 +329,8 @@ const onKeyDown = (event: KeyboardEvent) => {
   if (event.target instanceof HTMLElement && event.target.closest('input, select, textarea'))
     return;
   const code = event.code;
-  // Esc only cancels a choice (it also leaves full screen on portals); P pauses.
-  if (code === 'Escape' && (controller.selected !== null || controller.pendingJoker !== null)) {
+  // Backspace cancels a choice (never Esc: portals keep it to leave full screen); P pauses.
+  if (code === 'Backspace' && (controller.selected !== null || controller.pendingJoker !== null)) {
     event.preventDefault();
     controller.cancel();
     refresh();

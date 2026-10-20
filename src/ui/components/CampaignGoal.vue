@@ -61,12 +61,15 @@ const shown = (n: number) =>
   color: var(--accent);
 }
 
+/* Two lines at most, never cut in the middle of a word. */
 .goal__text {
-  font-size: 0.85rem;
-  font-weight: 700;
+  display: -webkit-box;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .goal__count {
@@ -100,10 +103,6 @@ const shown = (n: number) =>
 
   .goal__level {
     grid-column: 1 / -1;
-  }
-
-  .goal__text {
-    white-space: normal;
   }
 }
 </style>

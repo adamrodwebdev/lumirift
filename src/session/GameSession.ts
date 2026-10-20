@@ -47,6 +47,8 @@ export interface SessionOptions {
   readonly variant?: string;
   /** Campaign upgrades; never set outside the campaign. */
   readonly boosts?: Boosts;
+  /** The gentle version of the mode, to teach it: none of its hazards (the Sand's wind and elements). */
+  readonly calm?: boolean;
 }
 
 /**
