@@ -47,20 +47,14 @@ const xpText = computed(() =>
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   min-height: var(--touch);
-  padding: var(--space-1);
+  padding: 0.2rem var(--space-3) 0.2rem 0.2rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--glass);
   color: var(--text);
   text-align: start;
-}
-
-@media (min-width: 480px) {
-  .chip {
-    padding-inline-end: var(--space-4);
-  }
 }
 
 .chip:hover {
@@ -70,43 +64,39 @@ const xpText = computed(() =>
 .chip__ring {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: none;
   border-radius: 50%;
-  background: conic-gradient(var(--accent) 0 var(--share), var(--surface-2) var(--share) 100%);
+  background: conic-gradient(var(--accent) 0 var(--share), var(--border) var(--share) 100%);
 }
 
 .chip__level {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border-radius: 50%;
   background: var(--surface);
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 900;
   font-size: 0.85rem;
 }
 
-/* Phones: the ring alone, the row is for the daily challenge too. */
 .chip__text {
-  display: none;
-  line-height: 1.2;
-}
-
-@media (min-width: 480px) {
-  .chip__text {
-    display: grid;
-  }
+  display: grid;
+  gap: 0.05rem;
+  line-height: 1.15;
 }
 
 .chip__name {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
 }
 
 .chip__xp {
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
 }
 </style>

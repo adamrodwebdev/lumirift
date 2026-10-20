@@ -52,6 +52,11 @@ const PATHS = {
   ember: 'M12 21a5 5 0 0 0 5-5c0-3-2-5-3-8-1 2-2 3-3 4-1-2-1-3-1-5-2 2-3 5-3 9a5 5 0 0 0 5 5z',
   metronome: 'M9 3h6l4 18H5zM12 17l5-11M8 17h8',
   rampart: 'M4 21V9l2-2 2 2 2-2 2 2 2-2 2 2 2-2 2 2v12zM10 21v-5h4v5',
+  /* The menu's tabs. */
+  home: 'M4 11l8-7 8 7v9H4zM12 9l-1.6 3.2 3 1.6-1.4 3.2',
+  modes: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+  map: 'M6.5 17.5c3-1 2.5-4.5 5.5-5.5s3-4 5.5-5M3 19a2 2 0 1 0 4 0a2 2 0 1 0-4 0M10 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0M17 5a2 2 0 1 0 4 0a2 2 0 1 0-4 0',
+  gem: 'M7 4h10l4 5-9 11L3 9zM3 9h18M12 20L8.5 9 10 4M12 20l3.5-11L14 4',
 } as const;
 
 export type IconName = keyof typeof PATHS;

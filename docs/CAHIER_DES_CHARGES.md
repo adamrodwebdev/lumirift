@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut             |
-| ------- | ---------- | ------------------ |
-| 1.7     | 20/10/2026 | La partie au doigt |
+| Version | Date       | Statut            |
+| ------- | ---------- | ----------------- |
+| 1.8     | 20/10/2026 | Le menu à onglets |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -381,17 +381,33 @@ Règles détaillées :
   mais **jamais comme record** (elle peut être aidée).
 - **Équilibrage à confirmer en jeu** : les cibles de chaque niveau sont des estimations.
 
-### 3.2 ter Accueil (refait en 1.1)
+### 3.2 ter Menu (accueil refait en 1.1, en onglets en 1.8)
 
-- Barre joueur (anneau de niveau, expérience, série, Atelier), **carte Campagne** en tête
-  (chapitre en cours, étoiles, « Continuer » vers le niveau suivant, carte et améliorations),
-  défi du jour illustré, partie rapide, puis les modes et les objectifs du jour.
-- **Carrousel des modes** : une rangée de cartes qui s'aimante sous le doigt, la molette ou
-  le clavier (défilement natif `scroll-snap`, sans bibliothèque), flèches, filtres par
-  famille, barre de progression ; chaque mode a son **illustration** (blocs et tracés aux
-  couleurs des pièces).
-- Style : boutons en pilule, accent en dégradé, cartes surélevées ; tout passe par les
-  jetons des deux thèmes.
+- **Quatre pages côte à côte, sans défilement** : Accueil, Modes, Carte, Atelier. Onglets
+  sous le pouce en portrait, rail à gauche en paysage et sur ordinateur (le même menu
+  partout) ; glissement du doigt d'une page à l'autre, la pastille de l'onglet suivant le
+  doigt. Barre du haut : joueur (niveau, expérience → Atelier), étoiles (→ Carte), son,
+  réglages.
+- **Accueil** : scène vivante (les gemmes du jeu tombent à plusieurs profondeurs devant la
+  faille, qui respire et jette des étincelles), logo, défi du jour, grand bouton Jouer à
+  portée du pouce (la campagne continue ; au-delà des niveaux de la démo, une partie de
+  Sable), objectifs du jour en fenêtre. Espace lance la partie au clavier.
+- **Modes** : les 13 modes sur un écran, les quatre inédits en grand ; illustrations
+  dessinées avec les vraies gemmes, recadrées sur leur contenu. Le mode choisi montre son
+  principe, son record et Jouer (le Duel demande d'abord l'adversaire).
+- **Carte** : un chapitre par écran, six niveaux sur un chemin sinueux (vertical en
+  portrait, horizontal en paysage), chemin parcouru illuminé, prochain niveau qui pulse ;
+  fiche du niveau avant de jouer (objectif, temps, étoiles, meilleur résultat, améliorations
+  utiles ; ce qui ouvre un niveau fermé) ; améliorations.
+- **Atelier** : vitrine (un petit puits qui porte la matière, l'ambiance ou les éclats
+  essayés) au-dessus d'une étagère en trois familles ; premier toucher : essayer, second :
+  porter ; un objet verrouillé dit comment l'obtenir.
+- **Transitions** : la faille s'ouvre depuis le bouton touché et couvre l'écran le temps de
+  charger le mode (écran de jeu, famille et plateau préchargés derrière la lumière) ; au
+  retour, les pages remontent en place. Coupe franche si le système demande moins
+  d'animations.
+- Style : boutons et tuiles en relief qui s'enfoncent, pastilles dorées ; tout passe par les
+  jetons.
 
 ### 3.3 Commandes
 
@@ -872,7 +888,8 @@ src/
   services/              KeyValueStorage (navigateur + repli mémoire), SettingsService,
                          ThemeController, ScoreBoard, ShareService
   i18n/                  locales.ts (langues, détection), index.ts (instance), locales/*.json
-  ui/                    stages.ts, components/ (en-tête, réglages, HUD, pause, fin), screens/
+  ui/                    stages.ts, components/ (réglages, HUD, pause, fin), screens/ (menu, jeu),
+                         hub/ (pages du menu, art des gemmes, scène, faille)
   families/falling/
     render/              TonePalette (jetons CSS), CrystalSprites, FallingRenderer, PieceRenderer
     input/               FallingInput (clavier et boutons, répétition), WellGestures (gestes)
@@ -907,6 +924,14 @@ src/
   brique s'éclaire et se fissure depuis son point de rupture, puis éclate en éclats découpés
   le long de ces fissures, qui gardent l'image de la brique (motif de canevas transformé, sans
   découpage coûteux).
+- **Menu** (1.8, `HubScreen`) : quatre pages dans une piste qui glisse (`useSwipe` : un
+  glissement ne compte qu'une fois clairement horizontal, et avale le clic qu'il aurait
+  produit) ; onglets au modèle WAI-ARIA (flèches, activation automatique), pages inactives
+  `inert`. Les tailles suivent la boîte du menu (unités de conteneur `cqw`/`cqh`), pas la
+  fenêtre. Les illustrations (`GemArt`) et la scène de l'accueil (`HubScene`) utilisent le
+  code de rendu des gemmes, chargé après le premier affichage ; la scène ne tourne que
+  visible. `RiftWipe` couvre le changement d'écran, précharge (`ModeCatalog.preload`,
+  `preloadStage`) puis se retire une fois le nouvel écran peint.
 - **Pause automatique** quand l'onglet est masqué ou perd le focus ; mettre en pause relâche
   la chute douce (une touche tenue ne fait pas tomber la pièce à la reprise).
 - **Thème sans flash** : un court script dans `index.html` pose `data-theme` avant le premier
@@ -1256,3 +1281,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.5     | 14/10/2026 | Nouveau nom : Lumirift (§ 3.9), vérification des marques et des domaines.                                                                                         |
 | 1.6     | 15/10/2026 | Publicités : pub récompensée facultative (doubler l'XP), interstitiel à toute sortie de fin de partie (§ 3.7).                                                    |
 | 1.7     | 20/10/2026 | La partie au doigt : gestes partout, boutons sur demande (§ 3.3), écran de jeu sans en-tête ni défilement, paysage (§ 4.2), chute et effacement animés (§ 5.6).   |
+| 1.8     | 20/10/2026 | Le menu à onglets : Accueil, Modes, Carte, Atelier sans défilement, glissement, rail en paysage, transition de la faille (§ 3.2 ter, § 5.6).                      |

@@ -13,56 +13,92 @@ import { useServices } from '@/app/AppServices';
 import type { CampaignLevel } from '@/campaign/Levels';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { ModeId } from '@/session/ModeId';
-import AppHeader from '@/ui/components/AppHeader.vue';
 import SettingsDialog from '@/ui/components/SettingsDialog.vue';
-import HomeScreen from '@/ui/screens/HomeScreen.vue';
+import { preloadStage } from '@/ui/stages';
+import type { HubPage } from '@/ui/hub/hubPages';
+import RiftWipe from '@/ui/hub/RiftWipe.vue';
+import HubScreen from '@/ui/screens/HubScreen.vue';
 
 /** The game screen and its families are downloaded only when a game starts. */
-const GameScreen = defineAsyncComponent(() => import('@/ui/screens/GameScreen.vue'));
-const CampaignScreen = defineAsyncComponent(() => import('@/ui/screens/CampaignScreen.vue'));
+const loadGame = () => import('@/ui/screens/GameScreen.vue');
+const GameScreen = defineAsyncComponent(loadGame);
 
+interface Game {
+  readonly modeId: ModeId;
+  readonly daily: DailyChallenge | null;
+  readonly variant: string | null;
+  /** Set for a campaign level. */
+  readonly level: CampaignLevel | null;
+}
+/** The rift's light between two screens (`RiftWipe`). */
+interface ScreenChange {
+  run(from: Element | null, swap: () => Promise<void> | void): Promise<void>;
+}
 type Screen =
-  | { readonly kind: 'home' }
-  | { readonly kind: 'campaign' }
-  | {
-      readonly kind: 'game';
-      readonly modeId: ModeId;
-      readonly daily: DailyChallenge | null;
-      readonly variant: string | null;
-      /** Set for a campaign level. */
-      readonly level: CampaignLevel | null;
-      readonly id: number;
-    };
+  | { readonly kind: 'hub'; readonly returning: boolean }
+  | ({ readonly kind: 'game'; readonly id: number } & Game);
 
 const { t, locale } = useI18n();
-const { settings, audio, platform } = useServices();
+const { settings, audio, platform, catalog } = useServices();
 
-const screen = shallowRef<Screen>({ kind: 'home' });
+const screen = shallowRef<Screen>({ kind: 'hub', returning: false });
+/** The menu's page, kept while a game runs: the player comes back where they left. */
+const hubPage = ref<HubPage>('home');
 const settingsOpen = ref(false);
 const main = ref<HTMLElement | null>(null);
+const wipe = ref<ScreenChange | null>(null);
 let gameId = 0;
+let changing = false;
 
-const play = (
-  modeId: ModeId,
-  daily: DailyChallenge | null = null,
-  variant: string | null = null,
-) => {
-  show({ kind: 'game', modeId, daily, variant, level: null, id: ++gameId });
+/**
+ * Changes screen behind the rift's light, from the button that asked for it;
+ * one change at a time (a second tap during one is ignored).
+ */
+const change = async (origin: Element | null, next: () => Promise<Screen> | Screen) => {
+  if (changing) return;
+  changing = true;
+  const swap = async () => {
+    screen.value = await next();
+    await nextTick();
+    // Two frames: the new screen is painted before the light lifts.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    focusMain();
+  };
+  try {
+    if (wipe.value) await wipe.value.run(origin, swap);
+    else await swap();
+  } finally {
+    changing = false;
+  }
 };
-const playLevel = (level: CampaignLevel) =>
-  show({ kind: 'game', modeId: level.modeId, daily: null, variant: null, level, id: ++gameId });
-const home = () => show({ kind: 'home' });
-const campaignMap = () => show({ kind: 'campaign' });
-const show = (next: Screen) => {
-  screen.value = next;
-  window.scrollTo(0, 0);
-  focusMain();
+
+const play = (game: Game, origin: Element | null) =>
+  void change(origin, async () => {
+    // The light covers the download of the game's code: the screen, the family, its stage.
+    await Promise.all([
+      loadGame(),
+      catalog.preload(game.modeId),
+      preloadStage(catalog.get(game.modeId)),
+    ]);
+    return { kind: 'game', id: ++gameId, ...game };
+  });
+const playMode = (modeId: ModeId, variant: string | null, origin: Element | null) =>
+  play({ modeId, daily: null, variant, level: null }, origin);
+const playDaily = (challenge: DailyChallenge, origin: Element | null) =>
+  play({ modeId: challenge.modeId, daily: challenge, variant: null, level: null }, origin);
+const playLevel = (level: CampaignLevel, origin: Element | null = null) =>
+  play({ modeId: level.modeId, daily: null, variant: null, level }, origin);
+const backToHub = (page?: HubPage) => {
+  if (page) hubPage.value = page;
+  void change(null, () => ({ kind: 'hub', returning: true }));
 };
+
 /**
  * A new screen replaces the button that led to it: focus moves to the main
  * region, so that keyboard and screen reader users start from the new screen.
  */
-const focusMain = () => void nextTick(() => main.value?.focus({ preventScroll: true }));
+const focusMain = () => main.value?.focus({ preventScroll: true });
 
 // Language: interface, <html lang>, title and description follow the setting.
 watchEffect(() => {
@@ -104,22 +140,16 @@ onBeforeUnmount(() => {
 
 <template>
   <a class="skip" href="#main">{{ t('nav.skip') }}</a>
-  <!-- No page header during a game: it keeps its own pause and sound buttons. -->
-  <AppHeader
-    v-if="screen.kind !== 'game'"
-    :in-game="screen.kind !== 'home'"
-    @home="home"
-    @settings="settingsOpen = true"
-  />
   <main id="main" ref="main" tabindex="-1">
-    <HomeScreen
-      v-if="screen.kind === 'home'"
-      @play="(modeId, variant) => play(modeId, null, variant ?? null)"
-      @daily="(challenge) => play(challenge.modeId, challenge)"
-      @campaign="campaignMap"
+    <HubScreen
+      v-if="screen.kind === 'hub'"
+      v-model:page="hubPage"
+      :returning="screen.returning"
+      @play="playMode"
+      @daily="playDaily"
       @level="playLevel"
+      @settings="settingsOpen = true"
     />
-    <CampaignScreen v-else-if="screen.kind === 'campaign'" @play="playLevel" />
     <GameScreen
       v-else
       :key="screen.id"
@@ -127,12 +157,13 @@ onBeforeUnmount(() => {
       :daily="screen.daily"
       :variant="screen.variant"
       :level="screen.level"
-      @home="home"
-      @campaign="campaignMap"
+      @home="backToHub()"
+      @campaign="backToHub('map')"
       @next="playLevel"
       @settings="settingsOpen = true"
     />
   </main>
+  <RiftWipe ref="wipe" />
   <SettingsDialog :open="settingsOpen" @close="settingsOpen = false" />
 </template>
 

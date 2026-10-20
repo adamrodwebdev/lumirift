@@ -16,11 +16,12 @@ const audit = async (page: Page) => {
   expect(summary).toEqual([]);
 };
 
+const modesPage = (page: Page) => page.getByRole('tabpanel', { name: 'Modes' });
+
 const openMode = async (page: Page, name: string) => {
-  await page
-    .locator('.track .mode')
-    .filter({ has: page.locator('.mode__name', { hasText: new RegExp(`^${name}$`) }) })
-    .click();
+  await page.getByRole('tab', { name: 'Modes' }).click();
+  await modesPage(page).getByRole('button', { name, exact: true }).click();
+  await modesPage(page).getByRole('button', { name: 'Jouer' }).click();
   if (name === 'Duel') await page.getByRole('button', { name: /IA normale/ }).click();
   await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
 };
@@ -32,25 +33,29 @@ for (const theme of ['dark'] as const) {
       await page.goto('/');
     });
 
-    test('home page', async ({ page }) => {
+    test('the menu: home, modes and Atelier pages', async ({ page }) => {
       await audit(page);
+      for (const name of ['Modes', 'Atelier']) {
+        await page.getByRole('tab', { name }).click();
+        await expect(page.getByRole('tab', { name })).toHaveAttribute('aria-selected', 'true');
+        await audit(page);
+      }
     });
 
-    test('settings and Atelier', async ({ page }) => {
+    test('settings and objectives', async ({ page }) => {
       await page.getByRole('button', { name: 'Réglages' }).click();
       await expect(page.getByRole('dialog', { name: 'Réglages' })).toBeVisible();
       await audit(page);
       await page.keyboard.press('Escape');
-      await page.getByRole('button', { name: 'Atelier' }).click();
-      await expect(page.getByRole('dialog', { name: 'Atelier' })).toBeVisible();
+      await page.getByRole('button', { name: /Objectifs du jour/ }).click();
+      await expect(page.getByRole('dialog', { name: 'Objectifs du jour' })).toBeVisible();
       await audit(page);
     });
 
     test('duel opponent choice', async ({ page }) => {
-      await page
-        .locator('.track .mode')
-        .filter({ has: page.locator('.mode__name', { hasText: /^Duel$/ }) })
-        .click();
+      await page.getByRole('tab', { name: 'Modes' }).click();
+      await modesPage(page).getByRole('button', { name: 'Duel', exact: true }).click();
+      await modesPage(page).getByRole('button', { name: 'Jouer' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
       await audit(page);
     });
@@ -82,14 +87,15 @@ for (const theme of ['dark'] as const) {
   test(`${theme} theme: campaign map, level and upgrades`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
     await page.goto('/');
-    await page.getByRole('button', { name: 'Carte et améliorations' }).click();
-    await expect(page.getByRole('heading', { name: 'Campagne', level: 1 })).toBeVisible();
+    await page.getByRole('tab', { name: 'Carte' }).click();
+    const map = page.getByRole('tabpanel', { name: 'Carte' });
+    await expect(map.getByRole('heading', { name: 'Premiers blocs' })).toBeVisible();
     await audit(page);
-    await page.getByRole('button', { name: /1-1/ }).click();
+    await map.getByRole('button', { name: /1-1/ }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await audit(page);
     await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: /^Améliorations/ }).click();
+    await map.getByRole('button', { name: /^Améliorations/ }).click();
     await expect(page.getByRole('dialog', { name: 'Améliorations' })).toBeVisible();
     await audit(page);
   });

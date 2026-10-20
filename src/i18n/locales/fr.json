@@ -12,14 +12,12 @@
   },
   "nav": {
     "skip": "Aller au contenu",
-    "home": "Retour à l'accueil",
     "settings": "Réglages",
     "mute": "Couper le son",
     "unmute": "Activer le son"
   },
   "home": {
     "play": "Jouer",
-    "modes": "Modes de jeu",
     "best": "Record : {value}",
     "noBest": "Pas encore de record",
     "quick": "Une partie de Classique, tout de suite"
@@ -410,22 +408,15 @@
       "level": "Niveau {n}",
       "streak": "Série de {n} jours au défi",
       "objectives": "{n} objectifs accomplis"
-    }
-  },
-  "families": {
-    "all": "Tous",
-    "falling": "Chute",
-    "sand": "Sable",
-    "placement": "Placement",
-    "volume": "Volume"
-  },
-  "carousel": {
-    "previous": "Modes précédents",
-    "next": "Modes suivants",
-    "filter": "Filtrer par famille"
+    },
+    "tapToWear": "Touchez encore pour porter",
+    "clickToWear": "Cliquez encore pour porter",
+    "nowWorn": "Vous portez : {name}.",
+    "nowWornGame": "Vous portez : {name}. Lancez une partie pour voir l’effet.",
+    "unlocksWith": "Pour débloquer {name} : {rule}.",
+    "trying": "Aperçu"
   },
   "campaign": {
-    "title": "Campagne",
     "chapter": "Chapitre {n}",
     "chapters": {
       "1": "Premiers blocs",
@@ -434,10 +425,8 @@
       "4": "Vertiges",
       "5": "Le Rift"
     },
-    "stars": "{n} / {max} étoiles",
     "chapterStars": "{n} / {max} étoiles",
     "continue": "Continuer · {level} {mode}",
-    "open": "Carte et améliorations",
     "spare": "{n} étoile à dépenser | {n} étoiles à dépenser",
     "starsWon": "Aucune étoile | {n} étoile | {n} étoiles",
     "levelTitle": "Niveau {level} · {mode}",
@@ -470,7 +459,8 @@
     "noBetter": "Pas mieux que votre meilleur résultat.",
     "nextLevel": "Niveau {level}",
     "retry": "Rejouer",
-    "map": "Carte de campagne"
+    "map": "Carte de campagne",
+    "lockedNote": "Gagnez le niveau {level} pour ouvrir celui-ci."
   },
   "upgrades": {
     "title": "Améliorations",
@@ -545,9 +535,6 @@
     "space": "{key} pour jouer",
     "spaceKey": "Espace",
     "player": "Niveau {level}, {xp}. Ouvrir l’Atelier",
-    "daily": "Défi du jour · {mode} · encore {h} h {m} min",
-    "freePlay": "Jeu libre",
-    "more": "autres modes",
     "dailyShort": "Défi du jour · {mode}"
   },
   "coach": {
@@ -573,5 +560,28 @@
     "dragDown": "Glisser vers le bas",
     "flickDown": "Glisser vite vers le bas",
     "twoFingerDrag": "Glisser à deux doigts"
+  },
+  "hub": {
+    "pages": "Pages du menu",
+    "tabs": {
+      "home": "Accueil",
+      "modes": "Modes",
+      "map": "Carte",
+      "atelier": "Atelier"
+    },
+    "timeLeft": "encore {h} h {m} min",
+    "objectivesDone": "{n} / {total}",
+    "stars": "{n} étoiles sur {max}. Ouvrir la carte",
+    "prevChapter": "Chapitre précédent",
+    "nextChapter": "Chapitre suivant",
+    "locked": "verrouillé",
+    "next": "à jouer",
+    "atelierLead": "Que du style, mêmes règles.",
+    "kindsLabel": "Collection",
+    "kinds": {
+      "material": "Blocs",
+      "ambiance": "Ambiance",
+      "shatter": "Éclats"
+    }
   }
 }

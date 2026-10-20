@@ -21,10 +21,12 @@ const MODES = [
   'Tour',
 ];
 
-const modeButton = (page: Page, name: string) =>
-  page
-    .locator('.track .mode')
-    .filter({ has: page.locator('.mode__name', { hasText: new RegExp(`^${name}$`) }) });
+type Tab = 'Accueil' | 'Modes' | 'Carte' | 'Atelier';
+/** The menu's tabs and their pages. */
+const tab = (page: Page, name: Tab) => page.getByRole('tab', { name });
+const panel = (page: Page, name: Tab) => page.getByRole('tabpanel', { name });
+const modeTile = (page: Page, name: string) =>
+  panel(page, 'Modes').getByRole('button', { name, exact: true });
 
 /** The page never scrolls sideways. */
 async function expectNoHorizontalScroll(page: Page) {
@@ -43,8 +45,11 @@ async function quitGame(page: Page) {
     .click();
 }
 
+/** From the Modes page: the tile shows the mode, Play starts it. */
 async function openMode(page: Page, name: string) {
-  await modeButton(page, name).click();
+  await tab(page, 'Modes').click();
+  await modeTile(page, name).click();
+  await panel(page, 'Modes').getByRole('button', { name: 'Jouer' }).click();
   if (name === 'Duel') await page.getByRole('button', { name: /IA normale/ }).click();
   // The duel shows two wells: the player's comes first.
   await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
@@ -60,15 +65,23 @@ test('the title screen: the logo, one big Play, the daily challenge, every mode'
   await expect(page).toHaveTitle('Lumirift Blocks — le jeu de blocs réinventé');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
   await expect(page.getByRole('heading', { name: 'Lumirift Blocks', level: 1 })).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Jouer/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Défi du jour/ })).toBeVisible();
+  const home = panel(page, 'Accueil');
+  await expect(home.getByRole('button', { name: /^Jouer/ })).toBeVisible();
+  await expect(home.getByRole('button', { name: /Défi du jour/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Niveau 1,/ })).toBeVisible();
-  for (const name of MODES) await expect(modeButton(page, name)).toBeVisible();
+  await expect(tab(page, 'Accueil')).toHaveAttribute('aria-selected', 'true');
+  await tab(page, 'Modes').click();
+  for (const name of MODES) await expect(modeTile(page, name)).toBeVisible();
+  // The menu is one screen: nothing scrolls, either way.
   await expectNoHorizontalScroll(page);
+  const overflow = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  expect(overflow).toBeLessThanOrEqual(0);
 });
 
 test('the first game is guided, step by step, and the guide can be skipped', async ({ page }) => {
-  await page.getByRole('button', { name: /^Jouer/ }).click();
+  await panel(page, 'Accueil')
+    .getByRole('button', { name: /^Jouer/ })
+    .click();
   await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
   const coach = page.getByRole('status').filter({ hasText: 'Déplacez la pièce' });
   await expect(coach).toBeVisible();
@@ -93,7 +106,9 @@ for (const name of MODES) {
       .getByRole('dialog', { name: 'Pause' })
       .getByRole('button', { name: 'Quitter' })
       .click();
-    await expect(page.getByRole('heading', { name: 'Modes de jeu' })).toBeVisible();
+    // Back to the page the game was started from.
+    await expect(tab(page, 'Modes')).toHaveAttribute('aria-selected', 'true');
+    await expect(modeTile(page, name)).toBeVisible();
   });
 }
 
@@ -106,13 +121,16 @@ test('a classic game is played with the keyboard to the end, then counted', asyn
   }
   await expect(over).toBeVisible({ timeout: 5000 });
   await expect(over.getByText('Nouveau record')).toBeVisible();
-  // The record shows on the home page.
+  // The record shows with the mode, back on the Modes page.
   await over.getByRole('button', { name: 'Accueil' }).click();
-  await expect(modeButton(page, 'Classique')).toContainText('Record');
+  await modeTile(page, 'Classique').click();
+  await expect(panel(page, 'Modes')).toContainText('Record');
 });
 
 test('the daily challenge is timed', async ({ page }) => {
-  await page.getByRole('button', { name: /Défi du jour/ }).click();
+  await panel(page, 'Accueil')
+    .getByRole('button', { name: /Défi du jour/ })
+    .click();
   await expect(page.getByText('Temps restant')).toBeVisible();
 });
 
@@ -134,25 +152,45 @@ test('the language is remembered; the game has one look, the Rift', async ({ pag
   await page.keyboard.press('Escape');
 
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Game modes' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Home' })).toBeVisible();
   await expect(page).toHaveTitle('Lumirift Blocks — the falling-blocks game, reinvented');
 });
 
 test('the Atelier shows the collection; locked items say how to earn them', async ({ page }) => {
-  await page.getByRole('button', { name: 'Atelier' }).click();
-  const atelier = page.getByRole('dialog', { name: 'Atelier' });
-  await expect(atelier).toBeVisible();
-  const crystal = atelier.getByRole('button', { name: /Cristal/ });
+  // The player's chip leads to the Atelier.
+  await page.getByRole('button', { name: /^Niveau 1,/ }).click();
+  await expect(tab(page, 'Atelier')).toHaveAttribute('aria-selected', 'true');
+  const atelier = panel(page, 'Atelier');
+  const crystal = atelier.getByRole('button', { name: /^Cristal/ });
   await expect(crystal).toHaveAttribute('aria-pressed', 'true');
-  const neon = atelier.getByRole('button', { name: /Néon/ });
-  await expect(neon).toHaveAttribute('aria-disabled', 'true');
+  const neon = atelier.getByRole('button', { name: /^Néon/ });
   await expect(neon).toContainText('Niveau 3');
-  // A locked item cannot be worn, even when activated from the keyboard.
+  // A locked item is shown, never worn, even when chosen twice from the keyboard.
   await neon.focus();
   await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  await expect(atelier.getByText('Pour débloquer Néon : Niveau 3.')).toBeVisible();
   await expect(crystal).toHaveAttribute('aria-pressed', 'true');
-  await page.keyboard.press('Escape');
-  await expect(atelier).toBeHidden();
+});
+
+test('in the Atelier, a first tap tries a look on the stage, a second wears it', async ({
+  page,
+}) => {
+  // Level 3: Neon is open.
+  await page.evaluate(() => localStorage.setItem('stackrift:profile', JSON.stringify({ xp: 300 })));
+  await page.reload();
+  await tab(page, 'Atelier').click();
+  const atelier = panel(page, 'Atelier');
+  const neon = atelier.getByRole('button', { name: /^Néon/ });
+  await neon.click();
+  await expect(neon).toHaveAttribute('aria-pressed', 'false');
+  await expect(neon).toContainText('Aperçu');
+  await expect(atelier).toContainText(/(Touchez|Cliquez) encore pour porter/);
+  await neon.click();
+  await expect(neon).toHaveAttribute('aria-pressed', 'true');
+  await expect(atelier.getByText(/Vous portez : Néon/)).toBeVisible();
+  const saved = await page.evaluate(() => localStorage.getItem('stackrift:profile') ?? '');
+  expect(saved).toContain('"material":"neon"');
 });
 
 test('no error reaches the console while playing', async ({ page }) => {
@@ -174,7 +212,14 @@ test('no error reaches the console while playing', async ({ page }) => {
 test('keyboard users skip to the content and land on each new screen', async ({ page }) => {
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Aller au contenu' })).toBeFocused();
-  await modeButton(page, 'Classique').focus();
+  // The tabs: the arrows go from page to page.
+  await tab(page, 'Accueil').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'Modes')).toBeFocused();
+  await expect(tab(page, 'Modes')).toHaveAttribute('aria-selected', 'true');
+  await modeTile(page, 'Classique').focus();
+  await page.keyboard.press('Enter');
+  await panel(page, 'Modes').getByRole('button', { name: 'Jouer' }).focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('canvas[role="img"]')).toBeVisible();
   await expect(page.locator('main')).toBeFocused();
@@ -187,6 +232,8 @@ test('no horizontal scroll from 320 to 1920 px, at home and in every family', as
   page,
 }, info) => {
   test.skip(info.project.name !== 'desktop', 'One sweep is enough');
+  // Without the screen changes' light, the sweep goes faster.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const width of [320, 360, 640, 768, 1024, 1440, 1920]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto('/');
@@ -199,23 +246,50 @@ test('no horizontal scroll from 320 to 1920 px, at home and in every family', as
   }
 });
 
-test('the modes swiper pages through the modes and filters them by family', async ({ page }) => {
-  const next = page.getByRole('button', { name: 'Modes suivants' });
-  const previous = page.getByRole('button', { name: 'Modes précédents' });
-  await expect(previous).toBeDisabled();
-  await next.click();
-  await expect(previous).toBeEnabled();
-  await page.getByRole('button', { name: 'Placement', exact: true }).click();
-  await expect(page.locator('.track .mode')).toHaveCount(1);
-  await expect(modeButton(page, 'Mosaïque')).toBeVisible();
+test('the menu pages follow a swipe, and the tabs follow the pages', async ({ page }) => {
+  const box = await page.locator('.hub__pages').boundingBox();
+  if (!box) throw new Error('No pages');
+  const y = box.y + box.height * 0.3;
+  const swipe = async (from: number, to: number) => {
+    await page.mouse.move(box.x + box.width * from, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * to, y, { steps: 8 });
+    await page.mouse.up();
+  };
+  await swipe(0.8, 0.2);
+  await expect(tab(page, 'Modes')).toHaveAttribute('aria-selected', 'true');
+  await swipe(0.8, 0.2);
+  await expect(tab(page, 'Carte')).toHaveAttribute('aria-selected', 'true');
+  await swipe(0.2, 0.8);
+  await expect(tab(page, 'Modes')).toHaveAttribute('aria-selected', 'true');
+  // A short, slow drag goes back where it was, and starts nothing.
+  await page.mouse.move(box.x + box.width * 0.5, y);
+  await page.mouse.down();
+  for (let i = 1; i <= 4; i++) {
+    await page.mouse.move(box.x + box.width * 0.5 - i * 8, y);
+    await page.waitForTimeout(60);
+  }
+  await page.mouse.up();
+  await expect(tab(page, 'Modes')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('canvas[role="img"]')).toHaveCount(0);
 });
 
 test('the campaign: map, a level, its goal, then back to the map', async ({ page }) => {
-  await page.getByRole('button', { name: 'Carte et améliorations' }).click();
-  await expect(page.getByRole('heading', { name: 'Campagne', level: 1 })).toBeVisible();
-  // Only the first level is open.
-  await expect(page.getByRole('button', { name: /1-2/ })).toHaveAttribute('aria-disabled', 'true');
-  await page.getByRole('button', { name: /1-1/ }).click();
+  // The stars lead to the map.
+  await page.getByRole('button', { name: /étoiles sur 90/ }).click();
+  const map = panel(page, 'Carte');
+  await expect(map.getByRole('heading', { name: 'Premiers blocs' })).toBeVisible();
+  // Only the first level is open; a closed one says what opens it.
+  await map.getByRole('button', { name: /1-2/ }).click();
+  const closed = page.getByRole('dialog', { name: 'Niveau 1-2 · Classique' });
+  await expect(closed).toContainText('Gagnez le niveau 1-1 pour ouvrir celui-ci.');
+  await expect(closed.getByRole('button', { name: 'Jouer' })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  // The chapters turn like pages.
+  await map.getByRole('button', { name: 'Chapitre suivant' }).click();
+  await expect(map.getByRole('heading', { name: 'Courants' })).toBeVisible();
+  await map.getByRole('button', { name: 'Chapitre précédent' }).click();
+  await map.getByRole('button', { name: /1-1/ }).click();
   // The campaign opens with Sand, a mode no other game has.
   const detail = page.getByRole('dialog', { name: 'Niveau 1-1 · Sable' });
   await expect(detail).toContainText('Effacer 2 zones');
@@ -227,7 +301,8 @@ test('the campaign: map, a level, its goal, then back to the map', async ({ page
     .getByRole('dialog', { name: 'Pause' })
     .getByRole('button', { name: 'Quitter' })
     .click();
-  await expect(page.getByRole('heading', { name: 'Campagne', level: 1 })).toBeVisible();
+  await expect(tab(page, 'Carte')).toHaveAttribute('aria-selected', 'true');
+  await expect(map.getByRole('heading', { name: 'Premiers blocs' })).toBeVisible();
 });
 
 test('the upgrades are bought with campaign stars, and refunded', async ({ page }) => {
@@ -238,8 +313,10 @@ test('the upgrades are bought with campaign stars, and refunded', async ({ page 
     ),
   );
   await page.reload();
-  await page.getByRole('button', { name: 'Carte et améliorations' }).click();
-  await page.getByRole('button', { name: /^Améliorations/ }).click();
+  await tab(page, 'Carte').click();
+  await panel(page, 'Carte')
+    .getByRole('button', { name: /^Améliorations/ })
+    .click();
   const shop = page.getByRole('dialog', { name: 'Améliorations' });
   await expect(shop).toContainText('5 étoiles disponibles');
   const phoenix = shop.getByRole('listitem').filter({ hasText: 'Phénix' });

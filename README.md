@@ -27,6 +27,8 @@ Cahier des charges (règles détaillées, architecture, décisions) :
   **Atelier** de matières, d'ambiances et de signatures de bris, tous cosmétiques.
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde.
+- **Menu en quatre pages** (Accueil, Modes, Carte, Atelier) : onglets sous le pouce ou rail
+  en paysage, glissement d'une page à l'autre, rien à faire défiler.
 
 ### Commandes
 
@@ -127,7 +129,8 @@ Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAME
 - Plus de 280 tests unitaires : moteurs, modes, IA, effets, services, progression, parité
   des traductions.
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 13
-  modes, une partie complète, défi du jour, réglages retenus, Atelier, clavier seul.
+  modes, une partie complète, défi du jour, réglages retenus, menu (onglets, glissement,
+  carte, Atelier), clavier seul.
 - Lighthouse : 100 dans les quatre catégories (seuil exigé : 95).
 - Intégration continue : `.github/workflows/ci.yml` rejoue tout cela à chaque envoi.
 
@@ -146,7 +149,7 @@ src/
   progression/   Expérience, objectifs, cosmétiques, profil
   fx/, render/   Particules, secousses, sons ; palette et motifs partagés
   services/      Réglages, records, profil, thème, ambiance, audio, partage
-  ui/            Écrans et composants
+  ui/            Écrans (menu, jeu), pages du menu (hub/) et composants
 ```
 
 ## Confidentialité

@@ -11,7 +11,8 @@ defineProps<{ open: boolean }>();
 const emit = defineEmits<{ close: [] }>();
 
 const { t } = useI18n();
-const { settings, haptics } = useServices();
+const { settings, haptics, platform } = useServices();
+const appVersion = __APP_VERSION__;
 
 const EFFECT_LABELS: Readonly<Record<EffectsLevel, string>> = {
   full: 'settings.effectsFull',
@@ -139,6 +140,12 @@ const onMusic = (event: Event) =>
       <button type="button" class="btn btn--primary" @click="emit('close')">
         {{ t('settings.close') }}
       </button>
+
+      <footer class="about">
+        <!-- On a portal, the save goes through the platform (sometimes its cloud). -->
+        <p>{{ t(platform.storage ? 'app.privacyPortal' : 'app.privacy') }}</p>
+        <p>{{ t('app.version', { version: appVersion }) }}</p>
+      </footer>
     </div>
   </ModalDialog>
 </template>
@@ -147,6 +154,15 @@ const onMusic = (event: Event) =>
 .settings {
   display: grid;
   gap: var(--space-4);
+}
+
+.about {
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
 
 .field {

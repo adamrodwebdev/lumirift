@@ -12,14 +12,12 @@
   },
   "nav": {
     "skip": "Langsung ke konten",
-    "home": "Kembali ke beranda",
     "settings": "Pengaturan",
     "mute": "Matikan suara",
     "unmute": "Nyalakan suara"
   },
   "home": {
     "play": "Main",
-    "modes": "Mode permainan",
     "best": "Rekor: {value}",
     "noBest": "Belum ada rekor",
     "quick": "Satu permainan Klasik, sekarang"
@@ -410,22 +408,15 @@
       "level": "Level {n}",
       "streak": "Beruntun {n} hari di tantangan",
       "objectives": "{n} tujuan selesai"
-    }
-  },
-  "families": {
-    "all": "Semua",
-    "falling": "Jatuh",
-    "sand": "Pasir",
-    "placement": "Penempatan",
-    "volume": "Volume"
-  },
-  "carousel": {
-    "previous": "Mode sebelumnya",
-    "next": "Mode berikutnya",
-    "filter": "Saring menurut keluarga"
+    },
+    "tapToWear": "Ketuk lagi untuk memakai",
+    "clickToWear": "Klik lagi untuk memakai",
+    "nowWorn": "Kamu memakai {name}.",
+    "nowWornGame": "Kamu memakai {name}. Mulai permainan untuk melihatnya.",
+    "unlocksWith": "Untuk membuka {name}: {rule}.",
+    "trying": "Pratinjau"
   },
   "campaign": {
-    "title": "Kampanye",
     "chapter": "Bab {n}",
     "chapters": {
       "1": "Balok pertama",
@@ -434,10 +425,8 @@
       "4": "Pusing",
       "5": "Retakan"
     },
-    "stars": "{n} / {max} bintang",
     "chapterStars": "{n} / {max} bintang",
     "continue": "Lanjutkan · {level} {mode}",
-    "open": "Peta dan peningkatan",
     "spare": "{n} bintang untuk dibelanjakan",
     "starsWon": "Tanpa bintang | {n} bintang | {n} bintang",
     "levelTitle": "Level {level} · {mode}",
@@ -470,7 +459,8 @@
     "noBetter": "Tidak lebih baik dari hasil terbaik Anda.",
     "nextLevel": "Level {level}",
     "retry": "Coba lagi",
-    "map": "Peta kampanye"
+    "map": "Peta kampanye",
+    "lockedNote": "Menangkan level {level} untuk membuka level ini."
   },
   "upgrades": {
     "title": "Peningkatan",
@@ -545,9 +535,6 @@
     "space": "{key} untuk main",
     "spaceKey": "Spasi",
     "player": "Level {level}, {xp}. Buka Atelier",
-    "daily": "Tantangan harian · {mode} · sisa {h} j {m} mnt",
-    "freePlay": "Main bebas",
-    "more": "mode lain",
     "dailyShort": "Harian · {mode}"
   },
   "coach": {
@@ -573,5 +560,28 @@
     "dragDown": "Geser ke bawah",
     "flickDown": "Sentil ke bawah",
     "twoFingerDrag": "Geser dua jari"
+  },
+  "hub": {
+    "pages": "Halaman menu",
+    "tabs": {
+      "home": "Beranda",
+      "modes": "Mode",
+      "map": "Peta",
+      "atelier": "Atelier"
+    },
+    "timeLeft": "sisa {h} j {m} mnt",
+    "objectivesDone": "{n} / {total}",
+    "stars": "{n} dari {max} bintang. Buka peta",
+    "prevChapter": "Bab sebelumnya",
+    "nextChapter": "Bab berikutnya",
+    "locked": "terkunci",
+    "next": "siap dimainkan",
+    "atelierLead": "Hanya tampilan, aturan sama.",
+    "kindsLabel": "Koleksi",
+    "kinds": {
+      "material": "Blok",
+      "ambiance": "Suasana",
+      "shatter": "Pecahan"
+    }
   }
 }
