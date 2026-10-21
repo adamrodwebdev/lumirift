@@ -5,6 +5,7 @@ import { useServices } from '@/app/AppServices';
 import type { FrameClock } from '@/app/FrameClock';
 import { useFormat } from '@/app/useFormat';
 import { effectsProfile } from '@/fx/EffectsProfile';
+import * as sounds from '@/fx/sounds';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
 import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
@@ -72,6 +73,10 @@ interface HandSlot {
 const hand = shallowRef<readonly HandSlot[]>([]);
 const jokers = shallowRef<readonly JokerId[]>([]);
 const selected = ref<SlotId | null>(null);
+/** The piece in the player's hand (dragged, or flying back): its place stays empty. */
+const lifted = ref<SlotId | null>(null);
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const moving = computed(() => profile.value.motion && !reducedMotion);
 const pending = ref<number | null>(null);
 const pieceSize = ref(72);
 
@@ -212,10 +217,16 @@ const onDragMove = (event: PointerEvent) => {
   if (!drag || event.pointerId !== drag.pointerId) return;
   if (!drag.moving && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 6)
     return;
-  drag.moving = true;
   const piece = session.view.pieceAt(drag.slot);
   const rect = canvas.value?.getBoundingClientRect();
   if (!piece || !rect) return;
+  if (!drag.moving) {
+    // Picked up: the piece leaves its place and grows to the board's size.
+    drag.moving = true;
+    lifted.value = drag.slot;
+    audio.play(sounds.pickUp);
+    liftGhost = true;
+  }
   const x = Math.round((event.clientX - rect.left) / cellCss - piece.shape.width / 2);
   const y = Math.round((event.clientY - drag.lift - rect.top) / cellCss - piece.shape.height / 2);
   const near =
@@ -223,41 +234,130 @@ const onDragMove = (event: PointerEvent) => {
     event.clientX < rect.right + cellCss &&
     event.clientY - drag.lift > rect.top - cellCss &&
     event.clientY - drag.lift < rect.bottom + cellCss;
+  const before = dragPreview;
   dragPreview = near ? controller.previewAt(drag.slot, x, y) : null;
-  moveGhost(event.clientX, event.clientY - drag.lift, piece, !near);
+  // A soft tick each time the piece finds a new place where it fits.
+  if (dragPreview?.valid && (!before || dragPreview.x !== before.x || dragPreview.y !== before.y))
+    audio.play(sounds.snapHint);
+  moveGhost(event.clientX, event.clientY - drag.lift, piece);
 };
 
 const onDragEnd = (event: PointerEvent) => {
   if (!drag || event.pointerId !== drag.pointerId) return;
-  const { slot, moving } = drag;
-  if (moving && dragPreview?.valid) controller.drop(slot, dragPreview.x, dragPreview.y);
-  else if (!moving) controller.selectSlot(slot);
-  endDrag();
+  const { slot, moving: dragged } = drag;
+  const target = dragPreview?.valid ? dragPreview : null;
+  endDrag(false);
+  if (!dragged) {
+    controller.selectSlot(slot);
+    refresh();
+  } else if (target) {
+    // The piece glides into its place, then is set down.
+    void flyGhost(boardRect(target.x, target.y), 1, 90, 'ease-in').then(() => {
+      if (props.active) controller.drop(slot, target.x, target.y);
+      land();
+    });
+  } else {
+    audio.play(sounds.putBack);
+    void flyGhost(slotRect(slot), handScale(slot), 220, 'cubic-bezier(0.3, 1.3, 0.5, 1)').then(
+      land,
+    );
+  }
+};
+
+const onDragCancel = () => {
+  endDrag(false);
+  land();
+};
+
+/** The flight is over: the piece is on the board or back in the hand. */
+const land = () => {
+  hideGhost();
+  lifted.value = null;
   refresh();
 };
 
-const onDragCancel = () => endDrag();
-
-const endDrag = () => {
+const endDrag = (hide = true) => {
   drag = null;
   dragPreview = null;
-  hideGhost();
+  if (hide) land();
   window.removeEventListener('pointermove', onDragMove);
   window.removeEventListener('pointerup', onDragEnd);
   window.removeEventListener('pointercancel', onDragCancel);
 };
 
-/** The dragged piece, following the pointer when it is away from the board. */
-const moveGhost = (clientX: number, clientY: number, piece: OfferedPiece, visible: boolean) => {
+/** The ghost has just been picked up: it grows from the hand's size on its first frame. */
+let liftGhost = false;
+/** Where the ghost is (client pixels of its top left corner). */
+let ghostAt = { left: 0, top: 0 };
+
+const ghostHost = () => {
+  const ghost = ghostCanvas.value;
+  // The ghost is placed in the game screen (the stage has no box of its own).
+  return (ghost?.offsetParent ?? ghost?.parentElement)?.getBoundingClientRect() ?? null;
+};
+
+/** Where a piece put at (x, y) on the board would be, in client pixels. */
+const boardRect = (x: number, y: number) => {
+  const rect = canvas.value?.getBoundingClientRect();
+  return { left: (rect?.left ?? 0) + x * cellCss, top: (rect?.top ?? 0) + y * cellCss };
+};
+
+/** Where the ghost would sit centred on a slot of the hand, in client pixels. */
+const slotRect = (slot: SlotId) => {
+  const box = handArea.value
+    ?.querySelector(`[data-slot="${String(slot)}"]`)
+    ?.getBoundingClientRect();
+  const ghost = ghostCanvas.value?.getBoundingClientRect();
+  if (!box || !ghost) return ghostAt;
+  return {
+    left: box.left + box.width / 2 - ghost.width / 2,
+    top: box.top + box.height / 2 - ghost.height / 2,
+  };
+};
+
+/** How much smaller the piece is drawn in the hand than on the board. */
+const handScale = (slot: SlotId) => {
+  const piece = session.view.pieceAt(slot);
+  if (!piece) return 0.6;
+  const handCell =
+    pieceSize.value / Math.max(3.2, piece.shape.width + 0.6, piece.shape.height + 0.6);
+  return Math.min(1, handCell / cellCss);
+};
+
+/** The ghost glides to a place (client pixels) at the given scale; instant without motion. */
+const flyGhost = (
+  to: { left: number; top: number },
+  scale: number,
+  duration: number,
+  easing: string,
+) =>
+  new Promise<void>((resolve) => {
+    const ghost = ghostCanvas.value;
+    const host = ghostHost();
+    if (!ghost || !host || ghost.style.visibility !== 'visible' || !moving.value) {
+      resolve();
+      return;
+    }
+    const from = `translate(${ghostAt.left - host.left}px, ${ghostAt.top - host.top}px)`;
+    const end = `translate(${to.left - host.left}px, ${to.top - host.top}px) scale(${scale})`;
+    const flight = ghost.animate([{ transform: from }, { transform: end }], {
+      duration,
+      easing,
+      fill: 'forwards',
+    });
+    flight.onfinish = () => {
+      flight.cancel();
+      resolve();
+    };
+    flight.oncancel = () => resolve();
+  });
+
+/** The dragged piece, at the board's size, following the pointer above the finger. */
+const moveGhost = (clientX: number, clientY: number, piece: OfferedPiece) => {
   const ghost = ghostCanvas.value;
   const tiles = renderer?.tiles;
-  // The ghost is placed in the game screen (the stage has no box of its own).
-  const host = (ghost?.offsetParent ?? ghost?.parentElement)?.getBoundingClientRect();
+  const host = ghostHost();
   if (!ghost || !tiles || !host) return;
-  if (!visible) {
-    hideGhost();
-    return;
-  }
   const cell = tiles.size;
   const ratio = Math.min(2, window.devicePixelRatio || 1);
   ghost.width = piece.shape.width * cell;
@@ -267,10 +367,17 @@ const moveGhost = (clientX: number, clientY: number, piece: OfferedPiece, visibl
   const ctx = ghost.getContext('2d');
   ctx?.clearRect(0, 0, ghost.width, ghost.height);
   for (const c of piece.shape.cells) ctx?.drawImage(tiles.get(piece.tone), c.x * cell, c.y * cell);
-  const left = clientX - host.left - ghost.width / ratio / 2;
-  const top = clientY - host.top - ghost.height / ratio / 2;
-  ghost.style.transform = `translate(${left}px, ${top}px)`;
+  ghostAt = { left: clientX - ghost.width / ratio / 2, top: clientY - ghost.height / ratio / 2 };
+  ghost.style.transform = `translate(${ghostAt.left - host.left}px, ${ghostAt.top - host.top}px)`;
   ghost.style.visibility = 'visible';
+  if (liftGhost) {
+    liftGhost = false;
+    if (moving.value)
+      ghost.animate([{ scale: '0.6' }, { scale: '1.06', offset: 0.7 }, { scale: '1' }], {
+        duration: 160,
+        easing: 'ease-out',
+      });
+  }
 };
 
 const hideGhost = () => {
@@ -417,6 +524,10 @@ onBeforeUnmount(() => {
         :selected="selected === entry.slot"
         :fits="entry.fits"
         :targeted="pending !== null && jokers[pending] === 'rotate'"
+        :lifted="lifted === entry.slot"
+        :index="index"
+        :moving="moving"
+        :data-slot="String(entry.slot)"
         @grab="onGrab(entry.slot, $event)"
         @select="
           controller.selectSlot(entry.slot);
@@ -526,9 +637,10 @@ onBeforeUnmount(() => {
   top: 0;
   left: 0;
   visibility: hidden;
+  z-index: 5;
   pointer-events: none;
-  opacity: 0.85;
-  filter: drop-shadow(0 0.5rem 0.75rem rgb(0 0 0 / 0.35));
+  will-change: transform;
+  filter: drop-shadow(0 0.75rem 1rem rgb(0 0 0 / 0.4));
 }
 
 /* Landscape: the hand stands in a column beside the board. */

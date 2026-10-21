@@ -330,7 +330,7 @@ const shopOpen = ref(false);
 }
 
 .node {
-  --family: var(--tone-3);
+  --family: var(--jewel-violet);
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -338,15 +338,15 @@ const shopOpen = ref(false);
 }
 
 .node[data-family='sand'] {
-  --family: var(--tone-2);
+  --family: var(--jewel-amber);
 }
 
 .node[data-family='placement'] {
-  --family: var(--tone-5);
+  --family: var(--jewel-rose);
 }
 
 .node[data-family='volume'] {
-  --family: var(--tone-1);
+  --family: var(--jewel-cyan);
 }
 
 .node__button {
@@ -373,7 +373,7 @@ const shopOpen = ref(false);
   border-radius: 50%;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--surface-2) 78%, var(--tone-3)),
+    color-mix(in srgb, var(--surface-2) 78%, var(--jewel-violet)),
     var(--surface-2)
   );
   box-shadow:

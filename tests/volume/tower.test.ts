@@ -3,6 +3,7 @@ import { SeededRandom } from '@/core/Random';
 import { Board } from '@/families/falling/board/Board';
 import { FallingSession } from '@/families/falling/FallingSession';
 import { Game } from '@/families/falling/game/Game';
+import { ClassicMode } from '@/families/falling/modes/ClassicMode';
 import { Piece } from '@/families/falling/pieces/Piece';
 import { Tone } from '@/families/falling/pieces/PieceType';
 import { CylinderProjection } from '@/families/volume/camera/CylinderProjection';
@@ -63,6 +64,27 @@ describe('TowerMode', () => {
     expect(game.board.wraps).toBe(true);
     // No wall stops the piece: it goes round and round.
     for (let i = 0; i < 30; i++) expect(game.moveLeft()).toBe(true);
+  });
+
+  it('brings the next piece above the place the last one landed, not back to the start', () => {
+    const game = new Game(new TowerMode(), { random: new ConstantRandom() });
+    game.start();
+    const start = game.active!.centre;
+    for (let i = 0; i < 7; i++) game.moveLeft();
+    const landed = game.board.column(Math.floor(game.active!.centre)) + 0.5;
+    game.hardDrop();
+    const next = game.active!;
+    expect(Math.abs(next.centre - landed)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(next.centre - start)).toBeGreaterThan(5);
+  });
+
+  it('keeps spawning in the middle of a well with walls', () => {
+    const game = new Game(new ClassicMode(), { random: new ConstantRandom() });
+    game.start();
+    for (let i = 0; i < 3; i++) game.moveLeft();
+    game.hardDrop();
+    const next = game.active!;
+    expect(next.x).toBe(Piece.spawn(next.type, next.tone, game.board.width).x);
   });
 
   it('is created by the volume family as a falling session of the volume family', () => {

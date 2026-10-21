@@ -31,10 +31,22 @@ export class Piece {
     readonly rotation: Rotation = 0,
   ) {}
 
-  /** Spawn position: centred, bounding box on the top (hidden) row. */
-  static spawn(type: PieceType, tone: Tone, boardWidth: number): Piece {
-    const x = Math.floor((boardWidth - shapeSize(type)) / 2);
+  /**
+   * Spawn position: bounding box on the top (hidden) row, centred in the well,
+   * or on `centre` (a horizontal position) when one is given.
+   */
+  static spawn(type: PieceType, tone: Tone, boardWidth: number, centre?: number): Piece {
+    const x =
+      centre === undefined
+        ? Math.floor((boardWidth - shapeSize(type)) / 2)
+        : Math.round(centre - shapeSize(type) / 2);
     return new Piece(type, tone, x, 0);
+  }
+
+  /** Horizontal position of the piece's middle (cell units, 0.5 = middle of column 0). */
+  get centre(): number {
+    const cells = this.localCells;
+    return this.x + cells.reduce((sum, cell) => sum + cell.x, 0) / cells.length + 0.5;
   }
 
   /** Cells relative to the bounding box (shared, never mutate). */

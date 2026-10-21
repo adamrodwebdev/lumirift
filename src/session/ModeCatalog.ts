@@ -15,6 +15,8 @@ export interface ModeDescriptor {
   readonly variants?: readonly string[];
   /** The variant offered first. */
   readonly defaultVariant?: string;
+  /** The player's record shows beside the score during a game (outside the campaign). */
+  readonly showsBest?: boolean;
 }
 
 /** Modes in menu order. */
@@ -37,7 +39,7 @@ const DESCRIPTORS: readonly ModeDescriptor[] = [
     defaultVariant: 'normal',
   },
   { id: 'sand', family: 'sand', result: 'score', dailyEligible: true },
-  { id: 'mosaic', family: 'placement', result: 'score', dailyEligible: true },
+  { id: 'mosaic', family: 'placement', result: 'score', dailyEligible: true, showsBest: true },
   { id: 'tower', family: 'volume', result: 'score', dailyEligible: true },
 ];
 

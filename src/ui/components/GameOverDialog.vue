@@ -196,7 +196,7 @@ const shownScore = computed(() =>
 
     <p class="results__status results__right" role="status">{{ status }}</p>
 
-    <div v-if="outcome?.campaign" class="sheet-buttons results__right">
+    <div v-if="outcome?.campaign" class="sheet-buttons sheet-buttons--lead results__right">
       <button
         v-if="outcome.campaign.next"
         type="button"
@@ -220,7 +220,7 @@ const shownScore = computed(() =>
         <AppIcon name="map" :size="20" />{{ t('campaign.map') }}
       </button>
     </div>
-    <div v-else class="sheet-buttons results__right">
+    <div v-else class="sheet-buttons sheet-buttons--lead results__right">
       <button type="button" class="btn btn--primary btn--raised" autofocus @click="emit('again')">
         <AppIcon name="restart" :size="20" />{{ t('over.again') }}
       </button>
@@ -279,13 +279,13 @@ const shownScore = computed(() =>
   top: -0.7rem;
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  background: var(--tone-5);
+  background: var(--jewel-rose);
   color: var(--bg);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  box-shadow: 0 0.4rem 1.1rem color-mix(in srgb, var(--tone-5) 50%, transparent);
+  box-shadow: 0 0.4rem 1.1rem color-mix(in srgb, var(--jewel-rose) 50%, transparent);
   animation: pop 520ms var(--ease-spring) 900ms both;
 }
 

@@ -119,7 +119,9 @@
     "opponentLines": "AI lines",
     "streak": "Streak",
     "regions": "Regions cleared",
-    "windIn": "Next gust of wind"
+    "windIn": "Next gust of wind",
+    "best": "Record",
+    "newBest": "New record!"
   },
   "notice": {
     "lines": "One line cleared | {n} lines cleared",

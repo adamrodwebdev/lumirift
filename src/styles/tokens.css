@@ -52,14 +52,23 @@
   --well-glow: rgb(120 90 255 / 0.22);
   --well-halo: rgb(74 63 134 / 0.18);
 
-  --tone-1: #3de0ff;
-  --tone-2: #ffb547;
-  --tone-3: #8b6cff;
-  --tone-4: #b8f25c;
-  --tone-5: #ff4fa3;
-  --tone-6: #5b8cff;
-  --tone-7: #ff7a4d;
-  --tone-8: #ff4fa3;
+  /* The jewels: the interface names them, the pieces wear them. */
+  --jewel-cyan: #3de0ff;
+  --jewel-amber: #ffb547;
+  --jewel-violet: #8b6cff;
+  --jewel-lime: #b8f25c;
+  --jewel-rose: #ff4fa3;
+  --jewel-blue: #5b8cff;
+  --jewel-coral: #ff7a4d;
+
+  --tone-1: var(--jewel-rose);
+  --tone-2: var(--jewel-violet);
+  --tone-3: var(--jewel-amber);
+  --tone-4: var(--jewel-cyan);
+  --tone-5: var(--jewel-lime);
+  --tone-6: var(--jewel-coral);
+  --tone-7: var(--jewel-blue);
+  --tone-8: var(--jewel-rose);
   --tone-9: #ffe15c;
   --tone-10: #2ad1b0;
   --tone-11: #7d5cff;

@@ -5,6 +5,7 @@ import { useServices } from '@/app/AppServices';
 import { FrameClock } from '@/app/FrameClock';
 import { useFormat } from '@/app/useFormat';
 import { effectsProfile } from '@/fx/EffectsProfile';
+import { newRecord } from '@/fx/sounds';
 import { dayKey } from '@/core/Day';
 import { SeededRandom } from '@/core/Random';
 import { CampaignRun, type CampaignOutcome } from '@/campaign/CampaignRun';
@@ -14,6 +15,7 @@ import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
 import { allowsLevel } from '@/platform/Edition';
 import type { BreakMoment } from '@/platform/Platform';
 import { GameTracker } from '@/progression/GameReport';
+import { RecordChase } from '@/progression/RecordChase';
 import { Coach, type CoachStep } from '@/session/Coach';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
@@ -25,7 +27,9 @@ import CampaignGoal from '../components/CampaignGoal.vue';
 import CoachCard from '../components/CoachCard.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import type { GameOutcome } from '../GameOutcome';
+import type { BestLine } from '../BestLine';
 import HudPanel from '../components/HudPanel.vue';
+import RecordBurst from '../components/RecordBurst.vue';
 import KeyLegend from '../components/KeyLegend.vue';
 import PauseDialog from '../components/PauseDialog.vue';
 import { stageFor } from '../stages';
@@ -59,6 +63,7 @@ const {
   campaign,
   platform,
   audio,
+  haptics,
   clock: today,
 } = useServices();
 const descriptor = catalog.get(props.modeId);
@@ -74,6 +79,21 @@ const reward = ref<'offer' | 'busy' | 'none'>('none');
 /** A rewarded ad was just watched: no interstitial on top of it at this break. */
 let rewardWatched = false;
 const announcement = ref('');
+/** Modes that show the record beside the score; the chase of this game. */
+let chase: RecordChase | null = null;
+const best = shallowRef<BestLine | null>(null);
+/** Counts the records beaten: each one plays the burst again. */
+const recordBurst = ref(0);
+let recordTimer: ReturnType<typeof setTimeout> | undefined;
+const recordKey = () => (props.daily ? ScoreBoard.dailyKey(props.daily.key) : props.modeId);
+const celebrateRecord = () => {
+  audio.play(newRecord);
+  haptics.pulse([20, 40, 20, 40, 90]);
+  announcement.value = t('hud.newBest');
+  recordBurst.value++;
+  clearTimeout(recordTimer);
+  recordTimer = setTimeout(() => (recordBurst.value = 0), 1800);
+};
 const toast = ref<{ text: string; key: number } | null>(null);
 const stage = stageFor(descriptor);
 /** The whole screen takes the gestures of touch players (see useGameSurface). */
@@ -195,6 +215,13 @@ clock.subscribe((delta) => {
   );
   const next = current.indicators();
   if (!sameIndicators(next, indicators.value)) indicators.value = next;
+  if (chase && current.state === 'running') {
+    const score = current.result().value;
+    if (chase.update(score)) celebrateRecord();
+    const shown = chase.shown(score);
+    if (best.value?.value !== shown || best.value.beaten !== chase.beaten)
+      best.value = { value: shown, beaten: chase.beaten };
+  }
   if (run && phase.value === 'playing' && current.state === 'running') {
     const state = liveState(current);
     const progress = run.progress(state);
@@ -260,7 +287,7 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
   const current = session.value;
   if (!current || phase.value === 'over') return;
   const result = current.result();
-  const key = props.daily ? ScoreBoard.dailyKey(props.daily.key) : props.modeId;
+  const key = recordKey();
   const verdict = run ? (decided ?? run.end(reason, liveState(current))) : null;
   // Whole points or milliseconds: no float noise in the saved records. Campaign
   // games bring upgrades along: they never count as records.
@@ -306,6 +333,10 @@ const start = async () => {
   platform.loadingStop();
   run = props.level ? new CampaignRun(props.level, levelTime(props.level)) : null;
   goal.value = run ? { value: 0, target: run.level.goal.target } : null;
+  // Campaign games never count as records: no record to chase there.
+  chase = descriptor.showsBest && !run ? new RecordChase(scores.best(recordKey())) : null;
+  best.value = chase ? { value: chase.shown(0), beaten: false } : null;
+  recordBurst.value = 0;
   listen(created);
   showOutcome.value = false;
   round.value++;
@@ -360,6 +391,7 @@ const doubleExperience = async () => {
 
 const dispose = () => {
   clearTimeout(outcomeTimer);
+  clearTimeout(recordTimer);
   unsubscribe.forEach((off) => off());
   unsubscribe = [];
   tracker?.dispose();
@@ -418,6 +450,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('blur', pause);
   clearTimeout(toastTimer);
   clearTimeout(outcomeTimer);
+  clearTimeout(recordTimer);
   clearTimeout(coachTimer);
   audio.setIntensity(MUSIC_CALM);
   clock.stop();
@@ -447,7 +480,7 @@ onBeforeUnmount(() => {
     >
       <AppIcon name="pause" />
     </button>
-    <HudPanel class="game__score" :indicators="indicators.slice(0, 1)" />
+    <HudPanel class="game__score" :indicators="indicators.slice(0, 1)" :best="best" />
     <button
       type="button"
       class="btn btn--icon game__sound"
@@ -494,6 +527,7 @@ onBeforeUnmount(() => {
       <KeyLegend :family="descriptor.family" :mode-id="modeId" />
     </aside>
 
+    <RecordBurst v-if="recordBurst > 0" :key="recordBurst" />
     <p class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
     <div v-if="adBreak" class="game__break" role="status" aria-busy="true">
       <span class="sr-only">{{ t('game.loading') }}</span>

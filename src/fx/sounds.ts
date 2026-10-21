@@ -168,6 +168,67 @@ export const onBeat =
 export const tile: SoundRecipe = (s) => {
   s.tone({ type: 'triangle', frequency: degree(9), to: degree(7), duration: 0.07, gain: 0.07 });
   s.noise({ filter: 'bandpass', frequency: 2400, q: 4, duration: 0.03, gain: 0.05 });
+  // The weight of the piece settling into the tray.
+  s.tone({ frequency: 150, to: 70, duration: 0.12, gain: 0.08 });
+};
+
+/** Mosaic: a piece lifted from the hand, a light glazed clink rising. */
+export const pickUp: SoundRecipe = (s) => {
+  s.tone({ type: 'triangle', frequency: degree(12), to: degree(14), duration: 0.07, gain: 0.05 });
+  s.noise({ filter: 'bandpass', frequency: 3400, q: 6, duration: 0.025, gain: 0.03 });
+};
+
+/** Mosaic: the dragged piece finds a new place where it fits (very soft, it repeats). */
+export const snapHint: SoundRecipe = (s) =>
+  s.tone({ type: 'sine', frequency: degree(16), duration: 0.04, gain: 0.018 });
+
+/** Mosaic: a piece let go away from a place: it slides back into the hand. */
+export const putBack: SoundRecipe = (s) => {
+  s.noise({ filter: 'lowpass', frequency: 1400, to: 500, duration: 0.14, gain: 0.04 });
+  s.tone({ type: 'triangle', frequency: degree(9), to: degree(5), duration: 0.12, gain: 0.05 });
+};
+
+/** Mosaic: a new hand dealt, three pieces landing one after the other. */
+export const deal: SoundRecipe = (s) => {
+  [11, 13, 15].forEach((step, i) => {
+    s.tone({
+      type: 'triangle',
+      frequency: degree(step),
+      duration: 0.06,
+      gain: 0.04,
+      start: i * 0.07,
+    });
+    s.noise({
+      filter: 'bandpass',
+      frequency: 2800,
+      q: 5,
+      duration: 0.02,
+      gain: 0.025,
+      start: i * 0.07,
+    });
+  });
+};
+
+/** The player's record beaten during the game: a bright rising fanfare with a shimmer. */
+export const newRecord: SoundRecipe = (s) => {
+  [10, 13, 15, 17, 20].forEach((step, i) =>
+    s.tone({
+      type: 'triangle',
+      frequency: degree(step),
+      duration: i === 4 ? 0.7 : 0.16,
+      gain: 0.08,
+      start: i * 0.075,
+    }),
+  );
+  s.tone({ frequency: degree(25), duration: 0.9, gain: 0.03, start: 0.3 });
+  s.noise({
+    filter: 'highpass',
+    frequency: 6000,
+    duration: 0.6,
+    gain: 0.03,
+    start: 0.3,
+    attack: 0.05,
+  });
 };
 
 /** Mosaic: ceramic breaking, lower and duller than glass, richer with the streak. */

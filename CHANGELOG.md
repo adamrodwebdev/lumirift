@@ -3,6 +3,40 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.11.0] — 21/10/2026
+
+### Modifié
+
+- **Couleurs des pièces redistribuées** : aucune pièce ne porte plus la couleur que lui donne le
+  standard du genre (I rose, O violet, T ambre, S cyan, Z citron vert, J corail, L bleu). Mêmes
+  sept joyaux, mêmes textures ; les menus gardent exactement leurs couleurs (jetons
+  `--jewel-*` séparés des teintes des pièces). Couvertures et vidéos CrazyGames refaites.
+
+- **Mosaïque plus vivante** :
+  - la pièce prise quitte sa place dans la main (place vide en pointillés), grandit à la taille
+    du plateau et suit le doigt, son ombre d'emboîtement sur la grille ;
+  - lâchée sur une place libre, elle s'y glisse puis se pose : chaque carreau descend, rebondit
+    et brille, du centre vers les bords, dans une poussière de glaçure ;
+  - lâchée ailleurs, elle revient se ranger dans la main ;
+  - une nouvelle main arrive pièce après pièce ;
+  - sons : prise, emboîtement possible, retour en main, nouvelle main, pose plus lourde.
+- **Ligne « Record »** sous le score de la Mosaïque (hors campagne) : le record du joueur à
+  battre ; quand il tombe, la ligne passe en or, une bannière « Nouveau record ! » éclate sur le
+  plateau avec une fanfare et une vibration, puis la ligne suit le score.
+- **Changer d'ambiance se voit** : dans l'Atelier, un anneau de la lumière de la nouvelle
+  ambiance part de la carte touchée et balaie l'écran, puis le fond passe en fondu d'une
+  ambiance à l'autre (au lieu de changer d'un coup). Avec les animations réduites, le fondu
+  seul.
+
+### Corrigé
+
+- **Boutons de fin de partie** : en paysage, ils s'étiraient en disques trop étroits pour leur
+  texte. Ils gardent leur hauteur ; avec trois boutons, l'action principale prend toute la
+  largeur au-dessus des deux autres.
+- **Tour : la caméra ne revient plus au point de départ.** Chaque nouvelle pièce apparaît
+  au-dessus de l'endroit où la précédente s'est posée (au centre si la place manque) : la vue
+  reste là où le joueur construit au lieu de repartir vers la colonne d'origine.
+
 ## [1.10.0] — 20/10/2026
 
 Prêt pour une nouvelle soumission à CrazyGames : revue complète du build comme un modérateur,

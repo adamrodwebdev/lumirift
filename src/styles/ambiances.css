@@ -4,7 +4,28 @@
  * opacity, so every text and every piece keeps its contrast. The glows
  * stand still with calmer effects or reduced motion (`data-motion`).
  * `data-ambiance-preview` shows an ambiance on one element (the Atelier).
+ * The glows are typed colours, so that a new ambiance cross-fades into the
+ * old one instead of replacing it at once.
  */
+@property --glow-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --glow-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
+:root,
+[data-ambiance-preview] {
+  transition:
+    --glow-1 1.2s ease,
+    --glow-2 1.2s ease;
+}
+
 :root,
 [data-ambiance-preview='night'] {
   --glow-1: transparent;
@@ -92,4 +113,39 @@ body::before {
   body::before {
     animation: none;
   }
+}
+
+/*
+ * The wave that announces a new ambiance (ambianceWave.ts): a ring of its
+ * light, `--wave-r` wide, spreading from where the player touched, with the
+ * new ambiance's wash settling in behind it.
+ */
+@property --wave-r {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.ambiance-wave {
+  --rim: color-mix(in srgb, var(--glow-1) 45%, white);
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  transition: none;
+  background:
+    radial-gradient(
+      circle at var(--wave-x) var(--wave-y),
+      transparent calc(var(--wave-r) - 9rem),
+      var(--glow-2) calc(var(--wave-r) - 4rem),
+      var(--rim) calc(var(--wave-r) - 0.4rem),
+      transparent var(--wave-r)
+    ),
+    radial-gradient(
+      circle at var(--wave-x) var(--wave-y),
+      var(--glow-1),
+      var(--glow-2) var(--wave-r),
+      transparent var(--wave-r)
+    );
+  mix-blend-mode: screen;
 }

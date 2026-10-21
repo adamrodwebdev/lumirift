@@ -16,6 +16,7 @@ const JOKER_SOUNDS: Readonly<Record<JokerId, SoundRecipe>> = {
 /** Sounds and vibrations of the Mosaic, in step with its visuals. */
 export class MosaicSoundscape {
   private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+  private dealSound: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     private readonly audio: AudioEngine,
@@ -34,8 +35,14 @@ export class MosaicSoundscape {
         haptics.pulse(lines >= 3 ? [30, 40, 70] : 16 + lines * 10);
       }),
       session.onGame('perfect', () => audio.play(sounds.pureLine)),
+      // A new hand lands piece after piece; a joker that redeals (reroll,
+      // undo) has its own sound, which wins.
+      session.onGame('deal', () => {
+        this.dealSound = this.later(() => audio.play(sounds.deal), 0);
+      }),
       session.onGame('jokerGained', () => audio.play(sounds.bonus)),
       session.onGame('jokerUsed', ({ joker }) => {
+        this.cancel(this.dealSound);
         audio.play(JOKER_SOUNDS[joker]);
         if (joker === 'bomb') haptics.pulse([40, 30, 80]);
       }),
@@ -52,11 +59,18 @@ export class MosaicSoundscape {
   }
 
   /** The break is heard when the tiles break, after their little jump. */
-  private later(play: () => void): void {
+  private later(play: () => void, delayMs = BREAK_MS): ReturnType<typeof setTimeout> {
     const timer = setTimeout(() => {
       this.timers.delete(timer);
       play();
-    }, BREAK_MS);
+    }, delayMs);
     this.timers.add(timer);
+    return timer;
+  }
+
+  private cancel(timer: ReturnType<typeof setTimeout> | undefined): void {
+    if (timer === undefined) return;
+    clearTimeout(timer);
+    this.timers.delete(timer);
   }
 }

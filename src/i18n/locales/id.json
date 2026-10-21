@@ -119,7 +119,9 @@
     "opponentLines": "Baris AI",
     "streak": "Beruntun",
     "regions": "Area dihapus",
-    "windIn": "Embusan angin berikutnya"
+    "windIn": "Embusan angin berikutnya",
+    "best": "Rekor",
+    "newBest": "Rekor baru!"
   },
   "notice": {
     "lines": "{n} baris dihapus",
