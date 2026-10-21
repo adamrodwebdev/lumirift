@@ -85,11 +85,37 @@ interface Vine {
 export class SandReactions {
   private readonly vines: Vine[] = [];
   private steps = 0;
+  /** Grains of each reacting element, gathered in one sweep per step (reused, no allocation). */
+  private readonly found: Record<'fire' | 'blaze' | 'water' | 'acid', Int32Array>;
+  private readonly counts = { fire: 0, blaze: 0, water: 0, acid: 0 };
 
   constructor(
     private readonly grid: SandGrid,
     private readonly random: RandomSource,
-  ) {}
+  ) {
+    const size = grid.tones.length;
+    this.found = {
+      fire: new Int32Array(size),
+      blaze: new Int32Array(size),
+      water: new Int32Array(size),
+      acid: new Int32Array(size),
+    };
+  }
+
+  /** One sweep of the well: where the reacting elements are. */
+  private gather(): void {
+    const { tones } = this.grid;
+    const { found, counts } = this;
+    counts.fire = counts.blaze = counts.water = counts.acid = 0;
+    for (let i = 0; i < tones.length; i++) {
+      const tone = tones[i]!;
+      if (tone < Tone.Water) continue;
+      if (tone === Tone.Fire) found.fire[counts.fire++] = i;
+      else if (tone === Tone.Blaze) found.blaze[counts.blaze++] = i;
+      else if (tone === Tone.Water) found.water[counts.water++] = i;
+      else if (tone === Tone.Acid) found.acid[counts.acid++] = i;
+    }
+  }
 
   /** Vines still growing (a test reads it). */
   get growing(): number {
@@ -100,6 +126,7 @@ export class SandReactions {
   step(): Reaction[] {
     this.steps++;
     const reactions: Reaction[] = [];
+    this.gather();
     this.fires(reactions);
     this.blazes(reactions);
     this.waters(reactions);
@@ -170,7 +197,9 @@ export class SandReactions {
   private fires(reactions: Reaction[]): void {
     const { grid } = this;
     const { tones } = grid;
-    for (let i = 0; i < tones.length; i++) {
+    const list = this.found.fire;
+    for (let k = 0; k < this.counts.fire; k++) {
+      const i = list[k]!;
       if (tones[i] !== Tone.Fire) continue;
       const touched = this.pick(i, [Tone.Oil, Tone.Water, Tone.Ice, Tone.Seed], true);
       if (touched < 0) continue;
@@ -212,7 +241,9 @@ export class SandReactions {
     const { tones, life } = grid;
     const scorched: number[] = [];
     const scorchedTones: Tone[] = [];
-    for (let i = 0; i < tones.length; i++) {
+    const list = this.found.blaze;
+    for (let k = 0; k < this.counts.blaze; k++) {
+      const i = list[k]!;
       if (tones[i] !== Tone.Blaze) continue;
       const heat = life[i]!;
       for (const n of grid.neighbours(i)) {
@@ -263,7 +294,9 @@ export class SandReactions {
   private waters(reactions: Reaction[]): void {
     const { grid, random } = this;
     const { tones } = grid;
-    for (let i = 0; i < tones.length; i++) {
+    const list = this.found.water;
+    for (let k = 0; k < this.counts.water; k++) {
+      const i = list[k]!;
       if (tones[i] !== Tone.Water) continue;
       for (const n of grid.neighbours(i)) {
         if (n < 0) continue;
@@ -289,7 +322,9 @@ export class SandReactions {
     const { tones, life } = grid;
     const eaten: number[] = [];
     const eatenTones: Tone[] = [];
-    for (let i = 0; i < tones.length; i++) {
+    const list = this.found.acid;
+    for (let k = 0; k < this.counts.acid; k++) {
+      const i = list[k]!;
       if (tones[i] !== Tone.Acid) continue;
       const [below, left, right] = grid.neighbours(i);
       for (const n of [below, left, right]) {
