@@ -176,7 +176,18 @@
     },
     "bombPiece": "Bomb gem: clear its ring to blow up the tower around it",
     "blast": "Boom! {value} blocks blown away",
-    "blastChain": "Chain reaction: {value} bombs!"
+    "blastChain": "Chain reaction: {value} bombs!",
+    "boss": {
+      "warn": "Red cracks: the Dune Wyrm is coming up there!",
+      "exposed": "Its head is out: strike it!",
+      "swallow": "It swallows the sand at the surface!",
+      "storm": "A sandstorm rises!",
+      "phase2": "The Wyrm is enraged!",
+      "phase3": "Its last breath: watch out!",
+      "stunned": "Shocked through the water: it is stunned!",
+      "critical": "Lightning on its head: critical hit!",
+      "defeated": "The Dune Wyrm is defeated!"
+    }
   },
   "controls": {
     "label": "Touch controls",
@@ -402,7 +413,8 @@
       "paper": "Paper",
       "pixel": "Pixel",
       "obsidian": "Obsidian",
-      "gold": "Gold"
+      "gold": "Gold",
+      "dunes": "Dune scales"
     },
     "ambiance": {
       "night": "Night",
@@ -422,7 +434,8 @@
       "default": "Free",
       "level": "Level {n}",
       "streak": "{n}-day daily streak",
-      "objectives": "{n} objectives done"
+      "objectives": "{n} objectives done",
+      "boss": "Defeat the {name}"
     },
     "tapToWear": "Tap again to wear",
     "clickToWear": "Click again to wear",
@@ -460,7 +473,8 @@
       "survive": "Last {time}",
       "win": "Beat the {ai}",
       "shape": "Complete the silhouette",
-      "regions": "Clear {n} region | Clear {n} regions"
+      "regions": "Clear {n} region | Clear {n} regions",
+      "boss": "Defeat the {name}"
     },
     "starRule": {
       "timeLeft": "1 star for winning, 2 with 15 % of the time left, 3 with 40 %.",
@@ -474,7 +488,8 @@
     "nextLevel": "Level {level}",
     "retry": "Try again",
     "map": "Campaign map",
-    "lockedNote": "Win level {level} to open this one."
+    "lockedNote": "Win level {level} to open this one.",
+    "guardian": "Guardian"
   },
   "upgrades": {
     "title": "Upgrades",
@@ -611,5 +626,10 @@
     "place": "Place",
     "joker": "Jokers",
     "cancel": "Cancel"
+  },
+  "bosses": {
+    "duneWorm": {
+      "name": "Dune Wyrm"
+    }
   }
 }

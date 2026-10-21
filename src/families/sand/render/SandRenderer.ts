@@ -1,7 +1,8 @@
 import { Tone } from '@/core/Tone';
 import { ParticleKind } from '@/fx/ParticlePool';
-import { parseHex, type Rgb, type TonePalette } from '@/render/TonePalette';
+import { parseHex, shade, type Rgb, type TonePalette } from '@/render/TonePalette';
 import type { SandEffects } from '../fx/SandEffects';
+import { WORM_RADIUS } from '../engine/DuneWorm';
 import { GRAINS_PER_CELL } from '../engine/SandGrid';
 import type { SandPiece } from '../engine/SandPiece';
 import type { SandView } from '../SandSession';
@@ -41,6 +42,9 @@ const FOG_SCALE = 3;
 const FOG_GRAIN = 34;
 const FOG_MAX = 185;
 
+/** A theme colour lightened (amount > 0) or darkened, as CSS. */
+const shadeCss = (hex: string, amount: number) => shade(parseHex(hex), amount);
+
 const pack = ({ r, g, b }: Rgb): number => (255 << 24) | (b << 16) | (g << 8) | r;
 const mix = ({ r, g, b }: Rgb, amount: number): Rgb => {
   const f = (c: number) => Math.round(amount >= 0 ? c + (255 - c) * amount : c * (1 + amount));
@@ -65,6 +69,8 @@ export class SandRenderer {
   private readonly fogBuffer: Uint32Array;
   private readonly fogDensity: Uint16Array;
   private fogColour = 0;
+  /** Grains already darkened by the Guardian's shadow this frame. */
+  private readonly shaded: Uint8Array;
   private background = 0;
   private palette: TonePalette | null = null;
   /** Side of a cell in device pixels; a grain is cell / GRAINS_PER_CELL. */
@@ -94,6 +100,7 @@ export class SandRenderer {
     this.fogPixels = this.fogCtx.createImageData(this.fog.width, this.fog.height);
     this.fogBuffer = new Uint32Array(this.fogPixels.data.buffer);
     this.fogDensity = new Uint16Array(this.fog.width * this.fog.height);
+    this.shaded = new Uint8Array(width * height);
   }
 
   /** Fits the 10 × 20 cell well in the box (CSS pixels); returns the cell size. */
@@ -156,6 +163,7 @@ export class SandRenderer {
       this.outline(piece, 0, palette.accent, grain);
     }
     this.drawWind(grain, palette);
+    this.drawWorm(grain, palette);
     this.drawBolts(grain);
     this.drawParticles(grain);
     this.drawPopups(grain, palette);
@@ -209,6 +217,111 @@ export class SandRenderer {
     ctx.imageSmoothingEnabled = false;
   }
 
+  /**
+   * The Guardian under the sand: only its shadow, the grains above its body
+   * darkening and rippling as it swims.
+   */
+  private paintWormShadow(): void {
+    const worm = this.view.worm;
+    if (!worm || worm.out || worm.state === 'dead' || this.effects.hidden) return;
+    const { grid } = this.view;
+    const W = grid.width;
+    const reach = WORM_RADIUS + 2;
+    // Each grain darkens once, however many segments of the body lie under it.
+    const shaded = this.shaded;
+    shaded.fill(0);
+    for (let k = 0; k < worm.xs.length; k++) {
+      const cx = worm.xs[k]!;
+      const cy = worm.ys[k]!;
+      for (
+        let y = Math.max(0, Math.floor(cy - reach));
+        y <= Math.min(grid.height - 1, cy + reach);
+        y++
+      ) {
+        for (let x = Math.max(0, Math.floor(cx - reach)); x <= Math.min(W - 1, cx + reach); x++) {
+          const i = y * W + x;
+          if (grid.tones[i] === 0 || shaded[i] || (x - cx) ** 2 + (y - cy) ** 2 > reach * reach) {
+            continue;
+          }
+          shaded[i] = 1;
+          const ripple = ((x + y + (this.frame >> 2)) & 3) === 0;
+          this.buffer[i] = this.darken(this.buffer[i]!, ripple ? 0.62 : 0.74);
+        }
+      }
+    }
+  }
+
+  private darken(colour: number, keep: number): number {
+    const r = (colour & 255) * keep;
+    const g = ((colour >> 8) & 255) * keep;
+    const b = ((colour >> 16) & 255) * keep;
+    return (255 << 24) | (b << 16) | (g << 8) | r;
+  }
+
+  /**
+   * The Guardian above the sand: red cracks where it is about to burst out,
+   * then its body, its eyes and the glowing rift on its brow (its weak point).
+   */
+  private drawWorm(grain: number, palette: TonePalette): void {
+    const worm = this.view.worm;
+    if (!worm || worm.state === 'dead' || this.effects.hidden) return;
+    const { ctx } = this;
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 90);
+    const warnAt = worm.warnAt;
+    if (warnAt !== null) {
+      const top = worm.surfaceAt(warnAt);
+      ctx.globalAlpha = 0.12 + 0.12 * pulse;
+      ctx.fillStyle = palette.danger;
+      ctx.fillRect((warnAt - 8) * grain, 0, 16 * grain, top * grain);
+      ctx.globalAlpha = 0.5 + 0.5 * pulse;
+      ctx.strokeStyle = palette.danger;
+      ctx.lineWidth = Math.max(1.5, grain * 0.9);
+      ctx.beginPath();
+      for (const k of [-1, 0, 1]) {
+        ctx.moveTo((warnAt + 0.5) * grain, top * grain);
+        ctx.lineTo((warnAt + k * 6) * grain, (top + 6 + (k === 0 ? 3 : 0)) * grain);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    if (!worm.out) return;
+    const hurt = this.effects.wormHurt > 0;
+    // A dark hide, lighter than the well, ringed with the rift's gold.
+    const body = shadeCss(palette.wellBackground, 0.22);
+    const ring = shadeCss(palette.wellBackground, 0.34);
+    for (let k = worm.xs.length - 1; k >= 0; k--) {
+      const x = worm.xs[k]!;
+      const y = worm.ys[k]!;
+      // Below the surface, the body is hidden by the sand it swims in.
+      if (k > 2 && y > worm.surfaceAt(x) + 2) continue;
+      const r = (WORM_RADIUS + (k === 0 ? 1.2 : 0) - k * 0.06) * grain;
+      ctx.fillStyle = hurt ? palette.crack : k % 2 ? body : ring;
+      ctx.beginPath();
+      ctx.arc((x + 0.5) * grain, (y + 0.5) * grain, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.6;
+      ctx.strokeStyle = palette.accent;
+      ctx.lineWidth = Math.max(1, grain * 0.25);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    const hx = worm.headX;
+    const hy = worm.headY;
+    // The weak point: a rift glowing on its brow, brighter while it is bare.
+    ctx.globalAlpha = worm.exposed ? 0.6 + 0.4 * pulse : 0.35;
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.arc((hx + 0.5) * grain, (hy - 1.2) * grain, grain * 1.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = palette.crack;
+    for (const ex of [-1.6, 1.6]) {
+      ctx.beginPath();
+      ctx.arc((hx + 0.5 + ex) * grain, (hy + 0.8) * grain, grain * 0.7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
   /** Lightning bolts: a bright jagged line that fades. */
   private drawBolts(grain: number): void {
     const { ctx, effects } = this;
@@ -253,6 +366,7 @@ export class SandRenderer {
         ? this.lut[tone * 8 + grain[i]! * 2 + (VINE_TEXTURE(x, y) ? 1 : 0)]!
         : this.colour(tone, grain[i]!, x, y);
     }
+    this.paintWormShadow();
     const target = hidden ? null : this.view.elementTarget();
     if (target) {
       // What the falling fire would burn, or the lightning strike, flickers in its colour.

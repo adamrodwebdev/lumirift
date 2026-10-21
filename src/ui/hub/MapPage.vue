@@ -20,24 +20,15 @@ const { t } = useI18n();
 const { campaign, catalog, platform } = useServices();
 
 type Point = readonly [x: number, y: number];
-/** Where the six levels sit, in % of the path's field: up a tall screen, across a wide one. */
-const TALL: readonly Point[] = [
-  [24, 100],
-  [76, 80],
-  [26, 60],
-  [74, 40],
-  [28, 20],
-  [72, 0],
-];
-const WIDE: readonly Point[] = [
-  [0, 78],
-  [20, 22],
-  [40, 78],
-  [60, 22],
-  [80, 78],
-  [100, 22],
-];
-const STARS_PER_CHAPTER = 18;
+/**
+ * Where a chapter's levels sit, in % of the path's field: zigzagging up a
+ * tall screen, across a wide one (six levels, or seven with a Guardian).
+ */
+const pathPoints = (count: number, wide: boolean): Point[] =>
+  Array.from({ length: count }, (_, i): Point => {
+    const t = count > 1 ? i / (count - 1) : 0;
+    return wide ? [t * 100, i % 2 ? 22 : 78] : [i % 2 ? 77 - i : 24 + i, 100 - t * 100];
+  });
 
 /** The map opens on the chapter of the next level to win. */
 const chapterIndex = ref(
@@ -99,7 +90,7 @@ const observer = new ResizeObserver(([entry]) => {
 onMounted(() => path.value && observer.observe(path.value));
 onBeforeUnmount(() => observer.disconnect());
 
-const points = computed(() => (wide.value ? WIDE : TALL));
+const points = computed(() => pathPoints(view.value.levels.length, wide.value));
 /** The way between levels: lit up to the last level opened, dotted after. */
 const ways = computed(() => {
   let lit = '';
@@ -148,7 +139,9 @@ const shopOpen = ref(false);
       <div class="map__title">
         <small>{{ t('campaign.chapter', { n: view.chapter }) }}</small>
         <h2>{{ t(`campaign.chapters.${view.chapter}`) }}</h2>
-        <span>{{ t('campaign.chapterStars', { n: view.stars, max: STARS_PER_CHAPTER }) }}</span>
+        <span>{{
+          t('campaign.chapterStars', { n: view.stars, max: view.levels.length * 3 })
+        }}</span>
       </div>
       <button
         type="button"
@@ -179,7 +172,7 @@ const shopOpen = ref(false);
             v-for="(entry, i) in view.levels"
             :key="entry.level.id"
             class="node"
-            :class="`node--${entry.state}`"
+            :class="[`node--${entry.state}`, { 'node--boss': entry.level.boss }]"
             :data-family="entry.family"
             :style="{ '--x': `${points[i]![0]}%`, '--y': `${points[i]![1]}%` }"
           >
@@ -194,7 +187,11 @@ const shopOpen = ref(false);
                 <template v-else>{{ entry.level.id }}</template>
                 <span class="node__mode" aria-hidden="true" />
               </span>
-              <span class="node__label">{{ t(`modes.${entry.level.modeId}.name`) }}</span>
+              <span class="node__label">{{
+                entry.level.boss
+                  ? t(`bosses.${entry.level.boss}.name`)
+                  : t(`modes.${entry.level.modeId}.name`)
+              }}</span>
               <StarRow
                 class="node__stars"
                 :count="entry.stars"
@@ -362,6 +359,30 @@ const shopOpen = ref(false);
 
 .node__button:active {
   transform: scale(0.94);
+}
+
+/* The Guardian: a larger disc ringed with the danger colour, which pulses. */
+.node--boss .node__disc {
+  width: 4.25rem;
+  height: 4.25rem;
+  outline: 3px solid color-mix(in srgb, var(--danger) 80%, transparent);
+  outline-offset: 2px;
+}
+
+.node--boss.node--current .node__disc {
+  animation: guardian 1.6s ease-in-out infinite;
+}
+
+@keyframes guardian {
+  50% {
+    outline-color: var(--accent-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node--boss.node--current .node__disc {
+    animation: none;
+  }
 }
 
 .node__disc {

@@ -223,9 +223,16 @@ describe('Profile', () => {
 
 describe('Cosmetics', () => {
   it('has exactly one default per kind, the rest to be earned', () => {
-    const none = { level: 1, bestStreak: 0, objectivesDone: 0 };
+    const none = { level: 1, bestStreak: 0, objectivesDone: 0, bosses: [] };
     const free = COSMETICS.filter((c) => isUnlocked(c, none));
     expect(free.map((c) => c.kind).sort()).toEqual(['ambiance', 'material', 'shatter']);
+  });
+
+  it('gives the Dune scales to the player who defeats the Dune Wyrm', () => {
+    const dunes = COSMETICS.find((c) => c.id === 'dunes')!;
+    const before = { level: 50, bestStreak: 99, objectivesDone: 999, bosses: [] };
+    expect(isUnlocked(dunes, before)).toBe(false);
+    expect(isUnlocked(dunes, { ...before, bosses: ['duneWorm' as const] })).toBe(true);
   });
 });
 

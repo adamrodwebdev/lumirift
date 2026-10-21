@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut         |
-| ------- | ---------- | -------------- |
-| 1.13    | 21/10/2026 | La Tour piégée |
+| Version | Date       | Statut           |
+| ------- | ---------- | ---------------- |
+| 1.14    | 21/10/2026 | Le Ver des dunes |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -290,6 +290,18 @@ Règles détaillées :
   pièce qui réagit apparaît juste au-dessus de l'élément précédent : il suffit de la lâcher.
   Mesuré avec un joueur qui lâche ses pièces : électrocution vers 9 s, brasier vers 14 s,
   liane vers 18 s, première zone effacée vers 20 s.
+- **Le Ver des dunes (1.14)**, premier **Gardien de la faille** : niveau 2-7, 4 minutes, objectif
+  « Vaincre le Ver des dunes » (barre de 100 points de vie). Cycle : il nage sous le sable (les
+  grains au-dessus de lui s'assombrissent et ondulent) ; des **fissures rouges** annoncent 2 s avant
+  l'endroit où il **jaillit** (rugissement, sable projeté autour de lui, qui remplit le puits) ; il
+  reste **exposé 3 s**, son point faible doré sur le front ; il replonge. **Phases** : 1 il rôde
+  (environ toutes les 7 s) ; 2 sous 66 points, il surgit plus vite et **dévore** une zone de sable en
+  surface (il défait les ponts) ; 3 sous 33 points, il lève une **tempête** (vent) et surgit deux fois
+  de suite. **Coups** : foudre sur sa tête exposée 12 (critique) ; électrocution d'une eau qui touche
+  son corps 8, et il est étourdi 1,5 s ; foudre qui brise le sable autour de lui 4 ; feu qui le touche
+  hors du sable 6 ; brasier contre lui 2 par instant ; couleur reliée d'un mur à l'autre qui passe sur
+  lui 5. Un même coup ne compte qu'une fois en 0,4 s. Défaite : le sable atteint le haut ou le temps
+  est écoulé. **Récompense** : le matériau « Écailles des dunes ».
 - **Choix fondés sur les jeux du genre** : sur CrazyGames, Sandtrix (9,1/10, 40 000 votes) et
   Sand Blocks font déjà du sable coloré **sans éléments**. Les réactions viennent des
   simulateurs de sable (Noita, The Powder Toy, Sandspiel) et sont ramenées à la règle du jeu :
@@ -1374,3 +1386,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.11    | 21/10/2026 | Couleurs des pièces loin du standard du genre (§ 2), menus inchangés, médias refaits.                                                                             |
 | 1.12    | 21/10/2026 | Les éléments du Sable : huile, glace, foudre, graine, acide, vapeur et pluie, réactions entre eux, entrée fracassante du 1-1 (§ 3.2).                             |
 | 1.13    | 21/10/2026 | La Tour piégée : gemmes-bombes qui soufflent un secteur de la tour, réactions en chaîne, secteur visé avant la pose (§ 3.2).                                      |
+| 1.14    | 21/10/2026 | Premier Gardien de la faille : le Ver des dunes au niveau 2-7, phases, coups des éléments, récompense Écailles des dunes (§ 3.2).                                 |

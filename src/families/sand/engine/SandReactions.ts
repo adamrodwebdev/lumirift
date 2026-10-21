@@ -53,7 +53,7 @@ export interface Reaction {
   readonly tones: readonly Tone[];
 }
 
-export type StrikeKind = 'shock' | 'shatter' | 'spark' | 'thaw' | 'fuse' | 'ground';
+export type StrikeKind = 'shock' | 'shatter' | 'spark' | 'thaw' | 'fuse' | 'ground' | 'boss';
 
 export interface Strike {
   readonly kind: StrikeKind;
@@ -63,6 +63,8 @@ export interface Strike {
   /** Sand grains broken (they score), with their tones. */
   readonly removed: readonly number[];
   readonly tones: readonly Tone[];
+  /** The water the shock ran through (a shock only). */
+  readonly water?: readonly number[];
 }
 
 const isSand = (tone: number) => tone >= Tone.ChromaA && tone <= Tone.ChromaD;
@@ -160,16 +162,17 @@ export class SandReactions {
     const hit = this.firstBelow(x, fromY);
     const toY = hit < 0 ? grid.height - 1 : (hit / grid.width) | 0;
     const toX = hit < 0 ? x : hit % grid.width;
-    const result = (kind: StrikeKind, removed: number[] = []): Strike => {
+    const result = (kind: StrikeKind, removed: number[] = [], water?: number[]): Strike => {
       const tones = removed.map((i) => grid.tones[i] as Tone);
       grid.remove(removed);
-      return { kind, x: toX, fromY, toY, removed, tones };
+      return { kind, x: toX, fromY, toY, removed, tones, ...(water ? { water } : {}) };
     };
     if (hit < 0) return result('ground');
     const tone = grid.tones[hit]!;
     if (tone === Tone.Water) {
       // The shock runs through the whole body of water: every region of sand it touches breaks.
-      return result('shock', this.shockRegions(grid.connected(hit)));
+      const water = grid.connected(hit);
+      return result('shock', this.shockRegions(water), water);
     }
     if (isSand(tone) && grid.fixed[hit]) {
       this.ignite(grid.connected(hit), BLAZE_HEAT);

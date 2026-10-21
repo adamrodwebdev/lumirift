@@ -418,3 +418,32 @@ export const sprout: SoundRecipe = (s) => {
 /** Acid eating sand: a short fizz. */
 export const fizz: SoundRecipe = (s) =>
   s.noise({ filter: 'bandpass', frequency: 6000, q: 3, duration: 0.12, gain: 0.03 });
+
+// --- The Guardians (1.14) ---------------------------------------------------------
+
+/** A boss about to burst out: a deep rumble under the sand. */
+export const rumble: SoundRecipe = (s) => {
+  s.noise({ filter: 'lowpass', frequency: 160, to: 260, duration: 1.4, gain: 0.22, attack: 0.4 });
+  s.tone({ frequency: 46, to: 52, duration: 1.4, gain: 0.12, attack: 0.4 });
+};
+
+/** A boss bursting out: a roar. */
+export const roar: SoundRecipe = (s) => {
+  s.noise({ filter: 'bandpass', frequency: 420, to: 160, q: 0.9, duration: 0.9, gain: 0.22 });
+  s.tone({ type: 'sawtooth', frequency: 92, to: 58, duration: 0.8, gain: 0.08 });
+  s.tone({ type: 'sawtooth', frequency: 138, to: 86, duration: 0.8, gain: 0.05 });
+};
+
+/** A boss taking a hit: a hard crack, higher on its weak point. */
+export const bossHit =
+  (critical: boolean): SoundRecipe =>
+  (s) => {
+    s.noise({ filter: 'highpass', frequency: critical ? 3000 : 1800, duration: 0.09, gain: 0.16 });
+    s.tone({
+      type: 'square',
+      frequency: critical ? 330 : 196,
+      to: 110,
+      duration: 0.18,
+      gain: 0.06,
+    });
+  };

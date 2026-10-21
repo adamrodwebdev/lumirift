@@ -6,6 +6,7 @@ import { Bag } from '@/families/falling/pieces/Bag';
 import type { PieceType, RotationDirection } from '@/families/falling/pieces/PieceType';
 import { GravityCurve } from '@/families/falling/rules/GravityCurve';
 import { elementsAt, isElement, NOTICE_OF, WEIGHT, type ElementTone } from './Elements';
+import { DuneWorm, type WormEvent } from './DuneWorm';
 import { GRAINS_PER_CELL, SAND_TONES, SandGrid } from './SandGrid';
 import { SandPiece } from './SandPiece';
 import {
@@ -17,7 +18,7 @@ import {
 } from './SandReactions';
 
 export type SandState = 'ready' | 'running' | 'paused' | 'over';
-export type SandOverReason = 'blockOut' | 'timeUp';
+export type SandOverReason = 'blockOut' | 'timeUp' | 'victory';
 
 /** Physics runs at a fixed step, whatever the frame rate. */
 export const STEP_MS = 16;
@@ -30,6 +31,8 @@ export const ELEMENTS_AFTER = 5;
 export const ELEMENT_CHANCE = 0.2;
 /** At least this many sand pieces between two elements: never a streak of hazards. */
 export const ELEMENT_GAP = 3;
+/** A bolt landing this close to the Guardian's bare head (in grains) strikes it. */
+export const BOLT_REACH = 8;
 /** A landing flame sets alight oil this many grains away (a cell), below or aside. */
 export const OIL_REACH = 6;
 export { FIRE_MAX_GRAINS };
@@ -100,6 +103,8 @@ export interface SandEventMap {
   notice: { readonly id: string; readonly value?: number };
   /** A second chance: the bottom of the sand vanished instead of the game ending. */
   rescue: { readonly rows: number };
+  /** The Guardian of the level did something (see `DuneWorm`). */
+  boss: { readonly event: WormEvent };
   over: { readonly reason: SandOverReason };
 }
 
@@ -115,6 +120,8 @@ export interface SandOptions {
   readonly elements?: readonly ElementTone[];
   /** Pieces dealt at a given rank whatever happens (the first level's show, a tutorial). */
   readonly script?: readonly ScriptedPiece[];
+  /** A Guardian of the rift lives in this well (a boss level). */
+  readonly boss?: 'duneWorm';
 }
 
 /** A piece the game deals at a given rank (1 = the first piece). */
@@ -136,8 +143,12 @@ export class SandGame {
   readonly grid: SandGrid;
   readonly events = new Emitter<SandEventMap>();
   readonly random: RandomSource;
+  /** The Dune Wyrm, on its boss level; null elsewhere. */
+  readonly worm: DuneWorm | null;
 
   private readonly reactions: SandReactions;
+  /** A sandstorm the Guardian raised: the wind blows until then (ms of play). */
+  private stormUntil = 0;
   private readonly bag: Bag;
   private readonly gravity = new GravityCurve();
   private readonly upcoming: PieceSpec[] = [];
@@ -186,6 +197,7 @@ export class SandGame {
     this.elements = options.elements ?? null;
     this.script = new Map((options.script ?? []).map((piece) => [piece.at, piece]));
     this.reactions = new SandReactions(this.grid, this.random);
+    this.worm = options.boss === 'duneWorm' ? new DuneWorm(this.grid, this.random) : null;
     this.rescueReady = this.boosts.rescueRows > 0;
     this.wind = {
       direction: this.random.next() < 0.5 ? -1 : 1,
@@ -492,6 +504,68 @@ export class SandGame {
     this.grid.simulate(this.random);
     for (const reaction of this.reactions.step()) this.onReaction(reaction);
     this.clearSpanning();
+    if (this.worm) this.bossStep(this.worm);
+  }
+
+  /** The Guardian moves and acts; flames and blazes against it hurt it. */
+  private bossStep(worm: DuneWorm): void {
+    for (const event of worm.update(STEP_MS)) this.onBoss(event);
+    if (this.stormUntil > 0 && this._elapsedMs >= this.stormUntil) {
+      this.stormUntil = 0;
+      this.grid.wind = 0;
+      this.events.emit('wind', { phase: 'end', direction: 1 });
+    }
+    if (!worm.out || !this.isRunning()) return;
+    // Only the grains around its body matter: a box around it, not the whole well.
+    const { grid } = this;
+    const W = grid.width;
+    const flames: number[] = [];
+    let blazing = false;
+    for (
+      let y = Math.max(0, Math.floor(worm.headY) - 8);
+      y < Math.min(grid.height, worm.headY + 12);
+      y++
+    ) {
+      for (let x = Math.max(0, Math.floor(worm.headX) - 8); x < Math.min(W, worm.headX + 9); x++) {
+        const tone = grid.tones[y * W + x];
+        if (tone !== Tone.Fire && tone !== Tone.Blaze) continue;
+        if (!worm.touches(x, y, 1)) continue;
+        if (tone === Tone.Fire) flames.push(y * W + x);
+        else blazing = true;
+      }
+    }
+    if (flames.length > 0) {
+      grid.remove(flames);
+      this.hurtBoss(worm, 'fire');
+    }
+    if (blazing && this.grid.stepCount % 12 === 0) this.hurtBoss(worm, 'blaze');
+  }
+
+  private hurtBoss(worm: DuneWorm, hit: Parameters<DuneWorm['hit']>[0]): void {
+    if (worm.hit(hit) > 0) this.flushBoss(worm);
+  }
+
+  /** Events the worm queued outside its own update (a hit). */
+  private flushBoss(worm: DuneWorm): void {
+    for (const event of worm.drain()) this.onBoss(event);
+  }
+
+  private onBoss(event: WormEvent): void {
+    this.events.emit('boss', { event });
+    switch (event.type) {
+      case 'storm':
+        // The sandstorm of the last phase: a gust, as the wind blows.
+        this.grid.resetDrift();
+        this.grid.wind = event.direction;
+        this.stormUntil = this._elapsedMs + WIND_GUST_MS;
+        this.events.emit('wind', { phase: 'start', direction: event.direction });
+        break;
+      case 'defeated':
+        this.finish('victory');
+        break;
+      default:
+        break;
+    }
   }
 
   /** Destroying sand with an element scores half a clear: elements help, linking wins. */
@@ -533,7 +607,28 @@ export class SandGame {
   }
 
   private onStrike(piece: SandPiece): void {
-    const strike = this.reactions.strike(...this.boltOf(piece));
+    const [boltX, boltY] = this.boltOf(piece);
+    const worm = this.worm;
+    if (worm?.exposed && Math.abs(worm.headX - boltX) < BOLT_REACH) {
+      // On the Guardian's bare head: its weak point takes the whole bolt.
+      this.events.emit('strike', {
+        kind: 'boss',
+        x: Math.round(worm.headX),
+        fromY: boltY,
+        toY: Math.max(boltY, Math.round(worm.headY)),
+        grains: 0,
+        points: 0,
+        samples: [],
+      });
+      this.hurtBoss(worm, 'boltHead');
+      return;
+    }
+    const strike = this.reactions.strike(boltX, boltY);
+    if (worm && strike.kind === 'shock' && strike.water && worm.touchesAny(strike.water, 1.5)) {
+      this.hurtBoss(worm, 'shock');
+    } else if (worm && strike.kind === 'shatter' && worm.touchesAny(strike.removed, 3)) {
+      this.hurtBoss(worm, 'boltNear');
+    }
     // Through water, the shock is the great combo of the elements: full points.
     const points = this.elementPoints(strike.removed.length, strike.kind === 'shock' ? 1 : 0.5);
     this._score += points;
@@ -629,6 +724,7 @@ export class SandGame {
     if (regions.length === 0) return;
     const all = regions.flat();
     const samples = this.sample(all);
+    if (this.worm?.touchesAny(all, 1)) this.hurtBoss(this.worm, 'link');
     this.grid.remove(all);
     const points = Math.round(all.length * regions.length * (1 + this.boosts.scoreBonus));
     this._score += points;

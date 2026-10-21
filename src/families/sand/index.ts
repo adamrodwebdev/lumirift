@@ -16,6 +16,7 @@ export function createSandSession(modeId: ModeId, options: SessionOptions): Game
       timeLimitMs: options.timeLimitMs,
       hazards: options.calm !== true,
       ...(options.showcase ? { script: SHOWCASE } : {}),
+      ...(options.boss === 'duneWorm' ? { boss: 'duneWorm' as const } : {}),
       ...(options.boosts ? { boosts: options.boosts } : {}),
     }),
   );

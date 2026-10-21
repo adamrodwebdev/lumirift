@@ -3,9 +3,10 @@ import type { EffectsProfile } from '@/fx/EffectsProfile';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
 import { ScreenShake } from '@/fx/ScreenShake';
 import { shade, type TonePalette } from '@/render/TonePalette';
+import type { WormEvent } from '../engine/DuneWorm';
 import type { GrainSample, SandEventMap } from '../engine/SandGame';
 import type { SandPiece } from '../engine/SandPiece';
-import { GRAINS_PER_CELL } from '../engine/SandGrid';
+import { GRAINS_PER_CELL, SAND_TONES } from '../engine/SandGrid';
 import type { SandSession, SandView } from '../SandSession';
 
 const POPUP_MS = 900;
@@ -48,6 +49,8 @@ export class SandEffects {
   private running: { points: number; at: number; popup: Popup } | null = null;
   /** White flash over the well (0–1), when lightning strikes. */
   flash = 0;
+  /** The Guardian was just hurt: it blinks pale this long (ms). */
+  wormHurt = 0;
 
   private readonly colorIndex = new Map<string, number>();
   private readonly world: ParticleWorld;
@@ -74,6 +77,7 @@ export class SandEffects {
       }),
       session.onGame('react', (event) => this.onReact(event)),
       session.onGame('strike', (event) => this.onStrike(event)),
+      session.onGame('boss', ({ event }) => this.onBoss(event)),
       session.onGame('over', () => this.collapse()),
     ];
     return () => offs.forEach((off) => off());
@@ -105,6 +109,7 @@ export class SandEffects {
     }
     this.bolts.length = bolts;
     this.flash = Math.max(0, this.flash - deltaMs / FLASH_MS);
+    this.wormHurt = Math.max(0, this.wormHurt - deltaMs);
   }
 
   boltProgress(bolt: Bolt): number {
@@ -268,6 +273,65 @@ export class SandEffects {
         random(0.4, 0.9),
         0.6,
         this.toneColor(random(0, 1) < 0.5 ? sample.tone : Tone.Lightning, 0.3),
+      );
+    }
+  }
+
+  /** The Guardian: sand flies when it bursts out, its wounds show, it crumbles when defeated. */
+  private onBoss(event: WormEvent): void {
+    const profile = this.profile();
+    const worm = this.view.worm;
+    if (!worm) return;
+    switch (event.type) {
+      case 'surge':
+        if (profile.shake) this.shake.kick(5);
+        this.spray(event.x, event.y, 40, 160);
+        break;
+      case 'hurt': {
+        this.wormHurt = 260;
+        const critical = event.hit === 'boltHead';
+        this.popups.push({
+          text: `-${event.damage}${critical ? ' !' : ''}`,
+          x: worm.headX,
+          y: worm.headY - 8,
+          age: 0,
+        });
+        if (critical && profile.motion) this.flash = Math.max(this.flash, 0.5);
+        if (profile.shake) this.shake.kick(critical ? 3 : 1.5);
+        break;
+      }
+      case 'phase':
+        if (profile.shake) this.shake.kick(4);
+        break;
+      case 'defeated':
+        // It crumbles into golden sand.
+        if (profile.motion) this.flash = 0.7;
+        if (profile.shake) this.shake.kick(6);
+        for (let k = 0; k < worm.xs.length; k += 2)
+          this.spray(worm.xs[k]!, worm.ys[k]!, 14, 120, true);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /** Grains thrown up in a fan. */
+  private spray(x: number, y: number, count: number, force: number, gold = false): void {
+    const profile = this.profile();
+    const palette = this.palette();
+    if (profile.particles === 0 || !palette) return;
+    const golds = palette.effects.gold.map((css) => this.color(css));
+    for (let k = 0; k < Math.round(count * profile.particles); k++) {
+      const tone = SAND_TONES[k % SAND_TONES.length]!;
+      this.pool.spawn(
+        ParticleKind.Dust,
+        x + random(-3, 3),
+        y + random(-2, 2),
+        random(-force / 2, force / 2),
+        random(-force * 1.4, -force / 3),
+        random(0.6, 1.2),
+        random(0.8, 1.6),
+        gold ? golds[k % golds.length]! : this.toneColor(tone, 0.1),
       );
     }
   }

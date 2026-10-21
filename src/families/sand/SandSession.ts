@@ -1,4 +1,6 @@
 import { Emitter, type Listener } from '@/core/Emitter';
+import type { BossStatus } from '@/session/GameSession';
+import { WORM_HEALTH, type DuneWorm } from './engine/DuneWorm';
 import type { FallingCommand } from '@/families/falling/FallingSession';
 import type {
   GameSession,
@@ -20,6 +22,8 @@ export interface SandView {
   dropDistance(): number;
   /** Grains the falling fire would burn, or the lightning strike, where it would land; or null. */
   elementTarget(): readonly number[] | null;
+  /** The Guardian of a boss level, or null. */
+  readonly worm: DuneWorm | null;
 }
 
 type Handlers = {
@@ -119,6 +123,11 @@ export class SandSession implements GameSession<FallingCommand> {
     return null;
   }
 
+  boss(): BossStatus | null {
+    const worm = this.game.worm;
+    return worm ? { id: 'duneWorm', health: worm.health, maxHealth: WORM_HEALTH } : null;
+  }
+
   dispose(): void {
     this.game.events.clear();
     this.events.clear();
@@ -136,5 +145,22 @@ export class SandSession implements GameSession<FallingCommand> {
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));
+    // The Guardian speaks through notices: each of its moves is named the first time.
+    const told = new Set<string>();
+    const tell = (id: string, once = true) => {
+      if (once && told.has(id)) return;
+      told.add(id);
+      this.events.emit('notice', { id: `boss.${id}` });
+    };
+    events.on('boss', ({ event }) => {
+      if (event.type === 'warn') tell('warn');
+      else if (event.type === 'surge') tell('exposed');
+      else if (event.type === 'swallow') tell('swallow');
+      else if (event.type === 'storm') tell('storm');
+      else if (event.type === 'phase') tell(`phase${event.phase}`, false);
+      else if (event.type === 'hurt' && event.hit === 'shock') tell('stunned');
+      else if (event.type === 'hurt' && event.hit === 'boltHead') tell('critical');
+      else if (event.type === 'defeated') tell('defeated', false);
+    });
   }
 }

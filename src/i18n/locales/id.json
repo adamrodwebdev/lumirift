@@ -176,7 +176,18 @@
     },
     "bombPiece": "Permata bom: hapus cincinnya untuk meledakkan menara di sekitarnya",
     "blast": "Bum! {value} balok hancur",
-    "blastChain": "Reaksi berantai: {value} bom!"
+    "blastChain": "Reaksi berantai: {value} bom!",
+    "boss": {
+      "warn": "Retakan merah: Cacing Pasir muncul di sana!",
+      "exposed": "Kepalanya terbuka: serang!",
+      "swallow": "Ia menelan pasir di permukaan!",
+      "storm": "Badai pasir datang!",
+      "phase2": "Cacing Pasir mengamuk!",
+      "phase3": "Napas terakhirnya: hati-hati!",
+      "stunned": "Tersengat lewat air: ia pingsan!",
+      "critical": "Petir di kepalanya: serangan kritis!",
+      "defeated": "Cacing Pasir dikalahkan!"
+    }
   },
   "controls": {
     "label": "Kontrol sentuh",
@@ -402,7 +413,8 @@
       "paper": "Kertas",
       "pixel": "Piksel",
       "obsidian": "Obsidian",
-      "gold": "Emas"
+      "gold": "Emas",
+      "dunes": "Sisik pasir"
     },
     "ambiance": {
       "night": "Malam",
@@ -422,7 +434,8 @@
       "default": "Gratis",
       "level": "Level {n}",
       "streak": "Beruntun {n} hari di tantangan",
-      "objectives": "{n} tujuan selesai"
+      "objectives": "{n} tujuan selesai",
+      "boss": "Kalahkan {name}"
     },
     "tapToWear": "Ketuk lagi untuk memakai",
     "clickToWear": "Klik lagi untuk memakai",
@@ -460,7 +473,8 @@
       "survive": "Bertahan {time}",
       "win": "Kalahkan {ai}",
       "shape": "Lengkapi siluet",
-      "regions": "Hapus {n} area"
+      "regions": "Hapus {n} area",
+      "boss": "Kalahkan {name}"
     },
     "starRule": {
       "timeLeft": "1 bintang jika berhasil, 2 dengan sisa waktu 15 %, 3 dengan 40 %.",
@@ -474,7 +488,8 @@
     "nextLevel": "Level {level}",
     "retry": "Coba lagi",
     "map": "Peta kampanye",
-    "lockedNote": "Menangkan level {level} untuk membuka level ini."
+    "lockedNote": "Menangkan level {level} untuk membuka level ini.",
+    "guardian": "Penjaga"
   },
   "upgrades": {
     "title": "Peningkatan",
@@ -611,5 +626,10 @@
     "place": "Letakkan",
     "joker": "Joker",
     "cancel": "Batal"
+  },
+  "bosses": {
+    "duneWorm": {
+      "name": "Cacing Pasir"
+    }
   }
 }
