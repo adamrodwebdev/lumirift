@@ -16,6 +16,12 @@ const props = defineProps<{
   fits: boolean;
   /** A joker waits for a piece: every piece is a target. */
   targeted: boolean;
+  /** In the player's hand (being dragged): its place in the hand stays empty. */
+  lifted: boolean;
+  /** Its place in the hand: a new hand arrives piece after piece. */
+  index: number;
+  /** Motion allowed (effects and system setting). */
+  moving: boolean;
 }>();
 const emit = defineEmits<{ grab: [event: PointerEvent]; select: [] }>();
 
@@ -41,8 +47,46 @@ const draw = () => {
   for (const c of piece.shape.cells) ctx.drawImage(sprite, left + c.x * cell, top + c.y * cell);
 };
 
-onMounted(draw);
-watch(() => [props.piece, props.palette, props.size] as const, draw);
+/** A new piece arrives in the hand: it pops in, after the ones on its left. */
+const arrive = () => {
+  const element = canvas.value;
+  if (!element || !props.moving || typeof element.animate !== 'function') return;
+  element.animate(
+    [
+      { transform: 'translateY(40%) scale(0.3)', opacity: 0 },
+      { transform: 'translateY(-6%) scale(1.08)', opacity: 1, offset: 0.65 },
+      { transform: 'none', opacity: 1 },
+    ],
+    { duration: 320, delay: props.index * 70, easing: 'ease-out', fill: 'backwards' },
+  );
+};
+
+onMounted(() => {
+  draw();
+  if (props.piece) arrive();
+});
+watch(() => [props.palette, props.size] as const, draw);
+watch(
+  () => props.piece,
+  (piece, previous) => {
+    draw();
+    if (piece && piece !== previous) arrive();
+  },
+);
+
+/** Put back from a drag: the piece settles into its place again. */
+watch(
+  () => props.lifted,
+  (lifted, was) => {
+    const element = canvas.value;
+    if (lifted || !was || !element || !props.moving || typeof element.animate !== 'function')
+      return;
+    element.animate([{ transform: 'scale(1.12)' }, { transform: 'none' }], {
+      duration: 180,
+      easing: 'ease-out',
+    });
+  },
+);
 
 /** Keyboard activation (Enter, Space) has no pointer: it selects. */
 const onClick = (event: MouseEvent) => {
@@ -58,6 +102,7 @@ const onClick = (event: MouseEvent) => {
       'hand-piece--selected': selected,
       'hand-piece--stuck': piece && !fits,
       'hand-piece--targeted': targeted && piece,
+      'hand-piece--lifted': lifted,
     }"
     :aria-label="label"
     :aria-pressed="selected"
@@ -110,5 +155,15 @@ const onClick = (event: MouseEvent) => {
 .hand-piece canvas {
   display: block;
   pointer-events: none;
+}
+
+/* Its piece is in the player's hand: an empty socket remains. */
+.hand-piece--lifted {
+  border-style: dashed;
+  background: transparent;
+}
+
+.hand-piece--lifted canvas {
+  visibility: hidden;
 }
 </style>

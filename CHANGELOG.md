@@ -12,6 +12,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
   sept joyaux, mêmes textures ; les menus gardent exactement leurs couleurs (jetons
   `--jewel-*` séparés des teintes des pièces). Couvertures et vidéos CrazyGames refaites.
 
+- **Mosaïque plus vivante** :
+  - la pièce prise quitte sa place dans la main (place vide en pointillés), grandit à la taille
+    du plateau et suit le doigt, son ombre d'emboîtement sur la grille ;
+  - lâchée sur une place libre, elle s'y glisse puis se pose : chaque carreau descend, rebondit
+    et brille, du centre vers les bords, dans une poussière de glaçure ;
+  - lâchée ailleurs, elle revient se ranger dans la main ;
+  - une nouvelle main arrive pièce après pièce ;
+  - sons : prise, emboîtement possible, retour en main, nouvelle main, pose plus lourde.
+- **Ligne « Record »** sous le score de la Mosaïque (hors campagne) : le record du joueur à
+  battre ; quand il tombe, la ligne passe en or, une bannière « Nouveau record ! » éclate sur le
+  plateau avec une fanfare et une vibration, puis la ligne suit le score.
 - **Changer d'ambiance se voit** : dans l'Atelier, un anneau de la lumière de la nouvelle
   ambiance part de la carte touchée et balaie l'écran, puis le fond passe en fondu d'une
   ambiance à l'autre (au lieu de changer d'un coup). Avec les animations réduites, le fondu

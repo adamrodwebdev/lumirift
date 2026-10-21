@@ -96,7 +96,11 @@ export class MosaicRenderer {
       for (let y = 0; y < grid.size; y++) {
         for (let x = 0; x < grid.size; x++) {
           const tone = grid.get(x, y);
-          if (tone !== Tone.Empty) this.drawTile(sprites.get(tone), x, y, effects.popScale(x, y));
+          if (tone === Tone.Empty) continue;
+          const scale = effects.popScale(x, y);
+          this.drawTile(sprites.get(tone), x, y, scale);
+          const glow = effects.popGlow(x, y);
+          if (glow > 0) this.drawGlow(x, y, scale, glow);
         }
       }
     }
@@ -135,6 +139,22 @@ export class MosaicRenderer {
     }
     const size = cell * scale;
     ctx.drawImage(sprite, x * cell + (cell - size) / 2, y * cell + (cell - size) / 2, size, size);
+  }
+
+  /** A tile just set down shines, then its light fades. */
+  private drawGlow(x: number, y: number, scale: number, alpha: number): void {
+    const { ctx, cell } = this;
+    const size = cell * scale * 0.84;
+    ctx.fillStyle = `rgb(255 255 255 / ${alpha})`;
+    ctx.beginPath();
+    ctx.roundRect(
+      x * cell + (cell - size) / 2,
+      y * cell + (cell - size) / 2,
+      size,
+      size,
+      cell * 0.16 * scale,
+    );
+    ctx.fill();
   }
 
   /** Rows and columns the preview would clear glow. */

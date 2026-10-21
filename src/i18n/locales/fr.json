@@ -119,7 +119,9 @@
     "opponentLines": "Lignes de l’IA",
     "streak": "Série",
     "regions": "Zones effacées",
-    "windIn": "Prochain coup de vent"
+    "windIn": "Prochain coup de vent",
+    "best": "Record",
+    "newBest": "Nouveau record !"
   },
   "notice": {
     "lines": "Une ligne effacée | {n} lignes effacées",
