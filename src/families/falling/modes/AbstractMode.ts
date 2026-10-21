@@ -4,7 +4,7 @@ import type { Indicator, ResultKind } from '@/session/GameSession';
 import type { EngineModeId } from '@/session/ModeId';
 import type { Game } from '../game/Game';
 import { shapeTone, type PieceType, type Tone } from '../pieces/PieceType';
-import type { AbilityId, GameMode, WellSize } from './GameMode';
+import type { AbilityId, BlastSize, GameMode, WellSize } from './GameMode';
 
 /** The genre's standard well. */
 export const STANDARD_WELL: WellSize = { width: 10, height: 20 };
@@ -59,6 +59,12 @@ export abstract class AbstractMode implements GameMode {
 
   afterLock(_game: Game): void {
     // Nothing happens after a lock by default.
+  }
+
+  readonly blast: BlastSize | null = null;
+
+  bombFor(_random: RandomSource, _rank: number): number | null {
+    return null;
   }
 
   clearMultiplier(_game: Game): number {

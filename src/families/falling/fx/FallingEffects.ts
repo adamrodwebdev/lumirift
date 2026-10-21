@@ -188,6 +188,7 @@ export class FallingEffects {
       session.onGame('flip', () => this.kick(0.3)),
       session.onGame('tilt', () => this.kick(0.3)),
       session.onGame('fusion', ({ cells, points }) => this.onFusion(cells, points)),
+      session.onGame('blast', ({ cells, points, bombs }) => this.onBlast(cells, points, bombs)),
       session.onGame('beat', ({ count }) => this.onBeat(count)),
       session.onGame('groove', ({ level, onBeat }) => this.onGroove(level, onBeat)),
       session.onGame('over', () => this.collapse()),
@@ -429,6 +430,16 @@ export class FallingEffects {
       age: 0,
     });
     this.kick(0.06);
+  }
+
+  /** A bomb: its sector shatters at once, the well flashes and shakes, harder for a chain. */
+  private onBlast(cells: readonly RemovedCell[], points: number, bombs: number): void {
+    this.onFusion(cells, points);
+    this.kick(0.25 + 0.12 * bombs);
+    if (this.profile().motion && this.flashLimiter.tryFlash(this.clock)) {
+      this.wellFlash = Math.min(0.5, 0.25 + 0.08 * bombs);
+    }
+    this.addWave('sweep');
   }
 
   private onBeat(count: number): void {

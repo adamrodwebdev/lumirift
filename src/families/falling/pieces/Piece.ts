@@ -29,6 +29,8 @@ export class Piece {
     readonly x: number,
     readonly y: number,
     readonly rotation: Rotation = 0,
+    /** Index (in `localCells`) of the cell carrying a bomb gem, or null (the Tower's bombs). */
+    readonly bomb: number | null = null,
   ) {}
 
   /**
@@ -54,18 +56,23 @@ export class Piece {
     return shapeCells(this.type, this.rotation);
   }
 
+  /** The same piece carrying a bomb gem on its cell `index`. */
+  withBomb(index: number | null): Piece {
+    return new Piece(this.type, this.tone, this.x, this.y, this.rotation, index);
+  }
+
   /** Absolute cells on the board. */
   cells(): Cell[] {
     return this.localCells.map((cell) => ({ x: cell.x + this.x, y: cell.y + this.y }));
   }
 
   moved(dx: number, dy: number): Piece {
-    return new Piece(this.type, this.tone, this.x + dx, this.y + dy, this.rotation);
+    return new Piece(this.type, this.tone, this.x + dx, this.y + dy, this.rotation, this.bomb);
   }
 
   rotated(direction: RotationDirection): Piece {
     const rotation = ((this.rotation + direction + 4) % 4) as Rotation;
-    return new Piece(this.type, this.tone, this.x, this.y, rotation);
+    return new Piece(this.type, this.tone, this.x, this.y, rotation, this.bomb);
   }
 
   /**

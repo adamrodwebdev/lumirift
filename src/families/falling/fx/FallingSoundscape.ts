@@ -81,6 +81,10 @@ export class FallingSoundscape {
         audio.play(sounds.flip);
         haptics.pulse([20, 30, 50]);
       }),
+      session.onGame('blast', ({ bombs }) => {
+        audio.play(sounds.bomb);
+        haptics.pulse(bombs > 1 ? [50, 30, 50, 30, 120] : [40, 30, 90]);
+      }),
       session.onGame('fusion', ({ chain }) => {
         audio.play(sounds.fusion(chain));
         haptics.pulse(16 + chain * 8);

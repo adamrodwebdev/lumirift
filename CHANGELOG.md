@@ -3,6 +3,20 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.13.0] — 21/10/2026
+
+La Tour piégée.
+
+### Ajouté
+
+- **Gemmes-bombes** dans la Tour : environ une pièce sur cinq porte une bombe sur l'une de ses
+  cases. Effacer son anneau la fait exploser : elle souffle un secteur de la tour (5 colonnes,
+  l'anneau et trois rangées au-dessus), et les bombes prises dans le souffle explosent à leur tour
+  (réaction en chaîne). 40 points par bloc soufflé, multipliés par le niveau.
+- Avant la pose, le secteur qui sauterait **clignote en rouge, rayé** : la bombe se vise. Les
+  bombes se voient aussi dans l'aperçu et la réserve.
+- Éclats, secousse, éclair, son d'explosion et vibration ; « Boum ! » et « Réaction en chaîne ».
+
 ## [1.12.0] — 21/10/2026
 
 Les éléments : le Sable devient un monde vivant, où les éléments réagissent entre eux.

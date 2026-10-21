@@ -15,12 +15,15 @@ export class PieceRenderer {
   }
 
   /** `size` is the side of the square box in CSS pixels. */
+  private palette: TonePalette | null = null;
+
   layout(
     size: number,
     pixelRatio: number,
     palette: TonePalette,
     material: MaterialId = 'crystal',
   ): void {
+    this.palette = palette;
     const px = Math.round(size * pixelRatio);
     this.canvas.width = px;
     this.canvas.height = px;
@@ -46,13 +49,26 @@ export class PieceRenderer {
 
     ctx.globalAlpha = dimmed ? 0.4 : 1;
     const sprite = sprites.get(spec.tone);
-    for (const cell of cells) {
-      ctx.drawImage(
-        sprite,
-        Math.round(offsetX + cell.x * size),
-        Math.round(offsetY + cell.y * size),
-      );
-    }
+    cells.forEach((cell, index) => {
+      const x = Math.round(offsetX + cell.x * size);
+      const y = Math.round(offsetY + cell.y * size);
+      ctx.drawImage(sprite, x, y);
+      if (spec.bomb === index) this.drawBomb(x, y, size);
+    });
     ctx.globalAlpha = 1;
+  }
+
+  /** A bomb gem on a cell of the next piece: a dark core with a red heart. */
+  private drawBomb(x: number, y: number, size: number): void {
+    const { ctx, palette } = this;
+    if (!ctx || !palette) return;
+    ctx.fillStyle = palette.wellBackground;
+    ctx.beginPath();
+    ctx.arc(x + size / 2, y + size * 0.52, size * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = palette.danger;
+    ctx.beginPath();
+    ctx.arc(x + size / 2, y + size * 0.52, size * 0.13, 0, Math.PI * 2);
+    ctx.fill();
   }
 }

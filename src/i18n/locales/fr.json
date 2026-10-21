@@ -173,7 +173,10 @@
       "spark": "La foudre embrase l’huile",
       "thaw": "La foudre brise la glace",
       "fuse": "La foudre enflamme la liane"
-    }
+    },
+    "bombPiece": "Gemme-bombe : effacez son anneau pour faire sauter la tour autour",
+    "blast": "Boum ! {value} blocs pulvérisés",
+    "blastChain": "Réaction en chaîne : {value} bombes !"
   },
   "controls": {
     "label": "Commandes tactiles",

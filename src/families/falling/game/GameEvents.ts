@@ -41,6 +41,14 @@ export interface GameEventMap {
   flip: { readonly lines: number };
   mirror: Readonly<Record<string, never>>;
   /** Groups of same-coloured blocks fused (Fusion); the chain counts the reactions. */
+  /** A bomb went off (the Tower): `bombs` with the ones it set off. */
+  blast: {
+    readonly x: number;
+    readonly y: number;
+    readonly cells: readonly RemovedCell[];
+    readonly bombs: number;
+    readonly points: number;
+  };
   fusion: {
     readonly cells: readonly RemovedCell[];
     readonly chain: number;
