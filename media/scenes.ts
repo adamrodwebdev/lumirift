@@ -5,21 +5,25 @@ import { AI_PROFILES, AiPlayer } from '@/families/falling/ai/AiPlayer';
 import { Board } from '@/families/falling/board/Board';
 import { FallingSession } from '@/families/falling/FallingSession';
 import { Game } from '@/families/falling/game/Game';
-import { ClassicMode } from '@/families/falling/modes/ClassicMode';
+import { RiftHeartMode } from '@/families/falling/modes/RiftHeartMode';
 import type { OfferedPiece } from '@/families/placement/engine/Dealer';
 import { Grid } from '@/families/placement/engine/Grid';
 import { MosaicGame, type SlotId } from '@/families/placement/engine/MosaicGame';
 import { Shape } from '@/families/placement/engine/Shape';
 import { PlacementSession } from '@/families/placement/PlacementSession';
 import { SandGame } from '@/families/sand/engine/SandGame';
+import { SAND_TONES } from '@/families/sand/engine/SandGrid';
+import { SandPiece } from '@/families/sand/engine/SandPiece';
 import { SandSession } from '@/families/sand/SandSession';
 import { TowerMode } from '@/families/volume/TowerMode';
 import type { GameSession } from '@/session/GameSession';
 
 /**
- * The scenes of the preview videos: real games of the real engines, set up
- * to show the most spectacular moment of each family within four seconds,
- * then played by the AI (falling, Tower) or by a script (Sand, Mosaic).
+ * The scenes of the preview videos (1.17): real games of the real engines,
+ * set up to show within a few seconds what no other game of the genre has,
+ * the elements of the Sand and the four Guardians of the rift, then played
+ * by the AI (falling, Tower) or by a script (Sand, Mosaic). The engines'
+ * private state is set here only to stage a moment; nothing is faked.
  */
 export interface Scene {
   readonly session: GameSession;
@@ -47,6 +51,9 @@ const TONES: Readonly<Record<string, Tone>> = {
   L: Tone.L,
 };
 
+/** Writes a private field of an engine, to stage a moment. */
+const stage = (target: object, fields: Record<string, unknown>) => Object.assign(target, fields);
+
 /** A well drawn in letters (one per tone, '.' empty), bottom row last. */
 function well(rows: readonly string[], width: number, visible: number, wraps = false): Board {
   const board = new Board(width, visible, Board.HIDDEN_ROWS, wraps);
@@ -67,31 +74,72 @@ const ai = (session: FallingSession) => {
   return (delta: number) => player.update(delta);
 };
 
-/** Four rows waiting for an I in the right column: a four-line shatter at once. */
-export function classic(): Scene {
-  const board = well(
-    [
-      '..........',
-      'T.........',
-      'TT....S...',
-      'TJJ..SS..L',
-      'JJLLOOSZZ.',
-      'IIIIOOZZL.',
-      'SSLZZOOJL.',
-      'SSLLZOOJJ.',
-    ],
-    10,
-    20,
-  );
-  const session = new FallingSession(
-    'classic',
-    new Game(new ClassicMode(), { random: new FixedRandom(), board, lineClearDelayMs: 280 }),
-  );
-  return { session, drive: ai(session) };
+/** Bands of coloured sand, every one cut by another colour: the elements land on them. */
+function sandBands(game: SandGame, rows: number): void {
+  const { grid } = game;
+  for (let y = 0; y < rows; y++) {
+    const index = Math.floor(y / 6);
+    const band = SAND_TONES[index % SAND_TONES.length]!;
+    const cut = (index * 17 + 6) % 48;
+    for (let x = 0; x < grid.width; x++) {
+      const tone = x >= cut && x < cut + 6 ? SAND_TONES[(index + 2) % SAND_TONES.length]! : band;
+      grid.put(x, grid.height - 1 - y, tone, (x * 7 + y) & 3);
+    }
+  }
 }
 
-/** The glass tower, rings almost full, turning to follow the AI. */
-export function tower(): Scene {
+/** Drops the falling piece every `everyMs`, `count` times. */
+function dropper(session: GameSession, everyMs: number, count: number) {
+  let timer = 0;
+  let drops = 0;
+  return (delta: number) => {
+    timer += delta;
+    if (timer < everyMs || drops >= count) return;
+    timer = 0;
+    drops++;
+    session.execute({ type: 'hardDrop' });
+  };
+}
+
+/** The Sand's elements: lightning into water (the shock), then fire onto oil (the blaze). */
+export function elements(): Scene {
+  const game = new SandGame({
+    random: new SeededRandom(3),
+    hazards: false,
+    script: [
+      { at: 0, tone: Tone.Water, type: 'I' },
+      { at: 1, tone: Tone.Lightning, type: 'O', above: true },
+      { at: 2, tone: Tone.Oil, type: 'I' },
+      { at: 3, tone: Tone.Fire, type: 'O', above: true },
+    ],
+  });
+  sandBands(game, 60);
+  const session = new SandSession('sand', game);
+  return { session, drive: dropper(session, 650, 4) };
+}
+
+/** The Dune Wyrm: red cracks, it bursts out of the sand, a lightning bolt on its head. */
+export function worm(): Scene {
+  const game = new SandGame({ random: new SeededRandom(3), hazards: false, boss: 'duneWorm' });
+  sandBands(game, 60);
+  const session = new SandSession('sand', game);
+  const wyrm = game.worm!;
+  // It warns at once, instead of roaming first.
+  stage(wyrm, { timer: 0 });
+  let struck = false;
+  const drive = () => {
+    if (struck || !wyrm.exposed) return;
+    struck = true;
+    // A bolt dropped right above its bare head.
+    const left = Math.round(wyrm.headX) - 6;
+    stage(game, { _active: new SandPiece('O', Tone.Lightning, 0, 0).moved(left, 0) });
+    game.hardDrop();
+  };
+  return { session, drive };
+}
+
+/** The Eye of the Tower charging its gaze, blinded by a bomb that goes off in it. */
+export function eye(): Scene {
   const ring = (gap: number, tones: string) =>
     Array.from({ length: 20 }, (_, x) =>
       x >= gap && x < gap + 4 ? '.' : tones[x % tones.length]!,
@@ -102,56 +150,22 @@ export function tower(): Scene {
     16,
     true,
   );
+  // A bomb gem in the bottom ring, right under where the Eye looks.
+  const bombs = (board as unknown as { bombs: Uint8Array }).bombs;
+  bombs[(board.height - 1) * board.width + 12] = 1;
+  const mode = new TowerMode({ boss: 'towerEye' });
   const session = new FallingSession(
     'tower',
-    new Game(new TowerMode(), { random: new FixedRandom(), board, lineClearDelayMs: 280 }),
+    new Game(mode, { random: new FixedRandom(), board, lineClearDelayMs: 280 }),
     'volume',
   );
+  // Face on, already charging.
+  stage(mode.eye!, { _centre: 10.5, _state: 'charge', timer: 2400 });
   return { session, drive: ai(session) };
 }
 
-/** Bands of sand, one notch away from linking the walls; the pieces fill the notches. */
-export function sand(): Scene {
-  const game = new SandGame({ random: new SeededRandom(3) });
-  const { grid } = game;
-  const bands = [Tone.ChromaA, Tone.ChromaB, Tone.ChromaC, Tone.ChromaD];
-  const H = grid.height;
-  for (let y = 0; y < 42; y++) {
-    const index = Math.floor(y / 6);
-    const band = bands[index % bands.length]!;
-    // Every band but the top one is cut by a block of another colour: none links the walls.
-    const cut = index < 6 ? (index * 17 + 6) % 48 : -1;
-    for (let x = 0; x < grid.width; x++) {
-      // A notch in the top band, where the first piece lands.
-      if (y >= 36 && x >= 24 && x < 36) continue;
-      const tone = x >= cut && x < cut + 6 ? bands[(index + 2) % bands.length]! : band;
-      grid.put(x, H - 1 - y, tone, (x * 7 + y) & 3);
-    }
-  }
-  const queue = (game as unknown as { upcoming: { type: string; tone: Tone }[] }).upcoming;
-  queue.push(
-    { type: 'O', tone: bands[Math.floor(41 / 6) % bands.length]! },
-    { type: 'I', tone: Tone.Fire },
-    { type: 'O', tone: Tone.Water },
-    { type: 'T', tone: Tone.ChromaB },
-  );
-  const session = new SandSession('sand', game);
-  let timer = 0;
-  let drops = 0;
-  const drive = (delta: number) => {
-    timer += delta;
-    if (timer < 700 || drops >= 4) return;
-    timer = 0;
-    drops++;
-    session.execute({ type: 'softDrop', active: true });
-    if (drops > 1) session.execute({ type: 'move', direction: drops % 2 ? -1 : 1 });
-    session.execute({ type: 'hardDrop' });
-  };
-  return { session, drive };
-}
-
-/** A ceramic board two pieces away from clearing rows and columns at once. */
-export function mosaic(): Scene {
+/** The Ceramic Golem throwing its stones while the player clears rows and columns. */
+export function golem(): Scene {
   const rows = [
     '##.#####',
     '##.#####',
@@ -162,7 +176,6 @@ export function mosaic(): Scene {
     '#####.##',
     '##.##.##',
   ];
-  // Glazed tiles of every colour (Grid.fromRows would lay grey ones).
   const grid = new Grid();
   const tile = Shape.parse('#');
   const glazes = [Tone.I, Tone.O, Tone.T, Tone.S, Tone.Z, Tone.J, Tone.L];
@@ -171,9 +184,8 @@ export function mosaic(): Scene {
       if (row[x] === '#') grid.place(tile, x, y, glazes[(x * 3 + y * 5) % glazes.length]!);
     }
   });
-  const game = new MosaicGame({ random: new SeededRandom(5), grid });
+  const game = new MosaicGame({ random: new SeededRandom(5), grid, boss: 'ceramicGolem' });
   const session = new PlacementSession('mosaic', game);
-  // Read when needed: the game deals a new hand (a new array) when it starts.
   const hand = () => (game as unknown as { hand: OfferedPiece[] }).hand;
   const plan: { slot: SlotId; x: number; y: number }[] = [
     { slot: 0, x: 2, y: 0 },
@@ -188,12 +200,19 @@ export function mosaic(): Scene {
       ['#|#|#', '#|#|#', '########'].forEach((text, i) => {
         hand()[i] = { id: 900 + i, shape: Shape.parse(text), tone: tones[i]! };
       });
-      // The interface draws the hand it is told about.
       game.events.emit('deal', { hand: [...hand()] });
+      // It aims away from the planned moves, and throws after the first one.
+      stage(game.golem!, {
+        _targets: [
+          { x: 6, y: 2 },
+          { x: 2, y: 7 },
+        ],
+        _countdown: 1,
+      });
       step = 1;
     }
     timer += delta;
-    if (timer < 900 || step > plan.length) return;
+    if (timer < 750 || step > plan.length) return;
     timer = 0;
     const move = plan[step - 1]!;
     session.execute({ type: 'place', slot: move.slot, x: move.x, y: move.y });
@@ -202,5 +221,25 @@ export function mosaic(): Scene {
   return { session, drive };
 }
 
-export const SCENES = { classic, tower, sand, mosaic } as const;
+/** The Heart of the Rift swelling under the well; an I clears its shards' rows and wounds it. */
+export function heart(): Scene {
+  const board = well(
+    ['T.........', 'TT....S...', 'TJJ..SS..L', 'JJLLOOSZZ.', 'IIIIOOZZL.', 'SSLZZOOJL.'],
+    10,
+    20,
+  );
+  // Two rows of rubble with a shard each, their hole in the same column as the stack's.
+  board.pushGarbageRow(9, 2);
+  board.pushGarbageRow(9, 6);
+  const mode = new RiftHeartMode();
+  const session = new FallingSession(
+    'classic',
+    new Game(mode, { random: new FixedRandom(), board, lineClearDelayMs: 280 }),
+  );
+  // Already swelling: the holes of the next rows glow on the floor.
+  stage(mode.heart!, { untilBeat: 1900 });
+  return { session, drive: ai(session) };
+}
+
+export const SCENES = { elements, worm, eye, golem, heart } as const;
 export type SceneName = keyof typeof SCENES;

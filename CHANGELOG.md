@@ -3,6 +3,20 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.17.1] — 21/10/2026
+
+La vitrine des portails.
+
+### Modifié
+
+- **Nouvelles couvertures** (CrazyGames, Playgama, carte de partage du site) : l'Œil de la Tour
+  au-dessus de la tour de gemmes, son regard rouge, une bombe qui éclate, sur un ciel violet
+  lumineux ; lisibles en vignette de 200 px. Le dessin vit dans `scripts/media-covers.mjs`.
+- **Nouvelles vidéos d'aperçu** (19,7 s, paysage et portrait) : la foudre dans l'eau et l'huile
+  en feu, puis les quatre Gardiens (Ver des dunes, Œil de la Tour aveuglé, Golem, Cœur de la
+  faille), joués par les vrais moteurs ; jamais d'image noire en début de scène.
+- Description CrazyGames réécrite autour des éléments et des Gardiens (`docs/CRAZYGAMES.md`).
+
 ## [1.17.0] — 21/10/2026
 
 Le dernier Gardien : chaque chapitre a désormais le sien.
