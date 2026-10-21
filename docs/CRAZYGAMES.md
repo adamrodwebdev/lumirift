@@ -17,6 +17,11 @@ Sources (relues le 20/10/2026) : [Requirements](https://docs.crazygames.com/requ
   restreindre les soumissions futures : ne resoumettre qu'avec un jeu irréprochable.
 - Ne pas confondre avec l'issue d'un Basic Launch raté (métriques sous les références) :
   là, il faut soumettre un **nouveau jeu** avec des améliorations significatives.
+- Constaté sur le portail (octobre 2026) : un jeu refusé n'a **pas de « nouvelle version »** ; on
+  repasse par « Submit a game » (nouveau brouillon : le brouillon « Lumirift Blocks » existe déjà).
+  Après trois jeux refusés, les soumissions sont suspendues environ deux semaines (fenêtre
+  suivante annoncée : 28/10/2026). Le champ de téléversement prend un **dossier** (le build
+  décompressé), pas le zip.
 
 ### Ce qui a changé depuis la 1.2.0 refusée (à résumer dans le message de soumission)
 
@@ -30,12 +35,15 @@ Sources (relues le 20/10/2026) : [Requirements](https://docs.crazygames.com/requ
 | Échap et Ctrl utilisés                       | Plus aucun : P pour la pause, Retour arrière pour annuler dans la Mosaïque ; sur les portails, Échap ne ferme même plus une fenêtre (1.4, 1.10)                                                              |
 | Effets plats                                 | Chute instantanée animée, lignes qui éclatent en éclats de gemme, résultats mis en scène (score qui défile, barre d'XP), feuilles animées (1.7, 1.9)                                                         |
 | Téléphone                                    | Tout au doigt (gestes partout), aucun défilement, portrait et paysage, fenêtres qui tiennent à l'écran (1.7–1.9)                                                                                             |
+| Rien d'inédit face aux succès du tag         | Éléments du Sable qui réagissent entre eux (foudre et eau, huile en feu, glace, liane, acide, vapeur) montrés dès la première minute (1.12) ; gemmes-bombes dans la Tour (1.13)                              |
+| Peu de raisons de revenir                    | Quatre Gardiens de la faille, un boss par chapitre, chacun avec sa riposte et son cosmétique : Ver des dunes, Golem de céramique, Œil de la Tour, Cœur de la faille (1.14–1.17)                              |
+| Vitrine terne                                | Covers lumineuses autour d'un personnage (l'Œil de la Tour) ; vidéos sur les éléments et les quatre boss (1.17)                                                                                              |
 
 ## Produire le build et les médias
 
 ```bash
 npm run package:crazygames          # build, contrôles automatiques, zip
-node scripts/crazygames-media.mjs   # 3 covers et 2 vidéos (≈ 10 min)
+node scripts/crazygames-media.mjs   # 3 covers et 2 vidéos (≈ 5 min)
 ```
 
 | Livrable                   | Fichier                                                     |
@@ -56,22 +64,25 @@ langue, sauvegarde, coupure du son et publicités. Notre site ne charge jamais l
 - **Title** : Lumirift Blocks
 - **Description** :
 
-  > Lumirift Blocks reinvents the falling-blocks game you know with 13 original modes across
-  > four families.
+  > Lumirift Blocks is a falling-blocks game where the blocks fight back.
   >
-  > Watch pieces crumble into sand and link both walls with a single colour. Shatter crystal
-  > lines in Classic, outlast the rising Tide, flip the well upside down, match colours in
-  > Chroma, fuse blocks in Fusion, keep the beat in Rhythm and fill a target shape in
-  > Silhouette. Place ceramic pieces on an 8×8 Mosaic and earn jokers. Wrap the well into a
-  > glass Tower where every line goes all the way around. Then take on an AI opponent in a
-  > head-to-head Duel, from Rookie to Expert.
+  > Pieces crumble into sand alive with elements: drop lightning into water to shock a whole
+  > colour away, set oil ablaze, freeze water into ice, grow a vine across a gap. Wrap the well
+  > into a glass Tower where bomb gems blow whole sectors apart. Then face the four Guardians of
+  > the rift: the Dune Wyrm bursting out of the sand, the Ceramic Golem whose armour is the
+  > board, the Eye of the Tower that strikes wherever it looks, and the Heart of the Rift, wounded
+  > by its own shards.
   >
-  > Play a 30-level campaign that visits every mode, earn up to three stars per level and
-  > spend them on 10 upgrades. Come back for the Daily Challenge and three new objectives
-  > every day. Level up to unlock block skins, ambiances and shatter effects.
+  > 13 original modes across four families: Classic, Tide, Flip, Mirror, Chroma, Fusion, Tilt,
+  > Rhythm and Silhouette; the Sand; the 8×8 Mosaic with its jokers; the Tower; and a
+  > head-to-head Duel against an AI, from Rookie to Expert.
   >
-  > No sign-up, progress saved automatically. Play with the keyboard, or by touch on phones
-  > and tablets, in portrait or landscape. Available in English, French and Indonesian.
+  > Play a 34-level campaign that visits every mode, earn up to three stars per level and spend
+  > them on 10 upgrades. Come back for the Daily Challenge and three new objectives every day,
+  > and unlock block skins, ambiances and shatter effects, one of them from each Guardian.
+  >
+  > No sign-up, progress saved automatically. Play with the keyboard, or by touch on phones and
+  > tablets, in portrait or landscape. Available in English, French and Indonesian.
 
 - **Controls** :
 
@@ -103,7 +114,7 @@ langue, sauvegarde, coupure du son et publicités. Notre site ne charge jamais l
 - **Genre** : Puzzle (blocs qui tombent). **Public** : PEGI 3 de fait (aucune violence, aucun
   achat, aucun chat).
 
-## Contrôle des exigences (1.11.0)
+## Contrôle des exigences (1.11.0, vitrine 1.17.0)
 
 Légende : ✅ conforme, vérifié · 🟡 conforme, vérification humaine à faire sur le portail ·
 ➖ sans objet.
@@ -168,16 +179,20 @@ autre façon de gagner le bonus.
 
 ### Covers et vidéos
 
-| Exigence                                                   | Statut | Preuve                                                                             |
-| ---------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------- |
-| Paysage 1920 × 1080, portrait 800 × 1200, carrée 800 × 800 | ✅     | Générées aux dimensions exactes                                                    |
-| Visuels cohérents entre les trois                          | ✅     | Même scène : pile de gemmes, faille, éclats, titre                                 |
-| Seul texte : le titre                                      | ✅     | « Lumirift Blocks » uniquement                                                     |
-| Pas de bordure, d'icône de store ni de visuel sous droits  | ✅     | Logo du jeu seulement                                                              |
-| Vidéo 15 à 20 s, ≤ 50 Mo, 1080p paysage et portrait 2:3    | ✅     | 17,9 s ; 1920 × 1080 et 1080 × 1620 ; refaites en 1.11 avec les nouvelles couleurs |
-| Pas d'écran noir, de bandes noires, de curseur, de texte   | ✅     | Images rendues directement, plein cadre ; s'ouvre sur la cover                     |
-| Sans son, pas d'accéléré                                   | ✅     | Aucune piste audio ; rendu image par image (30 i/s)                                |
-| Format                                                     | 🟡     | WebM (VP9) : convertir en MP4 (HandBrake) si le portail le refuse                  |
+Refaites en 1.17 (`scripts/media-covers.mjs`, scènes dans `media/scenes.ts`).
+
+| Exigence                                                   | Statut | Preuve                                                                                                                  |
+| ---------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Paysage 1920 × 1080, portrait 800 × 1200, carrée 800 × 800 | ✅     | Générées aux dimensions exactes                                                                                         |
+| Visuels cohérents entre les trois                          | ✅     | Même scène : l'Œil de la Tour au-dessus de la tour de gemmes, son regard rouge, une bombe qui éclate, le titre          |
+| Plus qu'une capture, lisible en vignette                   | ✅     | Un personnage (l'Œil), une silhouette (la tour), le titre ; vérifié à 200 px de large                                   |
+| Seul texte : le titre                                      | ✅     | « Lumirift Blocks » uniquement                                                                                          |
+| Pas de bordure, d'icône de store ni de visuel sous droits  | ✅     | Dessin original (HTML et SVG), police du jeu embarquée                                                                  |
+| Vidéo 15 à 20 s, ≤ 50 Mo, 1080p paysage et portrait 2:3    | ✅     | 19,7 s ; 1920 × 1080 (3,8 Mo) et 1080 × 1620 (5,5 Mo)                                                                   |
+| Montre le meilleur du jeu, sans tromper                    | ✅     | Vrais moteurs : foudre dans l'eau et huile en feu, Ver des dunes, Œil de la Tour aveuglé, Golem, Cœur de la faille      |
+| Pas d'écran noir, de bandes noires, de curseur, de texte   | ✅     | Images rendues directement, plein cadre, deux images de chauffe par scène ; s'ouvre sur la cover ; relu image par image |
+| Sans son, pas d'accéléré                                   | ✅     | Aucune piste audio ; rendu image par image (30 i/s)                                                                     |
+| Format                                                     | 🟡     | WebM (VP9) : le ffmpeg disponible n'encode pas le MP4 ; convertir (HandBrake) si le portail le refuse                   |
 
 ### Qualité (recommandations)
 
@@ -198,13 +213,14 @@ moins de 10 s et pèsent moins de 20 Mo).
 
 - Chargement : build de moins de 1 Mo, première partie en moins de 2 s sur ordinateur.
 - Conversion : une partie en 1 clic, guidée, sans danger au premier niveau.
-- Temps de jeu et rétention : campagne de 30 niveaux, défi du jour, objectifs, série, niveaux
-  et Atelier (nouveautés signalées).
+- Temps de jeu et rétention : campagne de 34 niveaux dont quatre boss, défi du jour,
+  objectifs, série, niveaux et Atelier (nouveautés signalées, un cosmétique par boss).
 
 ## Reste à faire sur le portail
 
-1. Téléverser le zip, les trois covers et les deux vidéos ; saisir description et commandes ;
-   résumer les améliorations ci-dessus dans le message de resoumission.
+1. Nouveau brouillon (ou celui qui existe) : téléverser le **dossier** du build décompressé,
+   les trois covers et les deux vidéos ; saisir description et commandes ; résumer les
+   améliorations ci-dessus dans le message de soumission.
 2. Cocher **Progress Save** (module Data) et les orientations paysage et portrait.
 3. Passer l'**outil QA** du Developer Portal (aperçu, contrôle des exigences, SDK) et essayer
    Safari et un téléphone réel.
