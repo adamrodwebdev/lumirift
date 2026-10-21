@@ -1,4 +1,5 @@
 import type { GameSession } from '@/session/GameSession';
+import type { BossId } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 
 /** What a finished game tells the progression, whatever its family. */
@@ -17,6 +18,8 @@ export interface GameReport {
   readonly bestAtOnce: number;
   /** Longest combo, counted from 1 (two clears in a row: 2). */
   readonly bestCombo: number;
+  /** The Guardian defeated in this game, if any. */
+  readonly boss?: BossId;
 }
 
 /**
@@ -55,7 +58,7 @@ export class GameTracker {
     this.durationMs += deltaMs;
   }
 
-  report(game: Pick<GameReport, 'modeId' | 'daily' | 'variant' | 'reason'>): GameReport {
+  report(game: Pick<GameReport, 'modeId' | 'daily' | 'variant' | 'reason' | 'boss'>): GameReport {
     return {
       ...game,
       durationMs: this.durationMs,

@@ -176,7 +176,18 @@
     },
     "bombPiece": "Gemme-bombe : effacez son anneau pour faire sauter la tour autour",
     "blast": "Boum ! {value} blocs pulvérisés",
-    "blastChain": "Réaction en chaîne : {value} bombes !"
+    "blastChain": "Réaction en chaîne : {value} bombes !",
+    "boss": {
+      "warn": "Fissures rouges : le Ver va surgir là !",
+      "exposed": "Sa tête est exposée : frappez !",
+      "swallow": "Il dévore le sable en surface !",
+      "storm": "Une tempête de sable se lève !",
+      "phase2": "Le Ver enrage !",
+      "phase3": "Dernier souffle : attention !",
+      "stunned": "Électrocuté par l’eau : il est étourdi !",
+      "critical": "Foudre sur sa tête : coup critique !",
+      "defeated": "Le Ver des dunes est vaincu !"
+    }
   },
   "controls": {
     "label": "Commandes tactiles",
@@ -402,7 +413,8 @@
       "paper": "Papier",
       "pixel": "Pixel",
       "obsidian": "Obsidienne",
-      "gold": "Or"
+      "gold": "Or",
+      "dunes": "Écailles des dunes"
     },
     "ambiance": {
       "night": "Nuit",
@@ -422,7 +434,8 @@
       "default": "Offert",
       "level": "Niveau {n}",
       "streak": "Série de {n} jours au défi",
-      "objectives": "{n} objectifs accomplis"
+      "objectives": "{n} objectifs accomplis",
+      "boss": "Vaincre le {name}"
     },
     "tapToWear": "Touchez encore pour porter",
     "clickToWear": "Cliquez encore pour porter",
@@ -460,7 +473,8 @@
       "survive": "Tenir {time}",
       "win": "Battre l’{ai}",
       "shape": "Compléter la silhouette",
-      "regions": "Effacer {n} zone | Effacer {n} zones"
+      "regions": "Effacer {n} zone | Effacer {n} zones",
+      "boss": "Vaincre le {name}"
     },
     "starRule": {
       "timeLeft": "1 étoile en réussissant, 2 avec 15 % du temps restant, 3 avec 40 %.",
@@ -474,7 +488,8 @@
     "nextLevel": "Niveau {level}",
     "retry": "Rejouer",
     "map": "Carte de campagne",
-    "lockedNote": "Gagnez le niveau {level} pour ouvrir celui-ci."
+    "lockedNote": "Gagnez le niveau {level} pour ouvrir celui-ci.",
+    "guardian": "Gardien"
   },
   "upgrades": {
     "title": "Améliorations",
@@ -611,5 +626,10 @@
     "place": "Poser",
     "joker": "Jokers",
     "cancel": "Annuler"
+  },
+  "bosses": {
+    "duneWorm": {
+      "name": "Ver des dunes"
+    }
   }
 }

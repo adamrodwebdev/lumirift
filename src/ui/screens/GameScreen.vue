@@ -183,6 +183,7 @@ const sessionOptions = (): SessionOptions => {
       ...(level.variant ? { variant: level.variant } : {}),
       ...(level.calm ? { calm: true } : {}),
       ...(level.showcase ? { showcase: true } : {}),
+      ...(level.boss ? { boss: level.boss } : {}),
     };
   }
   return {
@@ -193,10 +194,14 @@ const sessionOptions = (): SessionOptions => {
 };
 
 /** Where the game stands, for the campaign goal. */
-const liveState = (current: GameSession): LiveState => ({
-  ...(tracker?.live ?? { durationMs: 0, clears: 0, lines: 0, bestAtOnce: 0 }),
-  score: current.result().value,
-});
+const liveState = (current: GameSession): LiveState => {
+  const boss = current.boss?.() ?? null;
+  return {
+    ...(tracker?.live ?? { durationMs: 0, clears: 0, lines: 0, bestAtOnce: 0 }),
+    score: current.result().value,
+    bossDamage: boss ? boss.maxHealth - boss.health : 0,
+  };
+};
 
 const sameIndicators = (a: readonly Indicator[], b: readonly Indicator[]) =>
   a.length === b.length &&
@@ -300,6 +305,8 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
     daily: props.daily !== null,
     variant: props.variant,
     reason,
+    // A Guardian defeated is remembered (it earns its cosmetic).
+    ...(verdict?.won && props.level?.boss ? { boss: props.level.boss } : {}),
   });
   platform.gameOver(verdict ? verdict.won : reason === 'victory');
   // Read before the verdict is recorded: does this game beat the level's best?

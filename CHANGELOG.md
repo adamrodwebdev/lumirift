@@ -3,6 +3,23 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.14.0] — 21/10/2026
+
+Le premier Gardien de la faille.
+
+### Ajouté
+
+- **Le Ver des dunes**, premier boss, au niveau 2-7 (le Gardien du chapitre 2, sur la carte comme
+  un septième niveau mis en valeur). Il nage sous le sable (son ombre ondule), annonce par des
+  fissures rouges où il va surgir, jaillit en projetant du sable, puis reste exposé 3 s, son point
+  faible doré sur le front. Trois phases : il rôde ; il dévore le sable en surface ; il lève une
+  tempête et surgit deux fois de suite.
+- On le blesse avec le jeu : la foudre sur sa tête exposée (coup critique), une électrocution dans
+  une eau qui le touche (il est étourdi), le feu et le brasier quand il est dehors, une couleur
+  reliée d'un mur à l'autre qui passe sur lui. L'objectif du niveau est sa barre de vie.
+- **Récompense** : le matériau de blocs **Écailles des dunes**, débloqué en le battant.
+- Sons (grondement, rugissement, coups), secousses, éclats, effondrement en sable doré.
+
 ## [1.13.0] — 21/10/2026
 
 La Tour piégée.

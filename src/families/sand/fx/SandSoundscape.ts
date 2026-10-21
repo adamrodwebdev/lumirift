@@ -42,6 +42,18 @@ export class SandSoundscape {
         haptics.pulse(kind === 'shock' ? [40, 30, 90] : 40);
       }),
       session.onGame('react', ({ kind }) => this.react(kind)),
+      session.onGame('boss', ({ event }) => {
+        if (event.type === 'warn') audio.play(sounds.rumble);
+        else if (event.type === 'surge') {
+          audio.play(sounds.roar);
+          haptics.pulse([60, 30, 60]);
+        } else if (event.type === 'hurt') audio.play(sounds.bossHit(event.hit === 'boltHead'));
+        else if (event.type === 'phase') audio.play(sounds.roar);
+        else if (event.type === 'defeated') {
+          audio.play(sounds.newRecord);
+          haptics.pulse([40, 30, 40, 30, 160]);
+        }
+      }),
       session.onGame('clear', ({ regions }) => {
         audio.play(sounds.sweep(regions));
         haptics.pulse(regions > 1 ? [30, 40, 70] : 30);

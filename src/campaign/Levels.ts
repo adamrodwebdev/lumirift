@@ -1,4 +1,8 @@
 import type { AiLevel } from '@/families/falling/ai/AiPlayer';
+import type { BossId } from '@/session/GameSession';
+
+/** Health of the Dune Wyrm (its goal bar fills with the damage done). */
+const WORM_HEALTH_POINTS = 100;
 import type { ModeId } from '@/session/ModeId';
 import type { Goal } from './Goals';
 
@@ -24,6 +28,8 @@ export interface CampaignLevel {
   readonly calm?: boolean;
   /** Opens on the mode's best moments, scripted: the campaign's crushing entrance. */
   readonly showcase?: boolean;
+  /** A Guardian of the rift to defeat: the level is a boss fight. */
+  readonly boss?: BossId;
   readonly timeLimitMs: number | null;
   readonly goal: Goal;
   readonly stars: StarRule;
@@ -92,6 +98,11 @@ export const LEVELS: readonly CampaignLevel[] = [
   timed('2-4', 'sand', 3, { kind: 'lines', target: 3 }),
   timed('2-5', 'sand', 3, { kind: 'lines', target: 5 }),
   duel('2-6', 'easy'),
+  // The first Guardian: the Dune Wyrm, fought with the elements met in this chapter.
+  {
+    ...timed('2-7', 'sand', 4, { kind: 'boss', target: WORM_HEALTH_POINTS }),
+    boss: 'duneWorm',
+  },
   // 3. Mosaïques
   timed('3-1', 'mosaic', 2.5, { kind: 'lines', target: 8 }),
   timed('3-2', 'mosaic', 3, { kind: 'score', target: 400 }),

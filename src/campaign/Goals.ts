@@ -6,9 +6,19 @@ export interface LiveState {
   /** The session's result (points, or milliseconds for a survival mode). */
   readonly score: number;
   readonly durationMs: number;
+  /** Damage done to the level's boss (0 without one). */
+  readonly bossDamage: number;
 }
 
-export const GOAL_KINDS = ['lines', 'score', 'bigClear', 'survive', 'win', 'shape'] as const;
+export const GOAL_KINDS = [
+  'lines',
+  'score',
+  'bigClear',
+  'survive',
+  'win',
+  'shape',
+  'boss',
+] as const;
 export type GoalKind = (typeof GOAL_KINDS)[number];
 
 export interface Goal {
@@ -62,5 +72,10 @@ export const GOAL_RULES: Readonly<Record<GoalKind, GoalRule>> = {
     live: false,
     progress: () => 0,
     wonAtEnd: (reason) => reason === 'shapeComplete',
+  },
+  boss: {
+    live: true,
+    progress: (state) => state.bossDamage,
+    wonAtEnd: (reason, state, goal) => reason === 'victory' || reached(state.bossDamage, goal),
   },
 };

@@ -123,6 +123,42 @@ class GoldSprites extends BlockSprites {
   }
 }
 
+/** Scales of the Dune Wyrm: overlapping rows of sand-gold scales over the tone's colour. */
+class DunesSprites extends BlockSprites {
+  protected paint(ctx: CanvasRenderingContext2D, tone: Tone, rgb: Rgb): void {
+    const s = this.size;
+    const [light = '#f6dc8c', , dark = '#8a6414'] = this.palette.effects.gold;
+    const gap = Math.max(1, Math.round(s * 0.04));
+    ctx.fillStyle = shade(rgb, -0.15);
+    ctx.fillRect(gap, gap, s - gap * 2, s - gap * 2);
+    // Three rows of scales, each row shifted by half a scale, lit at the top.
+    const scale = (s - gap * 2) / 3;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(gap, gap, s - gap * 2, s - gap * 2);
+    ctx.clip();
+    for (let row = 0; row < 4; row++) {
+      const y = gap + row * scale * 0.8;
+      const offset = row % 2 ? scale / 2 : 0;
+      for (let col = -1; col < 4; col++) {
+        const x = gap + col * scale + offset;
+        ctx.fillStyle = shade(rgb, 0.18 - row * 0.08);
+        ctx.beginPath();
+        ctx.arc(x + scale / 2, y, scale / 2, 0, Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = row === 0 ? light : dark;
+        ctx.lineWidth = Math.max(1, s * 0.035);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+    ctx.strokeStyle = dark;
+    ctx.lineWidth = Math.max(1, s * 0.05);
+    ctx.strokeRect(gap, gap, s - gap * 2, s - gap * 2);
+    this.engrave(ctx, tone as Engraved, rgb, s / 2, s * 0.2, light);
+  }
+}
+
 type SpriteFactory = new (size: number, palette: TonePalette) => BlockSprites;
 
 const MATERIAL_SPRITES: Readonly<Record<MaterialId, SpriteFactory>> = {
@@ -132,6 +168,7 @@ const MATERIAL_SPRITES: Readonly<Record<MaterialId, SpriteFactory>> = {
   pixel: PixelSprites,
   obsidian: ObsidianSprites,
   gold: GoldSprites,
+  dunes: DunesSprites,
 };
 
 /** The blocks of a material at a given size. */

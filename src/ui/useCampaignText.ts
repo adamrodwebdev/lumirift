@@ -29,13 +29,14 @@ export function useCampaignText() {
   const duration = format.duration;
 
   // In Sand, what clears is a region linking both walls, not a line.
-  const goal = ({ goal, variant, modeId }: CampaignLevel): string =>
+  const goal = ({ goal, variant, modeId, boss }: CampaignLevel): string =>
     t(
       `campaign.goal.${goal.kind === 'lines' && modeId === 'sand' ? 'regions' : goal.kind}`,
       {
         n: format.number(goal.target),
         time: duration(goal.target),
         ai: variant ? t(`variants.duel.${variant}`) : '',
+        name: boss ? t(`bosses.${boss}.name`) : '',
       },
       goal.target,
     );

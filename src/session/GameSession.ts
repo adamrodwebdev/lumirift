@@ -51,6 +51,20 @@ export interface SessionOptions {
   readonly calm?: boolean;
   /** The mode opens on its best moments, scripted (the first level of the campaign). */
   readonly showcase?: boolean;
+  /** A Guardian of the rift to defeat (a boss level of the campaign). */
+  readonly boss?: BossId;
+}
+
+/** The Guardians of the rift (boss levels). */
+export const BOSS_IDS = ['duneWorm'] as const;
+export type BossId = (typeof BOSS_IDS)[number];
+
+/** How a boss fight stands. */
+export interface BossStatus {
+  readonly id: BossId;
+  /** Health left, out of `maxHealth`. */
+  readonly health: number;
+  readonly maxHealth: number;
 }
 
 /**
@@ -77,6 +91,8 @@ export interface GameSession<C extends Command = Command> {
   result(): SessionResult;
   /** Translation key of a subtitle for this game (the silhouette of the day…), or null. */
   subtitleKey(): string | null;
+  /** The boss of this game and how it stands; absent or null outside a boss level. */
+  boss?(): BossStatus | null;
   /** Releases listeners; the session cannot be used afterwards. */
   dispose(): void;
 }

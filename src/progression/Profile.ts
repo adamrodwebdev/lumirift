@@ -1,4 +1,5 @@
 import { previousDay } from '@/core/Day';
+import { BOSS_IDS, type BossId } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import {
   AMBIANCES,
@@ -49,6 +50,8 @@ export interface ProfileData {
   readonly equipment: Equipment;
   /** The cosmetics the player has looked at in the Atelier (`kind.id`): the others earned are new. */
   readonly seen: readonly string[];
+  /** The Guardians of the rift the player has defeated. */
+  readonly bosses: readonly BossId[];
 }
 
 /** What a game brought, for the end-of-game dialog. */
@@ -72,6 +75,7 @@ export const EMPTY_PROFILE: ProfileData = {
   equipment: DEFAULT_EQUIPMENT,
   // What a new player starts with is not news.
   seen: COSMETICS.filter((cosmetic) => cosmetic.unlock.by === 'default').map(cosmeticKey),
+  bosses: [],
 };
 
 const COSMETIC_KEYS = new Set(COSMETICS.map(cosmeticKey));
@@ -82,6 +86,7 @@ export function achievementsOf(data: ProfileData): Achievements {
     level: levelProgress(data.xp).level,
     bestStreak: data.streak.best,
     objectivesDone: data.objectivesDone,
+    bosses: data.bosses,
   };
 }
 
@@ -182,6 +187,10 @@ export class Profile {
       objectivesDone: before.objectivesDone + completed.length,
       streak,
       objectives,
+      bosses:
+        report.boss && !before.bosses.includes(report.boss)
+          ? [...before.bosses, report.boss]
+          : before.bosses,
     };
     const unlocked = COSMETICS.filter(
       (cosmetic) => this.isUnlocked(cosmetic) && !unlockedBefore.has(cosmeticKey(cosmetic)),
@@ -259,6 +268,7 @@ export class Profile {
       objectives: parseObjectives(record.objectives),
       equipment: parseEquipment(record.equipment),
       seen: [],
+      bosses: parseBosses(record.bosses),
     };
     // Saved before the Atelier marked its new looks: what was earned then is not new.
     const seen = Array.isArray(record.seen)
@@ -268,6 +278,11 @@ export class Profile {
       : COSMETICS.filter((cosmetic) => isUnlocked(cosmetic, achievementsOf(data))).map(cosmeticKey);
     return new Profile({ ...data, seen: [...new Set(seen)] });
   }
+}
+
+function parseBosses(value: unknown): BossId[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((id): id is BossId => BOSS_IDS.includes(id as BossId));
 }
 
 function parseStreak(value: unknown): Streak {

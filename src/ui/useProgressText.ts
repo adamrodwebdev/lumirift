@@ -19,10 +19,13 @@ export function useProgressText() {
 
   const cosmeticName = (c: Cosmetic): string => t(`cosmetics.${c.kind}.${c.id}`);
 
-  const unlockRule = ({ unlock }: Cosmetic): string =>
-    unlock.by === 'default'
-      ? t('cosmetics.unlock.default')
-      : t(`cosmetics.unlock.${unlock.by}`, { n: unlock.value }, unlock.value);
+  const unlockRule = ({ unlock }: Cosmetic): string => {
+    if (unlock.by === 'default') return t('cosmetics.unlock.default');
+    if (unlock.by === 'boss') {
+      return t('cosmetics.unlock.boss', { name: t(`bosses.${unlock.value}.name`) });
+    }
+    return t(`cosmetics.unlock.${unlock.by}`, { n: unlock.value }, unlock.value);
+  };
 
   return { objective, cosmeticName, unlockRule };
 }
