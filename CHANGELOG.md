@@ -12,8 +12,16 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
   sept joyaux, mêmes textures ; les menus gardent exactement leurs couleurs (jetons
   `--jewel-*` séparés des teintes des pièces). Couvertures et vidéos CrazyGames refaites.
 
+- **Changer d'ambiance se voit** : dans l'Atelier, un anneau de la lumière de la nouvelle
+  ambiance part de la carte touchée et balaie l'écran, puis le fond passe en fondu d'une
+  ambiance à l'autre (au lieu de changer d'un coup). Avec les animations réduites, le fondu
+  seul.
+
 ### Corrigé
 
+- **Boutons de fin de partie** : en paysage, ils s'étiraient en disques trop étroits pour leur
+  texte. Ils gardent leur hauteur ; avec trois boutons, l'action principale prend toute la
+  largeur au-dessus des deux autres.
 - **Tour : la caméra ne revient plus au point de départ.** Chaque nouvelle pièce apparaît
   au-dessus de l'endroit où la précédente s'est posée (au centre si la place manque) : la vue
   reste là où le joueur construit au lieu de repartir vers la colonne d'origine.

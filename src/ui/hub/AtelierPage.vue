@@ -17,6 +17,7 @@ import { useProgressText } from '../useProgressText';
 import { isTouchScreen } from '../useOrientation';
 import type { GemArt } from './GemArt';
 import GemCanvas from './GemCanvas.vue';
+import { ambianceWave } from './ambianceWave';
 import { loadGemArt } from './loadArt';
 
 /**
@@ -141,6 +142,7 @@ const choose = (item: ShelfItem, element: HTMLElement) => {
     return;
   }
   profile.equip(cosmetic.kind, cosmetic.id);
+  if (cosmetic.kind === 'ambiance') ambianceWave(cosmetic.id, element);
   // An ambiance shows at once around the menu; the others in the game.
   status.value = t(cosmetic.kind === 'ambiance' ? 'cosmetics.nowWorn' : 'cosmetics.nowWornGame', {
     name,
