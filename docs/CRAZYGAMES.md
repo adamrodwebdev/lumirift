@@ -20,16 +20,16 @@ Sources (relues le 20/10/2026) : [Requirements](https://docs.crazygames.com/requ
 
 ### Ce qui a changé depuis la 1.2.0 refusée (à résumer dans le message de soumission)
 
-| Reproche probable (diagnostic du 14/10/2026) | Depuis                                                                                                                                               |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Accueil de « web app », menu qui défile      | Écran-titre vivant (gemmes, faille), menu en quatre pages à onglets sans défilement, transition de la faille (1.8)                                   |
-| Identité générique, premier mode = clone     | Nom « Lumirift Blocks », identité « Rift » (gemmes gravées, faille dorée, polices propres) ; la campagne s'ouvre sur le Sable, mode inédit (1.4–1.5) |
-| Petit plateau dans un grand écran vide       | Plus d'en-tête pendant la partie, puits sur toute la hauteur, tableau de bord rangé contre le puits (console centrée), paysage jouable (1.7, 1.10)   |
-| Pas de musique                               | Musique générative par famille, sons synthétisés (1.4)                                                                                               |
-| Pas de prise en main                         | Première partie guidée pas à pas (passable), 1-1 calme (une seule idée), touches dessinées à côté du jeu (1.4, 1.10)                                 |
-| Échap et Ctrl utilisés                       | Plus aucun : P pour la pause, Retour arrière pour annuler dans la Mosaïque ; sur les portails, Échap ne ferme même plus une fenêtre (1.4, 1.10)      |
-| Effets plats                                 | Chute instantanée animée, lignes qui éclatent en éclats de gemme, résultats mis en scène (score qui défile, barre d'XP), feuilles animées (1.7, 1.9) |
-| Téléphone                                    | Tout au doigt (gestes partout), aucun défilement, portrait et paysage, fenêtres qui tiennent à l'écran (1.7–1.9)                                     |
+| Reproche probable (diagnostic du 14/10/2026) | Depuis                                                                                                                                                                                                       |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Accueil de « web app », menu qui défile      | Écran-titre vivant (gemmes, faille), menu en quatre pages à onglets sans défilement, transition de la faille (1.8)                                                                                           |
+| Identité générique, premier mode = clone     | Nom « Lumirift Blocks », identité « Rift » (gemmes gravées, faille dorée, polices propres) ; la campagne s'ouvre sur le Sable, mode inédit (1.4–1.5) ; aucune pièce aux couleurs du standard du genre (1.11) |
+| Petit plateau dans un grand écran vide       | Plus d'en-tête pendant la partie, puits sur toute la hauteur, tableau de bord rangé contre le puits (console centrée), paysage jouable (1.7, 1.10)                                                           |
+| Pas de musique                               | Musique générative par famille, sons synthétisés (1.4)                                                                                                                                                       |
+| Pas de prise en main                         | Première partie guidée pas à pas (passable), 1-1 calme (une seule idée), touches dessinées à côté du jeu (1.4, 1.10)                                                                                         |
+| Échap et Ctrl utilisés                       | Plus aucun : P pour la pause, Retour arrière pour annuler dans la Mosaïque ; sur les portails, Échap ne ferme même plus une fenêtre (1.4, 1.10)                                                              |
+| Effets plats                                 | Chute instantanée animée, lignes qui éclatent en éclats de gemme, résultats mis en scène (score qui défile, barre d'XP), feuilles animées (1.7, 1.9)                                                         |
+| Téléphone                                    | Tout au doigt (gestes partout), aucun défilement, portrait et paysage, fenêtres qui tiennent à l'écran (1.7–1.9)                                                                                             |
 
 ## Produire le build et les médias
 
@@ -103,7 +103,7 @@ langue, sauvegarde, coupure du son et publicités. Notre site ne charge jamais l
 - **Genre** : Puzzle (blocs qui tombent). **Public** : PEGI 3 de fait (aucune violence, aucun
   achat, aucun chat).
 
-## Contrôle des exigences (1.10.0)
+## Contrôle des exigences (1.11.0)
 
 Légende : ✅ conforme, vérifié · 🟡 conforme, vérification humaine à faire sur le portail ·
 ➖ sans objet.
@@ -168,16 +168,16 @@ autre façon de gagner le bonus.
 
 ### Covers et vidéos
 
-| Exigence                                                   | Statut | Preuve                                                                    |
-| ---------------------------------------------------------- | ------ | ------------------------------------------------------------------------- |
-| Paysage 1920 × 1080, portrait 800 × 1200, carrée 800 × 800 | ✅     | Générées aux dimensions exactes                                           |
-| Visuels cohérents entre les trois                          | ✅     | Même scène : pile de gemmes, faille, éclats, titre                        |
-| Seul texte : le titre                                      | ✅     | « Lumirift Blocks » uniquement                                            |
-| Pas de bordure, d'icône de store ni de visuel sous droits  | ✅     | Logo du jeu seulement                                                     |
-| Vidéo 15 à 20 s, ≤ 50 Mo, 1080p paysage et portrait 2:3    | ✅     | 17,9 s ; 1920 × 1080 et 1080 × 1620 ; refaites en 1.10 avec le jeu actuel |
-| Pas d'écran noir, de bandes noires, de curseur, de texte   | ✅     | Images rendues directement, plein cadre ; s'ouvre sur la cover            |
-| Sans son, pas d'accéléré                                   | ✅     | Aucune piste audio ; rendu image par image (30 i/s)                       |
-| Format                                                     | 🟡     | WebM (VP9) : convertir en MP4 (HandBrake) si le portail le refuse         |
+| Exigence                                                   | Statut | Preuve                                                                             |
+| ---------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------- |
+| Paysage 1920 × 1080, portrait 800 × 1200, carrée 800 × 800 | ✅     | Générées aux dimensions exactes                                                    |
+| Visuels cohérents entre les trois                          | ✅     | Même scène : pile de gemmes, faille, éclats, titre                                 |
+| Seul texte : le titre                                      | ✅     | « Lumirift Blocks » uniquement                                                     |
+| Pas de bordure, d'icône de store ni de visuel sous droits  | ✅     | Logo du jeu seulement                                                              |
+| Vidéo 15 à 20 s, ≤ 50 Mo, 1080p paysage et portrait 2:3    | ✅     | 17,9 s ; 1920 × 1080 et 1080 × 1620 ; refaites en 1.11 avec les nouvelles couleurs |
+| Pas d'écran noir, de bandes noires, de curseur, de texte   | ✅     | Images rendues directement, plein cadre ; s'ouvre sur la cover                     |
+| Sans son, pas d'accéléré                                   | ✅     | Aucune piste audio ; rendu image par image (30 i/s)                                |
+| Format                                                     | 🟡     | WebM (VP9) : convertir en MP4 (HandBrake) si le portail le refuse                  |
 
 ### Qualité (recommandations)
 

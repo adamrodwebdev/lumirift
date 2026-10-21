@@ -2,7 +2,7 @@
 
 | Version | Date       | Statut               |
 | ------- | ---------- | -------------------- |
-| 1.10    | 20/10/2026 | Prêt pour CrazyGames |
+| 1.11    | 21/10/2026 | Prêt pour CrazyGames |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -66,7 +66,10 @@ Différenciation :
   « ligne ».
 - Les règles d'un jeu ne sont pas protégeables, mais **l'apparence** l'est (jurisprudence
   _Tetris Holding v. Xio Interactive_, 2012) : Lumirift utilise sa **propre palette**, son
-  propre habillage du puits et ses propres noms de modes.
+  propre habillage du puits et ses propres noms de modes. Depuis la 1.11, **aucune pièce ne
+  porte la couleur du standard** (I cyan, O jaune, T violet, S vert, Z rouge, J bleu, L orange) :
+  I rose, O violet, T ambre, S cyan, Z citron vert, J corail, L bleu (`--tone-N` dans
+  `tokens.css`, distincts des jetons `--jewel-*` de l'interface).
 - Nom de travail : **Lumirift** (« la faille dans la pile »), prononçable dans les trois
   langues. Vérification de disponibilité (marque, domaine, réseaux) à faire avant lancement.
 
@@ -1316,3 +1319,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.8     | 20/10/2026 | Le menu à onglets : Accueil, Modes, Carte, Atelier sans défilement, glissement, rail en paysage, transition de la faille (§ 3.2 ter, § 5.6).                      |
 | 1.9     | 20/10/2026 | Les fenêtres en feuilles sans défilement, résultats mis en scène, garde à l'ouverture (§ 4.2, § 5.6).                                                             |
 | 1.10    | 20/10/2026 | Prêt pour CrazyGames : 1-1 calme, touches dessinées, console centrée, pubs par portail (§ 3.7), vidéos refaites.                                                  |
+| 1.11    | 21/10/2026 | Couleurs des pièces loin du standard du genre (§ 2), menus inchangés, médias refaits.                                                                             |

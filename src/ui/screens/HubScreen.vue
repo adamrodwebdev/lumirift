@@ -377,7 +377,7 @@ onMounted(() => {
   border-radius: 1.125rem;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--surface-2) 70%, var(--tone-3)),
+    color-mix(in srgb, var(--surface-2) 70%, var(--jewel-violet)),
     var(--surface-2)
   );
   box-shadow:
@@ -434,13 +434,13 @@ onMounted(() => {
   height: 1.1rem;
   padding: 0 0.3rem;
   border-radius: 999px;
-  background: var(--tone-5);
+  background: var(--jewel-rose);
   color: var(--bg);
   font-size: 0.65rem;
   line-height: 1.1rem;
   letter-spacing: 0;
   text-align: center;
-  box-shadow: 0 0.2rem 0.6rem color-mix(in srgb, var(--tone-5) 50%, transparent);
+  box-shadow: 0 0.2rem 0.6rem color-mix(in srgb, var(--jewel-rose) 50%, transparent);
 }
 
 .tab[aria-selected='true'] :deep(svg) {

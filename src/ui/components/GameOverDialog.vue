@@ -279,13 +279,13 @@ const shownScore = computed(() =>
   top: -0.7rem;
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  background: var(--tone-5);
+  background: var(--jewel-rose);
   color: var(--bg);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  box-shadow: 0 0.4rem 1.1rem color-mix(in srgb, var(--tone-5) 50%, transparent);
+  box-shadow: 0 0.4rem 1.1rem color-mix(in srgb, var(--jewel-rose) 50%, transparent);
   animation: pop 520ms var(--ease-spring) 900ms both;
 }
 

@@ -32,6 +32,8 @@ const UNBOUNDED = readFileSync(
 ).toString('base64');
 /** The piece tones of the Rift identity (src/styles/tokens.css). */
 const TONES = ['#3de0ff', '#ff4fa3', '#b8f25c', '#8b6cff', '#ffb547', '#ff7a4d', '#5b8cff'];
+/** The T piece's colour in the game (tokens.css: --tone-3). */
+const T_TONE = '#ffb547';
 
 /** A gem block, as in the game: light band top-left, shadow bottom-right, a gloss. */
 const gem = (x, y, s, colour, tilt = 0) =>
@@ -64,7 +66,7 @@ function scene({ left, base, s, heights, riftX, riftTop, piece }) {
     [2, 0],
     [1, -1],
   ])
-    html += gem(piece.x + px * (s + gap), piece.y + py * (s + gap), s, TONES[0]);
+    html += gem(piece.x + px * (s + gap), piece.y + py * (s + gap), s, T_TONE);
   // The rift: a zigzag of light from the crack down to the floor.
   const h = base - riftTop;
   const d = `M${riftX + s * 0.2} ${riftTop} L${riftX - s * 0.3} ${riftTop + h * 0.2} L${riftX + s * 0.35} ${riftTop + h * 0.4} L${riftX - s * 0.22} ${riftTop + h * 0.62} L${riftX + s * 0.26} ${riftTop + h * 0.82} L${riftX} ${base + s}`;

@@ -3,6 +3,15 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.11.0] — 21/10/2026
+
+### Modifié
+
+- **Couleurs des pièces redistribuées** : aucune pièce ne porte plus la couleur que lui donne le
+  standard du genre (I rose, O violet, T ambre, S cyan, Z citron vert, J corail, L bleu). Mêmes
+  sept joyaux, mêmes textures ; les menus gardent exactement leurs couleurs (jetons
+  `--jewel-*` séparés des teintes des pièces). Couvertures et vidéos CrazyGames refaites.
+
 ## [1.10.0] — 20/10/2026
 
 Prêt pour une nouvelle soumission à CrazyGames : revue complète du build comme un modérateur,

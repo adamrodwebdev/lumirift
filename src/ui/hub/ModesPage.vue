@@ -120,7 +120,7 @@ const onVariant = (variant: string) => {
 }
 
 .tile {
-  --family: var(--tone-3);
+  --family: var(--jewel-violet);
   position: relative;
   grid-column: span 2;
   min-height: 0;
@@ -151,15 +151,15 @@ const onVariant = (variant: string) => {
 }
 
 .tile[data-family='sand'] {
-  --family: var(--tone-2);
+  --family: var(--jewel-amber);
 }
 
 .tile[data-family='placement'] {
-  --family: var(--tone-5);
+  --family: var(--jewel-rose);
 }
 
 .tile[data-family='volume'] {
-  --family: var(--tone-1);
+  --family: var(--jewel-cyan);
 }
 
 .tile--big {

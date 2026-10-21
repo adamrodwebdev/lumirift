@@ -343,7 +343,7 @@ watch([material, shatter, ambiance], async () => {
 .kinds button[aria-pressed='true'] {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--surface-2) 70%, var(--tone-3)),
+    color-mix(in srgb, var(--surface-2) 70%, var(--jewel-violet)),
     var(--surface-2)
   );
   color: var(--text);
@@ -427,9 +427,9 @@ watch([material, shatter, ambiance], async () => {
 
 /* Tried on the stage, not worn yet. */
 .item--shown {
-  border-color: var(--tone-3);
+  border-color: var(--jewel-violet);
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--tone-3) 55%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--jewel-violet) 55%, transparent),
     0 4px 0 var(--surface-edge);
 }
 
@@ -451,8 +451,8 @@ watch([material, shatter, ambiance], async () => {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: var(--tone-5);
-  box-shadow: 0 0 0.5rem color-mix(in srgb, var(--tone-5) 70%, transparent);
+  background: var(--jewel-rose);
+  box-shadow: 0 0 0.5rem color-mix(in srgb, var(--jewel-rose) 70%, transparent);
 }
 
 .item__new {
@@ -461,13 +461,13 @@ watch([material, shatter, ambiance], async () => {
   left: var(--space-2);
   padding: 0.1rem 0.4rem;
   border-radius: 999px;
-  background: var(--tone-5);
+  background: var(--jewel-rose);
   color: var(--bg);
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  box-shadow: 0 0.25rem 0.7rem color-mix(in srgb, var(--tone-5) 45%, transparent);
+  box-shadow: 0 0.25rem 0.7rem color-mix(in srgb, var(--jewel-rose) 45%, transparent);
 }
 
 .item__lock {

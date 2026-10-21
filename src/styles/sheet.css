@@ -24,7 +24,7 @@
   border-radius: 1.75rem 1.75rem 0 0;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--surface-2) 86%, var(--tone-3)),
+    color-mix(in srgb, var(--surface-2) 86%, var(--jewel-violet)),
     var(--surface) 70%
   );
   color: var(--text);
