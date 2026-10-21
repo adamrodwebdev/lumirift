@@ -1,6 +1,7 @@
 import type { GameSession, SessionOptions } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import { SandGame } from './engine/SandGame';
+import { SHOWCASE } from './engine/Showcase';
 import { SandSession } from './SandSession';
 
 export { SandSession, type SandView } from './SandSession';
@@ -14,6 +15,7 @@ export function createSandSession(modeId: ModeId, options: SessionOptions): Game
       random: options.random,
       timeLimitMs: options.timeLimitMs,
       hazards: options.calm !== true,
+      ...(options.showcase ? { script: SHOWCASE } : {}),
       ...(options.boosts ? { boosts: options.boosts } : {}),
     }),
   );

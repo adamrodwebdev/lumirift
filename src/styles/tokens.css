@@ -75,6 +75,14 @@
   --tone-12: #5c5878;
   --tone-13: #4aa8ff;
   --tone-14: #ff6a2a;
+  /* Elements of the sand well (1.12). */
+  --tone-15: #6b5a2e;
+  --tone-16: #bfe9ff;
+  --tone-17: #dfe4ff;
+  --tone-18: #9be36a;
+  --tone-19: #c6ff3d;
+  --tone-20: #f4f6ff;
+  --tone-21: #ffb03a;
 
   --radius: 1rem;
   --radius-sm: 0.625rem;

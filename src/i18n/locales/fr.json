@@ -153,7 +153,27 @@
     "elementFire": "Pièce de feu",
     "burn": "Le feu a consumé {value} grains",
     "quench": "L’eau éteint le feu",
-    "rescue": "Seconde chance !"
+    "rescue": "Seconde chance !",
+    "elementOil": "Pièce d’huile : elle flotte, et le feu l’embrase",
+    "elementIce": "Pièce de glace : elle tient, gèle l’eau, fond au feu",
+    "elementLightning": "Foudre : visez l’eau pour électrocuter",
+    "elementSeed": "Graine : arrosez-la, elle pousse en pont de sa couleur",
+    "elementAcid": "Acide : il ronge le sable sous lui",
+    "react": {
+      "blaze": "Brasier ! L’huile nourrit le feu",
+      "melt": "La glace fond : eau et vapeur",
+      "freeze": "L’eau gèle sur la glace",
+      "fuse": "Le feu remonte la liane",
+      "dilute": "L’eau dilue l’acide",
+      "sprout": "La graine pousse en liane"
+    },
+    "strike": {
+      "shock": "Électrocution ! {value} grains brisés par l’eau",
+      "shatter": "Foudre : {value} grains éclatés",
+      "spark": "La foudre embrase l’huile",
+      "thaw": "La foudre brise la glace",
+      "fuse": "La foudre enflamme la liane"
+    }
   },
   "controls": {
     "label": "Commandes tactiles",
@@ -315,7 +335,7 @@
   },
   "sand": {
     "well": "Puits de sable",
-    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour faire tomber. L’eau prend la couleur voisine, le feu brûle la couleur qu’il touche."
+    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour faire tomber. Reliez une couleur d’un mur à l’autre. Les éléments réagissent : l’huile nourrit le feu, le feu fait fondre la glace en vapeur, la foudre dans l’eau brise tout ce qu’elle touche, une graine arrosée pousse en pont."
   },
   "tower": {
     "well": "Tour de verre",

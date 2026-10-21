@@ -5,8 +5,16 @@ import { Tone } from '@/core/Tone';
 import { Bag } from '@/families/falling/pieces/Bag';
 import type { PieceType, RotationDirection } from '@/families/falling/pieces/PieceType';
 import { GravityCurve } from '@/families/falling/rules/GravityCurve';
+import { elementsAt, isElement, NOTICE_OF, WEIGHT, type ElementTone } from './Elements';
 import { GRAINS_PER_CELL, SAND_TONES, SandGrid } from './SandGrid';
 import { SandPiece } from './SandPiece';
+import {
+  FIRE_MAX_GRAINS,
+  SandReactions,
+  type Reaction,
+  type ReactionKind,
+  type StrikeKind,
+} from './SandReactions';
 
 export type SandState = 'ready' | 'running' | 'paused' | 'over';
 export type SandOverReason = 'blockOut' | 'timeUp';
@@ -18,12 +26,13 @@ export const MAX_LOCK_RESETS = 10;
 export const PREVIEW_COUNT = 3;
 /** Elements start after a few ordinary pieces. */
 export const ELEMENTS_AFTER = 5;
-export const WATER_CHANCE = 0.1;
-export const FIRE_CHANCE = 0.07;
+/** Chance that a piece is an element (once the gap below is respected). */
+export const ELEMENT_CHANCE = 0.2;
 /** At least this many sand pieces between two elements: never a streak of hazards. */
 export const ELEMENT_GAP = 3;
-/** Fire consumes this many grains at most (about 40 cells), nearest first. */
-export const FIRE_MAX_GRAINS = 1500;
+/** A landing flame sets alight oil this many grains away (a cell), below or aside. */
+export const OIL_REACH = 6;
+export { FIRE_MAX_GRAINS };
 /** Wind holds off while the sand is this close to the top (in grains). */
 export const WIND_SAFE_GRAINS = 3 * GRAINS_PER_CELL;
 /** Wind: first gust after this long, then every this long (ms, ± a third), announced ahead. */
@@ -67,6 +76,25 @@ export interface SandEventMap {
   };
   /** Water put fire out: both vanish in steam. */
   quench: { readonly samples: readonly GrainSample[] };
+  /** Two elements met (see `SandReactions`); `grains` of sand went with it. */
+  react: {
+    readonly kind: ReactionKind;
+    readonly x: number;
+    readonly y: number;
+    readonly grains: number;
+    readonly points: number;
+    readonly samples: readonly GrainSample[];
+  };
+  /** A lightning piece landed and struck down its column. */
+  strike: {
+    readonly kind: StrikeKind;
+    readonly x: number;
+    readonly fromY: number;
+    readonly toY: number;
+    readonly grains: number;
+    readonly points: number;
+    readonly samples: readonly GrainSample[];
+  };
   wind: { readonly phase: 'soon' | 'start' | 'end'; readonly direction: -1 | 1 };
   levelUp: { readonly level: number };
   notice: { readonly id: string; readonly value?: number };
@@ -81,20 +109,35 @@ export interface SandOptions {
   readonly grid?: SandGrid;
   /** Campaign upgrades (none by default). */
   readonly boosts?: Boosts;
-  /** Wind, water and fire shake the game up (true by default); false teaches Sand alone. */
+  /** Wind and the elements shake the game up (true by default); false teaches Sand alone. */
   readonly hazards?: boolean;
+  /** The elements dealt, whatever the level (by default they come level after level). */
+  readonly elements?: readonly ElementTone[];
+  /** Pieces dealt at a given rank whatever happens (the first level's show, a tutorial). */
+  readonly script?: readonly ScriptedPiece[];
+}
+
+/** A piece the game deals at a given rank (1 = the first piece). */
+export interface ScriptedPiece {
+  readonly at: number;
+  readonly tone: Tone;
+  readonly type?: PieceType;
+  /** Appears right above where the previous piece landed (so that the two meet). */
+  readonly above?: boolean;
 }
 
 /**
  * A game of Sand: pieces fall like in the falling family, then crumble into
  * grains on landing. A region of one colour reaching from wall to wall
- * vanishes. Water, fire and wind shake things up.
+ * vanishes. Elements (water, fire, oil, ice, lightning, seeds, acid) and wind
+ * shake things up, and react with each other (`SandReactions`).
  */
 export class SandGame {
   readonly grid: SandGrid;
   readonly events = new Emitter<SandEventMap>();
   readonly random: RandomSource;
 
+  private readonly reactions: SandReactions;
   private readonly bag: Bag;
   private readonly gravity = new GravityCurve();
   private readonly upcoming: PieceSpec[] = [];
@@ -109,11 +152,18 @@ export class SandGame {
   private dealt = 0;
   private readonly boosts: Boosts;
   private readonly hazards: boolean;
+  private readonly elements: readonly ElementTone[] | null;
+  private readonly script: ReadonlyMap<number, ScriptedPiece>;
+  /** Pieces dealt so far and the centre (in grains) of the last one that landed. */
+  private spawned = 0;
+  private landedAt: number | null = null;
+  /** Reactions already announced in this game (each is named the first time). */
+  private readonly announced = new Set<string>();
   /** The second chance has not been used yet. */
   private rescueReady: boolean;
   /** Sand pieces dealt since the last element. */
   private sinceElement = 0;
-  /** The region the falling fire would burn, cached for one grid step and one position. */
+  /** What the falling element would hit, cached for one grid step and one position. */
   private targetCache: { key: string; region: readonly number[] | null } = {
     key: '',
     region: null,
@@ -133,6 +183,9 @@ export class SandGame {
     this.timeLimitMs = options.timeLimitMs ?? null;
     this.boosts = options.boosts ?? NO_BOOSTS;
     this.hazards = options.hazards ?? true;
+    this.elements = options.elements ?? null;
+    this.script = new Map((options.script ?? []).map((piece) => [piece.at, piece]));
+    this.reactions = new SandReactions(this.grid, this.random);
     this.rescueReady = this.boosts.rescueRows > 0;
     this.wind = {
       direction: this.random.next() < 0.5 ? -1 : 1,
@@ -184,25 +237,50 @@ export class SandGame {
       const left = piece.x + dx + cell.x * g;
       const top = piece.y + dy + cell.y * g;
       for (let y = top; y < top + g; y++) {
-        for (let x = left; x < left + g; x++) if (!this.grid.isFree(x, y)) return false;
+        for (let x = left; x < left + g; x++) if (!this.grid.isOpen(x, y)) return false;
       }
     }
     return true;
   }
 
   /**
-   * Grains the falling fire would burn if it landed now (where its ghost
-   * stands), or null: shown in advance, so that fire is aimed, never a lottery.
+   * Grains the falling fire would burn, or the falling lightning would
+   * strike, if it landed now (where its ghost stands), or null: shown in
+   * advance, so that elements are aimed, never a lottery.
    */
-  fireTarget(): readonly number[] | null {
+  elementTarget(): readonly number[] | null {
     const piece = this._active;
-    if (!piece || piece.tone !== Tone.Fire) return null;
+    if (!piece || (piece.tone !== Tone.Fire && piece.tone !== Tone.Lightning)) return null;
     const landed = piece.moved(0, this.dropDistance());
-    const key = `${this.grid.stepCount}:${landed.x}:${landed.y}:${landed.rotation}`;
+    const key = `${this.grid.stepCount}:${landed.x}:${landed.y}:${landed.rotation}:${piece.tone}`;
     if (this.targetCache.key !== key) {
-      this.targetCache = { key, region: this.targetOf(landed) };
+      const region =
+        piece.tone === Tone.Fire
+          ? (this.targetOf(landed)?.region ?? null)
+          : this.reactions.strikeTarget(...this.boltOf(landed));
+      this.targetCache = { key, region: region && region.length > 0 ? region : null };
     }
     return this.targetCache.region;
+  }
+
+  /** Horizontal centre of a piece, in grains. */
+  private centreOf(piece: SandPiece): number {
+    const cells = piece.localCells;
+    return (
+      piece.x +
+      (cells.reduce((sum, cell) => sum + cell.x + 0.5, 0) / cells.length) * GRAINS_PER_CELL
+    );
+  }
+
+  /** The column a lightning piece strikes down, and the row the bolt leaves it from. */
+  boltOf(piece: SandPiece): [number, number] {
+    const g = GRAINS_PER_CELL;
+    const cells = piece.localCells;
+    const centre = cells.reduce((sum, cell) => sum + cell.x + 0.5, 0) / cells.length;
+    const column = Math.floor(centre);
+    const own = cells.filter((cell) => cell.x === column);
+    const bottom = Math.max(...(own.length > 0 ? own : cells).map((cell) => cell.y)) + 1;
+    return [piece.x + Math.floor(centre * g), piece.y + bottom * g];
   }
 
   dropDistance(): number {
@@ -360,13 +438,31 @@ export class SandGame {
 
   /**
    * The piece crumbles: each of its cells becomes GRAINS_PER_CELL² grains. A
-   * fire piece resting on sand burns at once the region it touches most.
+   * fire piece resting on sand burns at once the region it touches most; a
+   * lightning piece strikes down its column and leaves nothing behind.
    */
   private lock(): void {
     const piece = this._active;
     if (!piece) return;
     const g = GRAINS_PER_CELL;
-    const target = piece.tone === Tone.Fire ? this.targetOf(piece) : null;
+    if (piece.tone === Tone.Lightning) {
+      this._active = null;
+      this.events.emit('lock', { piece });
+      this.onStrike(piece);
+      this.spawnNext();
+      return;
+    }
+    const aimed = piece.tone === Tone.Fire ? this.targetOf(piece) : null;
+    if (aimed?.kind === 'oil') {
+      // Near oil, the flame sets the whole slick ablaze.
+      this._active = null;
+      this.events.emit('lock', { piece });
+      this.reactions.blaze(aimed.region);
+      this.onReaction({ kind: 'blaze', at: aimed.region[0]!, removed: [], tones: [] });
+      this.spawnNext();
+      return;
+    }
+    const target = aimed?.region ?? null;
     if (target) {
       this._active = null;
       this.events.emit('lock', { piece });
@@ -374,6 +470,7 @@ export class SandGame {
       this.spawnNext();
       return;
     }
+    this.landedAt = this.centreOf(piece);
     for (const cell of piece.localCells) {
       for (let y = 0; y < g; y++) {
         for (let x = 0; x < g; x++) {
@@ -393,27 +490,64 @@ export class SandGame {
 
   private physicsStep(): void {
     this.grid.simulate(this.random);
-    this.burn();
+    for (const reaction of this.reactions.step()) this.onReaction(reaction);
     this.clearSpanning();
   }
 
-  /**
-   * Loose fire (it fell where there was no sand): the first sand it touches
-   * burns, then all its flames go out; water puts it out in a puff of steam.
-   */
-  private burn(): void {
-    for (const { fire, seed } of this.grid.fireContacts()) {
-      if (this.grid.tones[fire] !== Tone.Fire) continue;
-      const flames = this.grid.connected(fire);
-      if (this.grid.tones[seed] === Tone.Water) {
-        const steam = [...flames, ...this.grid.connected(seed)];
-        const samples = this.sample(steam);
-        this.grid.remove(steam);
-        this.events.emit('quench', { samples });
-        continue;
-      }
-      this.grid.remove(flames);
-      this.burnRegion(this.grid.region(seed).slice(0, FIRE_MAX_GRAINS));
+  /** Destroying sand with an element scores half a clear: elements help, linking wins. */
+  private elementPoints(grains: number, rate = 0.5): number {
+    return Math.round(grains * rate * (1 + this.boosts.scoreBonus));
+  }
+
+  private onReaction(reaction: Reaction): void {
+    const { kind, at, removed, tones } = reaction;
+    const samples = this.sampleOf(removed, tones);
+    if (kind === 'quench') {
+      this.events.emit('quench', { samples: this.sampleAround(at) });
+      return;
+    }
+    if (kind === 'burn') {
+      const points = this.elementPoints(removed.length);
+      this._score += points;
+      this.events.emit('burn', { grains: removed.length, points, samples });
+      return;
+    }
+    // Acid is a tool to dig: it scores nothing.
+    const points =
+      removed.length > 0 && kind !== 'dissolve' ? this.elementPoints(removed.length) : 0;
+    this._score += points;
+    const W = this.grid.width;
+    this.events.emit('react', {
+      kind,
+      x: at % W,
+      y: Math.floor(at / W),
+      grains: removed.length,
+      points,
+      samples,
+    });
+    // Each reaction is named the first time it happens in a game.
+    if (kind !== 'scorch' && kind !== 'dissolve' && !this.announced.has(kind)) {
+      this.announced.add(kind);
+      this.events.emit('notice', { id: `react.${kind}` });
+    }
+  }
+
+  private onStrike(piece: SandPiece): void {
+    const strike = this.reactions.strike(...this.boltOf(piece));
+    // Through water, the shock is the great combo of the elements: full points.
+    const points = this.elementPoints(strike.removed.length, strike.kind === 'shock' ? 1 : 0.5);
+    this._score += points;
+    this.events.emit('strike', {
+      kind: strike.kind,
+      x: strike.x,
+      fromY: strike.fromY,
+      toY: strike.toY,
+      grains: strike.removed.length,
+      points,
+      samples: this.sampleOf(strike.removed, strike.tones),
+    });
+    if (strike.kind !== 'ground') {
+      this.events.emit('notice', { id: `strike.${strike.kind}`, value: strike.removed.length });
     }
   }
 
@@ -431,7 +565,7 @@ export class SandGame {
    * The region a fire piece at this position would burn: among the sand
    * regions it touches (below or on a side), the one it touches most.
    */
-  private targetOf(piece: SandPiece): number[] | null {
+  private targetOf(piece: SandPiece): { kind: 'oil' | 'sand'; region: number[] } | null {
     const { grid } = this;
     const g = GRAINS_PER_CELL;
     const W = grid.width;
@@ -442,6 +576,22 @@ export class SandGame {
           const gx = piece.x + cell.x * g + x;
           const gy = piece.y + cell.y * g + y;
           if (gx >= 0 && gy >= 0 && gx < W && gy < grid.height) own.add(gy * W + gx);
+        }
+      }
+    }
+    // Oil first: a flame landing near oil (its heat carries a few grains) sets the slick ablaze.
+    for (const i of own) {
+      const x = i % W;
+      const y = (i / W) | 0;
+      for (let dy = 0; dy <= OIL_REACH; dy++) {
+        for (let dx = -OIL_REACH; dx <= OIL_REACH; dx++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || nx >= W || ny >= grid.height) continue;
+          const n = ny * W + nx;
+          if (!own.has(n) && grid.tones[n] === Tone.Oil) {
+            return { kind: 'oil', region: grid.connected(n) };
+          }
         }
       }
     }
@@ -471,7 +621,7 @@ export class SandGame {
         bestTouches = touches;
       }
     }
-    return best ? best.slice(0, FIRE_MAX_GRAINS) : null;
+    return best ? { kind: 'sand', region: best.slice(0, FIRE_MAX_GRAINS) } : null;
   }
 
   private clearSpanning(): void {
@@ -489,6 +639,31 @@ export class SandGame {
       this._level = level;
       this.events.emit('levelUp', { level });
     }
+  }
+
+  /** A sample of grains already removed, with the tones they had. */
+  private sampleOf(indices: readonly number[], tones: readonly Tone[]): GrainSample[] {
+    const step = Math.max(1, Math.floor(indices.length / SAMPLE));
+    const samples: GrainSample[] = [];
+    for (let k = 0; k < indices.length; k += step) {
+      const i = indices[k]!;
+      samples.push({ x: i % this.grid.width, y: Math.floor(i / this.grid.width), tone: tones[k]! });
+    }
+    return samples;
+  }
+
+  /** Grains around a place, for a puff of effects where something happened. */
+  private sampleAround(at: number): GrainSample[] {
+    const W = this.grid.width;
+    const samples: GrainSample[] = [];
+    for (let k = 0; k < 24; k++) {
+      samples.push({
+        x: (at % W) + this.random.nextInt(9) - 4,
+        y: Math.floor(at / W) + this.random.nextInt(9) - 4,
+        tone: Tone.Steam,
+      });
+    }
+    return samples;
   }
 
   private sample(indices: readonly number[]): GrainSample[] {
@@ -542,7 +717,15 @@ export class SandGame {
   private spawnNext(): void {
     this.fillQueue(1);
     const spec = this.upcoming.shift()!;
-    const piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
+    this.spawned++;
+    let piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
+    if (this.script.get(this.spawned)?.above && this.landedAt !== null) {
+      // Lined up over the previous element: a player who just drops it sees them meet.
+      const g = GRAINS_PER_CELL;
+      const shift = Math.round((this.landedAt - this.centreOf(piece)) / g) * g;
+      const lined = piece.moved(shift, 0);
+      if (this.fits(lined)) piece = lined;
+    }
     if (!this.fits(piece)) {
       if (this.rescueReady) {
         // The second chance: the bottom of the sand vanishes, the piece comes back.
@@ -562,24 +745,42 @@ export class SandGame {
     this.lockResets = 0;
     this.fallAccumulator = 0;
     this.events.emit('spawn', { piece });
-    if (spec.tone === Tone.Water) this.events.emit('notice', { id: 'elementWater' });
-    if (spec.tone === Tone.Fire) this.events.emit('notice', { id: 'elementFire' });
+    if (isElement(spec.tone)) this.events.emit('notice', { id: NOTICE_OF[spec.tone] });
   }
 
-  /** Colour of each new piece: sand, or now and then an element. */
+  /** Colour of each new piece: sand, now and then an element, or what the script says. */
   private fillQueue(count: number): void {
     while (this.upcoming.length < count) {
-      const type = this.bag.next();
+      let type = this.bag.next();
       this.dealt++;
-      let tone = SAND_TONES[this.random.nextInt(SAND_TONES.length)]!;
-      if (this.hazards && this.dealt > ELEMENTS_AFTER && this.sinceElement >= ELEMENT_GAP) {
-        const roll = this.random.next();
-        if (roll < WATER_CHANCE) tone = Tone.Water;
-        else if (roll < WATER_CHANCE + FIRE_CHANCE + this.boosts.fireBonus) tone = Tone.Fire;
+      let tone: Tone = SAND_TONES[this.random.nextInt(SAND_TONES.length)]!;
+      const scripted = this.script.get(this.dealt);
+      if (scripted) {
+        tone = scripted.tone;
+        type = scripted.type ?? type;
+      } else if (this.hazards && this.dealt > ELEMENTS_AFTER && this.sinceElement >= ELEMENT_GAP) {
+        const element = this.drawElement();
+        if (element !== null) tone = element;
       }
-      this.sinceElement = tone === Tone.Water || tone === Tone.Fire ? 0 : this.sinceElement + 1;
+      this.sinceElement = isElement(tone) ? 0 : this.sinceElement + 1;
       this.upcoming.push({ type, tone });
     }
+  }
+
+  /** An element now and then, weighted, among those of this level; fire boosted by upgrades. */
+  private drawElement(): ElementTone | null {
+    const roster = this.elements ?? elementsAt(this._level);
+    if (roster.length === 0 || this.random.next() >= ELEMENT_CHANCE + this.boosts.fireBonus) {
+      return null;
+    }
+    const weight = (tone: ElementTone) =>
+      WEIGHT[tone] * (tone === Tone.Fire ? 1 + this.boosts.fireBonus * 10 : 1);
+    let roll = this.random.next() * roster.reduce((sum, tone) => sum + weight(tone), 0);
+    for (const tone of roster) {
+      roll -= weight(tone);
+      if (roll < 0) return tone;
+    }
+    return roster[roster.length - 1]!;
   }
 
   private isRunning(): boolean {

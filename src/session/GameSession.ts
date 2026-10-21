@@ -49,6 +49,8 @@ export interface SessionOptions {
   readonly boosts?: Boosts;
   /** The gentle version of the mode, to teach it: none of its hazards (the Sand's wind and elements). */
   readonly calm?: boolean;
+  /** The mode opens on its best moments, scripted (the first level of the campaign). */
+  readonly showcase?: boolean;
 }
 
 /**

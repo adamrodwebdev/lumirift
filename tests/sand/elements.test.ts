@@ -30,7 +30,7 @@ describe('Sand elements', () => {
     }
     // The fire covers grains 28 to 39: 2 of A, 10 of B.
     withFire(game, 28);
-    const target = game.fireTarget();
+    const target = game.elementTarget();
     expect(target).toHaveLength(30);
     expect(target!.every((i) => grid.tones[i] === Tone.ChromaB)).toBe(true);
 
@@ -47,7 +47,7 @@ describe('Sand elements', () => {
   it('shows no target when the fire touches nothing it can burn', () => {
     const game = started();
     withFire(game, 0);
-    expect(game.fireTarget()).toBeNull();
+    expect(game.elementTarget()).toBeNull();
   });
 
   it('puts fire out with water, in a puff of steam', () => {
@@ -59,7 +59,9 @@ describe('Sand elements', () => {
     game.events.on('quench', onQuench);
     game.update(STEP_MS);
     expect(onQuench).toHaveBeenCalledOnce();
-    expect(grid.grainCount()).toBe(0);
+    // Nothing left but a cloud of steam where they met.
+    expect(grid.grainCount()).toBeGreaterThan(0);
+    expect([...grid.tones].every((tone) => tone === 0 || tone === Tone.Steam)).toBe(true);
   });
 
   it(`deals at least ${ELEMENT_GAP} sand pieces between two elements`, () => {
@@ -99,6 +101,8 @@ describe('Sand grid elements', () => {
     grid.put(1, 1, Tone.Water, 0);
     grid.put(2, 1, Tone.ChromaA, 0);
     for (let x = 0; x < 3; x++) grid.put(x, 2, Tone.ChromaB, 0);
+    // The sand around holds still (sand would otherwise sink through the water).
+    for (const i of [0, 1, 2, 3, 5, 6, 7, 8]) grid.fix(i);
     grid.life[4] = 1;
     grid.simulate(new SeededRandom(1));
     expect(grid.get(1, 1)).toBe(Tone.ChromaB);

@@ -355,3 +355,66 @@ export const gameOver: SoundRecipe = (s) => {
   s.noise({ filter: 'lowpass', frequency: 500, to: 120, duration: 1.1, gain: 0.16 });
   s.noise({ filter: 'highpass', frequency: 3000, duration: 0.6, gain: 0.12, start: 0.05 });
 };
+
+// --- Sand elements (1.12) -----------------------------------------------------
+
+/** Lightning: a sharp crack and a falling rumble; through water, a long electric buzz. */
+export const zap =
+  (shock: boolean): SoundRecipe =>
+  (s) => {
+    s.noise({ filter: 'highpass', frequency: 3500, duration: 0.08, gain: 0.22 });
+    s.noise({ filter: 'bandpass', frequency: 1800, to: 300, q: 1.2, duration: 0.45, gain: 0.14 });
+    s.tone({ frequency: 110, to: 40, duration: 0.5, gain: 0.2, start: 0.03 });
+    if (shock) {
+      s.tone({ type: 'sawtooth', frequency: 220, to: 180, duration: 0.6, gain: 0.05, start: 0.05 });
+      s.tone({ type: 'sawtooth', frequency: 331, to: 270, duration: 0.6, gain: 0.04, start: 0.05 });
+    }
+  };
+
+/** Oil catching fire: a deep whoosh that swells. */
+export const blaze: SoundRecipe = (s) => {
+  s.noise({
+    filter: 'lowpass',
+    frequency: 400,
+    to: 2400,
+    duration: 0.7,
+    gain: 0.18,
+    attack: 0.12,
+  });
+  s.tone({ frequency: 70, to: 55, duration: 0.6, gain: 0.12 });
+};
+
+/** Steam: a hiss. */
+export const hiss: SoundRecipe = (s) =>
+  s.noise({
+    filter: 'highpass',
+    frequency: 5000,
+    to: 3000,
+    duration: 0.45,
+    gain: 0.07,
+    attack: 0.03,
+  });
+
+/** Ice: a crystal chime when water freezes, a crack when it breaks. */
+export const freeze: SoundRecipe = (s) => {
+  [18, 22].forEach((step, i) =>
+    s.tone({ frequency: degree(step), duration: 0.18, gain: 0.025, start: i * 0.03 }),
+  );
+};
+
+/** A seed sprouting: a soft rising pluck. */
+export const sprout: SoundRecipe = (s) => {
+  [9, 11, 13].forEach((step, i) =>
+    s.tone({
+      type: 'triangle',
+      frequency: degree(step),
+      duration: 0.14,
+      gain: 0.05,
+      start: i * 0.06,
+    }),
+  );
+};
+
+/** Acid eating sand: a short fizz. */
+export const fizz: SoundRecipe = (s) =>
+  s.noise({ filter: 'bandpass', frequency: 6000, q: 3, duration: 0.12, gain: 0.03 });

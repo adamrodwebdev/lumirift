@@ -22,6 +22,8 @@ export interface CampaignLevel {
   readonly variant?: AiLevel;
   /** The gentle version of its mode, to teach it (no wind, water or fire in Sand). */
   readonly calm?: boolean;
+  /** Opens on the mode's best moments, scripted: the campaign's crushing entrance. */
+  readonly showcase?: boolean;
   readonly timeLimitMs: number | null;
   readonly goal: Goal;
   readonly stars: StarRule;
@@ -64,9 +66,10 @@ const duel = (id: string, variant: AiLevel): CampaignLevel => ({
  */
 export const LEVELS: readonly CampaignLevel[] = [
   // 1. Premiers blocs
-  // Sand first: the campaign opens with a mode no other game has, calm (one idea:
-  // link the walls), a gentle goal; wind, water and fire come in chapter 2.
-  { ...timed('1-1', 'sand', 3, { kind: 'lines', target: 2 }), calm: true },
+  // Sand first, as a show: one idea to learn (link the walls), and within a
+  // minute the elements no other game has (lightning through water, a blaze,
+  // a vine); no wind and no random element yet, those come in chapter 2.
+  { ...timed('1-1', 'sand', 3, { kind: 'lines', target: 2 }), calm: true, showcase: true },
   timed('1-2', 'classic', 2.5, { kind: 'lines', target: 10 }),
   timed('1-3', 'chroma', 2.5, { kind: 'score', target: 2500 }),
   timed('1-4', 'mirror', 3, { kind: 'lines', target: 12 }),
