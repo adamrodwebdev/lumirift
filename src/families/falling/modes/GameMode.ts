@@ -20,8 +20,21 @@ export interface WellSize {
  * each mode adds its own twist without the engine knowing which mode it plays.
  * A new instance is created for every game, so modes can keep their own state.
  */
+/** The sector a bomb blows away around itself (the Tower's bombs). */
+export interface BlastSize {
+  /** Columns on each side. */
+  readonly radius: number;
+  /** Rows above and below the bomb's ring. */
+  readonly above: number;
+  readonly below: number;
+}
+
 export interface GameMode {
   readonly id: EngineModeId;
+  /** Bombs go off this wide when their ring is cleared; null in modes without bombs. */
+  readonly blast: BlastSize | null;
+  /** The cell of the next piece carrying a bomb gem (its `rank` in the game), or null. */
+  bombFor(random: RandomSource, rank: number): number | null;
   readonly result: ResultKind;
   readonly well: WellSize;
   /** Full rows disappear (false: they stay, as in Silhouette). */

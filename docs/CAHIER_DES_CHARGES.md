@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut       |
-| ------- | ---------- | ------------ |
-| 1.12    | 21/10/2026 | Les éléments |
+| Version | Date       | Statut         |
+| ------- | ---------- | -------------- |
+| 1.13    | 21/10/2026 | La Tour piégée |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -372,6 +372,16 @@ Règles détaillées :
   réserve, vitesse, points, pièce fantôme), sauf l'arrivée des pièces : chaque nouvelle pièce
   apparaît **au-dessus de l'endroit où la précédente s'est posée** (au centre si la place
   manque), pour que la vue reste là où le joueur construit (1.11).
+- **Gemmes-bombes (1.13)** : à partir de la 5ᵉ pièce, environ une pièce sur cinq (jamais deux
+  de suite) porte une **gemme-bombe** sur l'une de ses cases : un cœur rouge qui pulse sous sa
+  mèche, visible aussi dans l'aperçu et la réserve (la réserve garde la bombe). Quand
+  l'**anneau** qui la contient est effacé, elle explose et **souffle un secteur de la tour** :
+  5 colonnes (deux de chaque côté, en faisant le tour du cylindre), la hauteur de l'anneau et
+  trois rangées au-dessus, une en dessous. Une bombe prise dans le souffle explose à son tour
+  (**réaction en chaîne**). Chaque bloc soufflé vaut 40 points × niveau. Avant la pose, le
+  secteur qui sauterait **clignote en rouge, rayé**, comme la cible du feu dans le Sable : la
+  bombe se vise. Effets : éclats, secousse, éclair du puits (limité contre la photosensibilité),
+  son d'explosion et vibration ; annonce « Boum ! » ou « Réaction en chaîne ».
 - **Caméra** : elle suit la pièce et la garde de face, en tournant par le chemin le plus
   court. Environ 10 colonnes sont visibles ; elles s'amincissent vers les bords. Le joueur
   la tourne à la main avec **A / E** (AZERTY) ou **Q / E** (QWERTY), ou en **glissant à
@@ -1363,3 +1373,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.10    | 20/10/2026 | Prêt pour CrazyGames : 1-1 calme, touches dessinées, console centrée, pubs par portail (§ 3.7), vidéos refaites.                                                  |
 | 1.11    | 21/10/2026 | Couleurs des pièces loin du standard du genre (§ 2), menus inchangés, médias refaits.                                                                             |
 | 1.12    | 21/10/2026 | Les éléments du Sable : huile, glace, foudre, graine, acide, vapeur et pluie, réactions entre eux, entrée fracassante du 1-1 (§ 3.2).                             |
+| 1.13    | 21/10/2026 | La Tour piégée : gemmes-bombes qui soufflent un secteur de la tour, réactions en chaîne, secteur visé avant la pose (§ 3.2).                                      |

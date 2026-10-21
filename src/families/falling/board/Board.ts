@@ -9,6 +9,8 @@ export interface ClearedRow {
   readonly pure: boolean;
   /** The tones the row held, left to right (for the destruction effects). */
   readonly tones: Uint8Array;
+  /** Columns of the bomb gems the row held. */
+  readonly bombs: readonly number[];
 }
 
 export interface RemovedCell extends Cell {
@@ -30,6 +32,8 @@ export class Board {
   /** The last column touches the first one: the well is a cylinder, without side walls. */
   readonly wraps: boolean;
   private readonly cells: Uint8Array;
+  /** 1 where a block carries a bomb gem (the Tower). */
+  private readonly bombs: Uint8Array;
 
   constructor(
     width = Board.WIDTH,
@@ -42,6 +46,7 @@ export class Board {
     this.height = visibleHeight + hiddenRows;
     this.hiddenRows = hiddenRows;
     this.cells = new Uint8Array(this.width * this.height);
+    this.bombs = new Uint8Array(this.width * this.height);
   }
 
   /** Builds a board from rows of text, bottom row last ('.' empty, '#' garbage). */
@@ -58,6 +63,59 @@ export class Board {
 
   get(x: number, y: number): Tone {
     return this.cells[y * this.width + x] as Tone;
+  }
+
+  /** True when the block at (x, y) carries a bomb gem. */
+  hasBomb(x: number, y: number): boolean {
+    return this.bombs[y * this.width + this.column(x)] === 1;
+  }
+
+  /** How many bomb gems the stack holds. */
+  bombCount(): number {
+    let count = 0;
+    for (const bomb of this.bombs) count += bomb;
+    return count;
+  }
+
+  /**
+   * A bomb goes off at (x, y): every block in the sector around it is blown
+   * away (`radius` columns each side, `above` rows up, `below` down), and the
+   * bombs caught in it go off too. Returns the blocks removed, bombs first.
+   */
+  blast(
+    x: number,
+    y: number,
+    radius: number,
+    above: number,
+    below: number,
+  ): { cells: RemovedCell[]; bombs: number } {
+    const cells: RemovedCell[] = [];
+    const queue: [number, number][] = [[this.column(x), y]];
+    const fired = new Set<number>([y * this.width + this.column(x)]);
+    let bombs = 0;
+    while (queue.length > 0) {
+      const [bx, by] = queue.shift()!;
+      bombs++;
+      for (let dy = -above; dy <= below; dy++) {
+        const ny = by + dy;
+        if (ny < 0 || ny >= this.height) continue;
+        for (let dx = -radius; dx <= radius; dx++) {
+          const nx = this.wraps ? this.column(bx + dx) : bx + dx;
+          if (nx < 0 || nx >= this.width) continue;
+          const i = ny * this.width + nx;
+          const tone = this.cells[i] as Tone;
+          if (tone === Tone.Empty) continue;
+          if (this.bombs[i] && !fired.has(i)) {
+            fired.add(i);
+            queue.push([nx, ny]);
+          }
+          cells.push({ x: nx, y: ny, tone });
+          this.cells[i] = Tone.Empty;
+          this.bombs[i] = 0;
+        }
+      }
+    }
+    return { cells, bombs };
   }
 
   isInside(x: number, y: number): boolean {
@@ -89,11 +147,13 @@ export class Board {
   /** Writes the piece into the grid. Returns false if it lies wholly in the hidden rows. */
   lock(piece: Piece): boolean {
     let visible = false;
-    for (const cell of piece.localCells) {
+    piece.localCells.forEach((cell, index) => {
       const y = cell.y + piece.y;
-      this.set(this.column(cell.x + piece.x), y, piece.tone);
+      const x = this.column(cell.x + piece.x);
+      this.set(x, y, piece.tone);
+      if (piece.bomb === index) this.bombs[y * this.width + x] = 1;
       if (y >= this.hiddenRows) visible = true;
-    }
+    });
     return visible;
   }
 
@@ -101,8 +161,14 @@ export class Board {
   clearFullRows(): ClearedRow[] {
     const cleared: ClearedRow[] = [];
     for (let y = 0; y < this.height; y++) {
-      if (this.isRowFull(y))
-        cleared.push({ index: y, pure: this.isRowPure(y), tones: this.rowTones(y) });
+      if (this.isRowFull(y)) {
+        cleared.push({
+          index: y,
+          pure: this.isRowPure(y),
+          tones: this.rowTones(y),
+          bombs: this.rowBombs(y),
+        });
+      }
     }
     if (cleared.length === 0) return cleared;
 
@@ -157,6 +223,8 @@ export class Board {
     const n = Math.min(count, this.height);
     this.cells.copyWithin(n * this.width, 0, (this.height - n) * this.width);
     this.cells.fill(Tone.Empty, 0, n * this.width);
+    this.bombs.copyWithin(n * this.width, 0, (this.height - n) * this.width);
+    this.bombs.fill(0, 0, n * this.width);
   }
 
   /** Lets every block fall to the floor of its column, keeping their order. */
@@ -250,6 +318,7 @@ export class Board {
   clone(): Board {
     const copy = new Board(this.width, this.height - this.hiddenRows, this.hiddenRows, this.wraps);
     copy.cells.set(this.cells);
+    copy.bombs.set(this.bombs);
     return copy;
   }
 
@@ -278,12 +347,19 @@ export class Board {
     return rows;
   }
 
+  private rowBombs(y: number): number[] {
+    const columns: number[] = [];
+    for (let x = 0; x < this.width; x++) if (this.bombs[y * this.width + x]) columns.push(x);
+    return columns;
+  }
+
   private rowTones(y: number): Uint8Array {
     return this.cells.slice(y * this.width, (y + 1) * this.width);
   }
 
   private set(x: number, y: number, tone: Tone): void {
     this.cells[y * this.width + x] = tone;
+    if (tone === Tone.Empty) this.bombs[y * this.width + x] = 0;
   }
 
   private isRowFull(y: number): boolean {
@@ -304,9 +380,11 @@ export class Board {
 
   private copyRow(from: number, to: number): void {
     this.cells.copyWithin(to * this.width, from * this.width, (from + 1) * this.width);
+    this.bombs.copyWithin(to * this.width, from * this.width, (from + 1) * this.width);
   }
 
   private fillRow(y: number, tone: Tone): void {
     this.cells.fill(tone, y * this.width, (y + 1) * this.width);
+    this.bombs.fill(0, y * this.width, (y + 1) * this.width);
   }
 }

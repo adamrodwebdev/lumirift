@@ -101,6 +101,7 @@ export class TowerRenderer {
     this.drawGrid(palette.wellGrid);
     if (!effects.stackHidden) this.drawStack(sprites, true);
     this.drawCracks(sprites, palette);
+    this.drawBlastZone(palette);
     this.drawTrails(palette);
     this.drawWaves(palette);
 
@@ -167,19 +168,94 @@ export class TowerRenderer {
       for (let y = hidden; y < board.height; y++) {
         const tone = board.get(x, y);
         if (tone === Tone.Empty) continue;
-        this.drawCell(sprites, tone, x, y - hidden + this.effects.rowOffset[y]!, 1);
+        const row = y - hidden + this.effects.rowOffset[y]!;
+        this.drawCell(sprites, tone, x, row, 1);
+        if (board.hasBomb(x, y)) this.drawBomb(x, row, front ? 1 : BACK_ALPHA);
       }
     }
     this.ctx.globalAlpha = 1;
   }
 
+  /**
+   * A bomb gem set in a block: a dark core with a burning heart that pulses,
+   * so that a bomb is told from any colour, even through the glass.
+   */
+  private drawBomb(x: number, y: number, alpha: number): void {
+    const { ctx } = this;
+    this.face(x, y);
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 160 + x);
+    const palette = this.palette;
+    if (!palette) return;
+    ctx.globalAlpha = alpha * 0.9;
+    ctx.fillStyle = palette.wellBackground;
+    ctx.beginPath();
+    ctx.arc(0.5, 0.52, 0.27, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = alpha * (0.6 + 0.4 * pulse);
+    ctx.fillStyle = palette.danger;
+    ctx.beginPath();
+    ctx.arc(0.5, 0.52, 0.12 + 0.05 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    // The fuse, sparking.
+    ctx.strokeStyle = palette.accent;
+    ctx.lineWidth = 0.06;
+    ctx.beginPath();
+    ctx.moveTo(0.62, 0.3);
+    ctx.lineTo(0.74, 0.16);
+    ctx.stroke();
+    ctx.globalAlpha = alpha * pulse;
+    ctx.fillStyle = palette.crack;
+    ctx.beginPath();
+    ctx.arc(0.76, 0.14, 0.06, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  /** The sector the bombs would blow away if the piece landed now: it glows red, pulsing. */
+  private drawBlastZone(palette: TonePalette): void {
+    const cells = this.view.blastPreview();
+    if (cells.length === 0) return;
+    const { ctx } = this;
+    const hidden = this.view.board.hiddenRows;
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 120);
+    for (const cell of cells) {
+      // The back of the tower shows it faintly, through the glass.
+      const seen = this.isFront(cell.x) ? 1 : BACK_ALPHA;
+      this.face(cell.x, cell.y - hidden);
+      ctx.globalAlpha = (0.35 + 0.25 * pulse) * seen;
+      ctx.fillStyle = palette.danger;
+      ctx.fillRect(0, 0, 1, 1);
+      // Hazard stripes and a bright blinking edge: readable on every colour of glass.
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, 1, 1);
+      ctx.clip();
+      ctx.globalAlpha = 0.85 * seen;
+      ctx.strokeStyle = palette.danger;
+      ctx.lineWidth = 0.12;
+      ctx.beginPath();
+      for (const offset of [-0.5, 0, 0.5]) {
+        ctx.moveTo(offset, 1);
+        ctx.lineTo(offset + 1, 0);
+      }
+      ctx.stroke();
+      ctx.restore();
+      ctx.globalAlpha = (0.4 + 0.6 * pulse) * seen;
+      ctx.strokeStyle = palette.crack;
+      ctx.lineWidth = 0.1;
+      ctx.strokeRect(0.05, 0.05, 0.9, 0.9);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   private drawPiece(sprites: GlassSprites, piece: Piece, dy: number, alpha: number): void {
     const hidden = this.view.board.hiddenRows;
-    for (const local of piece.localCells) {
+    piece.localCells.forEach((local, index) => {
       const y = piece.y + local.y + dy - hidden;
-      if (y < 0) continue;
+      if (y < 0) return;
       this.drawCell(sprites, piece.tone, piece.x + local.x, y, alpha);
-    }
+      if (piece.bomb === index) this.drawBomb(piece.x + local.x, y, alpha);
+    });
     this.ctx.globalAlpha = 1;
   }
 

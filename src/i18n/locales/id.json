@@ -173,7 +173,10 @@
       "spark": "Petir membakar minyak",
       "thaw": "Petir memecah es",
       "fuse": "Petir membakar sulur"
-    }
+    },
+    "bombPiece": "Permata bom: hapus cincinnya untuk meledakkan menara di sekitarnya",
+    "blast": "Bum! {value} balok hancur",
+    "blastChain": "Reaksi berantai: {value} bom!"
   },
   "controls": {
     "label": "Kontrol sentuh",

@@ -1,4 +1,4 @@
-import { Board, type ClearedRow } from '../board/Board';
+import { Board, type ClearedRow, type RemovedCell } from '../board/Board';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import { Emitter } from '@/core/Emitter';
 import type { RandomSource } from '@/core/Random';
@@ -16,9 +16,14 @@ export const MAX_LOCK_RESETS = 15;
 export const PREVIEW_COUNT = 3;
 
 /** A piece waiting in the queue or in the hold slot. */
+/** Points for each block a bomb blows away (times the level). */
+export const BLAST_POINTS = 40;
+
 export interface PieceSpec {
   readonly type: PieceType;
   readonly tone: Tone;
+  /** Cell carrying a bomb gem (index in the spawn orientation), if any. */
+  readonly bomb?: number;
 }
 
 export interface GameOptions {
@@ -59,6 +64,12 @@ export class Game {
   private _overReason: GameOverReason | null = null;
   private _active: Piece | null = null;
   private _held: PieceSpec | null = null;
+  /** Pieces dealt so far (the mode decides the bombs from it). */
+  private dealt = 0;
+  /** Locks so far: the blast preview is valid until the next one. */
+  private lockCount = 0;
+  private bombAnnounced = false;
+  private previewCache: { key: string; cells: readonly RemovedCell[] } = { key: '', cells: [] };
   private _canHold = true;
   private _score = 0;
   private _lines = 0;
@@ -236,7 +247,11 @@ export class Game {
     const piece = this._active;
     if (!this.canAct() || !piece || !this._canHold) return false;
     const previous = this._held;
-    this._held = { type: piece.type, tone: piece.tone };
+    this._held = {
+      type: piece.type,
+      tone: piece.tone,
+      ...(piece.bomb === null ? {} : { bomb: piece.bomb }),
+    };
     this._canHold = false;
     this.events.emit('hold', { type: piece.type });
     if (previous) this.spawn(previous);
@@ -412,12 +427,14 @@ export class Game {
     const piece = this._active;
     if (!piece) return;
     const visible = this.board.lock(piece);
+    this.lockCount++;
     if (this.board.wraps) this.spawnCentre = this.board.column(Math.floor(piece.centre)) + 0.5;
     this._active = null;
     this.events.emit('lock', { piece });
     const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
     this.pauseAfterLock = cleared.length > 0;
     this.scoreClear(cleared, false);
+    this.detonate(cleared);
     this.mode.afterLock(this);
     if (this._state === 'over') return;
     if (!visible && cleared.length === 0 && !this.rescue()) {
@@ -453,6 +470,57 @@ export class Game {
     }
   }
 
+  /**
+   * The bombs of the cleared rings go off where their ring was: each blows
+   * away a sector of the stack around it, and the bombs it catches go off in
+   * turn. Every block blown away scores.
+   */
+  private detonate(cleared: readonly ClearedRow[]): void {
+    const blast = this.mode.blast;
+    if (!blast) return;
+    // Rows above a cleared one moved down by the rows cleared under it.
+    for (const row of cleared) {
+      const below = cleared.filter((other) => other.index > row.index).length;
+      for (const x of row.bombs) {
+        const y = row.index + below;
+        const { cells, bombs } = this.board.blast(x, y, blast.radius, blast.above, blast.below);
+        if (cells.length === 0 && bombs === 0) continue;
+        const points = Math.round(
+          cells.length * BLAST_POINTS * this._level * (1 + this.boosts.scoreBonus),
+        );
+        this._score += points;
+        this.events.emit('blast', { x, y, cells, bombs, points });
+      }
+    }
+  }
+
+  /**
+   * What the falling piece would blow up if it landed now (where its ghost
+   * stands): the blocks of the sectors of the bombs whose ring it would clear.
+   */
+  blastPreview(): readonly RemovedCell[] {
+    const piece = this._active;
+    const blast = this.mode.blast;
+    if (!piece || !blast) return [];
+    const landed = piece.moved(0, this.dropDistance());
+    const key = `${this.lockCount}:${this.board.blockCount()}:${landed.x}:${landed.y}:${landed.rotation}`;
+    if (this.previewCache.key === key) return this.previewCache.cells;
+    const board = this.board.clone();
+    board.lock(landed);
+    const cleared = board.clearFullRows();
+    const cells: RemovedCell[] = [];
+    for (const row of cleared) {
+      const below = cleared.filter((other) => other.index > row.index).length;
+      for (const x of row.bombs) {
+        cells.push(
+          ...board.blast(x, row.index + below, blast.radius, blast.above, blast.below).cells,
+        );
+      }
+    }
+    this.previewCache = { key, cells };
+    return cells;
+  }
+
   private spawnNext(): void {
     this.fillQueue(1);
     this.spawn(this.upcoming.shift()!);
@@ -460,10 +528,17 @@ export class Game {
 
   private spawn(spec: PieceSpec): void {
     if (this._state === 'over') return;
-    let piece = Piece.spawn(spec.type, spec.tone, this.board.width);
+    const bomb = spec.bomb ?? null;
+    let piece = Piece.spawn(spec.type, spec.tone, this.board.width).withBomb(bomb);
     if (this.spawnCentre !== null) {
-      const above = Piece.spawn(spec.type, spec.tone, this.board.width, this.spawnCentre);
+      const above = Piece.spawn(spec.type, spec.tone, this.board.width, this.spawnCentre).withBomb(
+        bomb,
+      );
       if (this.board.fits(above)) piece = above;
+    }
+    if (bomb !== null && !this.bombAnnounced) {
+      this.bombAnnounced = true;
+      this.events.emit('notice', { id: 'bombPiece' });
     }
     if (!this.board.fits(piece)) {
       if (this.rescue()) this.spawn(spec);
@@ -483,7 +558,9 @@ export class Game {
   private fillQueue(count: number): void {
     while (this.upcoming.length < count) {
       const type = this.bag.next();
-      this.upcoming.push({ type, tone: this.mode.toneFor(type, this.random) });
+      const tone = this.mode.toneFor(type, this.random);
+      const bomb = this.mode.bombFor(this.random, this.dealt++);
+      this.upcoming.push(bomb === null ? { type, tone } : { type, tone, bomb });
     }
   }
 

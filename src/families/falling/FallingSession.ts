@@ -7,7 +7,7 @@ import type {
   SessionState,
 } from '@/session/GameSession';
 import type { EngineModeId, FamilyId } from '@/session/ModeId';
-import type { Board } from './board/Board';
+import type { Board, RemovedCell } from './board/Board';
 import type { Game, PieceSpec } from './game/Game';
 import type { GameEventMap } from './game/GameEvents';
 import type { AbilityId, GameMode } from './modes/GameMode';
@@ -39,6 +39,8 @@ export interface FallingView {
   readonly canHold: boolean;
   preview(count?: number): readonly PieceSpec[];
   dropDistance(): number;
+  /** Blocks the bombs would blow away if the piece landed where its ghost is (the Tower). */
+  blastPreview(): readonly RemovedCell[];
 }
 
 /** Adapts a falling-family `Game` to the common `GameSession` contract. */
@@ -152,6 +154,12 @@ export class FallingSession implements GameSession<FallingCommand> {
     events.on('flip', ({ lines }) => this.events.emit('notice', { id: 'flip', value: lines }));
     events.on('mirror', () => this.events.emit('notice', { id: 'mirror' }));
     events.on('tilt', () => this.events.emit('notice', { id: 'tilt' }));
+    events.on('blast', ({ cells, bombs }) =>
+      this.events.emit('notice', {
+        id: bombs > 1 ? 'blastChain' : 'blast',
+        value: bombs > 1 ? bombs : cells.length,
+      }),
+    );
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));
   }
 }

@@ -173,7 +173,10 @@
       "spark": "Lightning sets the oil ablaze",
       "thaw": "Lightning breaks the ice",
       "fuse": "Lightning sets the vine on fire"
-    }
+    },
+    "bombPiece": "Bomb gem: clear its ring to blow up the tower around it",
+    "blast": "Boom! {value} blocks blown away",
+    "blastChain": "Chain reaction: {value} bombs!"
   },
   "controls": {
     "label": "Touch controls",
