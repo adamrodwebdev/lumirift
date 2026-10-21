@@ -101,6 +101,11 @@ for (const name of MODES) {
     await expect(pause).toBeVisible();
     await pause.getByRole('button', { name: 'Reprendre' }).click();
     await expect(pause).toBeHidden();
+    // P resumes as well as it pauses.
+    await page.keyboard.press('KeyP');
+    await expect(pause).toBeVisible();
+    await page.keyboard.press('KeyP');
+    await expect(pause).toBeHidden();
     await page.keyboard.press('KeyP');
     await page
       .getByRole('dialog', { name: 'Pause' })

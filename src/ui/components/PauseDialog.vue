@@ -46,6 +46,13 @@ const gestures = computed<readonly Gesture[]>(() => {
 });
 /** Words for what the drawings cannot say (the Mosaic's touch controls). */
 const texts = computed(() => (props.touch && gestures.value.length === 0 ? props.help : []));
+
+/** P pauses, P resumes: the key works both ways (the game's own keys sleep under a window). */
+const onKey = (event: KeyboardEvent) => {
+  if (event.code !== 'KeyP' || event.repeat) return;
+  event.preventDefault();
+  emit('resume');
+};
 </script>
 
 <template>
@@ -56,6 +63,7 @@ const texts = computed(() => (props.touch && gestures.value.length === 0 ? props
     :title="t('pause.title')"
     :wide="gestures.length > 0 || !touch"
     @dismiss="emit('resume')"
+    @keydown="onKey"
   >
     <button
       type="button"

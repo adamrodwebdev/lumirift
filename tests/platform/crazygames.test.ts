@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CrazyGamesPlatform } from '@/platform/crazygames/CrazyGamesPlatform';
+import { CrazyGamesPlatform, FIRST_AD_AFTER_MS } from '@/platform/crazygames/CrazyGamesPlatform';
 import { WebPlatform } from '@/platform/Platform';
 
 type Callbacks = { adStarted(): void; adFinished(): void; adError(error: unknown): void };
@@ -45,6 +45,16 @@ function fakeSdk(environment: 'local' | 'crazygames' | 'disabled' = 'crazygames'
   };
 }
 
+/** A platform whose player has already played long enough for ads (a clock of its own). */
+async function seasoned(): Promise<CrazyGamesPlatform> {
+  let time = 0;
+  const platform = await CrazyGamesPlatform.create(() => time);
+  platform.gameplayStart();
+  time += FIRST_AD_AFTER_MS;
+  platform.gameplayStop();
+  return platform;
+}
+
 /** The browser storage the platform falls back on (none in Node: memory). */
 (globalThis as unknown as { localStorage?: unknown }).localStorage = undefined;
 
@@ -83,7 +93,7 @@ describe('CrazyGamesPlatform', () => {
 
   it('stops the sound only while an ad really plays, and goes on after it', async () => {
     const sdk = fakeSdk();
-    const platform = await CrazyGamesPlatform.create();
+    const platform = await seasoned();
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
     const done = platform.midgameAd(hooks, 'replay');
     expect(sdk.calls).toContain('ad:midgame');
@@ -97,7 +107,7 @@ describe('CrazyGamesPlatform', () => {
 
   it('goes on at once when no ad comes (Basic Launch, adblock, no fill)', async () => {
     const sdk = fakeSdk();
-    const platform = await CrazyGamesPlatform.create();
+    const platform = await seasoned();
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
     const done = platform.midgameAd(hooks, 'replay');
     sdk.ad()!.adError('unfilled');
@@ -106,9 +116,30 @@ describe('CrazyGamesPlatform', () => {
     expect(hooks.onEnd).not.toHaveBeenCalled();
   });
 
+  it('never shows an ad in the first minutes of play: a newcomer plays first', async () => {
+    const sdk = fakeSdk();
+    let time = 0;
+    const platform = await CrazyGamesPlatform.create(() => time);
+    const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
+    // Two minutes of play, a long pause (not counted), then a break: still no ad.
+    platform.gameplayStart();
+    time += 2 * 60_000;
+    platform.gameplayStop();
+    time += 10 * 60_000;
+    await platform.midgameAd(hooks, 'replay');
+    expect(sdk.calls).not.toContain('ad:midgame');
+    // One more minute of play: the next break may show one.
+    platform.gameplayStart();
+    time += 60_000;
+    expect(platform.timePlayedMs).toBe(FIRST_AD_AFTER_MS);
+    platform.gameplayStop();
+    void platform.midgameAd(hooks, 'replay');
+    expect(sdk.calls).toContain('ad:midgame');
+  });
+
   it('never shows an ad on the way to a menu (navigation buttons)', async () => {
     const sdk = fakeSdk();
-    const platform = await CrazyGamesPlatform.create();
+    const platform = await seasoned();
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
     await platform.midgameAd(hooks, 'leave');
     expect(sdk.calls).not.toContain('ad:midgame');

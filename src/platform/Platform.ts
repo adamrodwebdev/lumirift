@@ -52,7 +52,7 @@ export interface Platform {
   gameplayStop(): void;
   /** A game ended (won: a level or a duel): gameplay stops. */
   gameOver(won: boolean): void;
-  /** A moment worth celebrating (a record, a level won): use sparingly. */
+  /** A real feat worth celebrating (a record beaten, a Guardian defeated): never for every level. */
   happyTime(): void;
   /** A natural break between two games; resolves when the game may go on. */
   midgameAd(hooks: AdHooks, moment: BreakMoment): Promise<void>;

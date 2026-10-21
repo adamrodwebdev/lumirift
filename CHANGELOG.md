@@ -3,6 +3,21 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.17.2] — 21/10/2026
+
+Corrections issues de la revue modérateur CrazyGames.
+
+### Corrigé
+
+- **Pas de publicité dans les premières minutes** : sur CrazyGames, la première publicité
+  « midgame » attend 3 minutes de jeu réel (pauses et menus exclus). La revue l'a vue partir
+  après 25 s, au passage du niveau 1-1 au 1-2 ; le portail demande « une quantité raisonnable de
+  jeu » avant toute publicité, et son aperçu QA n'applique pas sa propre attente de 3 minutes.
+- **`happytime` avec parcimonie**, comme le demande le portail : seulement pour un record battu
+  (plus pour la toute première partie d'un mode) ou un Gardien vaincu pour la première fois,
+  plus pour chaque niveau gagné.
+- **P reprend la partie** depuis la fenêtre de pause, comme il l'a ouverte.
+
 ## [1.17.1] — 21/10/2026
 
 La vitrine des portails.
