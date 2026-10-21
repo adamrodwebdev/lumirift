@@ -3,6 +3,17 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.11.1] — 21/10/2026
+
+### Corrigé
+
+- **Portails : une perte de focus ne signale plus d'arrêt de partie.** Le jeu se met toujours
+  en pause quand il perd le focus ou que l'onglet est caché, mais seul le joueur qui met en
+  pause envoie `gameplayStop` (CrazyGames suit lui-même le focus) ; la reprise n'envoie
+  `gameplayStart` qu'après un arrêt signalé.
+- **Zip CrazyGames** : fabriqué avec `tar` (chemins en « / ») au lieu de `Compress-Archive`,
+  qui écrivait `assets\x.js` sous Windows ; le script vérifie les chemins.
+
 ## [1.11.0] — 21/10/2026
 
 ### Modifié

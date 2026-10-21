@@ -2,7 +2,7 @@
 
 | Version | Date       | Statut               |
 | ------- | ---------- | -------------------- |
-| 1.11    | 21/10/2026 | Prêt pour CrazyGames |
+| 1.11.1  | 21/10/2026 | Prêt pour CrazyGames |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 

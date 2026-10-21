@@ -400,18 +400,32 @@ const dispose = () => {
   session.value = null;
 };
 
-const pause = () => {
+/** A `gameplayStop` was sent for this pause: its resume sends `gameplayStart`. */
+let stopReported = false;
+
+/**
+ * Pauses the game. The portal hears of it only when the player asked for it:
+ * focus lost, a hidden tab or the portal's own pause are the portal's to
+ * track (CrazyGames: no gameplayStop on focus loss).
+ */
+const pauseGame = (byPlayer: boolean) => {
   if (phase.value !== 'playing') return;
   session.value?.pause();
   phase.value = 'paused';
-  platform.gameplayStop();
+  if (byPlayer) {
+    platform.gameplayStop();
+    stopReported = true;
+  }
 };
+const pause = () => pauseGame(true);
+const pauseForFocus = () => pauseGame(false);
 
 const resume = () => {
   if (phase.value !== 'paused') return;
   session.value?.resume();
   phase.value = 'playing';
-  platform.gameplayStart();
+  if (stopReported) platform.gameplayStart();
+  stopReported = false;
 };
 
 const onShare = async () => {
@@ -431,23 +445,23 @@ const onShare = async () => {
 };
 
 const onVisibility = () => {
-  if (document.hidden) pause();
+  if (document.hidden) pauseForFocus();
 };
 
 // The portal pauses the game (its own ad, the player switching away).
 const offPortalPause = platform.onPauseChange((paused) => {
-  if (paused) pause();
+  if (paused) pauseForFocus();
 });
 
 onMounted(() => {
   document.addEventListener('visibilitychange', onVisibility);
-  window.addEventListener('blur', pause);
+  window.addEventListener('blur', pauseForFocus);
   void start();
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisibility);
-  window.removeEventListener('blur', pause);
+  window.removeEventListener('blur', pauseForFocus);
   clearTimeout(toastTimer);
   clearTimeout(outcomeTimer);
   clearTimeout(recordTimer);
