@@ -1,33 +1,48 @@
 import type { RandomSource } from '@/core/Random';
 import { CHROMA_TONES, Tone } from '@/core/Tone';
+import { DENSITY, LIFE_STEPS, matterOf, RAIN_CHANCE, RAIN_ZONE, type Matter } from './Elements';
 
 /** Each cell of the well is made of this many grains, side by side. */
 export const GRAINS_PER_CELL = 6;
-/** The four colours of sand (water and fire are elements, not colours). */
+/** The four colours of sand (elements are not colours). */
 export const SAND_TONES = CHROMA_TONES;
 /** How long water flows before it sets, and fire burns before it dies out, in steps. */
-export const WATER_LIFE_STEPS = 140;
-export const FIRE_LIFE_STEPS = 220;
+export const WATER_LIFE_STEPS = LIFE_STEPS[Tone.Water]!;
+export const FIRE_LIFE_STEPS = LIFE_STEPS[Tone.Fire]!;
 /** Chance per step that wind pushes a loose grain one step aside. */
 const WIND_PUSH = 0.25;
+/** Chance per step that oil, which is thick, spreads sideways when it cannot fall. */
+const OIL_FLOW = 0.25;
 /** A gust moves a grain one cell at most: it reshapes the surface, it never sweeps the well. */
 export const WIND_MAX_DRIFT = GRAINS_PER_CELL;
 
 const isSand = (tone: number) => tone >= Tone.ChromaA && tone <= Tone.ChromaD;
 
+/** Matter of every tone, looked up once (the physics reads it for every grain). */
+const MATTER_OF: readonly Matter[] = Array.from({ length: 32 }, (_, tone) => matterOf(tone));
+const DENSITY_OF: readonly number[] = Array.from(
+  { length: 32 },
+  (_, tone) => DENSITY[tone as Tone] ?? 0,
+);
+
 /**
- * The sand well: one cell per grain. Grains fall, slide down diagonally when
- * blocked, water also spreads sideways; wind pushes the loose surface grains.
- * Typed arrays only: the physics allocates nothing while it runs.
+ * The sand well: one cell per grain. Powders fall and slide, liquids spread
+ * and settle by density, steam rises, solids hold still; wind pushes the loose
+ * surface. Grains that wear out change (water sets, fire dies, ice melts,
+ * steam rains). Typed arrays only: the physics allocates nothing while it runs.
  */
 export class SandGrid {
   readonly tones: Uint8Array;
   /** A small random shade per grain (0–3): sand never looks flat. */
   readonly grain: Uint8Array;
-  /** Steps left before water sets or fire dies out. */
+  /** Steps left before the grain changes (see `LIFE_STEPS`); also the heat of a blaze. */
   readonly life: Uint16Array;
+  /** 1 for a grain of sand that holds still (a vine). */
+  readonly fixed: Uint8Array;
   /** Direction of the wind blowing now (−1 left, 1 right) or 0. */
   wind: -1 | 0 | 1 = 0;
+  /** Seeds that wore out this step without water: they sprout anyway (read by the game). */
+  readonly sprouts: number[] = [];
   /** Grains each grain has been blown during the current gust. */
   private readonly drift: Uint8Array;
 
@@ -44,6 +59,7 @@ export class SandGrid {
     this.tones = new Uint8Array(size);
     this.grain = new Uint8Array(size);
     this.life = new Uint16Array(size);
+    this.fixed = new Uint8Array(size);
     this.drift = new Uint8Array(size);
     this.movedAt = new Uint32Array(size);
     this.visited = new Uint8Array(size);
@@ -54,10 +70,18 @@ export class SandGrid {
     return this.tones[y * this.width + x] as Tone;
   }
 
+  /** No grain at all there. */
   isFree(x: number, y: number): boolean {
     return (
       x >= 0 && y >= 0 && x < this.width && y < this.height && this.tones[y * this.width + x] === 0
     );
+  }
+
+  /** A falling piece may pass: nothing, or only steam (a cloud never blocks a piece). */
+  isOpen(x: number, y: number): boolean {
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height) return false;
+    const tone = this.tones[y * this.width + x]!;
+    return tone === 0 || tone === Tone.Steam;
   }
 
   /** Physics steps run so far (a grain moved since a given step is not where it was). */
@@ -70,57 +94,61 @@ export class SandGrid {
     this.drift.fill(0);
   }
 
-  /** Puts a grain (a piece turning into sand). */
+  /** Puts a grain (a piece turning into sand, a reaction leaving something behind). */
   put(x: number, y: number, tone: Tone, shade: number): void {
-    const i = y * this.width + x;
-    this.tones[i] = tone;
-    this.grain[i] = shade & 3;
-    this.life[i] =
-      tone === Tone.Water ? WATER_LIFE_STEPS : tone === Tone.Fire ? FIRE_LIFE_STEPS : 0;
+    this.set(y * this.width + x, tone, shade);
   }
 
-  /** One step of physics; returns how many grains moved. */
+  /** Puts a grain at an index, with the life its tone starts with. */
+  set(i: number, tone: Tone, shade = (i * 7) & 3, life = LIFE_STEPS[tone] ?? 0): void {
+    this.tones[i] = tone;
+    this.grain[i] = shade & 3;
+    this.life[i] = life;
+    this.fixed[i] = 0;
+    this.drift[i] = 0;
+  }
+
+  /** Makes a grain of sand hold still (a vine). */
+  fix(i: number): void {
+    this.fixed[i] = 1;
+  }
+
   simulate(random: RandomSource): number {
     this.steps++;
+    this.sprouts.length = 0;
     const { width: W, height: H, tones } = this;
     let moved = 0;
     for (let y = H - 1; y >= 0; y--) {
-      // Alternate the sweep: sand must not lean to one side.
+      // Alternate the sweep: nothing may lean to one side.
       const forward = ((y + this.steps) & 1) === 0;
       for (let k = 0; k < W; k++) {
         const x = forward ? k : W - 1 - k;
         const i = y * W + x;
         const tone = tones[i]!;
-        if (tone === 0 || this.movedAt[i] === this.steps) continue;
-        if (y < H - 1) {
-          if (tones[i + W] === 0) {
-            this.move(i, i + W);
-            moved++;
-            continue;
-          }
-          const side = random.next() < 0.5 ? -1 : 1;
-          if (this.slide(i, x, y, side) || this.slide(i, x, y, -side)) {
-            moved++;
-            continue;
-          }
+        if (tone === 0 || this.movedAt[i] === this.steps || this.fixed[i]) continue;
+        const matter = MATTER_OF[tone]!;
+        if (matter === 'solid') continue;
+        if (matter === 'gas') {
+          if (this.rise(i, x, y, random)) moved++;
+          continue;
         }
-        if (tone === Tone.Water) {
-          const side = random.next() < 0.5 ? -1 : 1;
-          if (this.isFree(x + side, y)) {
-            this.move(i, i + side);
-            moved++;
-            continue;
-          }
+        if (this.fall(i, x, y, matter, random)) {
+          moved++;
+          continue;
+        }
+        if (matter === 'liquid' && this.spread(i, x, random)) {
+          moved++;
+          continue;
         }
         // Wind only lifts loose grains: those with nothing on top, not yet blown a cell away.
         if (
           this.wind !== 0 &&
-          (y === 0 || tones[i - W] === 0) &&
+          (y === 0 || tones[i - W] === 0 || tones[i - W] === Tone.Steam) &&
           this.drift[i]! < WIND_MAX_DRIFT &&
           random.next() < WIND_PUSH &&
-          this.isFree(x + this.wind, y)
+          this.isOpen(x + this.wind, y)
         ) {
-          this.move(i, i + this.wind);
+          this.swap(i, i + this.wind);
           this.drift[i + this.wind]!++;
           moved++;
         }
@@ -130,23 +158,40 @@ export class SandGrid {
     return moved;
   }
 
+  /** Grains of `tone` touching a grain matching `touches`, each with one grain it touches. */
+  contacts(tone: Tone, touches: (other: number) => boolean): { at: number; other: number }[] {
+    const found: { at: number; other: number }[] = [];
+    const { width: W, tones } = this;
+    const size = tones.length;
+    for (let i = 0; i < size; i++) {
+      if (tones[i] !== tone) continue;
+      const x = i % W;
+      if (i + W < size && touches(tones[i + W]!)) found.push({ at: i, other: i + W });
+      else if (x > 0 && touches(tones[i - 1]!)) found.push({ at: i, other: i - 1 });
+      else if (x < W - 1 && touches(tones[i + 1]!)) found.push({ at: i, other: i + 1 });
+      else if (i >= W && touches(tones[i - W]!)) found.push({ at: i, other: i - W });
+    }
+    return found;
+  }
+
   /** Fire grains touching sand or water, with the grain they touch. */
   fireContacts(): { fire: number; seed: number }[] {
-    const contacts: { fire: number; seed: number }[] = [];
-    const { width: W, tones } = this;
-    for (let i = 0; i < tones.length; i++) {
-      if (tones[i] !== Tone.Fire) continue;
-      const x = i % W;
-      for (const n of [i + W, x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, i - W]) {
-        if (n < 0 || n >= tones.length) continue;
-        const touched = tones[n]!;
-        if (isSand(touched) || touched === Tone.Water) {
-          contacts.push({ fire: i, seed: n });
-          break;
-        }
-      }
-    }
-    return contacts;
+    return this.contacts(Tone.Fire, (n) => isSand(n) || n === Tone.Water).map(({ at, other }) => ({
+      fire: at,
+      seed: other,
+    }));
+  }
+
+  /** The four neighbours of a grain (−1 off the well). */
+  neighbours(i: number): readonly [number, number, number, number] {
+    const W = this.width;
+    const x = i % W;
+    return [
+      i + W < this.tones.length ? i + W : -1,
+      x > 0 ? i - 1 : -1,
+      x < W - 1 ? i + 1 : -1,
+      i >= W ? i - W : -1,
+    ];
   }
 
   /** Every grain of the same colour connected to `seed` (by a side), nearest first. */
@@ -187,7 +232,7 @@ export class SandGrid {
   dropBottomRows(count: number): void {
     const n = Math.min(count, this.height) * this.width;
     const keep = this.tones.length - n;
-    for (const array of [this.tones, this.grain, this.life, this.drift]) {
+    for (const array of [this.tones, this.grain, this.life, this.drift, this.fixed]) {
       array.copyWithin(n, 0, keep);
       array.fill(0, 0, n);
     }
@@ -195,18 +240,24 @@ export class SandGrid {
 
   /** Empties the given grains. */
   remove(indices: readonly number[]): void {
-    for (const i of indices) {
-      this.tones[i] = 0;
-      this.life[i] = 0;
-      this.drift[i] = 0;
-    }
+    for (const i of indices) this.clear(i);
   }
 
-  /** Height of the sand, in grains from the floor. */
+  clear(i: number): void {
+    this.tones[i] = 0;
+    this.life[i] = 0;
+    this.drift[i] = 0;
+    this.fixed[i] = 0;
+  }
+
+  /** Height of the pile, in grains from the floor (steam floats above it and does not count). */
   sandHeight(): number {
     const { width: W, height: H, tones } = this;
     for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) if (tones[y * W + x] !== 0) return H - y;
+      for (let x = 0; x < W; x++) {
+        const tone = tones[y * W + x]!;
+        if (tone !== 0 && tone !== Tone.Steam) return H - y;
+      }
     }
     return 0;
   }
@@ -217,7 +268,7 @@ export class SandGrid {
     return count;
   }
 
-  /** Breadth-first search over one colour, on preallocated arrays (no allocation per grain). */
+  /** Breadth-first search over one tone, on preallocated arrays (no allocation per grain). */
   private flood(start: number, tone: number): number[] {
     const { width: W, tones, visited, queue } = this;
     const size = tones.length;
@@ -242,31 +293,126 @@ export class SandGrid {
     return cells;
   }
 
-  private slide(i: number, x: number, y: number, side: number): boolean {
-    if (!this.isFree(x + side, y + 1)) return false;
-    this.move(i, i + this.width + side);
-    return true;
+  /** Can a grain of this matter (and density) move into grain `j`? */
+  private yields(j: number, matter: Matter, density: number, tone: number): boolean {
+    const other = this.tones[j]!;
+    if (other === 0) return true;
+    if (this.fixed[j]) return false;
+    const otherMatter = MATTER_OF[other]!;
+    if (otherMatter === 'gas') return true;
+    // Powders sink through liquids (fire stays on top: it burns at the surface);
+    // a denser liquid goes under a lighter one.
+    if (otherMatter === 'liquid') {
+      if (matter === 'powder') return tone !== Tone.Fire;
+      return matter === 'liquid' && density > DENSITY_OF[other]!;
+    }
+    return false;
   }
 
-  private move(from: number, to: number): void {
-    this.tones[to] = this.tones[from]!;
-    this.grain[to] = this.grain[from]!;
-    this.life[to] = this.life[from]!;
-    this.drift[to] = this.drift[from]!;
+  /** Falls straight down, or slides down a side. */
+  private fall(i: number, x: number, y: number, matter: Matter, random: RandomSource): boolean {
+    if (y >= this.height - 1) return false;
+    const W = this.width;
+    const tone = this.tones[i]!;
+    const density = DENSITY_OF[tone]!;
+    if (this.yields(i + W, matter, density, tone)) {
+      this.swap(i, i + W);
+      return true;
+    }
+    const side = random.next() < 0.5 ? -1 : 1;
+    for (const s of [side, -side]) {
+      const nx = x + s;
+      if (nx >= 0 && nx < W && this.yields(i + W + s, matter, density, tone)) {
+        this.swap(i, i + W + s);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** A liquid that cannot fall spreads sideways (oil is thick: it pools rather than runs). */
+  private spread(i: number, x: number, random: RandomSource): boolean {
+    if (this.tones[i] === Tone.Oil && random.next() > OIL_FLOW) return false;
+    const side = random.next() < 0.5 ? -1 : 1;
+    for (const s of [side, -side]) {
+      const nx = x + s;
+      if (nx < 0 || nx >= this.width) continue;
+      const other = this.tones[i + s]!;
+      if (other === 0 || other === Tone.Steam) {
+        this.swap(i, i + s);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Steam rises (bubbling up through liquids), drifts sideways, follows the wind. */
+  private rise(i: number, x: number, y: number, random: RandomSource): boolean {
+    const W = this.width;
+    if (y > 0) {
+      const above = this.tones[i - W]!;
+      if (above === 0 || (MATTER_OF[above] === 'liquid' && random.next() < 0.5)) {
+        this.swap(i, i - W);
+        return true;
+      }
+    }
+    const side = this.wind || (random.next() < 0.5 ? -1 : 1);
+    const nx = x + side;
+    if (nx >= 0 && nx < W && this.tones[i + side] === 0 && random.next() < 0.7) {
+      this.swap(i, i + side);
+      return true;
+    }
+    return false;
+  }
+
+  private swap(from: number, to: number): void {
+    const { tones, grain, life, drift, fixed } = this;
+    const tone = tones[to]!;
+    const shade = grain[to]!;
+    const left = life[to]!;
+    const blown = drift[to]!;
+    const still = fixed[to]!;
+    tones[to] = tones[from]!;
+    grain[to] = grain[from]!;
+    life[to] = life[from]!;
+    drift[to] = drift[from]!;
+    fixed[to] = fixed[from]!;
+    tones[from] = tone;
+    grain[from] = shade;
+    life[from] = left;
+    drift[from] = blown;
+    fixed[from] = still;
     this.movedAt[to] = this.steps;
-    this.tones[from] = 0;
-    this.life[from] = 0;
-    this.drift[from] = 0;
+    if (tone !== 0) this.movedAt[from] = this.steps;
   }
 
-  /** Water sets in the colour around it; fire dies out. */
+  /** Grains wear out: water sets, fire dies, ice melts, steam rains, oil and acid fade. */
   private age(random: RandomSource): void {
-    const { tones, life } = this;
+    const { tones, life, width: W, height: H } = this;
     for (let i = 0; i < tones.length; i++) {
       const tone = tones[i]!;
-      if (tone !== Tone.Water && tone !== Tone.Fire) continue;
+      if (tone === 0 || isSand(tone) || tone === Tone.Lightning) continue;
       if (--life[i]! > 0) continue;
-      tones[i] = tone === Tone.Fire ? 0 : this.settingColour(i, random);
+      switch (tone) {
+        case Tone.Water:
+          this.set(i, this.settingColour(i, random) as Tone, this.grain[i]);
+          break;
+        case Tone.Ice:
+          this.set(i, Tone.Water, this.grain[i]);
+          break;
+        case Tone.Steam:
+          // Cooled at the top of the well, steam falls back as rain.
+          if (((i / W) | 0) < H * RAIN_ZONE && random.next() < RAIN_CHANCE) {
+            this.set(i, Tone.Water, this.grain[i]);
+          } else this.clear(i);
+          break;
+        case Tone.Seed:
+          this.sprouts.push(i);
+          life[i] = 1;
+          break;
+        default:
+          this.clear(i);
+      }
     }
   }
 

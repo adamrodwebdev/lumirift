@@ -1,0 +1,19 @@
+import { Tone } from '@/core/Tone';
+import type { ScriptedPiece } from './SandGame';
+
+/**
+ * The first level's show: within about a minute the player sees what no
+ * other sand game has. Three sand pieces to learn linking, then water and a
+ * lightning bolt aimed at it (the shock breaks every colour touching the
+ * water), then oil and fire (the blaze), then a seed and water (a vine
+ * bridging a gap in its colour). Each reacting piece appears right above
+ * the element it reacts with: just dropping it is enough to see the show.
+ */
+export const SHOWCASE: readonly ScriptedPiece[] = [
+  { at: 4, tone: Tone.Water, type: 'I' },
+  { at: 5, tone: Tone.Lightning, type: 'O', above: true },
+  { at: 7, tone: Tone.Oil, type: 'I' },
+  { at: 8, tone: Tone.Fire, type: 'O', above: true },
+  { at: 10, tone: Tone.Seed, type: 'O' },
+  { at: 11, tone: Tone.Water, type: 'O', above: true },
+];

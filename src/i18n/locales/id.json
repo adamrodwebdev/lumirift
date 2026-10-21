@@ -153,7 +153,27 @@
     "elementFire": "Kepingan api",
     "burn": "Api membakar {value} butir",
     "quench": "Air memadamkan api",
-    "rescue": "Kesempatan kedua!"
+    "rescue": "Kesempatan kedua!",
+    "elementOil": "Kepingan minyak: mengapung, dan api membuatnya berkobar",
+    "elementIce": "Kepingan es: menahan, membekukan air, meleleh oleh api",
+    "elementLightning": "Petir: bidik air untuk sengatan",
+    "elementSeed": "Benih: siram, ia tumbuh jadi jembatan warnanya",
+    "elementAcid": "Asam: menggerus pasir di bawahnya",
+    "react": {
+      "blaze": "Kobaran! Minyak memberi makan api",
+      "melt": "Es meleleh: air dan uap",
+      "freeze": "Air membeku pada es",
+      "fuse": "Api merambat di sulur",
+      "dilute": "Air mengencerkan asam",
+      "sprout": "Benih tumbuh menjadi sulur"
+    },
+    "strike": {
+      "shock": "Sengatan! {value} butir hancur lewat air",
+      "shatter": "Petir: {value} butir pecah",
+      "spark": "Petir membakar minyak",
+      "thaw": "Petir memecah es",
+      "fuse": "Petir membakar sulur"
+    }
   },
   "controls": {
     "label": "Kontrol sentuh",
@@ -315,7 +335,7 @@
   },
   "sand": {
     "well": "Sumur pasir",
-    "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung. Air mengambil warna di sekitarnya, api membakar warna yang disentuhnya."
+    "helpTouch": "Sentuh: geser untuk memindah, ketuk untuk memutar, geser cepat ke bawah untuk menjatuhkan. Hubungkan satu warna dari dinding ke dinding. Elemen bereaksi: minyak memberi makan api, api melelehkan es menjadi uap, petir lewat air menghancurkan semua yang disentuhnya, benih yang disiram tumbuh jadi jembatan."
   },
   "tower": {
     "well": "Menara kaca",

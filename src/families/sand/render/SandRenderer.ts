@@ -21,7 +21,25 @@ const TEXTURES: Readonly<Partial<Record<Tone, (x: number, y: number, frame: numb
     [Tone.ChromaD]: (x, y) => x % 3 === 1 && y % 3 === 1,
     [Tone.Water]: (x, y, frame) => (x + y + (frame >> 2)) % 4 === 0,
     [Tone.Fire]: (x, y, frame) => (x * 7 + y * 13 + frame) % 5 === 0,
+    // Oil: a slow sheen; ice: a still crystal mesh; seeds: specks; acid: bubbling;
+    // the blaze flickers fast; lightning crackles.
+    [Tone.Oil]: (x, y, frame) => (x * 2 + y + (frame >> 4)) % 7 === 0,
+    [Tone.Ice]: (x, y) => (x + y) % 4 === 0 || (x - y + 64) % 4 === 0,
+    [Tone.Seed]: (x, y) => (x * 3 + y * 5) % 7 === 0,
+    [Tone.Acid]: (x, y, frame) => (x * 5 + y * 11 + (frame >> 1)) % 6 === 0,
+    [Tone.Blaze]: (x, y, frame) => (x * 7 + y * 3 + frame * 3) % 4 === 0,
+    [Tone.Lightning]: (x, y, frame) => (x * 3 + y * 7 + frame * 5) % 4 !== 0,
   };
+/** A vine (sand that holds still) shows leaf-like diagonal veins over its colour. */
+const VINE_TEXTURE = (x: number, y: number) => (x + 2 * y) % 5 === 0;
+/**
+ * Steam is drawn as a soft cloud over the well: each grain adds to a small
+ * density map (a third of the size), smoothed when scaled up; the cloud is
+ * thick where steam gathers, thin at its edges, and shimmers.
+ */
+const FOG_SCALE = 3;
+const FOG_GRAIN = 34;
+const FOG_MAX = 185;
 
 const pack = ({ r, g, b }: Rgb): number => (255 << 24) | (b << 16) | (g << 8) | r;
 const mix = ({ r, g, b }: Rgb, amount: number): Rgb => {
@@ -40,7 +58,13 @@ export class SandRenderer {
   private readonly pixels: ImageData;
   private readonly buffer: Uint32Array;
   /** Packed colours: [tone][shade 0–3][texture 0–1]. */
-  private lut = new Uint32Array(16 * 8);
+  private lut = new Uint32Array(32 * 8);
+  private readonly fog: HTMLCanvasElement;
+  private readonly fogCtx: CanvasRenderingContext2D;
+  private readonly fogPixels: ImageData;
+  private readonly fogBuffer: Uint32Array;
+  private readonly fogDensity: Uint16Array;
+  private fogColour = 0;
   private background = 0;
   private palette: TonePalette | null = null;
   /** Side of a cell in device pixels; a grain is cell / GRAINS_PER_CELL. */
@@ -63,6 +87,13 @@ export class SandRenderer {
     this.imageCtx = this.image.getContext('2d')!;
     this.pixels = this.imageCtx.createImageData(width, height);
     this.buffer = new Uint32Array(this.pixels.data.buffer);
+    this.fog = document.createElement('canvas');
+    this.fog.width = Math.ceil(width / FOG_SCALE);
+    this.fog.height = Math.ceil(height / FOG_SCALE);
+    this.fogCtx = this.fog.getContext('2d')!;
+    this.fogPixels = this.fogCtx.createImageData(this.fog.width, this.fog.height);
+    this.fogBuffer = new Uint32Array(this.fogPixels.data.buffer);
+    this.fogDensity = new Uint16Array(this.fog.width * this.fog.height);
   }
 
   /** Fits the 10 × 20 cell well in the box (CSS pixels); returns the cell size. */
@@ -84,7 +115,9 @@ export class SandRenderer {
   setPalette(palette: TonePalette): void {
     this.palette = palette;
     this.background = pack(parseHex(palette.wellBackground));
-    for (let tone = 1; tone <= 14; tone++) {
+    const steam = parseHex(palette.effects.steam);
+    this.fogColour = (steam.b << 16) | (steam.g << 8) | steam.r;
+    for (let tone = 1; tone <= Tone.Blaze; tone++) {
       const rgb = palette.color(tone as Tone);
       for (let shade = 0; shade < 4; shade++) {
         for (let texture = 0; texture < 2; texture++) {
@@ -115,6 +148,7 @@ export class SandRenderer {
     if (effects.shake.active) ctx.translate(effects.shake.x * grain, effects.shake.y * grain);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(this.image, 0, 0, width, height);
+    this.drawFog(width, height);
 
     const piece = this.view.active;
     if (piece) {
@@ -122,10 +156,81 @@ export class SandRenderer {
       this.outline(piece, 0, palette.accent, grain);
     }
     this.drawWind(grain, palette);
+    this.drawBolts(grain);
     this.drawParticles(grain);
     this.drawPopups(grain, palette);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (effects.flash > 0) {
+      ctx.fillStyle = `rgb(255 248 220 / ${(effects.flash * 0.35).toFixed(3)})`;
+      ctx.fillRect(0, 0, width, height);
+    }
     this.drawDanger(palette);
+  }
+
+  /**
+   * Steam hides what is behind it: a soft cloud drawn over the grains (the
+   * outline of the falling piece is drawn on top, so it is never hidden).
+   */
+  private drawFog(width: number, height: number): void {
+    const { tones } = this.view.grid;
+    const W = this.view.grid.width;
+    const fw = this.fog.width;
+    const density = this.fogDensity;
+    density.fill(0);
+    let any = false;
+    for (let i = 0; i < tones.length; i++) {
+      if (tones[i] !== Tone.Steam) continue;
+      any = true;
+      const fx = ((i % W) / FOG_SCALE) | 0;
+      const k = ((i / W / FOG_SCALE) | 0) * fw + fx;
+      // A grain thickens its spot of the map, and a little the spots around it.
+      density[k] = density[k]! + FOG_GRAIN;
+      for (const n of [k - 1, k + 1, k - fw, k + fw]) {
+        if (n >= 0 && n < density.length) density[n] = density[n]! + (FOG_GRAIN >> 1);
+      }
+    }
+    if (!any || this.effects.hidden) return;
+    const buffer = this.fogBuffer;
+    const shimmer = this.frame * 0.05;
+    for (let k = 0; k < density.length; k++) {
+      const d = density[k]!;
+      if (d === 0) {
+        buffer[k] = 0;
+        continue;
+      }
+      const wave = 0.85 + 0.15 * Math.sin(shimmer + (k % fw) * 0.7 + ((k / fw) | 0) * 0.45);
+      const alpha = Math.min(FOG_MAX, d) * wave;
+      buffer[k] = ((alpha & 255) << 24) | this.fogColour;
+    }
+    this.fogCtx.putImageData(this.fogPixels, 0, 0);
+    const { ctx } = this;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(this.fog, 0, 0, width, height);
+    ctx.imageSmoothingEnabled = false;
+  }
+
+  /** Lightning bolts: a bright jagged line that fades. */
+  private drawBolts(grain: number): void {
+    const { ctx, effects } = this;
+    if (effects.bolts.length === 0) return;
+    const colour = this.palette?.color(Tone.Lightning);
+    const rgb = colour ? `${colour.r} ${colour.g} ${colour.b}` : '255 242 160';
+    for (const bolt of effects.bolts) {
+      const fade = 1 - effects.boltProgress(bolt);
+      ctx.lineJoin = 'round';
+      for (const [width, alpha] of [
+        [grain * 3.2, 0.25],
+        [grain * 1.1, 1],
+      ] as const) {
+        ctx.strokeStyle = `rgb(${rgb} / ${(alpha * fade).toFixed(3)})`;
+        ctx.lineWidth = Math.max(1, width);
+        ctx.beginPath();
+        bolt.points.forEach(([x, y], k) =>
+          k === 0 ? ctx.moveTo(x * grain, y * grain) : ctx.lineTo(x * grain, y * grain),
+        );
+        ctx.stroke();
+      }
+    }
   }
 
   /** Grains and the falling piece into the small image, one pixel each. */
@@ -135,16 +240,29 @@ export class SandRenderer {
     const W = grid.width;
     const buffer = this.buffer;
     const hidden = this.effects.hidden;
+    const fixed = grid.fixed;
     for (let i = 0; i < tones.length; i++) {
       const tone = tones[i]!;
-      buffer[i] =
-        tone === 0 || hidden ? this.background : this.colour(tone, grain[i]!, i % W, (i / W) | 0);
+      if (tone === 0 || tone === Tone.Steam || hidden) {
+        buffer[i] = this.background;
+        continue;
+      }
+      const x = i % W;
+      const y = (i / W) | 0;
+      buffer[i] = fixed[i]
+        ? this.lut[tone * 8 + grain[i]! * 2 + (VINE_TEXTURE(x, y) ? 1 : 0)]!
+        : this.colour(tone, grain[i]!, x, y);
     }
-    const target = hidden ? null : this.view.fireTarget();
+    const target = hidden ? null : this.view.elementTarget();
     if (target) {
+      // What the falling fire would burn, or the lightning strike, flickers in its colour.
+      const lightning = active?.tone === Tone.Lightning;
+      const mark = lightning ? Tone.Lightning : Tone.Fire;
+      // Lightning marks every other grain: what it would break must be unmistakable.
+      const every = lightning ? 1 : 3;
       for (const i of target) {
-        if (((i * 7 + (this.frame >> 2)) & 3) === 0) {
-          buffer[i] = this.colour(Tone.Fire, 3, i % W, (i / W) | 0);
+        if (((i * 7 + (this.frame >> 2)) & every) === 0) {
+          buffer[i] = this.colour(mark, 3, i % W, (i / W) | 0);
         }
       }
     }

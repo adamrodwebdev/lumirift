@@ -20,6 +20,20 @@ export const Tone = {
   Water: 13,
   /** Sand: fire burns away the colour it touches. */
   Fire: 14,
+  /** Sand: oil floats on water; fire turns it into a blaze. */
+  Oil: 15,
+  /** Sand: ice holds still, freezes water, melts in fire. */
+  Ice: 16,
+  /** Sand: steam rises, hides what is behind it, falls back as rain. */
+  Steam: 17,
+  /** Sand: a seed grows into a vine of the colour it sprouts on. */
+  Seed: 18,
+  /** Sand: acid eats the sand it touches; water dilutes it. */
+  Acid: 19,
+  /** Sand: lightning strikes what lies under it. */
+  Lightning: 20,
+  /** Sand: burning oil, fiercer than fire, spreading as it fades. */
+  Blaze: 21,
 } as const;
 export type Tone = (typeof Tone)[keyof typeof Tone];
 

@@ -18,8 +18,8 @@ export interface SandView {
   readonly active: SandPiece | null;
   preview(count?: number): readonly PieceSpec[];
   dropDistance(): number;
-  /** Grains the falling fire would burn where it would land, or null. */
-  fireTarget(): readonly number[] | null;
+  /** Grains the falling fire would burn, or the lightning strike, where it would land; or null. */
+  elementTarget(): readonly number[] | null;
 }
 
 type Handlers = {

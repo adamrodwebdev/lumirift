@@ -182,6 +182,7 @@ const sessionOptions = (): SessionOptions => {
       boosts: boostsFor(campaign.current.ranks),
       ...(level.variant ? { variant: level.variant } : {}),
       ...(level.calm ? { calm: true } : {}),
+      ...(level.showcase ? { showcase: true } : {}),
     };
   }
   return {

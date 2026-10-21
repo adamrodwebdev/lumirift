@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { shapeCells } from '@/families/falling/pieces/Shapes';
-import { Tone } from '@/core/Tone';
 import { MOTIFS } from '@/render/motifs';
 import { shade, type TonePalette } from '@/render/TonePalette';
+import { isElement } from '../engine/Elements';
 import type { PieceSpec } from '../engine/SandGame';
 
 /** An upcoming piece, drawn as a block of sand of its colour. */
@@ -45,8 +45,8 @@ const draw = () => {
     }
   }
   const tone = props.spec.tone;
-  if (tone === Tone.Water || tone === Tone.Fire) {
-    // Water and fire are announced by their motif, not by their colour alone.
+  if (isElement(tone)) {
+    // Elements are announced by their motif, not by their colour alone.
     const radius = cell * 0.9;
     ctx.save();
     ctx.translate(px / 2 - radius, px / 2 - radius);

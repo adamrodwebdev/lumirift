@@ -1,15 +1,26 @@
-import type { Tone } from '@/core/Tone';
+import { Tone } from '@/core/Tone';
 import type { EffectsProfile } from '@/fx/EffectsProfile';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
 import { ScreenShake } from '@/fx/ScreenShake';
 import { shade, type TonePalette } from '@/render/TonePalette';
-import type { GrainSample } from '../engine/SandGame';
+import type { GrainSample, SandEventMap } from '../engine/SandGame';
 import type { SandPiece } from '../engine/SandPiece';
 import { GRAINS_PER_CELL } from '../engine/SandGrid';
 import type { SandSession, SandView } from '../SandSession';
 
 const POPUP_MS = 900;
 const GRAVITY = 500;
+/** A lightning bolt stays drawn this long (ms), and the well flashes as it strikes. */
+const BOLT_MS = 320;
+/** Points of a stream join the running popup when they come within this long (ms). */
+const TALLY_MS = 400;
+const FLASH_MS = 260;
+
+/** A bolt being drawn: a jagged line from where it left the piece to where it struck. */
+export interface Bolt {
+  readonly points: readonly (readonly [number, number])[];
+  age: number;
+}
 
 export interface Popup {
   readonly text: string;
@@ -32,6 +43,11 @@ export class SandEffects {
   /** Direction of the gust being drawn, or 0. */
   wind: -1 | 0 | 1 = 0;
   hidden = false;
+  readonly bolts: Bolt[] = [];
+  /** The popup a stream of points is gathering into. */
+  private running: { points: number; at: number; popup: Popup } | null = null;
+  /** White flash over the well (0–1), when lightning strikes. */
+  flash = 0;
 
   private readonly colorIndex = new Map<string, number>();
   private readonly world: ParticleWorld;
@@ -56,6 +72,8 @@ export class SandEffects {
       session.onGame('wind', ({ phase, direction }) => {
         this.wind = phase === 'start' ? direction : 0;
       }),
+      session.onGame('react', (event) => this.onReact(event)),
+      session.onGame('strike', (event) => this.onStrike(event)),
       session.onGame('over', () => this.collapse()),
     ];
     return () => offs.forEach((off) => off());
@@ -80,6 +98,17 @@ export class SandEffects {
       if (popup.age < POPUP_MS) this.popups[write++] = popup;
     }
     this.popups.length = write;
+    let bolts = 0;
+    for (const bolt of this.bolts) {
+      bolt.age += deltaMs;
+      if (bolt.age < BOLT_MS) this.bolts[bolts++] = bolt;
+    }
+    this.bolts.length = bolts;
+    this.flash = Math.max(0, this.flash - deltaMs / FLASH_MS);
+  }
+
+  boltProgress(bolt: Bolt): number {
+    return bolt.age / BOLT_MS;
   }
 
   popupProgress(popup: Popup): number {
@@ -148,7 +177,103 @@ export class SandEffects {
     }
   }
 
+  /** Two elements met: each reaction has its own burst. */
+  private onReact({ kind, x, y, points, samples }: SandEventMap['react']): void {
+    // A blaze eats sand step after step: its points show as one running total.
+    if (kind === 'scorch') this.tally(samples, points);
+    else if (points > 0) this.popup(samples, points);
+    const profile = this.profile();
+    const palette = this.palette();
+    if (profile.particles === 0 || !palette) return;
+    const burst = (tone: Tone, count: number, speed: number, rise: number, size: number) => {
+      const color = this.toneColor(tone, 0.25);
+      for (let k = 0; k < Math.round(count * profile.particles); k++) {
+        this.pool.spawn(
+          size > 1 ? ParticleKind.Dust : ParticleKind.Spark,
+          x + random(-3, 3),
+          y + random(-3, 3),
+          random(-speed, speed),
+          random(-rise, -rise / 3),
+          random(0.4, 0.9),
+          size,
+          color,
+        );
+      }
+    };
+    switch (kind) {
+      case 'blaze':
+        if (profile.shake) this.shake.kick(2);
+        burst(Tone.Blaze, 26, 70, 180, 0.6);
+        break;
+      case 'scorch':
+        for (const sample of this.thin(samples)) {
+          this.pool.spawn(
+            ParticleKind.Spark,
+            sample.x + 0.5,
+            sample.y + 0.5,
+            random(-20, 20),
+            random(-120, -40),
+            random(0.3, 0.7),
+            0.5,
+            this.toneColor(Tone.Blaze, random(0, 0.4)),
+          );
+        }
+        break;
+      case 'melt':
+        burst(Tone.Steam, 14, 20, 70, 2.5);
+        burst(Tone.Ice, 10, 50, 80, 0.6);
+        break;
+      case 'freeze':
+        burst(Tone.Ice, 3, 20, 30, 0.5);
+        break;
+      case 'fuse':
+        burst(Tone.Blaze, 18, 40, 140, 0.6);
+        break;
+      case 'sprout':
+        burst(Tone.Seed, 16, 50, 90, 0.8);
+        break;
+      case 'dilute':
+        burst(Tone.Water, 4, 20, 40, 0.6);
+        break;
+      case 'dissolve':
+        burst(Tone.Acid, 3, 15, 50, 0.6);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /** Lightning: a jagged bolt, a flash, and what it broke bursts into sparks. */
+  private onStrike({ kind, x, fromY, toY, points, samples }: SandEventMap['strike']): void {
+    const profile = this.profile();
+    const path: [number, number][] = [];
+    let px = x;
+    for (let y = fromY; y < toY; y += 4) {
+      path.push([px + 0.5, y]);
+      px = Math.max(0, Math.min(this.view.grid.width - 1, px + Math.round(random(-1.4, 1.4))));
+    }
+    path.push([x + 0.5, toY + 0.5]);
+    this.bolts.push({ points: path, age: 0 });
+    if (profile.motion) this.flash = kind === 'shock' ? 0.7 : 0.45;
+    if (profile.shake) this.shake.kick(kind === 'shock' ? 5 : 2.5);
+    if (points > 0) this.popup(samples, points);
+    if (profile.particles === 0) return;
+    for (const sample of this.thin(samples)) {
+      this.pool.spawn(
+        ParticleKind.Spark,
+        sample.x + 0.5,
+        sample.y + 0.5,
+        random(-90, 90),
+        random(-180, -40),
+        random(0.4, 0.9),
+        0.6,
+        this.toneColor(random(0, 1) < 0.5 ? sample.tone : Tone.Lightning, 0.3),
+      );
+    }
+  }
+
   private onLock(piece: SandPiece): void {
+    if (piece.tone === Tone.Lightning) return;
     if (this.profile().particles === 0) return;
     const color = this.toneColor(piece.tone, 0.4);
     const g = GRAINS_PER_CELL;
@@ -195,6 +320,31 @@ export class SandEffects {
     }
     this.hidden = true;
     if (profile.shake) this.shake.kick(4);
+  }
+
+  /** Points that come in a stream (a blaze) gather into one popup that grows, then rises. */
+  private tally(samples: readonly GrainSample[], points: number): void {
+    if (points <= 0 || samples.length === 0) return;
+    const now = performance.now();
+    if (this.running && now - this.running.at < TALLY_MS) {
+      this.running.points += points;
+      this.running.at = now;
+      const index = this.popups.indexOf(this.running.popup);
+      const popup = {
+        ...this.running.popup,
+        text: `+${this.formatPoints(this.running.points)}`,
+        age: 0,
+      };
+      if (index >= 0) this.popups[index] = popup;
+      else this.popups.push(popup);
+      this.running.popup = popup;
+      return;
+    }
+    const x = samples.reduce((sum, s) => sum + s.x, 0) / samples.length;
+    const y = samples.reduce((sum, s) => sum + s.y, 0) / samples.length;
+    const popup = { text: `+${this.formatPoints(points)}`, x, y, age: 0 };
+    this.popups.push(popup);
+    this.running = { points, at: now, popup };
   }
 
   private popup(samples: readonly GrainSample[], points: number): void {

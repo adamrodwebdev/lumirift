@@ -153,7 +153,27 @@
     "elementFire": "Fire piece",
     "burn": "Fire burnt {value} grains",
     "quench": "Water puts the fire out",
-    "rescue": "Second chance!"
+    "rescue": "Second chance!",
+    "elementOil": "Oil piece: it floats, and fire makes it blaze",
+    "elementIce": "Ice piece: it holds, freezes water, melts in fire",
+    "elementLightning": "Lightning: aim at water for a shock",
+    "elementSeed": "Seed: water it to grow a bridge of its colour",
+    "elementAcid": "Acid: it eats the sand under it",
+    "react": {
+      "blaze": "Blaze! Oil feeds the fire",
+      "melt": "Ice melts: water and steam",
+      "freeze": "Water freezes on the ice",
+      "fuse": "Fire runs up the vine",
+      "dilute": "Water dilutes the acid",
+      "sprout": "The seed sprouts a vine"
+    },
+    "strike": {
+      "shock": "Shock! {value} grains broken through the water",
+      "shatter": "Lightning: {value} grains shattered",
+      "spark": "Lightning sets the oil ablaze",
+      "thaw": "Lightning breaks the ice",
+      "fuse": "Lightning sets the vine on fire"
+    }
   },
   "controls": {
     "label": "Touch controls",
@@ -315,7 +335,7 @@
   },
   "sand": {
     "well": "Sand well",
-    "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop. Water takes the colour around it, fire burns the colour it touches."
+    "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop. Link one colour from wall to wall. Elements react: oil feeds fire, fire melts ice into steam, lightning through water breaks everything it touches, watered seeds grow bridges."
   },
   "tower": {
     "well": "Glass tower",

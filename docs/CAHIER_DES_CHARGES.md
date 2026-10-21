@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut               |
-| ------- | ---------- | -------------------- |
-| 1.11    | 21/10/2026 | Prêt pour CrazyGames |
+| Version | Date       | Statut       |
+| ------- | ---------- | ------------ |
+| 1.12    | 21/10/2026 | Les éléments |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -240,31 +240,71 @@ Règles détaillées :
 - Chaque pièce porte l'une de **4 couleurs**. Une **zone d'une même couleur, continue, qui
   relie le mur gauche au mur droit** est effacée, même si elle serpente. Points : 1 par grain
   effacé, multiplié par le nombre de zones effacées d'un coup. Niveau + 1 toutes les 5 zones.
-- **Éléments** (à partir de la 6ᵉ pièce : eau 10 %, feu 7 %, **au moins 3 pièces de sable
-  entre deux éléments**, jamais deux de suite), annoncés à leur arrivée et **reconnaissables
-  dans l'aperçu** à leur motif (anneau pour l'eau, triangle pour le feu) :
-  - **eau** : ses grains coulent aussi sur les côtés, puis se figent au bout d'environ 2 s
-    dans la **couleur la plus présente parmi ses 8 voisins** (celle du dessous en cas
-    d'égalité, au hasard s'il n'y en a aucune). **L'eau éteint le feu** : les deux
-    disparaissent dans un nuage de vapeur ;
-  - **feu** : un feu **se vise**. Pendant la chute, la zone qu'il brûlerait **scintille de
-    flammes** sous la pièce. Posé sur du sable, il consume aussitôt la zone d'une couleur
-    qu'il touche le plus (1 500 grains au plus, les plus proches d'abord), pour **la moitié
-    des points** d'un effacement (1 point pour 2 grains) : il aide, il ne remplace jamais
-    le fait de relier les murs. Tombé sans toucher de sable, il brûle la première zone qu'il
-    touche puis s'éteint, ou s'éteint seul après environ 3,5 s ;
-  - **vent** : un coup de vent toutes les 20 à 40 s, **annoncé 3 s avant** avec sa direction,
-    souffle 2,5 s. Il ne soulève que les **grains libres en surface**, d'**une case au plus**
-    par rafale ; les rafales **alternent de sens** et **se taisent** quand le sable approche
-    du haut (moins de 3 rangées) : le vent ne décide jamais d'une partie.
-- **Choix fondés sur les jeux du genre** : aucun jeu de sable publié ne propose d'éléments
+- **Éléments** (à partir de la 6ᵉ pièce, **au moins 3 pièces de sable entre deux éléments**,
+  jamais deux de suite ; une pièce sur cinq environ en est un ensuite), annoncés à leur arrivée
+  et **reconnaissables dans l'aperçu** à leur motif gravé. Ils arrivent **niveau après niveau**
+  en partie libre : eau et feu (niveau 1), huile et foudre (2), glace et graine (3), acide (4).
+  Chacun a sa matière : poudre (sable, graine, feu libre), liquide rangé par densité (l'huile
+  flotte sur l'eau et l'acide), gaz (la vapeur monte), solide (glace, liane, brasier).
+  - **eau** : coule, puis se fige au bout d'environ 6 s dans la **couleur la plus présente
+    parmi ses 8 voisins** (celle du dessous en cas d'égalité) ;
+  - **feu** : **se vise** (la zone qu'il brûlerait scintille sous la pièce). Posé sur du sable,
+    il consume la zone d'une couleur qu'il touche le plus (1 500 grains au plus) pour **la
+    moitié des points** ; posé près d'huile (à une case), il l'embrase ;
+  - **huile** (1.12) : liquide **épais** qui flotte sur l'eau et forme une flaque ;
+  - **glace** (1.12) : tient en place comme une passerelle, fond seule au bout d'environ 40 s ;
+  - **foudre** (1.12) : une pièce qui ne laisse rien ; à la pose, l'éclair frappe sous elle.
+    Elle **cherche l'eau** à deux cases de son axe. La zone qu'elle briserait **scintille**
+    avant la pose ;
+  - **graine** (1.12) : arrosée, elle germe en **liane de la couleur du sable** où elle pousse,
+    sur deux grains d'épaisseur, de part et d'autre : un **pont** qui peut relier les murs. Non
+    arrosée, elle germe quand même au bout d'environ 8 s, en liane deux fois plus courte ;
+  - **acide** (1.12) : ronge le sable et la glace sous lui et sur ses côtés pour creuser un
+    puits ; chaque bouchée l'use ; il ne rapporte aucun point (c'est un outil) ;
+  - **vent** : un coup de vent toutes les 20 à 40 s, **annoncé 3 s avant**, 2,5 s, une case au
+    plus par grain libre ; il pousse aussi la vapeur et se tait près du haut.
+- **Réactions** (1.12, `SandReactions`) : la chaîne compte plus que les éléments seuls.
+
+  | Rencontre               | Réaction                                                                                                        |
+  | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+  | Feu + huile             | **Brasier** : toute la nappe s'embrase et ronge le sable autour, de plus en plus faiblement (½ point par grain) |
+  | Feu + eau               | **Vapeur** : un nuage qui monte et **masque** le puits (jamais le contour de la pièce)                          |
+  | Feu + glace             | **Fonte** : la glace devient de l'eau, la flamme de la vapeur                                                   |
+  | Vapeur en haut du puits | **Pluie** : une fois sur deux, elle retombe en eau                                                              |
+  | Eau + glace             | **Gel** : l'eau gèle peu à peu au contact                                                                       |
+  | Foudre + eau            | **Électrocution** : toute zone de sable qui touche la nappe se brise (3 000 grains au plus), **points entiers** |
+  | Foudre + sable          | La zone frappée éclate (½ point par grain)                                                                      |
+  | Foudre + huile / liane  | Brasier                                                                                                         |
+  | Foudre + glace          | La glace éclate en eau                                                                                          |
+  | Eau + graine            | **Liane** (pleine longueur)                                                                                     |
+  | Feu + liane ou graine   | **Mèche** : le feu remonte la liane et l'embrase                                                                |
+  | Acide + sable / glace   | L'acide les ronge                                                                                               |
+  | Eau + acide             | **Dilution** : l'acide redevient de l'eau                                                                       |
+  | Vent + vapeur / brasier | Le vent dégage le brouillard et pousse les flammes                                                              |
+
+  Chaque réaction est **nommée la première fois** qu'elle survient dans une partie.
+
+- **Entrée fracassante (niveau 1-1, 1.12)** : la partie scénarisée (`SHOWCASE`) montre en une
+  minute ce que personne d'autre n'a : trois pièces de sable pour apprendre à relier, puis
+  eau et **foudre** (électrocution), huile et **feu** (brasier), graine et eau (liane). La
+  pièce qui réagit apparaît juste au-dessus de l'élément précédent : il suffit de la lâcher.
+  Mesuré avec un joueur qui lâche ses pièces : électrocution vers 9 s, brasier vers 14 s,
+  liane vers 18 s, première zone effacée vers 20 s.
+- **Choix fondés sur les jeux du genre** : sur CrazyGames, Sandtrix (9,1/10, 40 000 votes) et
+  Sand Blocks font déjà du sable coloré **sans éléments**. Les réactions viennent des
+  simulateurs de sable (Noita, The Powder Toy, Sandspiel) et sont ramenées à la règle du jeu :
+  chaque élément aide ou gêne le fait de relier les murs, et ce qu'il va toucher est montré
+  avant la pose.
+- **Choix d'origine (1.0)** : aucun jeu de sable publié ne proposait d'éléments
   en partie classée (Sandtrix, le plus connu, les réserve à un bac à sable) ; ses joueurs
   reprochent surtout un hasard mal annoncé (couleur suivante peu lisible). D'où l'annonce
   dans l'aperçu, le feu visé et l'espacement des éléments. Le feu qui consume toute une
   couleur s'inspire du « joyau magique » de Columns, rare et accepté comme une récompense ;
   l'eau qui éteint le feu suit les simulateurs de sable (Powder Toy, Sandspiel, Noita).
 - **Textures par couleur** (lisibles par les daltoniens) : damier, rayures horizontales,
-  rayures verticales, points ; l'eau miroite, le feu vacille.
+  rayures verticales, points ; l'eau miroite, le feu vacille, l'huile luit lentement, la glace
+  a un maillage de cristal, l'acide bouillonne, le brasier flamboie, la foudre crépite ; la
+  liane porte des nervures ; la vapeur est un nuage doux dessiné par-dessus.
 - **Effets** : poussière à la pose, paillettes de la couleur effacée, braises du feu, nuage
   de sable en fin de partie ; sons d'écoulement, de balayage, de crépitement et de rafale.
 - Fin de partie quand une pièce ne peut plus apparaître. Le Sable peut être le mode du
@@ -1322,3 +1362,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.9     | 20/10/2026 | Les fenêtres en feuilles sans défilement, résultats mis en scène, garde à l'ouverture (§ 4.2, § 5.6).                                                             |
 | 1.10    | 20/10/2026 | Prêt pour CrazyGames : 1-1 calme, touches dessinées, console centrée, pubs par portail (§ 3.7), vidéos refaites.                                                  |
 | 1.11    | 21/10/2026 | Couleurs des pièces loin du standard du genre (§ 2), menus inchangés, médias refaits.                                                                             |
+| 1.12    | 21/10/2026 | Les éléments du Sable : huile, glace, foudre, graine, acide, vapeur et pluie, réactions entre eux, entrée fracassante du 1-1 (§ 3.2).                             |

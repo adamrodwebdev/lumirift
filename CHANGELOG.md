@@ -3,6 +3,30 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.12.0] — 21/10/2026
+
+Les éléments : le Sable devient un monde vivant, où les éléments réagissent entre eux.
+
+### Ajouté
+
+- **Cinq nouveaux éléments** dans le Sable, qui arrivent niveau après niveau : **huile** (épaisse,
+  elle flotte sur l'eau), **glace** (elle tient comme une passerelle et fond seule), **foudre**
+  (l'éclair frappe sous la pièce et cherche l'eau), **graine** (arrosée, elle pousse en liane de
+  la couleur du sable : un pont pour relier les murs) et **acide** (il creuse dans le sable).
+- **Réactions** : feu et huile donnent un **brasier** qui ronge le sable ; feu et eau, ou feu et
+  glace, une **vapeur** qui masque le puits puis retombe en **pluie** ; l'eau **gèle** contre la
+  glace ; la foudre dans l'eau **électrocute** toutes les couleurs qui la touchent (points
+  entiers) ; le feu remonte une liane comme une **mèche** ; l'eau **dilue** l'acide. Chaque réaction
+  est nommée la première fois, avec son effet et son son.
+- **Entrée fracassante** : le premier niveau montre en une minute l'électrocution, le brasier et
+  la liane ; la pièce qui réagit apparaît au-dessus de l'élément précédent.
+- Ce que la foudre briserait **scintille** avant la pose, comme la zone que le feu brûlerait.
+
+### Modifié
+
+- L'eau reste liquide environ 6 s (au lieu de 2) avant de se figer, pour laisser le temps aux
+  combinaisons ; le sable coule à travers les liquides ; le feu reste en surface.
+
 ## [1.11.0] — 21/10/2026
 
 ### Modifié

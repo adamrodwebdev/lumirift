@@ -1,11 +1,25 @@
 import { Tone } from '@/core/Tone';
 import * as sounds from '@/fx/sounds';
-import type { AudioEngine } from '@/services/audio/AudioEngine';
+import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
+import type { ReactionKind } from '../engine/SandReactions';
 import type { Haptics } from '@/services/Haptics';
 import type { SandSession } from '../SandSession';
 
+const REACTION_SOUNDS: Readonly<Partial<Record<ReactionKind, SoundRecipe>>> = {
+  blaze: sounds.blaze,
+  scorch: sounds.crackle,
+  melt: sounds.hiss,
+  freeze: sounds.freeze,
+  fuse: sounds.blaze,
+  dilute: sounds.splash,
+  dissolve: sounds.fizz,
+  sprout: sounds.sprout,
+};
+
 /** Sounds and vibrations of the sand well. */
 export class SandSoundscape {
+  private lastQuiet = 0;
+
   constructor(
     private readonly audio: AudioEngine,
     private readonly haptics: Haptics,
@@ -17,14 +31,22 @@ export class SandSoundscape {
       session.onGame('move', () => audio.play(sounds.tick)),
       session.onGame('rotate', () => audio.play(sounds.rotate)),
       session.onGame('hardDrop', () => haptics.pulse(10)),
-      session.onGame('lock', ({ piece }) =>
-        audio.play(piece.tone === Tone.Water ? sounds.splash : sounds.pour),
-      ),
+      session.onGame('lock', ({ piece }) => {
+        if (piece.tone === Tone.Lightning) return;
+        const liquid =
+          piece.tone === Tone.Water || piece.tone === Tone.Oil || piece.tone === Tone.Acid;
+        audio.play(liquid ? sounds.splash : piece.tone === Tone.Ice ? sounds.freeze : sounds.pour);
+      }),
+      session.onGame('strike', ({ kind }) => {
+        audio.play(sounds.zap(kind === 'shock'));
+        haptics.pulse(kind === 'shock' ? [40, 30, 90] : 40);
+      }),
+      session.onGame('react', ({ kind }) => this.react(kind)),
       session.onGame('clear', ({ regions }) => {
         audio.play(sounds.sweep(regions));
         haptics.pulse(regions > 1 ? [30, 40, 70] : 30);
       }),
-      session.onGame('quench', () => audio.play(sounds.splash)),
+      session.onGame('quench', () => audio.play(sounds.hiss)),
       session.onGame('burn', () => {
         audio.play(sounds.crackle);
         haptics.pulse([20, 20, 40]);
@@ -40,5 +62,16 @@ export class SandSoundscape {
       }),
     ];
     return () => offs.forEach((off) => off());
+  }
+
+  /** Each reaction is heard; frequent ones (a blaze eating sand, acid) are throttled. */
+  private react(kind: ReactionKind): void {
+    const now = performance.now();
+    const quiet = kind === 'scorch' || kind === 'dissolve' || kind === 'freeze';
+    if (quiet && now - this.lastQuiet < 180) return;
+    if (quiet) this.lastQuiet = now;
+    const sound = REACTION_SOUNDS[kind];
+    if (sound) this.audio.play(sound);
+    if (kind === 'blaze') this.haptics.pulse([20, 20, 50]);
   }
 }
