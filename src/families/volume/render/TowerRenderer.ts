@@ -7,9 +7,12 @@ import {
 } from '@/families/falling/fx/FallingEffects';
 import type { Piece } from '@/families/falling/pieces/Piece';
 import { ParticleKind } from '@/fx/ParticlePool';
-import type { TonePalette } from '@/render/TonePalette';
+import { shade, type TonePalette } from '@/render/TonePalette';
 import { CylinderProjection, TILT } from '../camera/CylinderProjection';
 import type { TowerCamera } from '../camera/TowerCamera';
+import { EYE_HURT_MS, EYE_POPUP_MS, STRIKE_MS, type EyeEffects } from '../fx/EyeEffects';
+import type { EyeView } from '../TowerEye';
+import { TowerMode } from '../TowerMode';
 import { GlassSprites } from './GlassSprites';
 
 const { TRAIL_MS, FLASH_MS, POPUP_MS, WAVE_MS } = EFFECT_TIMINGS;
@@ -42,6 +45,8 @@ export class TowerRenderer {
     private readonly view: FallingView,
     private readonly camera: TowerCamera,
     private readonly effects: FallingEffects,
+    /** The Eye's effects, on its boss level. */
+    private readonly eyeEffects: EyeEffects | null = null,
   ) {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D is not available');
@@ -96,9 +101,12 @@ export class TowerRenderer {
     ctx.fillStyle = palette.wellBackground;
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+    const eye = this.eye;
     this.drawRing(this.rows, palette.wellGrid, true);
     if (!effects.stackHidden) this.drawStack(sprites, false);
+    if (eye) this.drawEye(eye, palette, false);
     this.drawGrid(palette.wellGrid);
+    if (eye) this.drawGaze(eye, palette);
     if (!effects.stackHidden) this.drawStack(sprites, true);
     this.drawCracks(sprites, palette);
     this.drawBlastZone(palette);
@@ -115,13 +123,243 @@ export class TowerRenderer {
     this.drawFlashes();
     this.drawParticles();
     this.drawRing(0, palette.wellGrid, false);
+    if (eye) {
+      this.drawStrikes(eye, palette);
+      this.drawEye(eye, palette, true);
+    }
     this.drawPopups(palette);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (eye) this.drawEyeMarker(eye, palette);
     this.drawDanger(palette);
     if (effects.wellFlash > 0) {
       ctx.fillStyle = `rgb(255 255 255 / ${effects.wellFlash})`;
       ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
+  }
+
+  // --- The Eye of the Tower ---------------------------------------------------
+
+  private get eye(): EyeView | null {
+    const mode = this.view.mode;
+    return mode instanceof TowerMode ? mode.eye : null;
+  }
+
+  /** Where the Eye floats: above the top rings, at its place around the tower. */
+  private eyeAt(eye: EyeView): { x: number; y: number; depth: number; size: number } {
+    const { projection } = this;
+    const depth = projection.depth(eye.centre + 0.5);
+    const size = projection.rowHeight * 1.5 * (0.7 + 0.3 * Math.max(0, depth));
+    // Near the edges of the tower it stays whole on screen, its glow and figures with it.
+    const margin = size * 1.15;
+    const x = projection.screenX(eye.centre + 0.5);
+    return {
+      x: Math.max(margin, Math.min(this.canvas.width - margin, x)) + this.offsetX,
+      y: projection.screenY(eye.centre + 0.5, 1.7) + this.offsetY,
+      depth,
+      size,
+    };
+  }
+
+  /** The colour of its iris: the rift's light, hotter by phase. */
+  private eyeColour(eye: EyeView, palette: TonePalette): string {
+    if (eye.state === 'charge' || eye.phase === 3) return palette.danger;
+    return eye.phase === 2 ? palette.accent : palette.effects.rift;
+  }
+
+  /**
+   * Its gaze: a beam down the columns it watches, faint while it turns,
+   * reddening and pulsing as it charges.
+   */
+  private drawGaze(eye: EyeView, palette: TonePalette): void {
+    if (eye.state === 'blind' || eye.state === 'dead') return;
+    const { ctx } = this;
+    const charging = eye.state === 'charge';
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / (charging ? 70 : 400));
+    const strength = charging ? 0.2 + 0.35 * eye.charge * (0.6 + 0.4 * pulse) : 0.1;
+    const colour = charging ? palette.danger : this.eyeColour(eye, palette);
+    const { board } = this.view;
+    const hidden = board.hiddenRows;
+    const middle = Math.floor(eye.centre);
+    for (let d = -eye.reach; d <= eye.reach; d++) {
+      const x = middle + d;
+      if (!this.isFront(x)) continue;
+      // The beam: strong at the top, where the Eye is, fading down the tower.
+      this.face(x, 0, this.rows);
+      const beam = ctx.createLinearGradient(0, 0, 0, 1);
+      beam.addColorStop(0, colour);
+      beam.addColorStop(1, 'rgb(0 0 0 / 0)');
+      ctx.globalAlpha = strength * (1 - Math.abs(d) / (eye.reach + 2));
+      ctx.fillStyle = beam;
+      ctx.fillRect(0, 0, 1, 1);
+      if (!charging) continue;
+      // Charging: where its stone will land, a blinking red frame.
+      const column = board.column(x);
+      let top = board.height;
+      for (let y = 0; y < board.height; y++) {
+        if (board.get(column, y) !== Tone.Empty) {
+          top = y;
+          break;
+        }
+      }
+      const land = top - 1 - hidden;
+      if (land < 0) continue;
+      this.face(x, land);
+      ctx.globalAlpha = 0.45 + 0.55 * pulse;
+      ctx.strokeStyle = palette.danger;
+      ctx.lineWidth = 0.12;
+      ctx.strokeRect(0.08, 0.08, 0.84, 0.84);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * The Eye itself, drawn once behind the glass (when it is round the back)
+   * and once in front: a pale almond, an iris of the rift's light, a slit of
+   * a pupil narrowing as it charges, a lid shut while it is blinded.
+   */
+  private drawEye(eye: EyeView, palette: TonePalette, front: boolean): void {
+    const { x, y, depth, size } = this.eyeAt(eye);
+    if (depth > 0 !== front) return;
+    const { ctx } = this;
+    const seen = front ? 1 : 0.3;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const w = size;
+    const h = size * 0.55;
+    const colour = this.eyeColour(eye, palette);
+    const hurt = (this.eyeEffects?.hurt ?? 0) / EYE_HURT_MS;
+    const almond = () => {
+      ctx.beginPath();
+      ctx.moveTo(x - w, y);
+      ctx.quadraticCurveTo(x, y - h * 2, x + w, y);
+      ctx.quadraticCurveTo(x, y + h * 2, x - w, y);
+    };
+    if (eye.state !== 'dead') {
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, w * 1.8);
+      glow.addColorStop(0, colour);
+      glow.addColorStop(1, 'rgb(0 0 0 / 0)');
+      ctx.globalAlpha = seen * 0.5;
+      ctx.fillStyle = glow;
+      ctx.fillRect(x - w * 1.8, y - w * 1.8, w * 3.6, w * 3.6);
+    }
+    ctx.globalAlpha = seen;
+    almond();
+    if (eye.state === 'blind' || eye.state === 'dead') {
+      // The lid, shut: a dark almond and its lashes.
+      ctx.fillStyle = palette.wellGrid;
+      ctx.fill();
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = Math.max(1.5, size * 0.08);
+      ctx.beginPath();
+      ctx.moveTo(x - w * 0.9, y + h * 0.1);
+      ctx.quadraticCurveTo(x, y + h * 0.9, x + w * 0.9, y + h * 0.1);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = shade(palette.color(Tone.Lightning), 0);
+      ctx.fill();
+      ctx.save();
+      almond();
+      ctx.clip();
+      // It looks down at the tower.
+      const iy = y + h * 0.25;
+      const iris = ctx.createRadialGradient(x, iy, 0, x, iy, h * 1.05);
+      iris.addColorStop(0, shade(palette.color(Tone.Lightning), 0));
+      iris.addColorStop(0.35, colour);
+      iris.addColorStop(1, palette.wellBackground);
+      ctx.fillStyle = iris;
+      ctx.beginPath();
+      ctx.arc(x, iy, h * 1.05, 0, Math.PI * 2);
+      ctx.fill();
+      const slit = h * (eye.state === 'charge' ? 0.12 : 0.28);
+      ctx.fillStyle = palette.wellBackground;
+      ctx.beginPath();
+      ctx.ellipse(x, iy, slit, h * 0.8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    almond();
+    ctx.strokeStyle = palette.wellBackground;
+    ctx.lineWidth = Math.max(1.5, size * 0.07);
+    ctx.stroke();
+    if (hurt > 0) {
+      almond();
+      ctx.globalAlpha = hurt * seen * 0.85;
+      ctx.fillStyle = 'rgb(255 255 255)';
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (front) this.drawEyePopups(x, y - h * 2.2, size, palette);
+  }
+
+  private drawEyePopups(x: number, y: number, size: number, palette: TonePalette): void {
+    const popups = this.eyeEffects?.popups ?? [];
+    if (popups.length === 0) return;
+    const { ctx } = this;
+    ctx.font = `800 ${Math.round(size * 0.7)}px ui-rounded, system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = Math.max(2, size * 0.1);
+    ctx.strokeStyle = palette.wellBackground;
+    ctx.fillStyle = palette.accent;
+    for (const popup of popups) {
+      const t = popup.age / EYE_POPUP_MS;
+      ctx.globalAlpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
+      const py = y - t * size * 1.2;
+      ctx.strokeText(popup.text, x, py);
+      ctx.fillText(popup.text, x, py);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /** The light of a strike: a ray from the Eye to each stone it dropped. */
+  private drawStrikes(eye: EyeView, palette: TonePalette): void {
+    const strikes = this.eyeEffects?.strikes ?? [];
+    if (strikes.length === 0) return;
+    const { ctx, projection } = this;
+    const { x, y } = this.eyeAt(eye);
+    const hidden = this.view.board.hiddenRows;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.strokeStyle = palette.danger;
+    ctx.lineCap = 'round';
+    for (const strike of strikes) {
+      const t = strike.age / STRIKE_MS;
+      ctx.globalAlpha = 1 - t;
+      ctx.lineWidth = Math.max(2, projection.rowHeight * 0.18 * (1 - t));
+      for (const cell of strike.cells) {
+        if (!this.isFront(cell.x)) continue;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(
+          projection.screenX(cell.x + 0.5) + this.offsetX,
+          projection.screenY(cell.x + 0.5, cell.y - hidden + 0.5) + this.offsetY,
+        );
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /** Round the back of the tower, a chevron at the edge shows which way the Eye is. */
+  private drawEyeMarker(eye: EyeView, palette: TonePalette): void {
+    const { projection, ctx } = this;
+    const depth = projection.depth(eye.centre + 0.5);
+    if (depth > 0.15 || eye.state === 'dead') return;
+    const right = Math.sin(projection.angle(eye.centre + 0.5)) > 0;
+    const size = projection.rowHeight * 0.6;
+    const x = right ? this.canvas.width - size * 0.9 : size * 0.9;
+    // Under where the Eye shows faintly through the glass, so as not to cover it.
+    const y = projection.top + projection.rowHeight * 3.6;
+    const charging = eye.state === 'charge';
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / (charging ? 90 : 300));
+    ctx.globalAlpha = 0.55 + 0.45 * pulse;
+    ctx.fillStyle = charging ? palette.danger : this.eyeColour(eye, palette);
+    const s = right ? 1 : -1;
+    ctx.beginPath();
+    ctx.moveTo(x + s * size * 0.5, y);
+    ctx.lineTo(x - s * size * 0.4, y - size * 0.6);
+    ctx.lineTo(x - s * size * 0.4, y + size * 0.6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
 
   // --- Cells ------------------------------------------------------------------

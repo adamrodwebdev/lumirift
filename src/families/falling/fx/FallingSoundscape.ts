@@ -97,7 +97,9 @@ export class FallingSoundscape {
         const sound = NOTICE_SOUNDS[id];
         if (sound) audio.play(sound);
       }),
-      session.onGame('over', () => {
+      session.onGame('over', ({ reason }) => {
+        // A Guardian's fall has its own fanfare.
+        if (reason === 'victory') return;
         audio.play(sounds.gameOver);
         haptics.pulse([60, 40, 120]);
       }),

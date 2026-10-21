@@ -195,6 +195,15 @@
         "phase2": "The Golem cracks: it throws more stones!",
         "phase3": "Last stand: it throws faster!",
         "defeated": "The Ceramic Golem is defeated!"
+      },
+      "eye": {
+        "charge": "The Eye stops and turns red: it will strike under its gaze!",
+        "strike": "Stones fall where it was looking!",
+        "blinded": "A bomb in its gaze: the Eye is blinded!",
+        "rubble": "It raises a ring of rubble!",
+        "phase2": "The Eye grows angry: its gaze widens!",
+        "phase3": "Last stand: it strikes faster!",
+        "defeated": "The Eye of the Tower is defeated!"
       }
     }
   },
@@ -439,7 +448,8 @@
       "shards": "Shards",
       "confetti": "Confetti",
       "petals": "Petals",
-      "gold": "Gold leaf"
+      "gold": "Gold leaf",
+      "iris": "Iris shards"
     },
     "unlock": {
       "default": "Free",
@@ -644,6 +654,9 @@
     },
     "ceramicGolem": {
       "name": "Ceramic Golem"
+    },
+    "towerEye": {
+      "name": "Eye of the Tower"
     }
   }
 }

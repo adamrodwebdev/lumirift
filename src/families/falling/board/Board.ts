@@ -298,6 +298,24 @@ export class Board {
     return groups;
   }
 
+  /**
+   * Sets a block on top of column x (on the floor of an empty column), unless
+   * `blocked` says the cell is taken (by the falling piece). Returns its cell.
+   */
+  dropOn(x: number, tone: Tone, blocked: (x: number, y: number) => boolean): Cell | null {
+    const column = this.column(x);
+    let y = this.height - 1;
+    for (let row = 0; row < this.height; row++) {
+      if (this.get(column, row) !== Tone.Empty) {
+        y = row - 1;
+        break;
+      }
+    }
+    if (y < 0 || blocked(column, y)) return null;
+    this.set(column, y, tone);
+    return { x: column, y };
+  }
+
   /** Empties the given cells and returns what they held. */
   removeCells(cells: readonly Cell[]): RemovedCell[] {
     return cells.map(({ x, y }) => {

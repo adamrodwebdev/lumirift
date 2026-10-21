@@ -59,4 +59,12 @@ export const SHATTER_STYLES: Readonly<Record<ShatterId, ShatterStyle>> = {
     lift: 1.1,
     textured: false,
   },
+  /** Shards of the Eye of the Tower's iris: the rift's light and the block's colour, lit up, flung high. */
+  iris: {
+    colour: (tone, palette) =>
+      Math.random() < 0.5 ? palette.effects.rift : shade(palette.color(tone), 0.45),
+    spin: 1.6,
+    lift: 1.4,
+    textured: false,
+  },
 };

@@ -3,6 +3,26 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.16.0] — 21/10/2026
+
+Le troisième Gardien de la faille.
+
+### Ajouté
+
+- **L'Œil de la Tour**, boss du chapitre 4, au niveau 4-7 (Tour, 4 minutes). Un œil immense tourne
+  autour de la tour comme une lune ; son **regard** éclaire un secteur de colonnes. Il s'arrête,
+  rougit et **charge** (des cadres rouges montrent où tomberont les pierres), puis **frappe** : une
+  pierre tombe sur chaque colonne regardée. Derrière la tour, on le voit à travers le verre et une
+  flèche au bord indique de quel côté il est.
+- **Riposte** : une gemme-bombe qui explose dans son regard l'**aveugle** (15 dégâts, sa charge est
+  annulée, il reste fermé 3 s) ; ailleurs, une bombe ne le blesse que de 5. Chaque anneau effacé le
+  blesse (5 pour un, 8 de plus par anneau en même temps). Les bombes viennent plus tôt et plus
+  souvent dans ce niveau.
+- Trois phases : son regard s'élargit (7 colonnes) et il peut changer de sens ; à la dernière, il
+  frappe plus vite et fait monter un anneau de gravats.
+- **Récompense** : l'effet de destruction **Éclats d'iris**.
+- Sons (charge, impact, aveuglement), secousses, rayons de frappe, chiffres de dégâts.
+
 ## [1.15.0] — 21/10/2026
 
 Le deuxième Gardien de la faille.

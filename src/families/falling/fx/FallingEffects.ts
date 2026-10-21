@@ -4,6 +4,7 @@ import { FlashLimiter } from '@/fx/FlashLimiter';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
 import { ScreenShake } from '@/fx/ScreenShake';
 import type { ClearedRow, RemovedCell } from '../board/Board';
+import type { Cell } from '../pieces/Shapes';
 import type { FallingSession, FallingView } from '../FallingSession';
 import type { LinesClearedEvent } from '../game/GameEvents';
 import type { Piece } from '../pieces/Piece';
@@ -183,6 +184,7 @@ export class FallingEffects {
       session.onGame('lock', ({ piece }) => this.onLock(piece)),
       session.onGame('clear', (event) => this.onClear(event)),
       session.onGame('garbage', ({ rows }) => this.onGarbage(rows)),
+      session.onGame('stones', ({ cells }) => this.onStones(cells)),
       session.onGame('levelUp', () => this.addWave('level')),
       session.onGame('mirror', () => this.addWave('sweep')),
       session.onGame('flip', () => this.kick(0.3)),
@@ -459,6 +461,13 @@ export class FallingEffects {
     for (let x = 0; x < this.view.board.width; x++) {
       this.spawnDust(x + 0.5, floor - 0.1, Tone.Garbage, 2);
     }
+  }
+
+  /** Stones dropped on the stack (the Eye of the Tower): a thud and grit. */
+  private onStones(cells: readonly Cell[]): void {
+    this.kick(0.18);
+    const hidden = this.view.board.hiddenRows;
+    for (const { x, y } of cells) this.spawnDust(x + 0.5, y - hidden + 0.9, Tone.Stone, 3);
   }
 
   private addWave(kind: Wave['kind']): void {

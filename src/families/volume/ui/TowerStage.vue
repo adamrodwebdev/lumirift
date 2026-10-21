@@ -18,7 +18,10 @@ import type { GameSession } from '@/session/GameSession';
 import { useGameSurface } from '@/ui/useGameSurface';
 import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { TowerCamera, TURN_STEP } from '../camera/TowerCamera';
+import * as sounds from '@/fx/sounds';
+import { EyeEffects } from '../fx/EyeEffects';
 import { TowerRenderer } from '../render/TowerRenderer';
+import { TowerMode } from '../TowerMode';
 
 /**
  * The Tower: the falling family's controls and previews around a glass
@@ -76,6 +79,31 @@ watch(
 );
 const detachSounds = new FallingSoundscape(audio, haptics).attach(session);
 
+// The Eye of the Tower, on its boss level: its own effects and sounds.
+const mode = session.view.mode;
+const eyeEffects = mode instanceof TowerMode && mode.eye ? new EyeEffects(format.number) : null;
+const detachEye =
+  mode instanceof TowerMode && eyeEffects
+    ? [
+        eyeEffects.attach(session, mode),
+        mode.eyeEvents.on('boss', ({ event }) => {
+          if (event.type === 'charge') audio.play(sounds.rumble);
+          else if (event.type === 'strike') {
+            audio.play(sounds.stoneThud);
+            haptics.pulse([30, 20, 50]);
+          } else if (event.type === 'blinded') {
+            audio.play(sounds.roar);
+            haptics.pulse([40, 30, 90]);
+          } else if (event.type === 'hurt') audio.play(sounds.bossHit(event.hit === 'blind'));
+          else if (event.type === 'phase') audio.play(sounds.roar);
+          else if (event.type === 'defeated') {
+            audio.play(sounds.newRecord);
+            haptics.pulse([40, 30, 40, 30, 160]);
+          }
+        }),
+      ]
+    : [];
+
 const camera = new TowerCamera(session.view.board.width);
 const detachSpawn = session.onGame('spawn', () => camera.recentre());
 
@@ -124,7 +152,10 @@ const sameSpecs = (a: readonly PieceSpec[], b: readonly PieceSpec[]) =>
 
 const offFrame = props.clock.subscribe((delta) => {
   input.update(props.active ? delta : 0);
-  if (props.active || session.state === 'over') effects.update(delta);
+  if (props.active || session.state === 'over') {
+    effects.update(delta);
+    eyeEffects?.update(delta);
+  }
   const view = session.view;
   const piece = view.active;
   if (piece) camera.follow(piece.centre);
@@ -198,7 +229,8 @@ useGameSurface({
 });
 
 onMounted(() => {
-  if (canvas.value) renderer = new TowerRenderer(canvas.value, session.view, camera, effects);
+  if (canvas.value)
+    renderer = new TowerRenderer(canvas.value, session.view, camera, effects, eyeEffects);
   renderer?.setGhost(props.ghost);
   if (wellArea.value) observer.observe(wellArea.value);
   void refreshPalette();
@@ -211,6 +243,7 @@ onBeforeUnmount(() => {
   detachEffects();
   detachSounds();
   detachSpawn();
+  detachEye.forEach((off) => off());
   observer.disconnect();
   window.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('keyup', onKeyUp);

@@ -16,6 +16,7 @@ export function createVolumeSession(modeId: ModeId, options: SessionOptions): Ga
     timeLimitMs: options.timeLimitMs,
     ...(options.today ? { today: options.today } : {}),
     ...(options.boosts ? { boosts: options.boosts } : {}),
+    ...(options.boss === 'towerEye' ? { boss: options.boss } : {}),
   });
   return new FallingSession(
     modeId,

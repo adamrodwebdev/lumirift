@@ -195,6 +195,15 @@
         "phase2": "Le Golem se fissure : il lance plus de pierres !",
         "phase3": "Dernier souffle : il lance plus vite !",
         "defeated": "Le Golem de céramique est vaincu !"
+      },
+      "eye": {
+        "charge": "L’Œil s’arrête et rougit : il va frapper sous son regard !",
+        "strike": "Des pierres tombent là où il regardait !",
+        "blinded": "Une bombe dans son regard : l’Œil est aveuglé !",
+        "rubble": "Il fait monter un anneau de gravats !",
+        "phase2": "L’Œil s’irrite : son regard s’élargit !",
+        "phase3": "Dernier souffle : il frappe plus vite !",
+        "defeated": "L’Œil de la Tour est vaincu !"
       }
     }
   },
@@ -439,7 +448,8 @@
       "shards": "Éclats",
       "confetti": "Confettis",
       "petals": "Pétales",
-      "gold": "Feuille d’or"
+      "gold": "Feuille d’or",
+      "iris": "Éclats d’iris"
     },
     "unlock": {
       "default": "Offert",
@@ -644,6 +654,9 @@
     },
     "ceramicGolem": {
       "name": "Golem de céramique"
+    },
+    "towerEye": {
+      "name": "Œil de la Tour"
     }
   }
 }

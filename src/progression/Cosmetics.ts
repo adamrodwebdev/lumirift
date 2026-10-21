@@ -22,7 +22,7 @@ export const AMBIANCES = ['night', 'aurora', 'abyss', 'forge', 'cosmos', 'sakura
 export type AmbianceId = (typeof AMBIANCES)[number];
 
 /** How a cleared line bursts, in the falling family and the Tower. */
-export const SHATTERS = ['shards', 'confetti', 'petals', 'gold'] as const;
+export const SHATTERS = ['shards', 'confetti', 'petals', 'gold', 'iris'] as const;
 export type ShatterId = (typeof SHATTERS)[number];
 
 export type Equipment = {
@@ -82,6 +82,7 @@ export const COSMETICS: readonly Cosmetic[] = [
   item('shatter', 'confetti', { by: 'level', value: 4 }),
   item('shatter', 'petals', { by: 'level', value: 9 }),
   item('shatter', 'gold', { by: 'objectives', value: 30 }),
+  item('shatter', 'iris', { by: 'boss', value: 'towerEye' }),
 ];
 
 export function isUnlocked({ unlock }: Cosmetic, achievements: Achievements): boolean {
