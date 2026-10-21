@@ -485,5 +485,16 @@ test('every window fits the screen, without scrolling, from 360 × 640 to the de
     }
     await expect(over).toBeVisible({ timeout: 5000 });
     expect(await overflow(), `${size}: end of the game`).toBe(0);
+    // Every label fits its button, and a tall neighbour never stretches them into discs.
+    const buttons = await over.locator('.sheet-buttons .btn').evaluateAll((all) =>
+      all.map((button) => ({
+        cut: button.scrollWidth - button.clientWidth,
+        height: button.getBoundingClientRect().height,
+      })),
+    );
+    for (const button of buttons) {
+      expect(button.cut, `${size}: a label overflows its button`).toBeLessThanOrEqual(0);
+      expect(button.height, `${size}: a button is stretched`).toBeLessThan(64);
+    }
   }
 });

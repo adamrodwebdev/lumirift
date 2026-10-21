@@ -73,6 +73,11 @@ export class Game {
   private lowestY = 0;
   /** Time left before the next piece appears, after a line clear. */
   private spawnDelay = 0;
+  /**
+   * Around a cylinder (the Tower), where the next piece appears: above the
+   * place the last one landed, so that the view stays where the player plays.
+   */
+  private spawnCentre: number | null = null;
   /** Something was destroyed by the last lock: the next piece waits for the effects. */
   private pauseAfterLock = false;
 
@@ -407,6 +412,7 @@ export class Game {
     const piece = this._active;
     if (!piece) return;
     const visible = this.board.lock(piece);
+    if (this.board.wraps) this.spawnCentre = this.board.column(Math.floor(piece.centre)) + 0.5;
     this._active = null;
     this.events.emit('lock', { piece });
     const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
@@ -455,6 +461,10 @@ export class Game {
   private spawn(spec: PieceSpec): void {
     if (this._state === 'over') return;
     let piece = Piece.spawn(spec.type, spec.tone, this.board.width);
+    if (this.spawnCentre !== null) {
+      const above = Piece.spawn(spec.type, spec.tone, this.board.width, this.spawnCentre);
+      if (this.board.fits(above)) piece = above;
+    }
     if (!this.board.fits(piece)) {
       if (this.rescue()) this.spawn(spec);
       else this.finish('blockOut');

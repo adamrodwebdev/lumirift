@@ -12,6 +12,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
   sept joyaux, mêmes textures ; les menus gardent exactement leurs couleurs (jetons
   `--jewel-*` séparés des teintes des pièces). Couvertures et vidéos CrazyGames refaites.
 
+### Corrigé
+
+- **Tour : la caméra ne revient plus au point de départ.** Chaque nouvelle pièce apparaît
+  au-dessus de l'endroit où la précédente s'est posée (au centre si la place manque) : la vue
+  reste là où le joueur construit au lieu de repartir vers la colonne d'origine.
+
 ## [1.10.0] — 20/10/2026
 
 Prêt pour une nouvelle soumission à CrazyGames : revue complète du build comme un modérateur,

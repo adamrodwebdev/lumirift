@@ -196,7 +196,7 @@ const shownScore = computed(() =>
 
     <p class="results__status results__right" role="status">{{ status }}</p>
 
-    <div v-if="outcome?.campaign" class="sheet-buttons results__right">
+    <div v-if="outcome?.campaign" class="sheet-buttons sheet-buttons--lead results__right">
       <button
         v-if="outcome.campaign.next"
         type="button"
@@ -220,7 +220,7 @@ const shownScore = computed(() =>
         <AppIcon name="map" :size="20" />{{ t('campaign.map') }}
       </button>
     </div>
-    <div v-else class="sheet-buttons results__right">
+    <div v-else class="sheet-buttons sheet-buttons--lead results__right">
       <button type="button" class="btn btn--primary btn--raised" autofocus @click="emit('again')">
         <AppIcon name="restart" :size="20" />{{ t('over.again') }}
       </button>

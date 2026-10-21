@@ -329,7 +329,9 @@ Règles détaillées :
 - **Tour** : le puits s'enroule en **cylindre de verre** de **20 colonnes** sur 16 rangées :
   la colonne 19 touche la colonne 0, il n'y a plus de murs. Une ligne est un **anneau**
   complet de 20 cases. Les règles sont celles de la famille Chute (mêmes pièces, rotation,
-  réserve, vitesse, points, pièce fantôme).
+  réserve, vitesse, points, pièce fantôme), sauf l'arrivée des pièces : chaque nouvelle pièce
+  apparaît **au-dessus de l'endroit où la précédente s'est posée** (au centre si la place
+  manque), pour que la vue reste là où le joueur construit (1.11).
 - **Caméra** : elle suit la pièce et la garde de face, en tournant par le chemin le plus
   court. Environ 10 colonnes sont visibles ; elles s'amincissent vers les bords. Le joueur
   la tourne à la main avec **A / E** (AZERTY) ou **Q / E** (QWERTY), ou en **glissant à

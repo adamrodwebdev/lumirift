@@ -127,10 +127,7 @@ const offFrame = props.clock.subscribe((delta) => {
   if (props.active || session.state === 'over') effects.update(delta);
   const view = session.view;
   const piece = view.active;
-  if (piece) {
-    const cells = piece.localCells;
-    camera.follow(piece.x + cells.reduce((sum, cell) => sum + cell.x, 0) / cells.length + 0.5);
-  }
+  if (piece) camera.follow(piece.centre);
   camera.update(delta, profile.value.motion);
   if (view.held !== held.value) held.value = view.held;
   if (view.canHold !== canHold.value) canHold.value = view.canHold;
