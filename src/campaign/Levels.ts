@@ -150,6 +150,11 @@ export const LEVELS: readonly CampaignLevel[] = [
     },
   ),
   duel('5-6', 'expert'),
+  // The last Guardian: the Heart of the Rift, wounded by its own shards.
+  {
+    ...timed('5-7', 'classic', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
+    boss: 'riftHeart',
+  },
 ];
 
 export const MAX_STARS = LEVELS.length * 3;

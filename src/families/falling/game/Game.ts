@@ -265,10 +265,10 @@ export class Game {
 
   // --- Hooks for game modes -------------------------------------------------
 
-  /** Pushes a garbage row in from the bottom, with a single hole. */
-  raiseGarbage(holeX: number): void {
+  /** Pushes a garbage row in from the bottom, with a single hole (and a gem, if given). */
+  raiseGarbage(holeX: number, gemX: number | null = null): void {
     if (this._state === 'over') return;
-    const overflow = this.board.pushGarbageRow(holeX);
+    const overflow = this.board.pushGarbageRow(holeX, gemX);
     this.events.emit('garbage', { rows: 1 });
     if (overflow || !this.liftActiveUntilItFits()) this.overflow();
   }

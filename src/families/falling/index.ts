@@ -13,6 +13,7 @@ import { FlipMode } from './modes/FlipMode';
 import { FusionMode } from './modes/FusionMode';
 import type { GameMode } from './modes/GameMode';
 import { MirrorMode } from './modes/MirrorMode';
+import { RiftHeartMode } from './modes/RiftHeartMode';
 import { RhythmMode } from './modes/RhythmMode';
 import { SilhouetteMode } from './modes/SilhouetteMode';
 import { TideMode } from './modes/TideMode';
@@ -70,7 +71,11 @@ function createDuelSession(options: SessionOptions): DuelSession {
 /** A game played alone. */
 export function createSoloSession(modeId: ModeId, options: SessionOptions): FallingSession {
   if (!isSoloMode(modeId)) throw new Error(`"${modeId}" is not a solo falling mode`);
-  const mode = SOLO_MODES[modeId](modeOptions(options));
+  // The last Guardian beats under the classic well.
+  const mode =
+    options.boss === 'riftHeart' && modeId === 'classic'
+      ? new RiftHeartMode(modeOptions(options))
+      : SOLO_MODES[modeId](modeOptions(options));
   return new FallingSession(
     modeId,
     new Game(mode, {

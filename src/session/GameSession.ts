@@ -56,7 +56,7 @@ export interface SessionOptions {
 }
 
 /** The Guardians of the rift (boss levels). */
-export const BOSS_IDS = ['duneWorm', 'ceramicGolem', 'towerEye'] as const;
+export const BOSS_IDS = ['duneWorm', 'ceramicGolem', 'towerEye', 'riftHeart'] as const;
 export type BossId = (typeof BOSS_IDS)[number];
 
 /** How a boss fight stands. */

@@ -121,7 +121,8 @@
     "regions": "Zones effacées",
     "windIn": "Prochain coup de vent",
     "best": "Record",
-    "newBest": "Nouveau record !"
+    "newBest": "Nouveau record !",
+    "nextBeat": "Prochain battement"
   },
   "notice": {
     "lines": "Une ligne effacée | {n} lignes effacées",
@@ -204,6 +205,15 @@
         "phase2": "L’Œil s’irrite : son regard s’élargit !",
         "phase3": "Dernier souffle : il frappe plus vite !",
         "defeated": "L’Œil de la Tour est vaincu !"
+      },
+      "heart": {
+        "swell": "Le Cœur enfle : des gravats vont monter, leurs trous luisent au sol !",
+        "shard": "Chaque rangée de gravats porte un éclat de la faille : effacez-la !",
+        "wounded": "Éclat effacé : le Cœur est touché en profondeur !",
+        "mirror": "La faille plie les règles : le puits se retourne à chaque battement !",
+        "phase2": "Le Cœur s'emballe : il bat plus vite !",
+        "phase3": "Dernier souffle : la faille se déchire !",
+        "defeated": "Le Cœur de la faille est vaincu !"
       }
     }
   },
@@ -442,7 +452,8 @@
       "abyss": "Abysses",
       "forge": "Forge",
       "cosmos": "Cosmos",
-      "sakura": "Sakura"
+      "sakura": "Sakura",
+      "rift": "La Faille"
     },
     "shatter": {
       "shards": "Éclats",
@@ -657,6 +668,9 @@
     },
     "towerEye": {
       "name": "Œil de la Tour"
+    },
+    "riftHeart": {
+      "name": "Cœur de la faille"
     }
   }
 }

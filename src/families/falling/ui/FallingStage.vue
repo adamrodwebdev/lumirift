@@ -18,7 +18,10 @@ import { WellGestures } from '../input/WellGestures';
 import type { AbilityId } from '../modes/GameMode';
 import { FallingRenderer } from '../render/FallingRenderer';
 import { TonePalette } from '@/render/TonePalette';
-import { decorFor } from '../render/WellDecor';
+import * as sounds from '@/fx/sounds';
+import { RiftHeartMode } from '../modes/RiftHeartMode';
+import { RiftHeartDecor } from '../render/RiftHeartDecor';
+import { decorFor, type WellDecor } from '../render/WellDecor';
 import PiecePreview from './PiecePreview.vue';
 import TouchControls from './TouchControls.vue';
 
@@ -88,6 +91,29 @@ const detachSounds = new FallingSoundscape(audio, haptics, (distance) =>
   effects.dropWait(distance),
 ).attach(session);
 
+// The mode's scenery; the last Guardian brings its own, and its sounds.
+const mode = session.view.mode;
+const heartDecor = mode instanceof RiftHeartMode ? new RiftHeartDecor(mode, format.number) : null;
+const decor: WellDecor | null = heartDecor ?? decorFor(session.modeId);
+const detachHeart =
+  mode instanceof RiftHeartMode && heartDecor
+    ? [
+        heartDecor.attach(),
+        mode.heartEvents.on('boss', ({ event }) => {
+          if (event.type === 'swell') audio.play(sounds.rumble);
+          else if (event.type === 'beat') {
+            audio.play(sounds.stoneThud);
+            haptics.pulse([50, 30, 50]);
+          } else if (event.type === 'hurt') audio.play(sounds.bossHit(event.hit === 'shard'));
+          else if (event.type === 'phase') audio.play(sounds.roar);
+          else {
+            audio.play(sounds.newRecord);
+            haptics.pulse([40, 30, 40, 30, 160]);
+          }
+        }),
+      ]
+    : [];
+
 /** Whole-well moments (flip, mirror) are CSS animations of the canvas. */
 const moment = ref<'flip' | 'mirror' | 'tilt' | null>(null);
 let momentTimer: ReturnType<typeof setTimeout> | undefined;
@@ -134,7 +160,7 @@ const refreshPalette = async () => {
 watch(theme.resolved, refreshPalette);
 watch(
   () => profile.value.motion,
-  (motion) => renderer?.setDecor(decorFor(session.modeId), motion),
+  (motion) => renderer?.setDecor(decor, motion),
 );
 watch(
   () => props.ghost,
@@ -207,7 +233,7 @@ onMounted(() => {
   renderer?.setGhost(props.ghost);
   renderer?.setMaterial(equipment.value.material);
   renderer?.setEffects(effects);
-  renderer?.setDecor(decorFor(session.modeId), profile.value.motion);
+  renderer?.setDecor(decor, profile.value.motion);
   if (wellArea.value) observer.observe(wellArea.value);
   void refreshPalette();
   window.addEventListener('keydown', onKeyDown);
@@ -218,6 +244,7 @@ onBeforeUnmount(() => {
   offFrame();
   detachEffects();
   detachSounds();
+  detachHeart.forEach((off) => off());
   detachMoments.forEach((off) => off());
   clearTimeout(momentTimer);
   observer.disconnect();

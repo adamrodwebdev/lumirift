@@ -121,7 +121,8 @@
     "regions": "Regions cleared",
     "windIn": "Next gust of wind",
     "best": "Record",
-    "newBest": "New record!"
+    "newBest": "New record!",
+    "nextBeat": "Next beat"
   },
   "notice": {
     "lines": "One line cleared | {n} lines cleared",
@@ -204,6 +205,15 @@
         "phase2": "The Eye grows angry: its gaze widens!",
         "phase3": "Last stand: it strikes faster!",
         "defeated": "The Eye of the Tower is defeated!"
+      },
+      "heart": {
+        "swell": "The Heart swells: rubble will rise, its holes glow on the floor!",
+        "shard": "Each row of rubble holds a shard of the rift: clear it!",
+        "wounded": "Shard cleared: the Heart is struck deep!",
+        "mirror": "The rift bends the rules: the well turns at each beat!",
+        "phase2": "The Heart races: it beats faster!",
+        "phase3": "Last stand: the rift tears open!",
+        "defeated": "The Heart of the Rift is defeated!"
       }
     }
   },
@@ -442,7 +452,8 @@
       "abyss": "Abyss",
       "forge": "Forge",
       "cosmos": "Cosmos",
-      "sakura": "Sakura"
+      "sakura": "Sakura",
+      "rift": "The Rift"
     },
     "shatter": {
       "shards": "Shards",
@@ -657,6 +668,9 @@
     },
     "towerEye": {
       "name": "Eye of the Tower"
+    },
+    "riftHeart": {
+      "name": "Heart of the Rift"
     }
   }
 }

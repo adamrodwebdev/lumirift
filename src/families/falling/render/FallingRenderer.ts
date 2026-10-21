@@ -103,6 +103,7 @@ export class FallingRenderer {
     ctx.fillRect(0, 0, width, height);
     if (effects?.shake.active) ctx.translate(effects.shake.x * cell, effects.shake.y * cell);
     this.drawGrid(palette.wellGrid);
+    this.decor?.drawBehind?.(ctx, this.view, palette, cell, this.animated ? performance.now() : 0);
 
     if (!effects?.stackHidden) {
       // A hard-dropped piece is drawn falling until it lands, not in the stack.
