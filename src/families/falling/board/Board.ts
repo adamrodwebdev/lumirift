@@ -32,7 +32,7 @@ export class Board {
   /** The last column touches the first one: the well is a cylinder, without side walls. */
   readonly wraps: boolean;
   private readonly cells: Uint8Array;
-  /** 1 where a block carries a bomb gem (the Tower). */
+  /** 1 where a block carries a gem: a bomb in the Tower, a shard of the rift under the Heart. */
   private readonly bombs: Uint8Array;
 
   constructor(
@@ -186,13 +186,14 @@ export class Board {
    * Pushes a garbage row in from the bottom; everything moves up one row.
    * Returns true when blocks were pushed out of the top (the player tops out).
    */
-  pushGarbageRow(holeX: number): boolean {
+  pushGarbageRow(holeX: number, gemX: number | null = null): boolean {
     const overflow = !this.isRowEmpty(0);
     for (let y = 0; y < this.height - 1; y++) this.copyRow(y + 1, y);
     const bottom = this.height - 1;
     for (let x = 0; x < this.width; x++) {
       this.set(x, bottom, x === holeX ? Tone.Empty : Tone.Garbage);
     }
+    if (gemX !== null && gemX !== holeX) this.bombs[bottom * this.width + gemX] = 1;
     return overflow;
   }
 
@@ -325,10 +326,11 @@ export class Board {
     });
   }
 
-  /** Reflects the well left to right. */
+  /** Reflects the well left to right, gems with their blocks. */
   mirror(): void {
     for (let y = 0; y < this.height; y++) {
       this.cells.subarray(y * this.width, (y + 1) * this.width).reverse();
+      this.bombs.subarray(y * this.width, (y + 1) * this.width).reverse();
     }
   }
 

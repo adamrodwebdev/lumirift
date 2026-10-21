@@ -7,6 +7,14 @@ import type { TonePalette } from '@/render/TonePalette';
 
 /** A mode's own scenery, drawn over the stack and under the falling piece. */
 export interface WellDecor {
+  /** What lies behind the stack, if anything (drawn before the blocks). */
+  drawBehind?(
+    ctx: CanvasRenderingContext2D,
+    view: FallingView,
+    palette: TonePalette,
+    cell: number,
+    time: number,
+  ): void;
   draw(
     ctx: CanvasRenderingContext2D,
     view: FallingView,

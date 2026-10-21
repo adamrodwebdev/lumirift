@@ -3,6 +3,24 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.17.0] — 21/10/2026
+
+Le dernier Gardien : chaque chapitre a désormais le sien.
+
+### Ajouté
+
+- **Le Cœur de la faille**, boss final, au niveau 5-7 (puits classique, 4 minutes). Un cœur de
+  cristal bat sous la pile ; avant chaque battement il **enfle** (les trous des rangées à venir
+  luisent au sol, leurs éclats en transparence), puis il fait **monter des gravats**, chaque rangée
+  portant un **éclat de la faille** relié à lui par une veine de lumière.
+- **Son attaque est son point faible** : effacer la rangée d'un éclat lui retire 15 points de vie ;
+  chaque ligne le blesse un peu (2, 4, 7, 12) et retarde son prochain battement. Le compte à
+  rebours du battement s'affiche dans le tableau de jeu.
+- Trois phases : il bat plus vite ; à la dernière, la faille plie les règles (le puits se
+  retourne à chaque battement) et deux rangées montent à la fois, avec le même trou.
+- **Récompense** : l'ambiance **La Faille** (violet profond et lumière dorée).
+- Le décor d'un mode peut se dessiner derrière la pile (`WellDecor.drawBehind`).
+
 ## [1.16.0] — 21/10/2026
 
 Le troisième Gardien de la faille.

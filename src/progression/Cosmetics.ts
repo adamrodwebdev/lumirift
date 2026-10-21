@@ -18,7 +18,7 @@ export const MATERIALS = [
 export type MaterialId = (typeof MATERIALS)[number];
 
 /** Backdrops of the whole game: animated glows and a tinted well. */
-export const AMBIANCES = ['night', 'aurora', 'abyss', 'forge', 'cosmos', 'sakura'] as const;
+export const AMBIANCES = ['night', 'aurora', 'abyss', 'forge', 'cosmos', 'sakura', 'rift'] as const;
 export type AmbianceId = (typeof AMBIANCES)[number];
 
 /** How a cleared line bursts, in the falling family and the Tower. */
@@ -78,6 +78,7 @@ export const COSMETICS: readonly Cosmetic[] = [
   item('ambiance', 'forge', { by: 'level', value: 8 }),
   item('ambiance', 'cosmos', { by: 'level', value: 12 }),
   item('ambiance', 'sakura', { by: 'objectives', value: 20 }),
+  item('ambiance', 'rift', { by: 'boss', value: 'riftHeart' }),
   item('shatter', 'shards', { by: 'default' }),
   item('shatter', 'confetti', { by: 'level', value: 4 }),
   item('shatter', 'petals', { by: 'level', value: 9 }),

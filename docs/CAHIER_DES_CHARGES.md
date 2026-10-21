@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut           |
-| ------- | ---------- | ---------------- |
-| 1.16    | 21/10/2026 | L'Œil de la Tour |
+| Version | Date       | Statut               |
+| ------- | ---------- | -------------------- |
+| 1.17    | 21/10/2026 | Le Cœur de la faille |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -308,7 +308,7 @@ Règles détaillées :
   100 points de vie et **trois phases** (sous 66 et 33) qui accélèrent ses attaques ; ses
   actions sont nommées une fois chacune ; sa chute donne un **cosmétique** à son image. Code :
   `GuardianHealth` (vie et phases), une classe de règles par Gardien, réglée par simulation.
-  Prévu : le **Cœur de la faille** (5-7).
+  Les quatre chapitres qui suivent le premier ont chacun leur Gardien (2-7 à 5-7).
 - **Le Golem de céramique (1.15)**, Gardien du chapitre 3 : niveau 3-7 (Mosaïque, 4 minutes,
   objectif « Vaincre le Golem de céramique »). Le plateau est son **armure** : son visage (fissures
   réparées à l'or, deux yeux) se voit sous les cases vides. Il **vise** des cases libres en terrain
@@ -331,6 +331,17 @@ Règles détaillées :
   fait monter un anneau de gravats sous son regard. Bombes plus tôt (dès la 3e pièce) et plus
   souvent (32 %). Réglage avec l'IA du duel, qui ignore l'Œil : « normale » 9 victoires sur 12
   vers 1 min 30, « facile » 7 sur 12. **Récompense** : l'effet « Éclats d'iris ».
+- **Le Cœur de la faille (1.17)**, dernier Gardien : niveau 5-7 (puits classique, 4 minutes,
+  objectif « Vaincre le Cœur de la faille »). Un cœur de cristal bat sous la pile (dessiné
+  derrière les blocs, son contour devant). Toutes les 9 s (7,5 s en phase 2, 6 s en phase 3) il
+  **enfle** 2 s (trous des rangées à venir au sol, éclats en transparence) puis fait **monter**
+  une rangée de gravats (deux en phase 3, avec le même trou), chaque rangée portant un **éclat de
+  la faille** (une gemme du plateau) relié à lui par une veine. **Coups** : éclat effacé avec sa
+  rangée 15 ; lignes 2, 4, 7, 12 ; chaque ligne retarde le battement de 0,8 s (pas pendant qu'il
+  enfle). **Phase 3** : le puits se retourne (miroir) avant chaque battement. Réglage avec l'IA
+  « normale » (qui ne vise pas les éclats et gère mal le miroir) : 6 victoires sur 12, entre 50 et
+  77 s ; le miroir à chaque battement dès la phase 2 la faisait tomber à 2 sur 12, il est réservé
+  à la dernière phase. **Récompense** : l'ambiance « La Faille ».
 - **Choix fondés sur les jeux du genre** : sur CrazyGames, Sandtrix (9,1/10, 40 000 votes) et
   Sand Blocks font déjà du sable coloré **sans éléments**. Les réactions viennent des
   simulateurs de sable (Noita, The Powder Toy, Sandspiel) et sont ramenées à la règle du jeu :
@@ -1418,3 +1429,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.14    | 21/10/2026 | Premier Gardien de la faille : le Ver des dunes au niveau 2-7, phases, coups des éléments, récompense Écailles des dunes (§ 3.2).                                 |
 | 1.15    | 21/10/2026 | Principes des Gardiens ; le Golem de céramique au niveau 3-7 : pierres annoncées, parade, pierres qui se fissurent, récompense Kintsugi (§ 3.2).                  |
 | 1.16    | 21/10/2026 | L'Œil de la Tour au niveau 4-7 : regard tournant, charge annoncée, pierres, aveuglé par les bombes, récompense Éclats d'iris (§ 3.2).                             |
+| 1.17    | 21/10/2026 | Le Cœur de la faille au niveau 5-7 : battements annoncés, gravats porteurs d'éclats, miroir en dernière phase, récompense La Faille (§ 3.2).                      |

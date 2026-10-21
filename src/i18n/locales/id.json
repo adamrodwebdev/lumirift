@@ -121,7 +121,8 @@
     "regions": "Area dihapus",
     "windIn": "Embusan angin berikutnya",
     "best": "Rekor",
-    "newBest": "Rekor baru!"
+    "newBest": "Rekor baru!",
+    "nextBeat": "Detak berikutnya"
   },
   "notice": {
     "lines": "{n} baris dihapus",
@@ -204,6 +205,15 @@
         "phase2": "Mata marah: tatapannya melebar!",
         "phase3": "Napas terakhir: ia menyerang lebih cepat!",
         "defeated": "Mata Menara dikalahkan!"
+      },
+      "heart": {
+        "swell": "Jantung membengkak: puing akan naik, lubangnya menyala di dasar!",
+        "shard": "Setiap baris puing membawa serpihan retakan: hapus barisnya!",
+        "wounded": "Serpihan terhapus: Jantung terluka dalam!",
+        "mirror": "Retakan membengkokkan aturan: sumur berbalik setiap detak!",
+        "phase2": "Jantung berpacu: ia berdetak lebih cepat!",
+        "phase3": "Napas terakhir: retakan terkoyak!",
+        "defeated": "Jantung Retakan dikalahkan!"
       }
     }
   },
@@ -442,7 +452,8 @@
       "abyss": "Palung",
       "forge": "Tempa",
       "cosmos": "Kosmos",
-      "sakura": "Sakura"
+      "sakura": "Sakura",
+      "rift": "Retakan"
     },
     "shatter": {
       "shards": "Serpihan",
@@ -657,6 +668,9 @@
     },
     "towerEye": {
       "name": "Mata Menara"
+    },
+    "riftHeart": {
+      "name": "Jantung Retakan"
     }
   }
 }

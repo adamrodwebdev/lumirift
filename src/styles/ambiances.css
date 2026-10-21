@@ -87,6 +87,18 @@
   --glow-2: rgb(255 210 225 / 0.1);
 }
 
+/* The Rift, from the Heart of the Rift: its violet depth and the gold of its light. */
+:root[data-ambiance='rift'],
+[data-ambiance-preview='rift'] {
+  --glow-1: rgb(120 50 200 / 0.16);
+  --glow-2: rgb(230 150 60 / 0.12);
+}
+:root[data-theme='dark'][data-ambiance='rift'],
+:root[data-theme='dark'] [data-ambiance-preview='rift'] {
+  --glow-1: rgb(150 70 255 / 0.22);
+  --glow-2: rgb(255 170 70 / 0.16);
+}
+
 body::before {
   content: '';
   position: fixed;
