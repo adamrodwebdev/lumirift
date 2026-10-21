@@ -3,7 +3,7 @@
 // Usage: npm run package:crazygames   →  release/lumirift-crazygames-<version>.zip
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 
 const OUT = 'dist-crazygames';
 const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
@@ -62,15 +62,16 @@ for (const [name, ok, detail] of checks) {
 }
 if (failed) process.exit(1);
 
+// bsdtar (Windows 10+, macOS) writes ZIP entries with "/" separators, which
+// Compress-Archive on Windows PowerShell 5.1 does not ("assets\x.js": a portal
+// unpacks it as one file of that name, and the game cannot load).
 mkdirSync('release', { recursive: true });
 rmSync(ZIP, { force: true });
-if (process.platform === 'win32') {
-  run('powershell', [
-    '-NoProfile',
-    '-Command',
-    `Compress-Archive -Path '${OUT}/*' -DestinationPath '${ZIP}'`,
-  ]);
-} else {
-  run('sh', ['-c', `cd ${OUT} && zip -qr ${relative(OUT, ZIP)} .`]);
+const tar = process.platform === 'win32' ? 'C:\\Windows\\System32\\tar.exe' : 'bsdtar';
+execFileSync(tar, ['-a', '-c', '-f', ZIP, '-C', OUT, ...readdirSync(OUT)], { stdio: 'inherit' });
+const listed = execFileSync(tar, ['-t', '-f', ZIP], { encoding: 'utf8' }).trim().split(/\r?\n/);
+if (!listed.includes('index.html') || listed.some((entry) => entry.includes('\\'))) {
+  console.error('✗ The archive does not have index.html at its root with "/" paths');
+  process.exit(1);
 }
-console.log(`\n${ZIP} (${(statSync(ZIP).size / MB).toFixed(2)} MB)`);
+console.log(`\n${ZIP} (${(statSync(ZIP).size / MB).toFixed(2)} MB, ${listed.length} entries)`);
