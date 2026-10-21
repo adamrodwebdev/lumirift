@@ -3,6 +3,31 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.15.0] — 21/10/2026
+
+Le deuxième Gardien de la faille.
+
+### Ajouté
+
+- **Le Golem de céramique**, boss du chapitre 3, au niveau 3-7 (Mosaïque, 4 minutes). Le plateau
+  est son armure : son visage, des fissures réparées à l'or, apparaît sous les cases vides, et ses
+  yeux brûlent puis rougissent à chaque phase. Il **vise** des cases libres (un viseur rouge et le
+  nombre de poses restantes), puis y **lance des pierres** en arc depuis ses yeux. Une pierre
+  remplit sa case, mais une ligne effacée ne fait que la **fissurer** ; la suivante la brise.
+- **Parade** : poser une pièce sur une case visée bloque sa pierre (et le blesse de 2).
+- On le blesse en effaçant : 4 pour une ligne, 7 de plus par ligne en même temps, jusqu'à 4 de
+  plus avec la série ; 3 par pierre à lui brisée ; 20 pour un plateau vidé. Trois phases : 2, 3
+  puis 4 pierres par lancer, toutes les trois poses. Le joker bombe brise une pierre d'un coup.
+- **Récompense** : le matériau de blocs **Kintsugi** (céramique réparée à l'or).
+- Sons (lancer, impact de pierre, parade), éclats, effondrement du plateau à sa chute.
+- Base commune des Gardiens (`GuardianHealth`) : 100 points de vie, phases sous 66 et 33.
+
+### Corrigé
+
+- La victoire contre un Gardien ne compte plus comme un duel gagné (objectif du jour « battre
+  l'IA ») et la fin de partie l'annonce comme telle, plus « la pile de l'IA a débordé ».
+- La jauge de l'objectif montre le dernier coup porté (elle restait à 96/100).
+
 ## [1.14.0] — 21/10/2026
 
 Le premier Gardien de la faille.

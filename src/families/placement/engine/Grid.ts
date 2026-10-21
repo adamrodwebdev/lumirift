@@ -82,14 +82,32 @@ export class Grid {
     return trial.fullLines();
   }
 
-  /** Empties the given rows and columns; a tile at a crossing is removed once. */
-  clearLines({ rows, columns }: Lines): RemovedTile[] {
+  /**
+   * Empties the given rows and columns; a tile at a crossing is removed once.
+   * A stone of the Golem only cracks (a cracked one breaks): the stones it
+   * cracked are added to `cracked`.
+   */
+  clearLines({ rows, columns }: Lines, cracked: Cell[] = []): RemovedTile[] {
     const cells: Cell[] = [];
     for (const y of rows) for (let x = 0; x < this.size; x++) cells.push({ x, y });
     for (const x of columns) {
       for (let y = 0; y < this.size; y++) if (!rows.includes(y)) cells.push({ x, y });
     }
-    return this.remove(cells);
+    return this.remove(cells, cracked);
+  }
+
+  /** Sets a stone of the Golem on a free cell; false when the cell is taken. */
+  putStone(x: number, y: number): boolean {
+    if (!this.isFree(x, y)) return false;
+    this.set(x, y, Tone.Stone);
+    return true;
+  }
+
+  stoneCount(): number {
+    return this.cells.reduce(
+      (count, tone) => count + (tone === Tone.Stone || tone === Tone.CrackedStone ? 1 : 0),
+      0,
+    );
   }
 
   /** Empties a square of (2 × radius + 1) cells around a cell (the bomb). */
@@ -136,11 +154,17 @@ export class Grid {
     return rows;
   }
 
-  private remove(cells: readonly Cell[]): RemovedTile[] {
+  /** Removes the tiles of these cells; with `cracked`, a whole stone only cracks. */
+  private remove(cells: readonly Cell[], cracked?: Cell[]): RemovedTile[] {
     const removed: RemovedTile[] = [];
     for (const { x, y } of cells) {
       const tone = this.get(x, y);
       if (tone === Tone.Empty) continue;
+      if (tone === Tone.Stone && cracked) {
+        this.set(x, y, Tone.CrackedStone);
+        cracked.push({ x, y });
+        continue;
+      }
       removed.push({ x, y, tone });
       this.set(x, y, Tone.Empty);
     }

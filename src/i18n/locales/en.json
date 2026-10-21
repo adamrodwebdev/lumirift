@@ -186,7 +186,16 @@
       "phase3": "Its last breath: watch out!",
       "stunned": "Shocked through the water: it is stunned!",
       "critical": "Lightning on its head: critical hit!",
-      "defeated": "The Dune Wyrm is defeated!"
+      "defeated": "The Dune Wyrm is defeated!",
+      "golem": {
+        "aim": "The Golem aims at the glowing cells: stones will land there!",
+        "throw": "Stones! One line cracks them, a second breaks them.",
+        "parry": "Parry: filling an aimed cell blocks its stone!",
+        "shatter": "Its own stones broken hurt it!",
+        "phase2": "The Golem cracks: it throws more stones!",
+        "phase3": "Last stand: it throws faster!",
+        "defeated": "The Ceramic Golem is defeated!"
+      }
     }
   },
   "controls": {
@@ -227,7 +236,8 @@
       "victory": "Victory: the AI’s stack overflowed.",
       "defeat": "Defeat: your stack overflowed.",
       "noMoves": "No piece fits any more.",
-      "goal": "Goal reached!"
+      "goal": "Goal reached!",
+      "guardian": "Victory: the Guardian is defeated!"
     },
     "result": "Result",
     "newBest": "New record",
@@ -414,7 +424,8 @@
       "pixel": "Pixel",
       "obsidian": "Obsidian",
       "gold": "Gold",
-      "dunes": "Dune scales"
+      "dunes": "Dune scales",
+      "kintsugi": "Kintsugi"
     },
     "ambiance": {
       "night": "Night",
@@ -630,6 +641,9 @@
   "bosses": {
     "duneWorm": {
       "name": "Dune Wyrm"
+    },
+    "ceramicGolem": {
+      "name": "Ceramic Golem"
     }
   }
 }

@@ -1,8 +1,6 @@
 import type { AiLevel } from '@/families/falling/ai/AiPlayer';
 import type { BossId } from '@/session/GameSession';
-
-/** Health of the Dune Wyrm (its goal bar fills with the damage done). */
-const WORM_HEALTH_POINTS = 100;
+import { GUARDIAN_HEALTH } from '@/session/GuardianHealth';
 import type { ModeId } from '@/session/ModeId';
 import type { Goal } from './Goals';
 
@@ -68,7 +66,8 @@ const duel = (id: string, variant: AiLevel): CampaignLevel => ({
 
 /**
  * The campaign: five chapters of six levels, every mode of the game, each
- * chapter ending with a duel against a stronger AI. Played in order.
+ * chapter ending with a duel against a stronger AI; from chapter 2, a Guardian
+ * of the rift (a boss) guards the way out after the duel. Played in order.
  */
 export const LEVELS: readonly CampaignLevel[] = [
   // 1. Premiers blocs
@@ -100,7 +99,7 @@ export const LEVELS: readonly CampaignLevel[] = [
   duel('2-6', 'easy'),
   // The first Guardian: the Dune Wyrm, fought with the elements met in this chapter.
   {
-    ...timed('2-7', 'sand', 4, { kind: 'boss', target: WORM_HEALTH_POINTS }),
+    ...timed('2-7', 'sand', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
     boss: 'duneWorm',
   },
   // 3. Mosaïques
@@ -117,6 +116,11 @@ export const LEVELS: readonly CampaignLevel[] = [
   },
   timed('3-5', 'chroma', 4, { kind: 'lines', target: 20 }),
   duel('3-6', 'normal'),
+  // The second Guardian: the Ceramic Golem, whose armour is the Mosaic's board.
+  {
+    ...timed('3-7', 'mosaic', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
+    boss: 'ceramicGolem',
+  },
   // 4. Vertiges
   timed('4-1', 'tilt', 3, { kind: 'lines', target: 15 }),
   timed('4-2', 'rhythm', 3, { kind: 'lines', target: 12 }),

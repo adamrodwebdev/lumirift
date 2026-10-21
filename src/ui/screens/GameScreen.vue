@@ -295,6 +295,8 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
   const result = current.result();
   const key = recordKey();
   const verdict = run ? (decided ?? run.end(reason, liveState(current))) : null;
+  // The goal bar shows the last blow (a Guardian's last hit ends the game in the same frame).
+  if (run) goal.value = run.progress(liveState(current));
   // Whole points or milliseconds: no float noise in the saved records. Campaign
   // games bring upgrades along: they never count as records.
   const record = run
@@ -314,7 +316,8 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
   // A record or a better level result is worth a celebration on the portal.
   if (record.isNewBest || improved) platform.happyTime();
   outcome.value = {
-    reason,
+    // A Guardian's fall is told as such, not as a duel's victory.
+    reason: reason === 'victory' && props.level?.boss ? 'guardian' : reason,
     amount: Math.round(result.value),
     kind: result.kind,
     value: format.result(result.kind, result.value),

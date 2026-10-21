@@ -5,6 +5,7 @@ import { FlashLimiter } from '@/fx/FlashLimiter';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
 import { ScreenShake } from '@/fx/ScreenShake';
 import { shade, type TonePalette } from '@/render/TonePalette';
+import type { GolemEvent } from '../engine/CeramicGolem';
 import type { RemovedTile } from '../engine/Grid';
 import type { Cell } from '../engine/Shape';
 import type { MosaicView, PlacementSession } from '../PlacementSession';
@@ -19,6 +20,30 @@ const POPUP_MS = 900;
 const FLASH_MS = 220;
 const GRAVITY = 40;
 const SHARDS_PER_TILE = [5, 4, 2] as const;
+/** A stone of the Golem flies this long from its eyes to its cell; the stones leave one after the other. */
+export const FLIGHT_MS = 420;
+const FLIGHT_STAGGER_MS = 110;
+/** A parried stone: a ring of light spreading from the cell. */
+export const PARRY_MS = 450;
+/** The Golem's eyes flash this long when it is hurt. */
+const HURT_MS = 280;
+/** Where the Golem's eyes are on the board, in cells (its face is the board). */
+export const GOLEM_EYES: readonly Cell[] = [
+  { x: 2.5, y: 2.4 },
+  { x: 5.5, y: 2.4 },
+];
+
+/** A stone in the air, from an eye to its cell. */
+export interface Flight extends Cell {
+  readonly from: Cell;
+  readonly delay: number;
+  age: number;
+  landed: boolean;
+}
+
+export interface Parry extends Cell {
+  age: number;
+}
 
 export interface CrackingTile extends RemovedTile {
   age: number;
@@ -53,6 +78,11 @@ export class MosaicEffects {
   readonly colors: string[] = [];
   flash = 0;
   boardHidden = false;
+  /** Stones of the Golem on their way. */
+  readonly flights: Flight[] = [];
+  readonly parries: Parry[] = [];
+  /** Left of the Golem's flash of pain (ms). */
+  golemHurt = 0;
 
   private readonly colorIndex = new Map<string, number>();
   private readonly quality = new AdaptiveQuality((budget) => this.pool.setLimit(budget));
@@ -79,6 +109,7 @@ export class MosaicEffects {
       session.onGame('bomb', ({ removed }) => this.onBomb(removed)),
       session.onGame('perfect', () => this.flashBoard(0.25)),
       session.onGame('over', () => this.collapse()),
+      session.onGame('boss', ({ event }) => this.onBoss(event)),
     ];
     return () => offs.forEach((off) => off());
   }
@@ -106,6 +137,11 @@ export class MosaicEffects {
     return Math.min(1, Math.max(0, (pop.age - pop.delay) / POP_MS));
   }
 
+  /** True while a stone flies to this cell (it is drawn in the air, not on the board). */
+  inFlight(x: number, y: number): boolean {
+    return this.flights.some((flight) => !flight.landed && flight.x === x && flight.y === y);
+  }
+
   color(css: string): number {
     let index = this.colorIndex.get(css);
     if (index === undefined) {
@@ -129,6 +165,16 @@ export class MosaicEffects {
       }
     }
     this.pool.update(deltaMs / 1000, this.world);
+    this.golemHurt = Math.max(0, this.golemHurt - deltaMs);
+    for (const flight of this.flights) {
+      flight.age += deltaMs;
+      if (!flight.landed && flight.age >= flight.delay + FLIGHT_MS) {
+        flight.landed = true;
+        this.land(flight);
+      }
+    }
+    ageOut(this.flights, 0, (flight) => (flight.landed ? 0 : Infinity));
+    ageOut(this.parries, deltaMs, () => PARRY_MS);
     ageOut(this.pops, deltaMs, (pop) => pop.delay + POP_MS);
     ageOut(this.popups, deltaMs, () => POPUP_MS);
   }
@@ -209,6 +255,58 @@ export class MosaicEffects {
     }
     this.boardHidden = true;
     this.kick(0.4);
+  }
+
+  /** The Guardian: stones fly from its eyes, parries ring, wounds flash in its eyes. */
+  private onBoss(event: GolemEvent): void {
+    const motion = this.profile().motion;
+    switch (event.type) {
+      case 'throw':
+        event.stones.forEach((stone, i) => {
+          const from = GOLEM_EYES[stone.x < 4 ? 0 : 1]!;
+          const flight = { ...stone, from, delay: i * FLIGHT_STAGGER_MS, age: 0, landed: false };
+          if (motion) this.flights.push(flight);
+          else this.land(flight);
+        });
+        break;
+      case 'parry':
+        for (const cell of event.cells) this.parries.push({ ...cell, age: 0 });
+        break;
+      case 'hurt': {
+        this.golemHurt = HURT_MS;
+        const eyes = { x: 4, y: GOLEM_EYES[0]!.y - 0.8 };
+        this.popups.push({ text: `−${this.formatPoints(event.damage)}`, ...eyes, age: 0 });
+        break;
+      }
+      case 'phase':
+        this.kick(0.3);
+        this.flashBoard(0.22);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /** A stone lands: a thud and a puff of grit. */
+  private land(cell: Cell): void {
+    this.pops.push({ x: cell.x, y: cell.y, age: 0, delay: 0 });
+    this.kick(0.08);
+    const profile = this.profile();
+    const palette = this.palette();
+    if (profile.particles === 0 || !palette) return;
+    const grit = this.color(shade(palette.color(Tone.Stone), 0.2));
+    for (let i = 0; i < Math.round(6 * profile.particles); i++) {
+      this.pool.spawn(
+        ParticleKind.Dust,
+        cell.x + random(0.1, 0.9),
+        cell.y + 0.9,
+        random(-3, 3),
+        -random(1, 4),
+        random(0.3, 0.6),
+        random(0.06, 0.1),
+        grit,
+      );
+    }
   }
 
   // --- Simulation -----------------------------------------------------------

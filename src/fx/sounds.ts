@@ -434,6 +434,19 @@ export const roar: SoundRecipe = (s) => {
   s.tone({ type: 'sawtooth', frequency: 138, to: 86, duration: 0.8, gain: 0.05 });
 };
 
+/** A stone of the Golem landing on the board: a dull, heavy thud. */
+export const stoneThud: SoundRecipe = (s) => {
+  s.noise({ filter: 'lowpass', frequency: 700, to: 200, duration: 0.25, gain: 0.26 });
+  s.tone({ frequency: 82, to: 48, duration: 0.22, gain: 0.18 });
+};
+
+/** A stone parried: a bright ring of ceramic. */
+export const parry: SoundRecipe = (s) => {
+  s.tone({ type: 'triangle', frequency: 1318, duration: 0.35, gain: 0.08 });
+  s.tone({ type: 'triangle', frequency: 1976, duration: 0.3, gain: 0.05, start: 0.03 });
+  s.noise({ filter: 'highpass', frequency: 4000, duration: 0.05, gain: 0.08 });
+};
+
 /** A boss taking a hit: a hard crack, higher on its weak point. */
 export const bossHit =
   (critical: boolean): SoundRecipe =>

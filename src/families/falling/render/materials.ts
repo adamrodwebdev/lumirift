@@ -159,6 +159,64 @@ class DunesSprites extends BlockSprites {
   }
 }
 
+/** Kintsugi, from the Ceramic Golem: glazed tiles broken and mended with veins of gold. */
+class KintsugiSprites extends BlockSprites {
+  protected paint(ctx: CanvasRenderingContext2D, tone: Tone, rgb: Rgb): void {
+    const s = this.size;
+    const [light = '#f6dc8c', middle = '#c99a2e', dark = '#8a6414'] = this.palette.effects.gold;
+    const gap = Math.max(1, Math.round(s * 0.05));
+    const side = s - gap * 2;
+    ctx.beginPath();
+    ctx.roundRect(gap, gap, side, side, s * 0.14);
+    const glaze = ctx.createRadialGradient(s * 0.3, s * 0.26, s * 0.04, s / 2, s / 2, s * 0.75);
+    glaze.addColorStop(0, shade(rgb, 0.35));
+    glaze.addColorStop(0.5, shade(rgb, 0));
+    glaze.addColorStop(1, shade(rgb, -0.3));
+    ctx.fillStyle = glaze;
+    ctx.fill();
+    ctx.strokeStyle = shade(rgb, -0.4);
+    ctx.lineWidth = Math.max(1, s * 0.04);
+    ctx.stroke();
+    // The mended cracks: a fixed pattern per tone, gold with a light edge.
+    ctx.save();
+    ctx.clip();
+    let seed = tone * 7919 + 104729;
+    const next = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (let k = 0; k < 2; k++) {
+      const points: [number, number][] = [];
+      let x = k === 0 ? gap : gap + next() * side;
+      let y = k === 0 ? gap + next() * side : gap;
+      for (let j = 0; j < 4; j++) {
+        points.push([x, y]);
+        x += (k === 0 ? 0.3 : (next() - 0.5) * 0.5) * s;
+        y += (k === 0 ? (next() - 0.5) * 0.5 : 0.3) * s;
+      }
+      for (const [width, colour] of [
+        [0.11, dark],
+        [0.07, middle],
+        [0.025, light],
+      ] as const) {
+        ctx.strokeStyle = colour;
+        ctx.lineWidth = Math.max(1, s * width);
+        ctx.beginPath();
+        points.forEach(([px, py], i) => (i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py)));
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+    ctx.fillStyle = 'rgb(255 255 255 / 0.35)';
+    ctx.beginPath();
+    ctx.ellipse(s * 0.32, s * 0.24, s * 0.14, s * 0.06, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+    this.engrave(ctx, tone as Engraved, rgb, s / 2, s * 0.18);
+  }
+}
+
 type SpriteFactory = new (size: number, palette: TonePalette) => BlockSprites;
 
 const MATERIAL_SPRITES: Readonly<Record<MaterialId, SpriteFactory>> = {
@@ -169,6 +227,7 @@ const MATERIAL_SPRITES: Readonly<Record<MaterialId, SpriteFactory>> = {
   obsidian: ObsidianSprites,
   gold: GoldSprites,
   dunes: DunesSprites,
+  kintsugi: KintsugiSprites,
 };
 
 /** The blocks of a material at a given size. */

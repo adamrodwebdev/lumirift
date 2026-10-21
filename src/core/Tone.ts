@@ -34,6 +34,10 @@ export const Tone = {
   Lightning: 20,
   /** Sand: burning oil, fiercer than fire, spreading as it fades. */
   Blaze: 21,
+  /** Mosaic: a stone the Ceramic Golem throws; a cleared line only cracks it. */
+  Stone: 22,
+  /** Mosaic: a cracked stone; the next line through it breaks it. */
+  CrackedStone: 23,
 } as const;
 export type Tone = (typeof Tone)[keyof typeof Tone];
 

@@ -186,7 +186,16 @@
       "phase3": "Dernier souffle : attention !",
       "stunned": "Électrocuté par l’eau : il est étourdi !",
       "critical": "Foudre sur sa tête : coup critique !",
-      "defeated": "Le Ver des dunes est vaincu !"
+      "defeated": "Le Ver des dunes est vaincu !",
+      "golem": {
+        "aim": "Le Golem vise les cases qui luisent : il y lancera des pierres !",
+        "throw": "Des pierres ! Une ligne les fissure, une deuxième les brise.",
+        "parry": "Parade : remplir une case visée bloque sa pierre !",
+        "shatter": "Ses propres pierres brisées le blessent !",
+        "phase2": "Le Golem se fissure : il lance plus de pierres !",
+        "phase3": "Dernier souffle : il lance plus vite !",
+        "defeated": "Le Golem de céramique est vaincu !"
+      }
     }
   },
   "controls": {
@@ -227,7 +236,8 @@
       "victory": "Victoire : la pile de l’IA a débordé.",
       "defeat": "Défaite : votre pile a débordé.",
       "noMoves": "Plus aucune pièce ne rentre.",
-      "goal": "Objectif atteint !"
+      "goal": "Objectif atteint !",
+      "guardian": "Victoire : le Gardien est vaincu !"
     },
     "result": "Résultat",
     "newBest": "Nouveau record",
@@ -414,7 +424,8 @@
       "pixel": "Pixel",
       "obsidian": "Obsidienne",
       "gold": "Or",
-      "dunes": "Écailles des dunes"
+      "dunes": "Écailles des dunes",
+      "kintsugi": "Kintsugi"
     },
     "ambiance": {
       "night": "Nuit",
@@ -630,6 +641,9 @@
   "bosses": {
     "duneWorm": {
       "name": "Ver des dunes"
+    },
+    "ceramicGolem": {
+      "name": "Golem de céramique"
     }
   }
 }
