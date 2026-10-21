@@ -2,12 +2,14 @@ import { Emitter } from '@/core/Emitter';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import type { RandomSource } from '@/core/Random';
 import { JOKER_IDS, JOKERS, type JokerId, type JokerTarget } from '../jokers/Joker';
+import { CeramicGolem, type GolemEvent, type GolemSnapshot } from './CeramicGolem';
 import { CUBE, Dealer, type OfferedPiece } from './Dealer';
+import { Tone } from '@/core/Tone';
 import { Grid, type Lines, type RemovedTile } from './Grid';
 import type { Cell } from './Shape';
 
 export type MosaicState = 'ready' | 'running' | 'paused' | 'over';
-export type MosaicOverReason = 'noMoves' | 'timeUp';
+export type MosaicOverReason = 'noMoves' | 'timeUp' | 'victory';
 /** The three pieces of the hand, and the extra slot of the cube joker. */
 export type SlotId = 0 | 1 | 2 | 'bonus';
 
@@ -42,6 +44,8 @@ export interface MosaicEventMap {
     readonly rows: readonly number[];
     readonly columns: readonly number[];
     readonly removed: readonly RemovedTile[];
+    /** Stones of the Golem the clear cracked (they stay, cracked). */
+    readonly cracked: readonly Cell[];
     readonly points: number;
     readonly streak: number;
   };
@@ -54,6 +58,8 @@ export interface MosaicEventMap {
   bomb: { readonly x: number; readonly y: number; readonly removed: readonly RemovedTile[] };
   turn: { readonly slot: SlotId };
   undo: Readonly<Record<string, never>>;
+  /** What the Guardian of a boss level did. */
+  boss: { readonly event: GolemEvent };
   over: { readonly reason: MosaicOverReason };
 }
 
@@ -67,6 +73,7 @@ interface Snapshot {
   readonly misses: number;
   readonly handsPlayed: number;
   readonly jokers: readonly JokerId[];
+  readonly golem: GolemSnapshot | null;
 }
 
 export interface MosaicOptions {
@@ -75,6 +82,8 @@ export interface MosaicOptions {
   readonly grid?: Grid;
   /** Campaign upgrades (none by default). */
   readonly boosts?: Boosts;
+  /** The Ceramic Golem to defeat (the boss level of the Mosaics). */
+  readonly boss?: 'ceramicGolem';
 }
 
 /** Jokers the start-jokers upgrade adds, in this order. */
@@ -91,6 +100,8 @@ const START_JOKERS: readonly JokerId[] = ['bomb', 'reroll', 'rotate'];
 export class MosaicGame {
   readonly grid: Grid;
   readonly events = new Emitter<MosaicEventMap>();
+  /** The Guardian of a boss level, or null. */
+  readonly golem: CeramicGolem | null;
 
   private readonly dealer: Dealer;
   private readonly timeLimitMs: number | null;
@@ -121,6 +132,8 @@ export class MosaicGame {
     for (const joker of START_JOKERS.slice(0, this.boosts.startJokers)) this.inventory.push(joker);
     this.inventory.sort((a, b) => JOKER_IDS.indexOf(a) - JOKER_IDS.indexOf(b));
     this.timeLimitMs = options.timeLimitMs ?? null;
+    this.golem =
+      options.boss === 'ceramicGolem' ? new CeramicGolem(this.grid, options.random) : null;
   }
 
   // --- Read model -----------------------------------------------------------
@@ -185,6 +198,8 @@ export class MosaicGame {
   start(): void {
     if (this._state !== 'ready') return;
     this.setState('running');
+    this.golem?.start();
+    this.flushBoss();
     this.dealHand();
   }
 
@@ -220,7 +235,16 @@ export class MosaicGame {
     this.take(slot);
     this._score += piece.shape.size * POINTS_PER_TILE;
     this.events.emit('place', { piece, cells });
+    this.golem?.placed(cells);
     this.resolveLines();
+    if (this.golem) {
+      this.golem.endTurn();
+      this.flushBoss();
+      if (this.golem.defeated) {
+        this.finish('victory');
+        return true;
+      }
+    }
 
     if (this.hand.every((held) => held === null)) {
       this.handsPlayed++;
@@ -280,6 +304,7 @@ export class MosaicGame {
     this.misses = snapshot.misses;
     this.handsPlayed = snapshot.handsPlayed;
     this.inventory = [...snapshot.jokers];
+    if (this.golem && snapshot.golem) this.golem.restore(snapshot.golem);
     this.history = null;
     this.events.emit('undo', {});
     this.events.emit('deal', { hand: [...this.hand] });
@@ -298,7 +323,8 @@ export class MosaicGame {
       if (++this.misses >= COMBO_GRACE) this._streak = 0;
       return;
     }
-    const removed = this.grid.clearLines(lines);
+    const cracked: Cell[] = [];
+    const removed = this.grid.clearLines(lines, cracked);
     this.misses = 0;
     this._streak++;
     this._bestStreak = Math.max(this._bestStreak, this._streak);
@@ -308,13 +334,22 @@ export class MosaicGame {
     const linesBefore = this._lines;
     this._score += points;
     this._lines += count;
-    this.events.emit('clear', { lines: count, ...lines, removed, points, streak: this._streak });
+    this.events.emit('clear', {
+      lines: count,
+      ...lines,
+      removed,
+      cracked,
+      points,
+      streak: this._streak,
+    });
 
     const perfect = this.grid.isEmpty();
     if (perfect) {
       this._score += PERFECT_BONUS;
       this.events.emit('perfect', { points: PERFECT_BONUS });
     }
+    const shattered = removed.filter((tile) => tile.tone === Tone.CrackedStone).length;
+    this.golem?.struck(count, this._streak, shattered, perfect);
     // Each feat earns its own joker: the bigger the feat, the stronger the joker.
     if (count === 2) this.earnJoker('rotate');
     else if (count === 3) this.earnJoker('cube');
@@ -394,7 +429,14 @@ export class MosaicGame {
       misses: this.misses,
       handsPlayed: this.handsPlayed,
       jokers: [...this.inventory],
+      golem: this.golem?.snapshot() ?? null,
     };
+  }
+
+  /** Publishes what the Golem did. */
+  private flushBoss(): void {
+    if (!this.golem) return;
+    for (const event of this.golem.drain()) this.events.emit('boss', { event });
   }
 
   private setState(state: MosaicState): void {

@@ -101,7 +101,11 @@ const RULES: readonly ObjectiveRule[] = [
     tiers: ['hard'],
     create: (tier) => ({ kind: 'duel', tier, target: 1 }),
     advance: (report) =>
-      report.reason === 'victory' && !['rookie', 'easy'].includes(report.variant ?? '') ? 1 : 0,
+      report.modeId === 'duel' &&
+      report.reason === 'victory' &&
+      !['rookie', 'easy'].includes(report.variant ?? '')
+        ? 1
+        : 0,
   },
 ];
 

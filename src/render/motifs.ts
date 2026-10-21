@@ -161,4 +161,6 @@ export const MOTIFS: Readonly<Record<Exclude<Tone, typeof Tone.Empty>, Motif>> =
   [Tone.Acid]: bubbles,
   [Tone.Lightning]: bolt,
   [Tone.Blaze]: flame,
+  [Tone.Stone]: hatch,
+  [Tone.CrackedStone]: slash,
 };

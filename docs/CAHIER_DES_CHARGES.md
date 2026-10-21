@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut           |
-| ------- | ---------- | ---------------- |
-| 1.14    | 21/10/2026 | Le Ver des dunes |
+| Version | Date       | Statut                |
+| ------- | ---------- | --------------------- |
+| 1.15    | 21/10/2026 | Le Golem de céramique |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -302,6 +302,24 @@ Règles détaillées :
   hors du sable 6 ; brasier contre lui 2 par instant ; couleur reliée d'un mur à l'autre qui passe sur
   lui 5. Un même coup ne compte qu'une fois en 0,4 s. Défaite : le sable atteint le haut ou le temps
   est écoulé. **Récompense** : le matériau « Écailles des dunes ».
+- **Principes des Gardiens (1.15)** : un Gardien par chapitre à partir du 2, juste après le duel,
+  dans un mode du chapitre ; il se combat **avec les meilleurs gestes du mode** (rien de nouveau à
+  apprendre) ; **chaque attaque est annoncée** avant de frapper, avec une **riposte** possible ;
+  100 points de vie et **trois phases** (sous 66 et 33) qui accélèrent ses attaques ; ses
+  actions sont nommées une fois chacune ; sa chute donne un **cosmétique** à son image. Code :
+  `GuardianHealth` (vie et phases), une classe de règles par Gardien, réglée par simulation.
+  Prévus : l'**Œil de la Tour** (4-7) et le **Cœur de la faille** (5-7).
+- **Le Golem de céramique (1.15)**, Gardien du chapitre 3 : niveau 3-7 (Mosaïque, 4 minutes,
+  objectif « Vaincre le Golem de céramique »). Le plateau est son **armure** : son visage (fissures
+  réparées à l'or, deux yeux) se voit sous les cases vides. Il **vise** des cases libres en terrain
+  ouvert, sur des lignes et colonnes différentes (viseur rouge et poses restantes), puis y **lance
+  des pierres** : une pierre remplit sa case, une ligne effacée la **fissure**, la suivante la
+  brise ; le joker bombe la brise d'un coup. **Parade** : poser sur une case visée bloque la pierre
+  (2). **Coups** : effacement 4 par ligne, + 7 par ligne en même temps, + série (jusqu'à 4) ;
+  pierre à lui brisée 3 ; plateau vidé 20. **Phases** : 2, 3 puis 4 pierres toutes les 3 poses.
+  Le retour arrière annule aussi ce que la pose a fait au Golem. Réglage par un bot glouton sans
+  jokers : 7 victoires sur 10, en 31 poses en médiane (environ 2 min pour un joueur).
+  **Récompense** : le matériau « Kintsugi ».
 - **Choix fondés sur les jeux du genre** : sur CrazyGames, Sandtrix (9,1/10, 40 000 votes) et
   Sand Blocks font déjà du sable coloré **sans éléments**. Les réactions viennent des
   simulateurs de sable (Noita, The Powder Toy, Sandspiel) et sont ramenées à la règle du jeu :
@@ -1387,3 +1405,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.12    | 21/10/2026 | Les éléments du Sable : huile, glace, foudre, graine, acide, vapeur et pluie, réactions entre eux, entrée fracassante du 1-1 (§ 3.2).                             |
 | 1.13    | 21/10/2026 | La Tour piégée : gemmes-bombes qui soufflent un secteur de la tour, réactions en chaîne, secteur visé avant la pose (§ 3.2).                                      |
 | 1.14    | 21/10/2026 | Premier Gardien de la faille : le Ver des dunes au niveau 2-7, phases, coups des éléments, récompense Écailles des dunes (§ 3.2).                                 |
+| 1.15    | 21/10/2026 | Principes des Gardiens ; le Golem de céramique au niveau 3-7 : pierres annoncées, parade, pierres qui se fissurent, récompense Kintsugi (§ 3.2).                  |

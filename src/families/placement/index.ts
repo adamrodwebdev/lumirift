@@ -14,6 +14,7 @@ export function createPlacementSession(modeId: ModeId, options: SessionOptions):
       random: options.random,
       timeLimitMs: options.timeLimitMs,
       ...(options.boosts ? { boosts: options.boosts } : {}),
+      ...(options.boss === 'ceramicGolem' ? { boss: options.boss } : {}),
     }),
   );
 }

@@ -13,6 +13,7 @@ export const MATERIALS = [
   'obsidian',
   'gold',
   'dunes',
+  'kintsugi',
 ] as const;
 export type MaterialId = (typeof MATERIALS)[number];
 
@@ -70,6 +71,7 @@ export const COSMETICS: readonly Cosmetic[] = [
   item('material', 'obsidian', { by: 'level', value: 15 }),
   item('material', 'gold', { by: 'streak', value: 7 }),
   item('material', 'dunes', { by: 'boss', value: 'duneWorm' }),
+  item('material', 'kintsugi', { by: 'boss', value: 'ceramicGolem' }),
   item('ambiance', 'night', { by: 'default' }),
   item('ambiance', 'aurora', { by: 'level', value: 2 }),
   item('ambiance', 'abyss', { by: 'level', value: 5 }),

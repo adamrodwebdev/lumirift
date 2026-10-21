@@ -1,7 +1,14 @@
 import { Tone } from '@/core/Tone';
 import { ParticleKind } from '@/fx/ParticlePool';
 import type { TonePalette } from '@/render/TonePalette';
-import { BREAK_MS, MOSAIC_TIMINGS, type MosaicEffects } from '../fx/MosaicEffects';
+import {
+  BREAK_MS,
+  FLIGHT_MS,
+  GOLEM_EYES,
+  MOSAIC_TIMINGS,
+  PARRY_MS,
+  type MosaicEffects,
+} from '../fx/MosaicEffects';
 import type { Preview } from '../MosaicController';
 import type { MosaicView } from '../PlacementSession';
 import { CeramicSprites } from './CeramicSprites';
@@ -14,6 +21,47 @@ export interface BoardOverlay {
   /** Keyboard cursor, when the keyboard is in use. */
   readonly cursor: { readonly x: number; readonly y: number } | null;
 }
+
+/** The lines of the Golem's face, in cells. */
+const GOLEM_MASK: readonly (readonly (readonly [number, number])[])[] = [
+  [
+    [1.2, 1.7],
+    [2.6, 1.2],
+    [3.7, 1.6],
+    [4, 2],
+    [4.3, 1.6],
+    [5.4, 1.2],
+    [6.8, 1.7],
+  ],
+  [
+    [1.4, 3.6],
+    [2.4, 4.2],
+    [3.4, 4],
+  ],
+  [
+    [6.6, 3.6],
+    [5.6, 4.2],
+    [4.6, 4],
+  ],
+  [
+    [2.5, 5.7],
+    [3.3, 5.4],
+    [4, 5.6],
+    [4.7, 5.4],
+    [5.5, 5.7],
+  ],
+  [
+    [4, 2.6],
+    [3.8, 3.4],
+    [4.2, 4.2],
+  ],
+];
+const CROSSHAIR = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+] as const;
 
 /** Draws the Mosaic board on a canvas, from the game view and the effects state. */
 export class MosaicRenderer {
@@ -90,13 +138,14 @@ export class MosaicRenderer {
       }
     }
 
+    this.drawGolem(palette);
     this.drawLines(overlay, palette);
 
     if (!effects.boardHidden) {
       for (let y = 0; y < grid.size; y++) {
         for (let x = 0; x < grid.size; x++) {
           const tone = grid.get(x, y);
-          if (tone === Tone.Empty) continue;
+          if (tone === Tone.Empty || effects.inFlight(x, y)) continue;
           const scale = effects.popScale(x, y);
           this.drawTile(sprites.get(tone), x, y, scale);
           const glow = effects.popGlow(x, y);
@@ -118,6 +167,9 @@ export class MosaicRenderer {
       ctx.stroke();
     }
 
+    this.drawTargets(palette);
+    this.drawFlights(sprites);
+    this.drawParries(palette);
     this.drawPreview(overlay, sprites, palette);
     this.drawBomb(overlay, palette);
     this.drawCursor(overlay, palette);
@@ -155,6 +207,151 @@ export class MosaicRenderer {
       cell * 0.16 * scale,
     );
     ctx.fill();
+  }
+
+  /**
+   * The Ceramic Golem: its face is the board, seen through the empty sockets
+   * (the tiles are its armour). Its eyes burn amber, then hotter by phase,
+   * flash white when hurt and go dark when it falls.
+   */
+  private drawGolem(palette: TonePalette): void {
+    const golem = this.view.golem;
+    if (!golem) return;
+    const { ctx, cell } = this;
+    // The mask: brow, cheekbones, the slit of the mouth, a crack of age, all
+    // mended with gold (kintsugi), a dark groove under a gold seam.
+    const [, gold = palette.accent] = palette.effects.gold;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (const [colour, width, alpha] of [
+      [palette.wellBackground, 0.2, 0.9],
+      [gold, 0.08, golem.defeated ? 0.3 : 0.7],
+    ] as const) {
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = Math.max(2, cell * width);
+      for (const points of GOLEM_MASK) {
+        ctx.beginPath();
+        points.forEach(([x, y], i) =>
+          i === 0 ? ctx.moveTo(x * cell, y * cell) : ctx.lineTo(x * cell, y * cell),
+        );
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+
+    const hurt = this.effects.golemHurt > 0;
+    const colour = golem.defeated
+      ? palette.wellGrid
+      : hurt
+        ? 'rgb(255 255 255)'
+        : golem.phase === 1
+          ? palette.accent
+          : palette.danger;
+    const pulse = 0.8 + 0.2 * Math.sin(performance.now() / (golem.phase === 3 ? 90 : 260));
+    for (const eye of GOLEM_EYES) {
+      const x = eye.x * cell;
+      const y = eye.y * cell;
+      if (!golem.defeated) {
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, cell * 1.2);
+        glow.addColorStop(0, colour);
+        glow.addColorStop(1, 'rgb(0 0 0 / 0)');
+        ctx.globalAlpha = 0.45 * pulse;
+        ctx.fillStyle = glow;
+        ctx.fillRect(x - cell * 1.2, y - cell * 1.2, cell * 2.4, cell * 2.4);
+      }
+      // An almond eye, narrower as it angers, with a dark slit of a pupil.
+      const w = cell * 0.5;
+      const h = cell * (golem.phase === 1 ? 0.3 : golem.phase === 2 ? 0.24 : 0.17);
+      ctx.globalAlpha = golem.defeated ? 0.6 : pulse;
+      ctx.fillStyle = colour;
+      ctx.beginPath();
+      ctx.moveTo(x - w, y);
+      ctx.quadraticCurveTo(x, y - h * 2, x + w, y);
+      ctx.quadraticCurveTo(x, y + h * 2, x - w, y);
+      ctx.fill();
+      if (!golem.defeated) {
+        ctx.globalAlpha = 0.75;
+        ctx.fillStyle = palette.wellBackground;
+        ctx.beginPath();
+        ctx.ellipse(x, y, cell * 0.07, h * 0.8, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /** The cells the Golem aims at: a pulsing crosshair, with the placements left before it throws. */
+  private drawTargets(palette: TonePalette): void {
+    const golem = this.view.golem;
+    if (!golem || golem.defeated || golem.targets.length === 0) return;
+    const { ctx, cell } = this;
+    const urgent = golem.countdown <= 1;
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / (urgent ? 110 : 240));
+    ctx.save();
+    ctx.strokeStyle = palette.danger;
+    ctx.fillStyle = palette.danger;
+    ctx.lineWidth = Math.max(2, cell * 0.08);
+    ctx.font = `800 ${Math.round(cell * 0.32)}px ui-rounded, system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const { x, y } of golem.targets) {
+      const cx = (x + 0.5) * cell;
+      const cy = (y + 0.5) * cell;
+      ctx.globalAlpha = 0.18 + 0.22 * pulse;
+      ctx.fillRect(x * cell + cell * 0.08, y * cell + cell * 0.08, cell * 0.84, cell * 0.84);
+      ctx.globalAlpha = 0.65 + 0.35 * pulse;
+      const r = cell * (0.3 + 0.04 * pulse);
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+      for (const [dx, dy] of CROSSHAIR) {
+        ctx.beginPath();
+        ctx.moveTo(cx + dx * r * 0.55, cy + dy * r * 0.55);
+        ctx.lineTo(cx + dx * r * 1.3, cy + dy * r * 1.3);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillText(String(golem.countdown), x * cell + cell * 0.8, y * cell + cell * 0.2);
+    }
+    ctx.restore();
+  }
+
+  /** Stones in the air, on an arc from the Golem's eyes, growing as they come. */
+  private drawFlights(sprites: CeramicSprites): void {
+    const { ctx, cell, effects } = this;
+    const sprite = sprites.get(Tone.Stone);
+    for (const flight of effects.flights) {
+      if (flight.age < flight.delay) continue;
+      const t = Math.min(1, (flight.age - flight.delay) / FLIGHT_MS);
+      const x = flight.from.x + (flight.x + 0.5 - flight.from.x) * t;
+      const y = flight.from.y + (flight.y + 0.5 - flight.from.y) * t - 1.6 * Math.sin(Math.PI * t);
+      const size = cell * (0.45 + 0.55 * t);
+      ctx.drawImage(sprite, x * cell - size / 2, y * cell - size / 2, size, size);
+    }
+  }
+
+  /** A parried stone: a ring of light spreading from the cell. */
+  private drawParries(palette: TonePalette): void {
+    const { ctx, cell, effects } = this;
+    if (effects.parries.length === 0) return;
+    ctx.strokeStyle = palette.accent;
+    ctx.lineWidth = Math.max(2, cell * 0.1);
+    for (const parry of effects.parries) {
+      const t = parry.age / PARRY_MS;
+      ctx.globalAlpha = 1 - t;
+      ctx.beginPath();
+      ctx.arc(
+        (parry.x + 0.5) * cell,
+        (parry.y + 0.5) * cell,
+        cell * (0.3 + 0.9 * t),
+        0,
+        Math.PI * 2,
+      );
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
   }
 
   /** Rows and columns the preview would clear glow. */

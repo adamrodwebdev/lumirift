@@ -186,7 +186,16 @@
       "phase3": "Napas terakhirnya: hati-hati!",
       "stunned": "Tersengat lewat air: ia pingsan!",
       "critical": "Petir di kepalanya: serangan kritis!",
-      "defeated": "Cacing Pasir dikalahkan!"
+      "defeated": "Cacing Pasir dikalahkan!",
+      "golem": {
+        "aim": "Golem membidik petak yang menyala: batu akan jatuh di sana!",
+        "throw": "Batu! Satu garis meretakkannya, garis kedua menghancurkannya.",
+        "parry": "Tangkis: mengisi petak yang dibidik menahan batunya!",
+        "shatter": "Batunya sendiri yang hancur melukainya!",
+        "phase2": "Golem retak: ia melempar lebih banyak batu!",
+        "phase3": "Napas terakhir: ia melempar lebih cepat!",
+        "defeated": "Golem Keramik dikalahkan!"
+      }
     }
   },
   "controls": {
@@ -227,7 +236,8 @@
       "victory": "Menang: tumpukan AI meluap.",
       "defeat": "Kalah: tumpukanmu meluap.",
       "noMoves": "Tidak ada kepingan yang muat lagi.",
-      "goal": "Tujuan tercapai!"
+      "goal": "Tujuan tercapai!",
+      "guardian": "Menang: Sang Penjaga dikalahkan!"
     },
     "result": "Hasil",
     "newBest": "Rekor baru",
@@ -414,7 +424,8 @@
       "pixel": "Piksel",
       "obsidian": "Obsidian",
       "gold": "Emas",
-      "dunes": "Sisik pasir"
+      "dunes": "Sisik pasir",
+      "kintsugi": "Kintsugi"
     },
     "ambiance": {
       "night": "Malam",
@@ -630,6 +641,9 @@
   "bosses": {
     "duneWorm": {
       "name": "Cacing Pasir"
+    },
+    "ceramicGolem": {
+      "name": "Golem Keramik"
     }
   }
 }

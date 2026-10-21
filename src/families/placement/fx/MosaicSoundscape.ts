@@ -3,7 +3,7 @@ import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
 import type { Haptics } from '@/services/Haptics';
 import type { JokerId } from '../jokers/Joker';
 import type { PlacementSession } from '../PlacementSession';
-import { BREAK_MS } from './MosaicEffects';
+import { BREAK_MS, FLIGHT_MS } from './MosaicEffects';
 
 const JOKER_SOUNDS: Readonly<Record<JokerId, SoundRecipe>> = {
   rotate: sounds.rotate,
@@ -46,9 +46,25 @@ export class MosaicSoundscape {
         audio.play(JOKER_SOUNDS[joker]);
         if (joker === 'bomb') haptics.pulse([40, 30, 80]);
       }),
-      session.onGame('over', () => {
+      session.onGame('over', ({ reason }) => {
+        if (reason === 'victory') return;
         audio.play(sounds.gameOver);
         haptics.pulse([60, 40, 120]);
+      }),
+      session.onGame('boss', ({ event }) => {
+        if (event.type === 'throw' && event.stones.length > 0) {
+          audio.play(sounds.roar);
+          this.later(() => {
+            audio.play(sounds.stoneThud);
+            haptics.pulse([30, 20, 50]);
+          }, FLIGHT_MS);
+        } else if (event.type === 'parry') audio.play(sounds.parry);
+        else if (event.type === 'hurt') audio.play(sounds.bossHit(event.damage >= 15));
+        else if (event.type === 'phase') audio.play(sounds.rumble);
+        else if (event.type === 'defeated') {
+          audio.play(sounds.newRecord);
+          haptics.pulse([40, 30, 40, 30, 160]);
+        }
       }),
     ];
     return () => {

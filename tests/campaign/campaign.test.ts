@@ -20,18 +20,21 @@ const state = (patch: Partial<LiveState> = {}): LiveState => ({
 });
 
 describe('Campaign levels', () => {
-  it('has five chapters of six levels, each with its duel, and the Dune Wyrm guarding chapter 2', () => {
-    expect(LEVELS).toHaveLength(31);
+  it('has five chapters of six levels, each with its duel, and Guardians after the duels', () => {
+    expect(LEVELS).toHaveLength(32);
     for (const chapter of CHAPTERS) {
       const levels = LEVELS.filter((level) => level.chapter === chapter && !level.boss);
       expect(levels).toHaveLength(6);
       expect(levels.at(-1)!.modeId).toBe('duel');
     }
-    const guardian = LEVELS.find((level) => level.boss)!;
-    expect(guardian).toMatchObject({ id: '2-7', chapter: 2, modeId: 'sand', boss: 'duneWorm' });
-    expect(guardian.goal.kind).toBe('boss');
-    expect(new Set(LEVELS.map((level) => level.id)).size).toBe(31);
-    expect(MAX_STARS).toBe(93);
+    const guardians = LEVELS.filter((level) => level.boss);
+    expect(guardians).toMatchObject([
+      { id: '2-7', chapter: 2, modeId: 'sand', boss: 'duneWorm' },
+      { id: '3-7', chapter: 3, modeId: 'mosaic', boss: 'ceramicGolem' },
+    ]);
+    for (const guardian of guardians) expect(guardian.goal.kind).toBe('boss');
+    expect(new Set(LEVELS.map((level) => level.id)).size).toBe(32);
+    expect(MAX_STARS).toBe(96);
   });
 
   it('visits every mode of the game', () => {

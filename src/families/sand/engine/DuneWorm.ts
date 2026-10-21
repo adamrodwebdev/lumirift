@@ -1,4 +1,5 @@
 import type { RandomSource } from '@/core/Random';
+import { GUARDIAN_HEALTH, GuardianHealth } from '@/session/GuardianHealth';
 import { SAND_TONES, type SandGrid } from './SandGrid';
 
 /*
@@ -10,7 +11,7 @@ import { SAND_TONES, type SandGrid } from './SandGrid';
  * reports what it does as events.
  */
 
-export const WORM_HEALTH = 100;
+export const WORM_HEALTH = GUARDIAN_HEALTH;
 const SEGMENTS = 22;
 /** Radius of its body, in grains. */
 export const WORM_RADIUS = 3.2;
@@ -71,8 +72,7 @@ export type WormEvent =
   | { readonly type: 'defeated' };
 
 export class DuneWorm {
-  private _health = WORM_HEALTH;
-  private _phase: 1 | 2 | 3 = 1;
+  private readonly life = new GuardianHealth();
   private _state: WormState = 'roam';
   private timer: number;
   private stun = 0;
@@ -101,10 +101,10 @@ export class DuneWorm {
   }
 
   get health(): number {
-    return this._health;
+    return this.life.health;
   }
   get phase(): 1 | 2 | 3 {
-    return this._phase;
+    return this.life.phase;
   }
   get state(): WormState {
     return this._state;
@@ -155,16 +155,11 @@ export class DuneWorm {
     const last = this.cooldowns.get(kind);
     if (last !== undefined && this.clock - last < HIT_COOLDOWN_MS && kind !== 'boltHead') return 0;
     this.cooldowns.set(kind, this.clock);
-    const damage = Math.min(this._health, HIT_DAMAGE[kind]);
-    this._health -= damage;
-    this.events.push({ type: 'hurt', hit: kind, damage, health: this._health });
+    const { damage, health, phase, defeated } = this.life.wound(HIT_DAMAGE[kind]);
+    this.events.push({ type: 'hurt', hit: kind, damage, health });
     if (kind === 'shock') this.stun = STUN_MS;
-    const phase = this._health > 66 ? 1 : this._health > 33 ? 2 : 3;
-    if (phase > this._phase) {
-      this._phase = phase;
-      this.events.push({ type: 'phase', phase: phase as 2 | 3 });
-    }
-    if (this._health <= 0) {
+    if (phase) this.events.push({ type: 'phase', phase });
+    if (defeated) {
       this._state = 'dead';
       this.events.push({ type: 'defeated' });
     }
@@ -187,7 +182,7 @@ export class DuneWorm {
       return this.drain();
     }
     this.timer -= deltaMs;
-    const speed = SPEED[this._phase];
+    const speed = SPEED[this.phase];
     switch (this._state) {
       case 'roam':
         if (!this.target || this.swim(...this.target, speed) < 2) this.target = this.roamTarget();
@@ -232,7 +227,7 @@ export class DuneWorm {
     const margin = 6;
     this._warnAt = margin + this.random.nextInt(this.grid.width - margin * 2);
     this._state = 'warn';
-    this.timer = WARN_MS[this._phase];
+    this.timer = WARN_MS[this.phase];
     this.events.push({ type: 'warn', x: this._warnAt });
   }
 
@@ -242,7 +237,7 @@ export class DuneWorm {
     const y = Math.max(0, Math.round(this.headY));
     this.erupt(x, y);
     this.events.push({ type: 'surge', x, y });
-    if (this._phase >= 2) {
+    if (this.phase >= 2) {
       const grains = this.swallow(x);
       if (grains > 0) this.events.push({ type: 'swallow', x, grains });
     }
@@ -253,8 +248,8 @@ export class DuneWorm {
 
   private afterDive(): void {
     // Last phase: it comes back up at once, every other time, and raises a storm.
-    const again = this._phase === 3 && this.surges % 2 === 1;
-    if (this._phase === 3) {
+    const again = this.phase === 3 && this.surges % 2 === 1;
+    if (this.phase === 3) {
       this.events.push({ type: 'storm', direction: this.random.next() < 0.5 ? -1 : 1 });
     }
     if (again) {
@@ -263,7 +258,7 @@ export class DuneWorm {
     }
     this._state = 'roam';
     this._warnAt = null;
-    this.timer = ROAM_MS[this._phase] + this.random.next() * 1500;
+    this.timer = ROAM_MS[this.phase] + this.random.next() * 1500;
   }
 
   private erupt(x: number, y: number): void {

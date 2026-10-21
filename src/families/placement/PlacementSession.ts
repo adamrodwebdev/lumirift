@@ -1,5 +1,7 @@
 import { Emitter, type Listener } from '@/core/Emitter';
+import { GUARDIAN_HEALTH } from '@/session/GuardianHealth';
 import type {
+  BossStatus,
   GameSession,
   Indicator,
   SessionEventMap,
@@ -7,6 +9,7 @@ import type {
   SessionState,
 } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
+import type { GolemView } from './engine/CeramicGolem';
 import type { OfferedPiece } from './engine/Dealer';
 import type { Grid } from './engine/Grid';
 import type { Lines } from './engine/Grid';
@@ -29,6 +32,8 @@ export interface MosaicView {
   readonly grid: Grid;
   readonly jokers: readonly JokerId[];
   readonly canUndo: boolean;
+  /** The Guardian of a boss level, or null. */
+  readonly golem: GolemView | null;
   pieceAt(slot: SlotId): OfferedPiece | null;
   pieces(): { slot: SlotId; piece: OfferedPiece }[];
   canPlace(slot: SlotId, x: number, y: number): boolean;
@@ -111,6 +116,11 @@ export class PlacementSession implements GameSession<MosaicCommand> {
     return null;
   }
 
+  boss(): BossStatus | null {
+    const golem = this.game.golem;
+    return golem ? { id: 'ceramicGolem', health: golem.health, maxHealth: GUARDIAN_HEALTH } : null;
+  }
+
   dispose(): void {
     this.game.events.clear();
     this.events.clear();
@@ -131,5 +141,20 @@ export class PlacementSession implements GameSession<MosaicCommand> {
       this.events.emit('notice', { id: `jokerGained.${joker}` }),
     );
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));
+    // The Guardian speaks through notices: each of its moves is named the first time.
+    const told = new Set<string>();
+    const tell = (id: string, once = true) => {
+      if (once && told.has(id)) return;
+      told.add(id);
+      this.events.emit('notice', { id: `boss.golem.${id}` });
+    };
+    events.on('boss', ({ event }) => {
+      if (event.type === 'aim') tell('aim');
+      else if (event.type === 'throw' && event.stones.length > 0) tell('throw');
+      else if (event.type === 'parry') tell('parry');
+      else if (event.type === 'hurt' && event.hit === 'shatter') tell('shatter');
+      else if (event.type === 'phase') tell(`phase${event.phase}`, false);
+      else if (event.type === 'defeated') tell('defeated', false);
+    });
   }
 }
