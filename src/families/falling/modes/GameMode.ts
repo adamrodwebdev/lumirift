@@ -1,5 +1,5 @@
 import type { RandomSource } from '@/core/Random';
-import type { Indicator, ResultKind } from '@/session/GameSession';
+import type { BossStatus, Indicator, ResultKind } from '@/session/GameSession';
 import type { EngineModeId } from '@/session/ModeId';
 import type { Game } from '../game/Game';
 import type { PieceType, Tone } from '../pieces/PieceType';
@@ -63,4 +63,6 @@ export interface GameMode {
   resultValue(game: Game): number;
   /** Translation key of a subtitle for this game (the silhouette's name…), or null. */
   subtitleKey(): string | null;
+  /** The Guardian of a boss level and how it stands (the Tower's Eye); absent otherwise. */
+  boss?(): BossStatus | null;
 }

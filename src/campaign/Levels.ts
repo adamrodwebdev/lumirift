@@ -128,6 +128,11 @@ export const LEVELS: readonly CampaignLevel[] = [
   timed('4-4', 'tower', 4, { kind: 'lines', target: 10 }),
   timed('4-5', 'sand', 4, { kind: 'lines', target: 7 }),
   duel('4-6', 'hard'),
+  // The third Guardian: the Eye of the Tower, blinded by the bombs of its gaze.
+  {
+    ...timed('4-7', 'tower', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
+    boss: 'towerEye',
+  },
   // 5. Le Rift
   timed('5-1', 'fusion', 4, { kind: 'lines', target: 22 }),
   timed('5-2', 'mirror', 4, { kind: 'lines', target: 28 }),

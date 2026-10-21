@@ -1,6 +1,7 @@
 import type { ClearedRow, RemovedCell } from '../board/Board';
 import type { Piece } from '../pieces/Piece';
 import type { PieceType } from '../pieces/PieceType';
+import type { Cell } from '../pieces/Shapes';
 
 export type GameState = 'ready' | 'running' | 'paused' | 'over';
 
@@ -10,7 +11,14 @@ export type GameState = 'ready' | 'running' | 'paused' | 'over';
  * outOfPieces / shapeComplete: the end of a Silhouette.
  */
 export type GameOverReason =
-  'blockOut' | 'lockOut' | 'topOut' | 'timeUp' | 'outOfPieces' | 'shapeComplete';
+  | 'blockOut'
+  | 'lockOut'
+  | 'topOut'
+  | 'timeUp'
+  | 'outOfPieces'
+  | 'shapeComplete'
+  /** A Guardian of the rift defeated (the Tower's boss level). */
+  | 'victory';
 
 export interface LinesClearedEvent {
   readonly lines: number;
@@ -38,6 +46,8 @@ export interface GameEventMap {
   clear: LinesClearedEvent;
   levelUp: { readonly level: number };
   garbage: { readonly rows: number };
+  /** Stones dropped on top of columns by a mode rule (the Eye of the Tower's strike). */
+  stones: { readonly cells: readonly Cell[] };
   flip: { readonly lines: number };
   mirror: Readonly<Record<string, never>>;
   /** Groups of same-coloured blocks fused (Fusion); the chain counts the reactions. */

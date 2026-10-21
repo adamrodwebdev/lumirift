@@ -329,6 +329,26 @@ export class Game {
     else this.spawnNext();
   }
 
+  /**
+   * Drops a stone on top of each of these columns (the Eye of the Tower). The
+   * rows they complete clear as a cascade; a stone left in the hidden rows
+   * tops the stack out.
+   */
+  dropStones(columns: readonly number[], tone: Tone): void {
+    if (this._state === 'over') return;
+    const active = this._active?.cells() ?? [];
+    const taken = (x: number, y: number) =>
+      active.some((cell) => this.board.column(cell.x) === x && cell.y === y);
+    const cells = columns.flatMap((x) => this.board.dropOn(x, tone, taken) ?? []);
+    if (cells.length === 0) return;
+    this.events.emit('stones', { cells });
+    const cleared = this.board.clearFullRows();
+    this.scoreClear(cleared, true);
+    this.detonate(cleared);
+    if (cells.some((cell) => cell.y < this.board.hiddenRows) && cleared.length === 0)
+      this.overflow();
+  }
+
   /** Adds or removes points by a mode rule (never below zero). */
   adjustScore(delta: number): void {
     if (this._state === 'over') return;

@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                |
-| ------- | ---------- | --------------------- |
-| 1.15    | 21/10/2026 | Le Golem de céramique |
+| Version | Date       | Statut           |
+| ------- | ---------- | ---------------- |
+| 1.16    | 21/10/2026 | L'Œil de la Tour |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -308,7 +308,7 @@ Règles détaillées :
   100 points de vie et **trois phases** (sous 66 et 33) qui accélèrent ses attaques ; ses
   actions sont nommées une fois chacune ; sa chute donne un **cosmétique** à son image. Code :
   `GuardianHealth` (vie et phases), une classe de règles par Gardien, réglée par simulation.
-  Prévus : l'**Œil de la Tour** (4-7) et le **Cœur de la faille** (5-7).
+  Prévu : le **Cœur de la faille** (5-7).
 - **Le Golem de céramique (1.15)**, Gardien du chapitre 3 : niveau 3-7 (Mosaïque, 4 minutes,
   objectif « Vaincre le Golem de céramique »). Le plateau est son **armure** : son visage (fissures
   réparées à l'or, deux yeux) se voit sous les cases vides. Il **vise** des cases libres en terrain
@@ -320,6 +320,17 @@ Règles détaillées :
   Le retour arrière annule aussi ce que la pose a fait au Golem. Réglage par un bot glouton sans
   jokers : 7 victoires sur 10, en 31 poses en médiane (environ 2 min pour un joueur).
   **Récompense** : le matériau « Kintsugi ».
+- **L'Œil de la Tour (1.16)**, Gardien du chapitre 4 : niveau 4-7 (Tour, 4 minutes, objectif
+  « Vaincre l'Œil de la Tour »). Il tourne autour de la tour (0,8 colonne/s), son **regard** éclaire
+  5 colonnes ; après 7 s il s'arrête et **charge** 2,5 s (faisceau rouge, cadres rouges là où
+  tomberont les pierres), puis **frappe** : une pierre sur chaque colonne regardée (les anneaux
+  qu'elles complètent s'effacent). Vu derrière la tour à travers le verre, une flèche au bord dit
+  de quel côté il est. **Riposte** : une bombe qui explose dans son regard l'**aveugle** (15, charge
+  annulée, fermé 3 s) ; ailleurs 5. **Coups** : anneaux 5, + 8 par anneau en même temps.
+  **Phases** : 2, regard de 7 colonnes, plus rapide, peut changer de sens ; 3, frappe plus vite et
+  fait monter un anneau de gravats sous son regard. Bombes plus tôt (dès la 3e pièce) et plus
+  souvent (32 %). Réglage avec l'IA du duel, qui ignore l'Œil : « normale » 9 victoires sur 12
+  vers 1 min 30, « facile » 7 sur 12. **Récompense** : l'effet « Éclats d'iris ».
 - **Choix fondés sur les jeux du genre** : sur CrazyGames, Sandtrix (9,1/10, 40 000 votes) et
   Sand Blocks font déjà du sable coloré **sans éléments**. Les réactions viennent des
   simulateurs de sable (Noita, The Powder Toy, Sandspiel) et sont ramenées à la règle du jeu :
@@ -1406,3 +1417,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.13    | 21/10/2026 | La Tour piégée : gemmes-bombes qui soufflent un secteur de la tour, réactions en chaîne, secteur visé avant la pose (§ 3.2).                                      |
 | 1.14    | 21/10/2026 | Premier Gardien de la faille : le Ver des dunes au niveau 2-7, phases, coups des éléments, récompense Écailles des dunes (§ 3.2).                                 |
 | 1.15    | 21/10/2026 | Principes des Gardiens ; le Golem de céramique au niveau 3-7 : pierres annoncées, parade, pierres qui se fissurent, récompense Kintsugi (§ 3.2).                  |
+| 1.16    | 21/10/2026 | L'Œil de la Tour au niveau 4-7 : regard tournant, charge annoncée, pierres, aveuglé par les bombes, récompense Éclats d'iris (§ 3.2).                             |

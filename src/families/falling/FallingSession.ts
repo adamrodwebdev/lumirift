@@ -1,5 +1,6 @@
 import { Emitter, type Listener } from '@/core/Emitter';
 import type {
+  BossStatus,
   GameSession,
   Indicator,
   SessionEventMap,
@@ -134,6 +135,10 @@ export class FallingSession implements GameSession<FallingCommand> {
 
   subtitleKey(): string | null {
     return this.game.mode.subtitleKey();
+  }
+
+  boss(): BossStatus | null {
+    return this.game.mode.boss?.() ?? null;
   }
 
   dispose(): void {

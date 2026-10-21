@@ -195,6 +195,15 @@
         "phase2": "Golem retak: ia melempar lebih banyak batu!",
         "phase3": "Napas terakhir: ia melempar lebih cepat!",
         "defeated": "Golem Keramik dikalahkan!"
+      },
+      "eye": {
+        "charge": "Mata berhenti dan memerah: ia akan menyerang di bawah tatapannya!",
+        "strike": "Batu jatuh di tempat ia memandang!",
+        "blinded": "Bom dalam tatapannya: Mata dibutakan!",
+        "rubble": "Ia menaikkan cincin puing!",
+        "phase2": "Mata marah: tatapannya melebar!",
+        "phase3": "Napas terakhir: ia menyerang lebih cepat!",
+        "defeated": "Mata Menara dikalahkan!"
       }
     }
   },
@@ -439,7 +448,8 @@
       "shards": "Serpihan",
       "confetti": "Konfeti",
       "petals": "Kelopak",
-      "gold": "Daun emas"
+      "gold": "Daun emas",
+      "iris": "Serpihan iris"
     },
     "unlock": {
       "default": "Gratis",
@@ -644,6 +654,9 @@
     },
     "ceramicGolem": {
       "name": "Golem Keramik"
+    },
+    "towerEye": {
+      "name": "Mata Menara"
     }
   }
 }

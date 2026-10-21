@@ -21,7 +21,7 @@ const state = (patch: Partial<LiveState> = {}): LiveState => ({
 
 describe('Campaign levels', () => {
   it('has five chapters of six levels, each with its duel, and Guardians after the duels', () => {
-    expect(LEVELS).toHaveLength(32);
+    expect(LEVELS).toHaveLength(33);
     for (const chapter of CHAPTERS) {
       const levels = LEVELS.filter((level) => level.chapter === chapter && !level.boss);
       expect(levels).toHaveLength(6);
@@ -31,10 +31,11 @@ describe('Campaign levels', () => {
     expect(guardians).toMatchObject([
       { id: '2-7', chapter: 2, modeId: 'sand', boss: 'duneWorm' },
       { id: '3-7', chapter: 3, modeId: 'mosaic', boss: 'ceramicGolem' },
+      { id: '4-7', chapter: 4, modeId: 'tower', boss: 'towerEye' },
     ]);
     for (const guardian of guardians) expect(guardian.goal.kind).toBe('boss');
-    expect(new Set(LEVELS.map((level) => level.id)).size).toBe(32);
-    expect(MAX_STARS).toBe(96);
+    expect(new Set(LEVELS.map((level) => level.id)).size).toBe(33);
+    expect(MAX_STARS).toBe(99);
   });
 
   it('visits every mode of the game', () => {
