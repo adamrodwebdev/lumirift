@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /*
  * The player's journeys, in French (the browser's language), on a phone and
@@ -158,6 +158,58 @@ test('the Mosaic is played with the keyboard', async ({ page }) => {
   await page.keyboard.press('Digit1');
   await page.keyboard.press('Enter');
   await expect(score).not.toHaveText('0');
+});
+
+test('a Mosaic piece is dragged from the hand to the board, or back; the record falls', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    localStorage.setItem('stackrift:records', JSON.stringify({ mosaic: 2 })),
+  );
+  await page.reload();
+  await openMode(page, 'Mosaïque');
+  const score = page.locator('.hud__item').first().locator('dd');
+  const record = page.locator('.hud__best');
+  await expect(record).toContainText('Record');
+  await expect(record).toContainText('2');
+  const hand = page.getByRole('group', { name: 'Pièces à poser' });
+  const board = (await page.getByRole('img', { name: 'Plateau de la Mosaïque' }).boundingBox())!;
+  const ghost = page.locator('.mosaic__ghost');
+
+  /** Presses a piece of the hand, drags it to (x, y) and holds it there. */
+  const drag = async (piece: Locator, x: number, y: number) => {
+    const box = (await piece.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 20, { steps: 3 });
+    await page.mouse.move(x, y, { steps: 10 });
+  };
+
+  // Dragged: the piece leaves its place in the hand and follows the pointer.
+  const first = hand.locator('[data-slot="0"]');
+  await expect(first).toHaveAccessibleName(/^Pièce 1/);
+  await drag(first, board.x + board.width / 2, board.y + board.height / 2);
+  await expect(first).toHaveClass(/hand-piece--lifted/);
+  await expect(ghost).toBeVisible();
+  // Dropped on the board: set down, the score rises past the record.
+  await page.mouse.up();
+  await expect(score).not.toHaveText('0');
+  await expect(first).toBeDisabled();
+  await expect(first).not.toHaveClass(/hand-piece--lifted/);
+  await expect(ghost).toBeHidden();
+  const points = (await score.textContent())!;
+  // The hand is random: a piece of one or two cells does not beat a record of 2.
+  await expect(record).toContainText(Number(points) > 2 ? 'Nouveau record' : 'Record');
+
+  // Dropped far from the board: back in the hand, nothing placed.
+  const second = hand.locator('[data-slot="1"]');
+  await drag(second, 4, 4);
+  await expect(second).toHaveClass(/hand-piece--lifted/);
+  await page.mouse.up();
+  await expect(second).not.toHaveClass(/hand-piece--lifted/);
+  await expect(second).toBeEnabled();
+  await expect(ghost).toBeHidden();
+  await expect(score).toHaveText(points);
 });
 
 test('the language is remembered; the game has one look, the Rift', async ({ page }) => {
