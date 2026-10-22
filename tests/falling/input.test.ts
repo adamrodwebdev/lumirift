@@ -1,12 +1,22 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { FallingCommand } from '@/families/falling/FallingSession';
-import { ARR_MS, DAS_MS, FallingInput, KEY_BINDINGS } from '@/families/falling/input/FallingInput';
+import { FallingInput } from '@/families/falling/input/FallingInput';
+import { DEFAULT_REPEAT, type RepeatTiming } from '@/families/falling/input/RepeatTiming';
 import { WellGestures } from '@/families/falling/input/WellGestures';
 
-const setup = () => {
+const { das: DAS_MS, arr: ARR_MS } = DEFAULT_REPEAT;
+
+const setup = (timing?: RepeatTiming) => {
   const commands: FallingCommand[] = [];
   const onPause = vi.fn();
-  const input = new FallingInput((command) => commands.push(command), onPause);
+  const input = new FallingInput(
+    (command) => {
+      commands.push(command);
+      return true;
+    },
+    onPause,
+    timing && (() => timing),
+  );
   const moves = () => commands.filter((command) => command.type === 'move');
   return { input, commands, onPause, moves };
 };
@@ -86,17 +96,45 @@ describe('FallingInput', () => {
     expect(commands.at(-1)).toEqual({ type: 'softDrop', active: false });
   });
 
-  it('binds keys by physical position, for AZERTY and QWERTY alike', () => {
-    expect(KEY_BINDINGS.KeyA).toBe('left');
-    expect(KEY_BINDINGS.KeyZ).toBe('rotateCcw');
-    expect(KEY_BINDINGS.Space).toBe('hardDrop');
-    expect(KEY_BINDINGS.KeyP).toBe('pause');
+  it("repeats at the player's timing", () => {
+    const { input, moves } = setup({ das: 100, arr: 20 });
+    input.press('right');
+    input.update(99);
+    expect(moves()).toHaveLength(1);
+    input.update(1);
+    expect(moves()).toHaveLength(2);
+    input.update(60);
+    expect(moves()).toHaveLength(5);
   });
 
-  it('leaves the keys game portals reserve: Esc (full screen) and Ctrl (Ctrl+W)', () => {
-    expect(KEY_BINDINGS.Escape).toBeUndefined();
-    expect(KEY_BINDINGS.ControlLeft).toBeUndefined();
-    expect(KEY_BINDINGS.ControlRight).toBeUndefined();
+  it('slides to the wall at once with an instant repeat, and stays there while held', () => {
+    // A well five moves wide.
+    let room = 5;
+    const commands: FallingCommand[] = [];
+    const input = new FallingInput(
+      (command) => {
+        commands.push(command);
+        if (command.type !== 'move' || room === 0) return false;
+        room--;
+        return true;
+      },
+      () => {},
+      () => ({ das: 120, arr: 0 }),
+    );
+    input.press('left');
+    expect(room).toBe(4);
+    input.update(119);
+    expect(room).toBe(4);
+    input.update(1);
+    expect(room).toBe(0);
+    // A rotation off the wall: the next frame takes it back.
+    room = 2;
+    input.update(16);
+    expect(room).toBe(0);
+    input.release('left');
+    room = 3;
+    input.update(500);
+    expect(room).toBe(3);
   });
 });
 

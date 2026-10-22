@@ -8,12 +8,14 @@ import { effectsProfile } from '@/fx/EffectsProfile';
 import type { GameSession } from '@/session/GameSession';
 import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
 import { useGameSurface } from '@/ui/useGameSurface';
+import { useKeyBindings } from '@/ui/useKeyBindings';
 import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { FallingSession, type FallingCommand } from '../FallingSession';
 import { FallingEffects } from '../fx/FallingEffects';
 import { FallingSoundscape } from '../fx/FallingSoundscape';
 import type { PieceSpec } from '../game/Game';
-import { FallingInput, KEY_BINDINGS } from '../input/FallingInput';
+import { FallingInput } from '../input/FallingInput';
+import { isFallingAction } from '../input/KeyBindings';
 import { WellGestures } from '../input/WellGestures';
 import type { AbilityId } from '../modes/GameMode';
 import { FallingRenderer } from '../render/FallingRenderer';
@@ -48,6 +50,7 @@ const ABILITY_ICONS: Readonly<Record<AbilityId, IconName>> = { flip: 'flip' };
 
 const { t } = useI18n();
 const { theme, settings, audio, haptics, profile: progression } = useServices();
+const keys = useKeyBindings();
 /** The cosmetics the player wears. */
 const equipment = computed(() => progression.current.equipment);
 const format = useFormat();
@@ -130,10 +133,12 @@ const detachMoments = [
   session.onGame('tilt', () => playMoment('tilt')),
 ];
 
-const execute = (command: FallingCommand) => {
-  if (props.active) session.execute(command);
-};
-const input = new FallingInput(execute, () => emit('pause'));
+const execute = (command: FallingCommand) => props.active && session.execute(command);
+const input = new FallingInput(
+  execute,
+  () => emit('pause'),
+  () => settings.current,
+);
 const gestures = new WellGestures(execute, () => cellSize.value);
 
 // --- Layout and theme -------------------------------------------------------
@@ -207,8 +212,8 @@ const offFrame = props.clock.subscribe((delta) => {
 // --- Keyboard and touch -----------------------------------------------------
 
 const onKey = (event: KeyboardEvent, down: boolean) => {
-  const action = KEY_BINDINGS[event.code];
-  if (!action || document.querySelector('dialog[open]')) return;
+  const action = keys.value.actionFor(event.code);
+  if (!action || !isFallingAction(action) || document.querySelector('dialog[open]')) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, select, textarea'))
     return;
   event.preventDefault();

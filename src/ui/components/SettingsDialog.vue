@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { useId } from 'vue';
+import { ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { CONTROL_SCHEMES, type ControlScheme } from '@/services/SettingsService';
 import { isTouchScreen } from '../useOrientation';
+import KeysDialog from './KeysDialog.vue';
 import ModalDialog from './ModalDialog.vue';
 
 /**
- * The settings, one row each: language, controls (touch screens), ghost
- * piece, effects, shake, vibration, the two volumes. Two columns on a wide
- * screen; nothing to scroll.
+ * The settings, one row each: language, controls (touch screens) or the
+ * keyboard's keys (their own window), ghost piece, effects, shake,
+ * vibration, the two volumes. Two columns on a wide screen; nothing to scroll.
  */
 defineProps<{ open: boolean }>();
 const emit = defineEmits<{ close: [] }>();
@@ -34,6 +35,7 @@ const CONTROL_LABELS: Readonly<Record<ControlScheme, string>> = {
 /** The choice of controls only means something on a touch screen. */
 const touch = isTouchScreen();
 const onControls = (value: ControlScheme) => settings.update({ controls: value });
+const keysOpen = ref(false);
 
 const onLocale = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
@@ -89,6 +91,13 @@ const onMusic = (event: Event) =>
             <span>{{ t(CONTROL_LABELS[scheme]) }}</span>
           </label>
         </span>
+      </div>
+
+      <div v-if="!touch" class="row row--static">
+        <span class="row__label">{{ t('keymap.row') }}</span>
+        <button type="button" class="btn btn--raised row__button" @click="keysOpen = true">
+          {{ t('keymap.open') }}
+        </button>
       </div>
 
       <label class="row">
@@ -181,6 +190,7 @@ const onMusic = (event: Event) =>
       {{ t(platform.storage ? 'app.privacyPortal' : 'app.privacy') }}
       {{ t('app.version', { version: appVersion }) }}
     </p>
+    <KeysDialog v-if="!touch" :open="keysOpen" @close="keysOpen = false" />
   </ModalDialog>
 </template>
 
@@ -213,6 +223,17 @@ const onMusic = (event: Event) =>
 .row--off {
   color: var(--text-muted);
   cursor: default;
+}
+
+/* A row whose control is a button: the row itself is not one. */
+.row--static {
+  cursor: default;
+}
+
+.row__button {
+  min-height: 2.5rem;
+  padding-block: 0;
+  font-size: 0.8rem;
 }
 
 .row__label {

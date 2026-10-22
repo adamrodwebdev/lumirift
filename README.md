@@ -53,6 +53,11 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 | Mosaïque                  | 1, 2, 3 (4 : cube), flèches, Entrée, J | Glisser-déposer                               |
 | Pause                     | P                                      | Bouton en haut de l'écran                     |
 
+Ce sont les touches par défaut : chacun les change dans Réglages, « Clavier » (deux touches
+par action, échange quand une touche est déjà prise), avec la répétition des déplacements
+(DAS 50 à 300 ms, ARR 0 à 100 ms ; 0 envoie la pièce droit au mur). La Mosaïque garde ses
+touches.
+
 Sur écran tactile, les boutons ne s'affichent que si on les choisit (Réglages, Commandes).
 La partie se joue en portrait comme en paysage, sans en-tête ni défilement.
 

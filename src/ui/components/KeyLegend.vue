@@ -3,17 +3,19 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { FamilyId, ModeId } from '@/session/ModeId';
 import { keyLegendFor } from '../keyLegend';
+import { useKeyBindings } from '../useKeyBindings';
 import { useKeyLabels } from '../useKeyLabels';
 
 /**
  * The keyboard controls of a mode, drawn as keys beside what they do: read
- * at a glance, in the keyboard layout of the player.
+ * at a glance, in the keyboard layout of the player, with the keys they chose.
  */
 const props = defineProps<{ family: FamilyId; modeId: ModeId }>();
 
 const { t } = useI18n();
 const keys = useKeyLabels();
-const rows = computed(() => keyLegendFor(props.family, props.modeId));
+const bindings = useKeyBindings();
+const rows = computed(() => keyLegendFor(props.family, props.modeId, bindings.value));
 </script>
 
 <template>

@@ -8,7 +8,7 @@ import { FallingSession, type FallingCommand } from '@/families/falling/FallingS
 import { FallingEffects } from '@/families/falling/fx/FallingEffects';
 import { FallingSoundscape } from '@/families/falling/fx/FallingSoundscape';
 import type { PieceSpec } from '@/families/falling/game/Game';
-import { FallingInput, KEY_BINDINGS } from '@/families/falling/input/FallingInput';
+import { FallingInput } from '@/families/falling/input/FallingInput';
 import { WellGestures } from '@/families/falling/input/WellGestures';
 import PiecePreview from '@/families/falling/ui/PiecePreview.vue';
 import TouchControls from '@/families/falling/ui/TouchControls.vue';
@@ -16,6 +16,7 @@ import { effectsProfile } from '@/fx/EffectsProfile';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
 import { useGameSurface } from '@/ui/useGameSurface';
+import { useKeyBindings } from '@/ui/useKeyBindings';
 import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { TowerCamera, TURN_STEP } from '../camera/TowerCamera';
 import * as sounds from '@/fx/sounds';
@@ -40,11 +41,15 @@ if (!(props.session instanceof FallingSession))
   throw new Error('TowerStage needs a FallingSession');
 const session: FallingSession = props.session;
 
-/** Camera keys, by physical position: Q on QWERTY is A on AZERTY. */
-const CAMERA_KEYS: Readonly<Record<string, -1 | 1>> = { KeyQ: -1, KeyE: 1 };
+/**
+ * The tower has no wall: an instant repeat would spin the piece round it.
+ * The fastest repeat there moves it a column a frame.
+ */
+const ROUND_WELL_ARR_MS = 16;
 
 const { t } = useI18n();
 const { theme, settings, audio, haptics, profile: progression } = useServices();
+const keys = useKeyBindings();
 const format = useFormat();
 const landscape = useLandscape();
 /** The on-screen buttons, for the touch players who chose them. */
@@ -109,10 +114,15 @@ const detachSpawn = session.onGame('spawn', () => camera.recentre());
 
 let renderer: TowerRenderer | null = null;
 
-const execute = (command: FallingCommand) => {
-  if (props.active) session.execute(command);
-};
-const input = new FallingInput(execute, () => emit('pause'));
+const execute = (command: FallingCommand) => props.active && session.execute(command);
+const input = new FallingInput(
+  execute,
+  () => emit('pause'),
+  () => ({
+    das: settings.current.das,
+    arr: Math.max(settings.current.arr, ROUND_WELL_ARR_MS),
+  }),
+);
 const gestures = new WellGestures(execute, () => columnSize.value);
 
 const observer = new ResizeObserver(([entry]) => {
@@ -173,14 +183,13 @@ const onKey = (event: KeyboardEvent, down: boolean) => {
   if (document.querySelector('dialog[open]')) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, select, textarea'))
     return;
-  const turn = CAMERA_KEYS[event.code];
-  if (turn !== undefined) {
+  const action = keys.value.actionFor(event.code);
+  if (!action) return;
+  if (action === 'turnLeft' || action === 'turnRight') {
     event.preventDefault();
-    if (down && props.active) camera.turn(turn * TURN_STEP);
+    if (down && props.active) camera.turn((action === 'turnLeft' ? -1 : 1) * TURN_STEP);
     return;
   }
-  const action = KEY_BINDINGS[event.code];
-  if (!action) return;
   event.preventDefault();
   if (down) {
     if (!event.repeat) input.press(action);

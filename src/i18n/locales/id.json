@@ -619,9 +619,6 @@
     "goalSand": "Hubungkan kedua dinding dengan satu warna: areanya hilang.",
     "goalLines": "Penuhi satu baris: baris itu pecah.",
     "skip": "Lewati panduan",
-    "moveKeys": "← →",
-    "rotateKeys": "↑",
-    "dropKeys": "Spasi",
     "moveTouch": "Geser",
     "rotateTouch": "Ketuk",
     "dropTouch": "Sentil ke bawah"
@@ -688,5 +685,34 @@
     "riftHeart": {
       "name": "Jantung Retakan"
     }
+  },
+  "keymap": {
+    "title": "Kontrol keyboard",
+    "row": "Keyboard",
+    "open": "Atur",
+    "change": "Ubah tombol",
+    "hint": "Pilih kotak, lalu tekan tombol baru (Delete untuk mengosongkannya).",
+    "groupMore": "Lainnya",
+    "turnLeft": "Putar menara ke kiri",
+    "turnRight": "Putar menara ke kanan",
+    "slot": "{action}, tombol {n}: {key}",
+    "slotEmpty": "{action}, tombol {n}: kosong",
+    "press": "Tekan tombol untuk “{action}”",
+    "set": "“{action}”: {key}",
+    "reserved": "Tombol ini dipakai browser dan portal game: {key}",
+    "swapped": "Tombol ditukar dengan “{action}”",
+    "unbound": "“{action}” tidak punya tombol lagi",
+    "cleared": "Tombol dihapus",
+    "missing": "Tanpa tombol",
+    "das": "Jeda pengulangan (DAS)",
+    "dasHint": "Sebelum gerakan yang ditahan berulang",
+    "arr": "Interval pengulangan (ARR)",
+    "arrHint": "Antara dua gerakan; 0 langsung ke dinding",
+    "instant": "Instan",
+    "reset": "Setel ulang",
+    "restored": "Tombol bawaan dipulihkan",
+    "shift": "Shift",
+    "escape": "Esc",
+    "mosaicNote": "Mozaik memakai tombolnya sendiri."
   }
 }

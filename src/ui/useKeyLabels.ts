@@ -19,6 +19,37 @@ const NAMES: Readonly<Record<string, string>> = {
   Backspace: 'keys.backspace',
   Space: 'keys.space',
   Enter: 'keys.enter',
+  ShiftLeft: 'keymap.shift',
+  ShiftRight: 'keymap.shift',
+  Escape: 'keymap.escape',
+};
+
+/** The keys the game refuses, named as most keyboards print them (the keys window says why). */
+const PRINTED: Readonly<Record<string, string>> = {
+  Tab: 'Tab',
+  CapsLock: 'Caps Lock',
+  ControlLeft: 'Ctrl',
+  ControlRight: 'Ctrl',
+  AltLeft: 'Alt',
+  AltRight: 'Alt Gr',
+  MetaLeft: 'Meta',
+  MetaRight: 'Meta',
+};
+
+/** What a US keyboard prints, for the browsers that cannot tell the layout (Firefox, Safari). */
+const QWERTY: Readonly<Record<string, string>> = {
+  Backquote: '`',
+  Minus: '-',
+  Equal: '=',
+  BracketLeft: '[',
+  BracketRight: ']',
+  Backslash: '\\',
+  Semicolon: ';',
+  Quote: "'",
+  Comma: ',',
+  Period: '.',
+  Slash: '/',
+  IntlBackslash: '<',
 };
 
 interface KeyboardLayout {
@@ -51,8 +82,9 @@ export function useKeyLabels() {
     if (symbol) return symbol;
     const name = NAMES[code];
     if (name) return t(name);
-    const printed = layout.value?.get(code);
-    return printed ? printed.toUpperCase() : code.replace(/^(Key|Digit)/, '');
+    const printed = layout.value?.get(code) ?? QWERTY[code];
+    if (printed) return printed.toUpperCase();
+    return PRINTED[code] ?? code.replace(/^(Key|Digit)/, '').replace(/^Numpad/, 'Num ');
   };
 
   /** The key in words, for a screen reader. */

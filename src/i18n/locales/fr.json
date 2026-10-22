@@ -619,9 +619,6 @@
     "goalSand": "Reliez les deux murs avec une seule couleur : la zone s’efface.",
     "goalLines": "Remplissez une ligne : elle se brise.",
     "skip": "Passer le guide",
-    "moveKeys": "← →",
-    "rotateKeys": "↑",
-    "dropKeys": "Espace",
     "moveTouch": "Glissez",
     "rotateTouch": "Touchez",
     "dropTouch": "Lancez vers le bas"
@@ -688,5 +685,34 @@
     "riftHeart": {
       "name": "Cœur de la faille"
     }
+  },
+  "keymap": {
+    "title": "Commandes au clavier",
+    "row": "Clavier",
+    "open": "Personnaliser",
+    "change": "Changer les touches",
+    "hint": "Choisissez une case, puis appuyez sur la nouvelle touche (Suppr pour la vider).",
+    "groupMore": "Autres",
+    "turnLeft": "Faire pivoter la tour à gauche",
+    "turnRight": "Faire pivoter la tour à droite",
+    "slot": "{action}, touche {n} : {key}",
+    "slotEmpty": "{action}, touche {n} : aucune",
+    "press": "Appuyez sur une touche pour « {action} »",
+    "set": "« {action} » : {key}",
+    "reserved": "Touche réservée au navigateur et aux portails de jeux : {key}",
+    "swapped": "Touches échangées avec « {action} »",
+    "unbound": "« {action} » n’a plus de touche",
+    "cleared": "Touche retirée",
+    "missing": "Aucune touche",
+    "das": "Délai de répétition (DAS)",
+    "dasHint": "Avant qu’un déplacement maintenu se répète",
+    "arr": "Intervalle de répétition (ARR)",
+    "arrHint": "Entre deux déplacements ; 0 va droit au mur",
+    "instant": "Instantané",
+    "reset": "Rétablir par défaut",
+    "restored": "Touches par défaut rétablies",
+    "shift": "Maj",
+    "escape": "Échap",
+    "mosaicNote": "La Mosaïque garde ses propres touches."
   }
 }
