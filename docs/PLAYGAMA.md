@@ -74,6 +74,6 @@ racine, des chemins relatifs et des séparateurs « / » (bsdtar).
   > move, tap to rotate, flick down to drop; drag and drop pieces in Mosaic.
 
 - **Supported devices** : Desktop, Android, iOS. **Orientation** : portrait et paysage.
-- **Languages** : English, French, Indonesian.
+- **Languages** : English, French, Indonesian, Russian.
 - **Covers** : `release/playgama-media/` (1920×1080, 1080×1920, 800×800, PNG).
 - **Distribution** : exclure Playhop et Yandex Games (pas de russe).

@@ -27,26 +27,35 @@ function inlineStyles(html: string, bundle: OutputBundle): string {
   });
 }
 
+/** A chunk's code with its escapes (ф, \u{1f600}, \xe9) read as the characters they stand for. */
+const unescaped = (code: string): string =>
+  code
+    .replace(/\\u\{([0-9a-fA-F]+)\}/g, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+
 /**
  * The messages of each language become a chunk of their own (virtual modules
- * of the i18n plugin): each is told by a sentence of its own, the daily
- * challenge's rules (its first words, in plain letters), read from the source.
+ * of the i18n plugin, `virtual:intlify-i18n-N`, which do not say whose they
+ * are): each is told by its page title, read from the source, whatever the
+ * script it is written in and however the minifier escapes it.
  */
 function localeFiles(bundle: OutputBundle): Record<string, string> {
-  const markers: Record<string, string> = {};
-  for (const locale of LOCALES) {
+  const titles = LOCALES.map((locale) => {
     const source = new URL(`../src/i18n/locales/${locale}.json`, import.meta.url);
-    const messages = JSON.parse(readFileSync(source, 'utf8')) as { daily: { rules: string } };
-    markers[locale] = /^[\x20-\x7e]+/.exec(messages.daily.rules)?.[0] ?? '';
-  }
+    const messages = JSON.parse(readFileSync(source, 'utf8')) as { meta: { title: string } };
+    return [locale, messages.meta.title] as const;
+  });
   const files: Record<string, string> = {};
   for (const output of Object.values(bundle)) {
     const chunk = output as OutputChunk;
     if (chunk.type !== 'chunk' || !chunk.isDynamicEntry) continue;
-    const locale = LOCALES.find(
-      (code) => markers[code]!.length >= 8 && chunk.code.includes(markers[code]!),
-    );
-    if (locale) files[locale] = `./${chunk.fileName}`;
+    const code = unescaped(chunk.code);
+    const found = titles.filter(([, title]) => code.includes(title));
+    if (found.length > 1) {
+      throw new Error(`bootPlugin: ${chunk.fileName} holds several languages`);
+    }
+    if (found[0]) files[found[0][0]] = `./${chunk.fileName}`;
   }
   if (Object.keys(files).length !== LOCALES.length) {
     throw new Error(`bootPlugin: a chunk per language expected, found ${JSON.stringify(files)}`);

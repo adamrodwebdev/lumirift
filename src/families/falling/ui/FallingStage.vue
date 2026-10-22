@@ -81,6 +81,7 @@ const effects = new FallingEffects(
   () => profile.value,
   () => palette.value,
   (points) => format.number(points),
+  (combo) => t('wellWords.combo', { n: combo }),
 );
 // Hard drops are shown falling; Rhythm keeps them instant, its landings sound on the beat.
 effects.animateDrops = session.modeId !== 'rhythm';
