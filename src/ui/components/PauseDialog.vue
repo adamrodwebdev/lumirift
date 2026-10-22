@@ -196,6 +196,20 @@ const onKey = (event: KeyboardEvent) => {
   font-size: 0.72rem;
 }
 
+/*
+ * Short landscape screens (640 × 360): the essential keys only, as beside the
+ * game (the pause has its button; the soft drop needs no reminder).
+ */
+@media (orientation: landscape) and (max-height: 32rem) {
+  .pause__legend :deep(.legend) {
+    gap: 0.2rem;
+  }
+
+  .pause__legend :deep(.legend__row--minor) {
+    display: none;
+  }
+}
+
 /* Landscape: the actions on the left, the gestures on the right. */
 @media (orientation: landscape) {
   .pause--legend[open] {

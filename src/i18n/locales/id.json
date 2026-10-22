@@ -217,7 +217,8 @@
         "defeated": "Jantung Retakan dikalahkan!"
       },
       "tease": "Sesuatu bergerak di bawah pasir…"
-    }
+    },
+    "surge": "Lonjakan: +{value}"
   },
   "wellWords": {
     "combo": "KOMBO ×{n}"
@@ -715,5 +716,12 @@
     "breakdown": "{points} poin, {factor} untuk kemenangan",
     "best": "Rekor minggu ini: {value}",
     "share": "Lumirift · Tantangan Penjaga, {boss}: {value}. Giliranmu: {url}"
+  },
+  "surge": {
+    "name": "Lonjakan retakan",
+    "ready": "Lonjakan siap: ketuk jam pasir",
+    "readyKey": "Lonjakan siap: tekan {key}",
+    "charging": "Lonjakan, pengukur {n}%",
+    "running": "Lonjakan: waktu melambat"
   }
 }

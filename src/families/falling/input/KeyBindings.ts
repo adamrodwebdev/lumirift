@@ -1,11 +1,15 @@
 import type { FallingAction } from './FallingInput';
 
-/** What a key can do in the falling family, the Sand and the Tower (its camera turns too). */
-export type KeyAction = FallingAction | 'turnLeft' | 'turnRight';
+/**
+ * What a key can do in the falling family, the Sand and the Tower: the
+ * piece's actions, the Tower's camera, the rift surge (the screen's, not the
+ * engine's).
+ */
+export type KeyAction = FallingAction | 'turnLeft' | 'turnRight' | 'surge';
 
-/** The actions of the piece itself (all but the Tower's camera). */
+/** The actions of the piece itself (not the Tower's camera, not the surge). */
 export const isFallingAction = (action: KeyAction): action is FallingAction =>
-  action !== 'turnLeft' && action !== 'turnRight';
+  action !== 'turnLeft' && action !== 'turnRight' && action !== 'surge';
 
 /** In the order the keys window lists them. */
 export const KEY_ACTIONS: readonly KeyAction[] = [
@@ -17,6 +21,7 @@ export const KEY_ACTIONS: readonly KeyAction[] = [
   'hardDrop',
   'hold',
   'ability',
+  'surge',
   'turnLeft',
   'turnRight',
   'pause',
@@ -41,6 +46,7 @@ export const DEFAULT_KEYS: KeyMap = {
   hardDrop: ['Space', null],
   hold: ['KeyC', 'ShiftLeft'],
   ability: ['KeyF', null],
+  surge: ['KeyV', null],
   turnLeft: ['KeyQ', null],
   turnRight: ['KeyE', null],
   pause: ['KeyP', null],

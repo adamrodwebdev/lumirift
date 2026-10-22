@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import type { FrameClock } from '@/app/FrameClock';
@@ -14,6 +23,8 @@ import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
 import { useGameSurface } from '@/ui/useGameSurface';
 import { useKeyBindings } from '@/ui/useKeyBindings';
+import SurgeButton from '@/ui/components/SurgeButton.vue';
+import { SURGE } from '@/ui/surgeControl';
 import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import type { PieceSpec } from '../engine/SandGame';
 import { SandEffects } from '../fx/SandEffects';
@@ -41,6 +52,8 @@ const session: SandSession = props.session;
 const { t } = useI18n();
 const format = useFormat();
 const { theme, settings, audio, haptics } = useServices();
+/** The rift surge, the game screen's: its key and its button are here. */
+const surge = inject(SURGE, null);
 const keys = useKeyBindings();
 const landscape = useLandscape();
 /** The on-screen buttons, for the touch players who chose them. */
@@ -107,8 +120,9 @@ watch(
   },
 );
 
-const offFrame = props.clock.subscribe((delta) => {
-  input.update(props.active ? delta : 0);
+// The player's moves repeat in real time, even while the surge slows the game.
+const offFrame = props.clock.subscribe((delta, real) => {
+  input.update(props.active ? real : 0);
   // The effects go on at the end of a game, and while a Guardian passes by.
   if (props.active || session.state === 'over' || session.teasing) effects.update(delta);
   const next = session.view.preview();
@@ -119,9 +133,16 @@ const offFrame = props.clock.subscribe((delta) => {
 
 const onKey = (event: KeyboardEvent, down: boolean) => {
   const action = keys.value.actionFor(event.code);
-  if (!action || !isFallingAction(action) || document.querySelector('dialog[open]')) return;
+  if (!action || document.querySelector('dialog[open]')) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, select, textarea'))
     return;
+  // The rift surge is the screen's: the stage passes the call on.
+  if (action === 'surge') {
+    event.preventDefault();
+    if (down && !event.repeat && props.active) surge?.trigger();
+    return;
+  }
+  if (!isFallingAction(action)) return;
   event.preventDefault();
   if (down) {
     if (!event.repeat) input.press(action);
@@ -160,6 +181,9 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="stage">
+    <!-- No piece kept aside in the Sand: the surge has the corner to itself. -->
+    <div class="stage__surge"><SurgeButton /></div>
+
     <div ref="wellArea" class="stage__well">
       <canvas ref="canvas" class="stage__canvas" role="img" :aria-label="t('sand.well')" />
     </div>
@@ -178,3 +202,12 @@ onBeforeUnmount(() => {
     <TouchControls v-if="pad" @press="input.press($event)" @release="input.release($event)" />
   </div>
 </template>
+
+<style scoped>
+/* The Sand keeps no piece aside: the surge's button takes the hold's corner. */
+.stage__surge {
+  grid-area: hold;
+  display: flex;
+  align-items: center;
+}
+</style>

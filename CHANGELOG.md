@@ -3,6 +3,38 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.25.0] — 22/10/2026
+
+Lot C, cinquième point : la surcharge de la faille, pour sauver une partie.
+
+### Ajouté
+
+- **Surcharge de la faille** (Chute, Sable et Tour ; pas en Rythme ni en Duel) : chaque
+  ligne effacée remplit une jauge (12 lignes ; 4 zones dans le Sable). Pleine, elle s'allume
+  à côté de la réserve et l'annonce ; le joueur choisit son moment (touche V, réglable, ou un
+  toucher sur le sablier).
+  - Pendant huit secondes, le temps du jeu passe au **tiers** de sa vitesse (la chute, le
+    verrouillage, le chrono), mais pas les commandes du joueur : la répétition des
+    déplacements garde son rythme réel. Le puits baigne d'une lumière froide traversée
+    d'anneaux lents, la musique s'étouffe.
+  - **Bonus de sortie** : les points marqués pendant la surcharge sont multipliés par 1 + 0,25
+    par ligne effacée (0,5 par zone dans le Sable), jusqu'à ×3 ; une onde de choc traverse le
+    puits et le son monte avec le facteur.
+- La touche de la surcharge apparaît dans la légende, dans la fenêtre des touches, et dans
+  l'annonce « Surcharge prête ».
+
+### Corrigé
+
+- Les sons d'impact et de brisure de la Chute et de la Tour suivent le temps du jeu, et non
+  plus l'horloge du navigateur : ils restent calés sur l'image pendant la surcharge, les
+  ralentis et la pause.
+
+### Modifié
+
+- Une seule règle dit quels modes ont la surcharge (le jeu, sa jauge et la légende des
+  touches la lisent), et la surcharge calcule elle-même son bonus de sortie : l'interface ne
+  fait plus que le remettre à la partie.
+
 ## [1.24.0] — 22/10/2026
 
 Le russe, quatrième langue, prêt pour les portails russophones ; les trois autres langues

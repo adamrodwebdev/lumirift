@@ -41,6 +41,7 @@ const LABELS: Readonly<Record<KeyAction, string>> = {
   hardDrop: 'controls.hardDrop',
   hold: 'controls.hold',
   ability: 'controls.ability.flip',
+  surge: 'surge.name',
   turnLeft: 'keymap.turnLeft',
   turnRight: 'keymap.turnRight',
   pause: 'controls.pause',
@@ -57,7 +58,10 @@ const ONLY_IN: Readonly<Partial<Record<KeyAction, string>>> = {
 const GROUPS: readonly { readonly title: string; readonly actions: readonly KeyAction[] }[] = [
   { title: 'controls.groupMove', actions: ['left', 'right', 'softDrop'] },
   { title: 'controls.groupAct', actions: ['rotateCw', 'rotateCcw', 'hardDrop'] },
-  { title: 'keymap.groupMore', actions: ['hold', 'ability', 'turnLeft', 'turnRight', 'pause'] },
+  {
+    title: 'keymap.groupMore',
+    actions: ['hold', 'ability', 'surge', 'turnLeft', 'turnRight', 'pause'],
+  },
 ];
 const SLOTS = Array.from({ length: KEY_SLOTS }, (_, slot) => slot);
 

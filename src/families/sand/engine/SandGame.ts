@@ -825,6 +825,13 @@ export class SandGame {
     return best ? { kind: 'sand', region: best.slice(0, FIRE_MAX_GRAINS) } : null;
   }
 
+  /** Adds bonus points won outside the rules (the rift surge's exit), and announces them. */
+  awardPoints(points: number, reason: string): void {
+    if (this._state === 'over' || points <= 0) return;
+    this._score += points;
+    this.events.emit('notice', { id: reason, value: points });
+  }
+
   /** Regions cleared at the edge of defeat count double: the rescue is a feat. */
   private closeCall(points: number): void {
     this._score += points;

@@ -33,6 +33,9 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 - **La tension de l'échec** : en danger, la musique presse et un cœur bat, le verre du
   puits se fend d'or ; une ligne sauvée au bord du gouffre compte double, une défaite
   brise le puits.
+- **La surcharge de la faille** : les lignes remplissent une jauge ; pleine, le joueur ralentit
+  le temps au tiers pendant huit secondes pour sauver sa partie, et les points faits pendant
+  sont multipliés à la sortie.
 - **Des gestes qui jouent la musique** : chaque rotation joue la note suivante de l'accord
   qui sonne, chaque pièce posée sa basse, chaque effacement l'accord entier ; sur le temps,
   plus fort. En Rythme, la musique suit la pulsation du mode.
@@ -52,6 +55,7 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 | Tourner / autre sens      | ↑ ou X / Z (W en AZERTY)               | Toucher / toucher à deux doigts               |
 | Réserve                   | C ou Maj                               | Glisser vite vers le haut, ou toucher la case |
 | Capacité (Renversement)   | F                                      | Bouton à côté de la réserve                   |
+| Surcharge de la faille    | V                                      | Toucher le sablier                            |
 | Tourner la Tour           | Q / E (A / E en AZERTY)                | Glisser à deux doigts                         |
 | Mosaïque                  | 1, 2, 3 (4 : cube), flèches, Entrée, J | Glisser-déposer                               |
 | Pause                     | P                                      | Bouton en haut de l'écran                     |

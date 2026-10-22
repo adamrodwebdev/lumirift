@@ -485,6 +485,60 @@ export const sweep =
     );
   };
 
+// --- The rift surge (1.25) -------------------------------------------------------
+
+/** The gauge is full: a bright call on the chord, rising. */
+export const surgeReady: SoundRecipe = (s, groove) => {
+  const chord = chordAt(groove.beat);
+  [0, 1, 2].forEach((n, i) =>
+    s.tone({
+      type: 'triangle',
+      frequency: degree(chordDegree(chord, 13, n)),
+      duration: 0.3,
+      gain: 0.05,
+      start: i * 0.06,
+    }),
+  );
+};
+
+/** Time thickens: a long breath sinking, the chord's root falling an octave, a glassy halo. */
+export const surgeIn: SoundRecipe = (s, groove) => {
+  const chord = chordAt(groove.beat);
+  const root = chordRoot(chord);
+  s.noise({ filter: 'lowpass', frequency: 4000, to: 260, duration: 1.1, gain: 0.16, attack: 0.04 });
+  s.tone({ frequency: root * 2, to: root, duration: 1.2, gain: 0.16 });
+  [0, 1, 2].forEach((n, i) =>
+    s.tone({
+      type: 'triangle',
+      frequency: degree(chordDegree(chord, 15, n)),
+      duration: 1.6,
+      gain: 0.025,
+      start: 0.08 + i * 0.05,
+      attack: 0.12,
+    }),
+  );
+};
+
+/** Time snaps back: a shock wave, then the chord thrown upward, the higher the factor. */
+export const surgeOut =
+  (factor: number): SoundRecipe =>
+  (s, groove) => {
+    const chord = chordAt(groove.beat);
+    s.tone({ frequency: chordRoot(chord), to: 40, duration: 0.6, gain: 0.3 });
+    s.noise({ filter: 'highpass', frequency: 2500, duration: 0.5, gain: 0.14 });
+    s.noise({ filter: 'bandpass', frequency: 300, to: 3000, q: 0.8, duration: 0.4, gain: 0.1 });
+    const notes = 3 + Math.round((Math.min(factor, 3) - 1) * 2);
+    for (let i = 0; i < notes; i++) {
+      s.tone({
+        type: 'triangle',
+        frequency: degree(chordDegree(chord, 10, i)),
+        duration: 0.35,
+        gain: 0.05,
+        start: 0.05 + i * 0.045,
+      });
+    }
+  };
+
 /** A combo ran dry: two notes falling, softly. */
 export const comboLost: SoundRecipe = (s) => {
   s.tone({ type: 'triangle', frequency: degree(12), to: degree(7), duration: 0.35, gain: 0.04 });

@@ -37,6 +37,7 @@ export class AudioEngine {
   private intensity = 0.15;
   private tempo = CALM_BPM;
   private danger = 0;
+  private surge = 0;
 
   constructor(private readonly createContext: ContextFactory | null) {}
 
@@ -67,6 +68,7 @@ export class AudioEngine {
       this.music.setIntensity(this.intensity);
       this.music.setTempo(this.tempo);
       this.music.setDanger(this.danger);
+      this.music.setSurge(this.surge);
       this.music.start();
       this.applyVolume();
     }
@@ -113,6 +115,12 @@ export class AudioEngine {
   pulse(count: number): void {
     if (this.context?.state !== 'running') return;
     this.music?.follow(count);
+  }
+
+  /** A rift surge running (1) or not (0): the music sinks while time slows. */
+  setSurge(surge: number): void {
+    this.surge = clamp(surge);
+    this.music?.setSurge(this.surge);
   }
 
   /** The player got out of danger: the music opens and resolves. */

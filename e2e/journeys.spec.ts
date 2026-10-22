@@ -204,6 +204,17 @@ test('the week’s Guardian is one tap away from the home, for every player', as
   await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
 });
 
+test('the rift surge’s gauge waits beside the well, but not in the Rhythm', async ({ page }) => {
+  await openMode(page, 'Classique');
+  // Empty at first: the clears will fill it.
+  const gauge = page.getByRole('button', { name: /^Surcharge, jauge à 0/ });
+  await expect(gauge).toBeVisible();
+  await expect(gauge).toHaveAttribute('aria-disabled', 'true');
+  await quitGame(page);
+  await openMode(page, 'Rythme');
+  await expect(page.getByRole('button', { name: /^Surcharge/ })).toHaveCount(0);
+});
+
 test('the daily challenge is timed', async ({ page }) => {
   await panel(page, 'Accueil')
     .getByRole('button', { name: /Défi du jour/ })

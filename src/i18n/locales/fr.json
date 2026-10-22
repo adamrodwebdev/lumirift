@@ -217,7 +217,8 @@
         "defeated": "Le Cœur de la faille est vaincu !"
       },
       "tease": "Quelque chose bouge sous le sable…"
-    }
+    },
+    "surge": "Surcharge : +{value}"
   },
   "wellWords": {
     "combo": "COMBO ×{n}"
@@ -715,5 +716,12 @@
     "breakdown": "{points} points, {factor} pour la victoire",
     "best": "Record de la semaine : {value}",
     "share": "Lumirift · Défi des Gardiens, {boss} : {value}. À vous de jouer : {url}"
+  },
+  "surge": {
+    "name": "Surcharge de la faille",
+    "ready": "Surcharge prête : touchez le sablier",
+    "readyKey": "Surcharge prête : appuyez sur {key}",
+    "charging": "Surcharge, jauge à {n} %",
+    "running": "Surcharge : le temps ralentit"
   }
 }

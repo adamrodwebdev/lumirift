@@ -27,6 +27,11 @@ export interface SessionResult {
   readonly value: number;
 }
 
+/** The points a result holds: a game ranked on time keeps none (nothing to multiply or add to). */
+export function pointsOf(result: SessionResult): number {
+  return result.kind === 'score' ? result.value : 0;
+}
+
 /** Events every family publishes, for announcements, sounds and best scores. */
 export interface SessionEventMap {
   state: { readonly state: SessionState };
@@ -97,6 +102,11 @@ export interface GameSession<C extends Command = Command> {
   subtitleKey(): string | null;
   /** The boss of this game and how it stands; absent or null outside a boss level. */
   boss?(): BossStatus | null;
+  /**
+   * Pays points won outside the mode's rules (the rift surge's exit), with a
+   * notice `reason`. Absent where the game keeps no points to add to.
+   */
+  awardBonus?(points: number, reason: string): void;
   /**
    * A Guardian of a later chapter shows itself as this level ends (the
    * campaign's teaser): the game stops taking pieces and its clock, its world

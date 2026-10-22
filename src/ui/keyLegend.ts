@@ -1,5 +1,6 @@
 import { KeyBindings, type KeyAction } from '@/families/falling/input/KeyBindings';
 import type { FamilyId, ModeId } from '@/session/ModeId';
+import { surgeTuningFor } from '@/session/SurgeTuning';
 
 /** A row of the controls legend: the keys (by physical place) and what they do. */
 export interface LegendRow {
@@ -72,20 +73,26 @@ const BY_FAMILY: Readonly<Record<FamilyId, readonly RowSpec[]>> = {
   ],
 };
 
+/** The rift surge, in every mode that has one (see `surgeTuningFor`). */
+const SURGE = row('surge.name', main('surge'));
+
 /** A mode with a key of its own (the Flip's ability). */
 const EXTRA: Readonly<Partial<Record<ModeId, RowSpec>>> = {
   flip: row('controls.ability.flip', main('ability')),
 };
 
-/** The legend of a mode, with the player's keys: its family's rows, plus its own, before Pause. */
+/** The legend of a mode, with the player's keys: its family's rows, its own and the surge, before Pause. */
 export function keyLegendFor(
   family: FamilyId,
   modeId: ModeId,
   bindings: KeyBindings = KeyBindings.DEFAULT,
 ): readonly LegendRow[] {
   const specs = BY_FAMILY[family];
-  const extra = EXTRA[modeId];
-  const rows = extra ? [...specs.slice(0, -1), extra, ...specs.slice(-1)] : specs;
+  const extras = [
+    ...(EXTRA[modeId] ? [EXTRA[modeId]] : []),
+    ...(surgeTuningFor(family, modeId) ? [SURGE] : []),
+  ];
+  const rows = [...specs.slice(0, -1), ...extras, ...specs.slice(-1)];
   return rows.map(({ action, keys, minor: isMinor }) => ({
     action,
     codes: keys(bindings),

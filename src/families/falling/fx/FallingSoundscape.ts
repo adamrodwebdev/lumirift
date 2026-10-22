@@ -1,3 +1,4 @@
+import { GameTimers } from '@/core/GameTimers';
 import { PlayerVoice } from '@/fx/PlayerVoice';
 import * as sounds from '@/fx/sounds';
 import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
@@ -19,10 +20,11 @@ const NOTICE_SOUNDS: Readonly<Record<string, SoundRecipe>> = {
  * Sounds and vibrations of the falling family: it listens to the engine and
  * plays the matching synthesised sound, in step with the visual effects. The
  * player's gestures play along with the music (PlayerVoice), and the Rhythm
- * mode's pulse leads it.
+ * mode's pulse leads it. The stage gives it the game's time (`update`), as
+ * to the effects.
  */
 export class FallingSoundscape {
-  private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+  private readonly timers = new GameTimers();
   private readonly voice = new PlayerVoice();
   private hardDropped = false;
   /** While a hard-dropped piece is shown falling, its landing and clear sound when it lands. */
@@ -113,21 +115,17 @@ export class FallingSoundscape {
     ];
     return () => {
       offs.forEach((off) => off());
-      this.timers.forEach((timer) => clearTimeout(timer));
       this.timers.clear();
     };
   }
 
-  /** Plays now, or after `delayMs`, in step with the visuals (a landing, the crack turning into shards). */
+  /** Game time goes by, as for the visual effects: the sounds waiting for them follow. */
+  update(deltaMs: number): void {
+    this.timers.update(deltaMs);
+  }
+
+  /** Plays now, or after `delayMs` of game time, in step with the visuals (a landing, the crack turning into shards). */
   private after(delayMs: number, play: () => void): void {
-    if (delayMs <= 0) {
-      play();
-      return;
-    }
-    const timer = setTimeout(() => {
-      this.timers.delete(timer);
-      play();
-    }, delayMs);
-    this.timers.add(timer);
+    this.timers.after(delayMs, play);
   }
 }

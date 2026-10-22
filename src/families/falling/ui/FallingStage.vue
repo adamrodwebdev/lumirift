@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import type { FrameClock } from '@/app/FrameClock';
@@ -9,6 +18,8 @@ import type { GameSession } from '@/session/GameSession';
 import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
 import { useGameSurface } from '@/ui/useGameSurface';
 import { useKeyBindings } from '@/ui/useKeyBindings';
+import SurgeButton from '@/ui/components/SurgeButton.vue';
+import { SURGE } from '@/ui/surgeControl';
 import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { FallingSession, type FallingCommand } from '../FallingSession';
 import { FallingEffects } from '../fx/FallingEffects';
@@ -50,6 +61,8 @@ const ABILITY_ICONS: Readonly<Record<AbilityId, IconName>> = { flip: 'flip' };
 
 const { t } = useI18n();
 const { theme, settings, audio, haptics, profile: progression } = useServices();
+/** The rift surge, the game screen's: its key and its button are here. */
+const surge = inject(SURGE, null);
 const keys = useKeyBindings();
 /** The cosmetics the player wears. */
 const equipment = computed(() => progression.current.equipment);
@@ -91,9 +104,8 @@ watch(
   (shatter) => effects.setShatter(shatter),
   { immediate: true },
 );
-const detachSounds = new FallingSoundscape(audio, haptics, (distance) =>
-  effects.dropWait(distance),
-).attach(session);
+const soundscape = new FallingSoundscape(audio, haptics, (distance) => effects.dropWait(distance));
+const detachSounds = soundscape.attach(session);
 
 // The mode's scenery; the last Guardian brings its own, and its sounds.
 const mode = session.view.mode;
@@ -202,10 +214,15 @@ const syncPreviews = () => {
   if (!sameSpecs(next, queue.value)) queue.value = next;
 };
 
-const offFrame = props.clock.subscribe((delta) => {
-  input.update(props.active ? delta : 0);
-  // Effects freeze with the pause, but the final collapse plays after game over.
-  if (props.active || session.state === 'over') effects.update(delta);
+// The player's moves repeat in real time, even while the surge slows the game.
+const offFrame = props.clock.subscribe((delta, real) => {
+  input.update(props.active ? real : 0);
+  // Effects, and the sounds waiting for them, freeze with the pause; the final collapse plays
+  // after game over.
+  if (props.active || session.state === 'over') {
+    effects.update(delta);
+    soundscape.update(delta);
+  }
   syncPreviews();
   renderer?.render();
 });
@@ -214,9 +231,16 @@ const offFrame = props.clock.subscribe((delta) => {
 
 const onKey = (event: KeyboardEvent, down: boolean) => {
   const action = keys.value.actionFor(event.code);
-  if (!action || !isFallingAction(action) || document.querySelector('dialog[open]')) return;
+  if (!action || document.querySelector('dialog[open]')) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, select, textarea'))
     return;
+  // The rift surge is the screen's: the stage passes the call on.
+  if (action === 'surge') {
+    event.preventDefault();
+    if (down && !event.repeat && props.active) surge?.trigger();
+    return;
+  }
+  if (!isFallingAction(action)) return;
   event.preventDefault();
   if (down) {
     if (!event.repeat) input.press(action);
@@ -287,6 +311,7 @@ onBeforeUnmount(() => {
       >
         <AppIcon :name="ABILITY_ICONS[session.ability]" />
       </button>
+      <SurgeButton />
     </section>
 
     <div ref="wellArea" class="stage__well">
