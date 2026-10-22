@@ -90,14 +90,18 @@ export function useTension(options: TensionOptions) {
     if (shown !== amount.value) amount.value = shown;
     audio.setIntensity(running ? MUSIC_PLAYING + MUSIC_DANGER * current.pressure() : MUSIC_CALM);
     audio.setDanger(running ? tension.amount : 0);
+    // A game with its own pulse (the Rhythm mode) sets the tempo; the music follows its beats.
+    const pulse = indicators.find((item) => item.id === 'bpm')?.value;
     audio.setTempo(
       !running
         ? TEMPO.calm
-        : final.urgent || tension.stage === 'critical'
-          ? TEMPO.critical
-          : tension.stage === 'danger'
-            ? TEMPO.danger
-            : TEMPO.calm,
+        : pulse !== undefined
+          ? pulse
+          : final.urgent || tension.stage === 'critical'
+            ? TEMPO.critical
+            : tension.stage === 'danger'
+              ? TEMPO.danger
+              : TEMPO.calm,
     );
   };
 

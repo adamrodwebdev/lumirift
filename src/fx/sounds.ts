@@ -1,38 +1,97 @@
 import type { SoundRecipe } from '@/services/audio/AudioEngine';
-import { degree } from './harmony';
+import type { Synth } from '@/services/audio/Synth';
+import {
+  accent,
+  chordAt,
+  chordDegree,
+  chordFifth,
+  chordRoot,
+  degree,
+  type Groove,
+} from './harmony';
 
 /*
  * The sound palette of Lumirift, entirely synthesised. Glass is a burst of
  * high noise plus a few inharmonic "pings"; impacts are falling sine thumps.
  * Every pitch is a degree of the game's key (D minor pentatonic, see
- * harmony.ts): the effects always sound right over the music.
+ * harmony.ts): the effects always sound right over the music. The player's
+ * gestures go further (1.21): they play along with it, on the notes of the
+ * chord playing (`groove`): rotations as a melody (PlayerVoice), pieces set
+ * down as its bass, clears as the chord rung out; on the beat, louder.
  */
 
-let tickTurn = 0;
-export const tick: SoundRecipe = (s) =>
+/** The highest note of the glass pings (G8): above, they only whistle. */
+const TOP_PING = 27;
+
+/** A step sideways: a soft tick on a note of the chord, two of them taking turns. */
+export const tick =
+  (turn: number): SoundRecipe =>
+  (s, groove) =>
+    s.tone({
+      type: 'square',
+      frequency: degree(chordDegree(chordAt(groove.beat), 13, turn % 2)),
+      duration: 0.03,
+      gain: 0.022,
+    });
+
+/**
+ * A rotation: a crystal note of the chord (`note`, a degree of the key that
+ * PlayerVoice chooses), its octave shimmering, over a glassy flick.
+ */
+export const rotate =
+  (note: number): SoundRecipe =>
+  (s, groove) => {
+    const strength = 0.75 + 0.45 * accent(groove.beat);
+    s.tone({ type: 'triangle', frequency: degree(note), duration: 0.18, gain: 0.05 * strength });
+    s.tone({ frequency: degree(note + 5), duration: 0.1, gain: 0.012 * strength });
+    s.noise({ filter: 'bandpass', frequency: 3600, q: 3, duration: 0.025, gain: 0.018 });
+  };
+
+export const hold: SoundRecipe = (s, groove) => {
+  const chord = chordAt(groove.beat);
   s.tone({
-    type: 'square',
-    frequency: degree(13 + (tickTurn++ % 2)),
-    duration: 0.03,
-    gain: 0.022,
+    frequency: degree(chordDegree(chord, 12)),
+    to: degree(chordDegree(chord, 7)),
+    duration: 0.14,
+    gain: 0.06,
   });
-
-export const rotate: SoundRecipe = (s) =>
-  s.tone({ type: 'triangle', frequency: degree(11), to: degree(13), duration: 0.07, gain: 0.05 });
-
-export const hold: SoundRecipe = (s) => {
-  s.tone({ frequency: degree(12), to: degree(7), duration: 0.14, gain: 0.06 });
   s.noise({ filter: 'bandpass', frequency: 2200, q: 2, duration: 0.09, gain: 0.03 });
 };
 
-export const land: SoundRecipe = (s) => {
+/**
+ * A piece set down plays the bass: the root of the chord, round and low (an
+ * octave up as well, for small speakers); on the beat, louder, with its fifth.
+ */
+function bass(s: Synth, groove: Groove, weight = 1, start = 0): void {
+  const chord = chordAt(groove.beat);
+  const onBeat = accent(groove.beat);
+  const gain = weight * (0.7 + 0.5 * onBeat);
+  const root = chordRoot(chord);
+  s.tone({ frequency: root, duration: 0.32, gain: 0.07 * gain, start });
+  s.tone({ type: 'triangle', frequency: root * 2, duration: 0.24, gain: 0.04 * gain, start });
+  if (onBeat > 0.5) {
+    s.tone({
+      type: 'triangle',
+      frequency: chordFifth(chord) * 2,
+      duration: 0.22,
+      gain: 0.025 * gain,
+      start: start + 0.01,
+    });
+  }
+}
+
+/** Sand: a piece settling plays the bass too, under its own sound. */
+export const settle: SoundRecipe = (s, groove) => bass(s, groove, 0.9);
+
+export const land: SoundRecipe = (s, groove) => {
   s.tone({ frequency: 150, to: 60, duration: 0.12, gain: 0.22 });
   s.noise({ filter: 'lowpass', frequency: 900, duration: 0.05, gain: 0.08 });
+  bass(s, groove);
 };
 
 export const hardDrop =
   (distance: number): SoundRecipe =>
-  (s) => {
+  (s, groove) => {
     const weight = Math.min(1, distance / 18);
     s.noise({
       filter: 'bandpass',
@@ -44,6 +103,7 @@ export const hardDrop =
     });
     s.tone({ frequency: 120, to: 42, duration: 0.2, gain: 0.25 + 0.15 * weight, start: 0.04 });
     s.noise({ filter: 'lowpass', frequency: 700, duration: 0.09, gain: 0.12, start: 0.04 });
+    bass(s, groove, 1.1 + 0.3 * weight, 0.04);
   };
 
 export const crack: SoundRecipe = (s) => {
@@ -51,17 +111,19 @@ export const crack: SoundRecipe = (s) => {
   s.tone({ type: 'square', frequency: 2400, to: 1500, duration: 0.03, gain: 0.025 });
 };
 
-/** Breaking crystal: more lines, more pings; each combo raises the pitch. */
+/** Breaking crystal: the chord rung out, more pings for more lines; each combo starts it a note higher. */
 export const shatter =
   (lines: number, combo: number): SoundRecipe =>
-  (s) => {
+  (s, groove) => {
+    const chord = chordAt(groove.beat);
     s.noise({ filter: 'highpass', frequency: 3200, duration: 0.3 + 0.08 * lines, gain: 0.2 });
     s.noise({ filter: 'bandpass', frequency: 6000, q: 3, duration: 0.18, gain: 0.08, start: 0.02 });
-    // Each combo starts the run one degree higher.
-    const base = 11 + Math.min(combo, 6);
+    const first = Math.min(combo, 6);
     const pings = 2 + lines * 2;
     for (let i = 0; i < pings; i++) {
-      const frequency = degree(base + i + (Math.random() < 0.5 ? 0 : 5));
+      let note = chordDegree(chord, 11, first + (i % 4)) + (Math.random() < 0.5 ? 0 : 5);
+      while (note > TOP_PING) note -= 5;
+      const frequency = degree(note);
       const start = i * 0.028 + Math.random() * 0.02;
       const duration = 0.35 + Math.random() * 0.4;
       s.tone({ frequency, duration, gain: 0.05, start });
@@ -74,16 +136,23 @@ export const shatter =
         start,
       });
     }
-    // Four lines: the rift opens, a deep D under the glass.
+    // Four lines: the rift opens, the chord's root deep under the glass.
     if (lines >= 4) {
-      s.tone({ frequency: degree(-5), to: 36, duration: 0.8, gain: 0.32 });
-      s.tone({ type: 'triangle', frequency: degree(0), duration: 1.1, gain: 0.08, start: 0.05 });
+      const root = chordRoot(chord);
+      s.tone({ frequency: root / 2, to: 36, duration: 0.8, gain: 0.32 });
+      s.tone({ type: 'triangle', frequency: root, duration: 1.1, gain: 0.08, start: 0.05 });
     }
   };
 
-export const pureLine: SoundRecipe = (s) => {
-  [15, 18, 20, 21].forEach((step, i) =>
-    s.tone({ frequency: degree(step), duration: 0.8, gain: 0.045, start: i * 0.04 }),
+export const pureLine: SoundRecipe = (s, groove) => {
+  const chord = chordAt(groove.beat);
+  [0, 1, 2, 3].forEach((n, i) =>
+    s.tone({
+      frequency: degree(chordDegree(chord, 15, n)),
+      duration: 0.8,
+      gain: 0.045,
+      start: i * 0.04,
+    }),
   );
 };
 
@@ -216,36 +285,64 @@ export const onBeat =
       gain: 0.07,
     });
 
-/** Mosaic: a glazed tile set down on the tray. */
-export const tile: SoundRecipe = (s) => {
-  s.tone({ type: 'triangle', frequency: degree(9), to: degree(7), duration: 0.07, gain: 0.07 });
+/** Mosaic: a glazed tile set down on the tray, a clink on the chord, the bass under it. */
+export const tile: SoundRecipe = (s, groove) => {
+  const chord = chordAt(groove.beat);
+  s.tone({
+    type: 'triangle',
+    frequency: degree(chordDegree(chord, 7, 1)),
+    to: degree(chordDegree(chord, 7)),
+    duration: 0.07,
+    gain: 0.07,
+  });
   s.noise({ filter: 'bandpass', frequency: 2400, q: 4, duration: 0.03, gain: 0.05 });
   // The weight of the piece settling into the tray.
   s.tone({ frequency: 150, to: 70, duration: 0.12, gain: 0.08 });
+  bass(s, groove, 0.8);
 };
 
 /** Mosaic: a piece lifted from the hand, a light glazed clink rising. */
-export const pickUp: SoundRecipe = (s) => {
-  s.tone({ type: 'triangle', frequency: degree(12), to: degree(14), duration: 0.07, gain: 0.05 });
+export const pickUp: SoundRecipe = (s, groove) => {
+  const chord = chordAt(groove.beat);
+  s.tone({
+    type: 'triangle',
+    frequency: degree(chordDegree(chord, 12)),
+    to: degree(chordDegree(chord, 12, 1)),
+    duration: 0.07,
+    gain: 0.05,
+  });
   s.noise({ filter: 'bandpass', frequency: 3400, q: 6, duration: 0.025, gain: 0.03 });
 };
 
 /** Mosaic: the dragged piece finds a new place where it fits (very soft, it repeats). */
-export const snapHint: SoundRecipe = (s) =>
-  s.tone({ type: 'sine', frequency: degree(16), duration: 0.04, gain: 0.018 });
+export const snapHint: SoundRecipe = (s, groove) =>
+  s.tone({
+    type: 'sine',
+    frequency: degree(chordDegree(chordAt(groove.beat), 16)),
+    duration: 0.04,
+    gain: 0.018,
+  });
 
 /** Mosaic: a piece let go away from a place: it slides back into the hand. */
-export const putBack: SoundRecipe = (s) => {
+export const putBack: SoundRecipe = (s, groove) => {
+  const chord = chordAt(groove.beat);
   s.noise({ filter: 'lowpass', frequency: 1400, to: 500, duration: 0.14, gain: 0.04 });
-  s.tone({ type: 'triangle', frequency: degree(9), to: degree(5), duration: 0.12, gain: 0.05 });
+  s.tone({
+    type: 'triangle',
+    frequency: degree(chordDegree(chord, 9)),
+    to: degree(chordDegree(chord, 5)),
+    duration: 0.12,
+    gain: 0.05,
+  });
 };
 
 /** Mosaic: a new hand dealt, three pieces landing one after the other. */
-export const deal: SoundRecipe = (s) => {
-  [11, 13, 15].forEach((step, i) => {
+export const deal: SoundRecipe = (s, groove) => {
+  const chord = chordAt(groove.beat);
+  [0, 1, 2].forEach((n, i) => {
     s.tone({
       type: 'triangle',
-      frequency: degree(step),
+      frequency: degree(chordDegree(chord, 11, n)),
       duration: 0.06,
       gain: 0.04,
       start: i * 0.07,
@@ -283,10 +380,11 @@ export const newRecord: SoundRecipe = (s) => {
   });
 };
 
-/** Mosaic: ceramic breaking, lower and duller than glass, richer with the streak. */
+/** Mosaic: ceramic breaking, lower and duller than glass, on the chord, higher with the streak. */
 export const ceramicBreak =
   (lines: number, streak: number): SoundRecipe =>
-  (s) => {
+  (s, groove) => {
+    const chord = chordAt(groove.beat);
     s.noise({
       filter: 'bandpass',
       frequency: 1600,
@@ -295,11 +393,11 @@ export const ceramicBreak =
       gain: 0.2,
     });
     s.noise({ filter: 'highpass', frequency: 4500, duration: 0.12, gain: 0.07, start: 0.02 });
-    const base = 7 + Math.min(streak - 1, 6);
-    for (let i = 0; i < 2 + lines; i++) {
+    const from = 7 + Math.min(streak - 1, 4);
+    for (let i = 0; i < Math.min(2 + lines, 6); i++) {
       s.tone({
         type: 'triangle',
-        frequency: degree(base + i),
+        frequency: degree(chordDegree(chord, from, i)),
         duration: 0.22,
         gain: 0.05,
         start: i * 0.04,
@@ -355,14 +453,15 @@ export const splash: SoundRecipe = (s) => {
     });
 };
 
-/** Sand: a region swept away, brighter with more regions at once, a note higher at each step of a combo. */
+/** Sand: a region swept away, the chord brighter with more regions at once, a note higher at each step of a combo. */
 export const sweep =
   (regions: number, multiplier = 1): SoundRecipe =>
-  (s) => {
+  (s, groove) => {
+    const chord = chordAt(groove.beat);
     if (multiplier >= 2) {
       s.tone({
         type: 'triangle',
-        frequency: degree(14 + Math.min(multiplier, 10)),
+        frequency: degree(chordDegree(chord, 7, Math.min(multiplier, 10) - 2)),
         duration: 0.35,
         gain: 0.05,
         start: 0.12,
@@ -376,9 +475,9 @@ export const sweep =
       gain: 0.12,
       attack: 0.05,
     });
-    [0, 2, 4, 5].slice(0, 1 + regions).forEach((step, i) =>
+    [0, 1, 2, 3].slice(0, 1 + regions).forEach((n, i) =>
       s.tone({
-        frequency: degree(12 + step),
+        frequency: degree(chordDegree(chord, 12, n)),
         duration: 0.45,
         gain: 0.05,
         start: 0.05 + i * 0.06,

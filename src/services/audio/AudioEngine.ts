@@ -1,8 +1,13 @@
+import type { Groove } from '@/fx/harmony';
 import { CALM_BPM, Music } from './Music';
 import { createNoiseBuffer, Synth } from './Synth';
 
-/** A sound: a few scheduled notes and noise bursts. */
-export type SoundRecipe = (synth: Synth) => void;
+/**
+ * A sound: a few scheduled notes and noise bursts. It knows where the music
+ * is (`groove`), so that a gesture can play along: a note of the chord
+ * playing, stronger on the beat.
+ */
+export type SoundRecipe = (synth: Synth, groove: Groove) => void;
 
 type ContextFactory = () => AudioContext;
 
@@ -101,6 +106,15 @@ export class AudioEngine {
     this.music?.setDanger(this.danger);
   }
 
+  /**
+   * A game with its own pulse (the Rhythm mode): its beat `count` (1 the
+   * first, a bar every four) falls now, and the music's beats follow it.
+   */
+  pulse(count: number): void {
+    if (this.context?.state !== 'running') return;
+    this.music?.follow(count);
+  }
+
   /** The player got out of danger: the music opens and resolves. */
   relief(): void {
     this.danger = 0;
@@ -118,9 +132,9 @@ export class AudioEngine {
   }
 
   play(recipe: SoundRecipe): void {
-    if (!this.synth || this.muted || this.volume === 0) return;
+    if (!this.synth || !this.music || this.muted || this.volume === 0) return;
     if (this.context?.state !== 'running') return;
-    recipe(this.synth);
+    recipe(this.synth, this.music.groove());
   }
 
   /** A bus: straight to the master, plus a share sent to the room. */

@@ -1,4 +1,5 @@
 import { Tone } from '@/core/Tone';
+import { PlayerVoice } from '@/fx/PlayerVoice';
 import * as sounds from '@/fx/sounds';
 import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
 import type { ReactionKind } from '../engine/SandReactions';
@@ -16,9 +17,10 @@ const REACTION_SOUNDS: Readonly<Partial<Record<ReactionKind, SoundRecipe>>> = {
   sprout: sounds.sprout,
 };
 
-/** Sounds and vibrations of the sand well. */
+/** Sounds and vibrations of the sand well; the player's gestures play along with the music. */
 export class SandSoundscape {
   private lastQuiet = 0;
+  private readonly voice = new PlayerVoice();
 
   constructor(
     private readonly audio: AudioEngine,
@@ -28,14 +30,15 @@ export class SandSoundscape {
   attach(session: SandSession): () => void {
     const { audio, haptics } = this;
     const offs = [
-      session.onGame('move', () => audio.play(sounds.tick)),
-      session.onGame('rotate', () => audio.play(sounds.rotate)),
+      session.onGame('move', () => audio.play(this.voice.move())),
+      session.onGame('rotate', () => audio.play(this.voice.rotate())),
       session.onGame('hardDrop', () => haptics.pulse(10)),
       session.onGame('lock', ({ piece }) => {
         if (piece.tone === Tone.Lightning) return;
         const liquid =
           piece.tone === Tone.Water || piece.tone === Tone.Oil || piece.tone === Tone.Acid;
         audio.play(liquid ? sounds.splash : piece.tone === Tone.Ice ? sounds.freeze : sounds.pour);
+        audio.play(sounds.settle);
       }),
       session.onGame('strike', ({ kind }) => {
         audio.play(sounds.zap(kind === 'shock'));

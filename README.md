@@ -30,6 +30,9 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 - **La tension de l'échec** : en danger, la musique presse et un cœur bat, le verre du
   puits se fend d'or ; une ligne sauvée au bord du gouffre compte double, une défaite
   brise le puits.
+- **Des gestes qui jouent la musique** : chaque rotation joue la note suivante de l'accord
+  qui sonne, chaque pièce posée sa basse, chaque effacement l'accord entier ; sur le temps,
+  plus fort. En Rythme, la musique suit la pulsation du mode.
 - **Écran titre vivant** : une boucle de vraies parties montre, avant même de jouer, ce
   qu'aucun autre jeu de blocs n'a : les éléments du Sable, les puits qui se retournent,
   basculent et se reflètent, les quatre Gardiens de la faille.

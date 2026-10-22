@@ -3,6 +3,37 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.21.0] — 22/10/2026
+
+Lot C, deuxième point : des gestes qui jouent la musique.
+
+### Ajouté
+
+- **Les gestes jouent avec la musique** : chaque son du joueur prend ses notes dans l'accord
+  qui sonne (ré mineur, si♭, fa, do), au lieu de notes fixes de la gamme. Aucun son n'attend le
+  temps pour partir : la réponse reste immédiate ; un geste qui tombe sur le temps sonne plus
+  fort.
+  - **Rotations** : chacune joue la note suivante de l'accord, en montant puis en redescendant
+    sur une octave et demie. Tourner les pièces dessine une mélodie au-dessus de la musique ;
+    elle continue d'une pièce à l'autre et passe à la note la plus proche quand l'accord change.
+  - **Pièces posées** (Chute, Tour, Sable, Mosaïque) : la fondamentale de l'accord, comme une
+    basse, avec sa quinte quand la pose tombe sur le temps.
+  - **Effacements** : les éclats de verre, le balayage du Sable et la céramique de la Mosaïque
+    égrènent l'accord en cours, plus haut à chaque combo ; quatre lignes d'un coup font gronder
+    sa fondamentale.
+  - Déplacements, réserve et gestes de la Mosaïque (prise, aimantation, retour, nouvelle main)
+    prennent aussi leurs notes dans l'accord.
+- **Le mode Rythme mène la musique** : elle passe au tempo du mode (100 BPM, 5 de plus par
+  niveau) et cale ses temps et ses mesures sur sa pulsation. Avant, la musique gardait son
+  propre tempo (84 BPM) sous celui du mode.
+
+### Modifié
+
+- L'arpège cristallin de la musique choisit ses notes dans l'accord en cours : plus de fa sur
+  l'accord de do (qui contient mi), ni de la sur celui de si♭.
+- La note de chaque palier du combo du Sable suit l'accord et monte moins haut (×10 atteignait
+  un do suraigu).
+
 ## [1.20.0] — 22/10/2026
 
 Lot C, premier point : le combo du Sable.

@@ -1,3 +1,4 @@
+import { PlayerVoice } from '@/fx/PlayerVoice';
 import * as sounds from '@/fx/sounds';
 import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
 import type { Haptics } from '@/services/Haptics';
@@ -16,10 +17,13 @@ const NOTICE_SOUNDS: Readonly<Record<string, SoundRecipe>> = {
 
 /**
  * Sounds and vibrations of the falling family: it listens to the engine and
- * plays the matching synthesised sound, in step with the visual effects.
+ * plays the matching synthesised sound, in step with the visual effects. The
+ * player's gestures play along with the music (PlayerVoice), and the Rhythm
+ * mode's pulse leads it.
  */
 export class FallingSoundscape {
   private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+  private readonly voice = new PlayerVoice();
   private hardDropped = false;
   /** While a hard-dropped piece is shown falling, its landing and clear sound when it lands. */
   private landingIn = 0;
@@ -34,8 +38,8 @@ export class FallingSoundscape {
   attach(session: FallingSession): () => void {
     const { audio, haptics } = this;
     const offs = [
-      session.onGame('move', () => audio.play(sounds.tick)),
-      session.onGame('rotate', () => audio.play(sounds.rotate)),
+      session.onGame('move', () => audio.play(this.voice.move())),
+      session.onGame('rotate', () => audio.play(this.voice.rotate())),
       session.onGame('hold', () => audio.play(sounds.hold)),
       session.onGame('hardDrop', ({ distance }) => {
         this.hardDropped = true;
@@ -89,7 +93,10 @@ export class FallingSoundscape {
         audio.play(sounds.fusion(chain));
         haptics.pulse(16 + chain * 8);
       }),
-      session.onGame('beat', ({ count }) => audio.play(count % 4 === 1 ? sounds.kick : sounds.hat)),
+      session.onGame('beat', ({ count }) => {
+        audio.pulse(count);
+        audio.play(count % 4 === 1 ? sounds.kick : sounds.hat);
+      }),
       session.onGame('groove', ({ level, onBeat }) => {
         if (onBeat) audio.play(sounds.onBeat(level));
       }),
