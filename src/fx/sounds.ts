@@ -355,10 +355,19 @@ export const splash: SoundRecipe = (s) => {
     });
 };
 
-/** Sand: a region swept away, brighter with more regions at once. */
+/** Sand: a region swept away, brighter with more regions at once, a note higher at each step of a combo. */
 export const sweep =
-  (regions: number): SoundRecipe =>
+  (regions: number, multiplier = 1): SoundRecipe =>
   (s) => {
+    if (multiplier >= 2) {
+      s.tone({
+        type: 'triangle',
+        frequency: degree(14 + Math.min(multiplier, 10)),
+        duration: 0.35,
+        gain: 0.05,
+        start: 0.12,
+      });
+    }
     s.noise({
       filter: 'highpass',
       frequency: 2000,
@@ -376,6 +385,12 @@ export const sweep =
       }),
     );
   };
+
+/** A combo ran dry: two notes falling, softly. */
+export const comboLost: SoundRecipe = (s) => {
+  s.tone({ type: 'triangle', frequency: degree(12), to: degree(7), duration: 0.35, gain: 0.04 });
+  s.tone({ frequency: degree(9), to: degree(5), duration: 0.4, gain: 0.03, start: 0.08 });
+};
 
 /** Sand: fire burning a region. */
 export const crackle: SoundRecipe = (s) => {

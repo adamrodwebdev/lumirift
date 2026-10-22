@@ -14,7 +14,7 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 | Famille       | Modes                                                                                     | Matière         |
 | ------------- | ----------------------------------------------------------------------------------------- | --------------- |
 | **Chute**     | Classique, Marée, Renversement, Chroma, Miroir, Fusion, Bascule, Silhouette, Rythme, Duel | Cristal facetté |
-| **Sable**     | Sable : les pièces se désagrègent en grains ; eau, feu et vent                            | Grains          |
+| **Sable**     | Sable : les pièces se désagrègent en grains ; éléments, vent et combo jusqu'à ×10         | Grains          |
 | **Placement** | Mosaïque : grille 8 × 8, pièces à poser, cinq jokers                                      | Céramique       |
 | **Volume**    | Tour : le puits s'enroule en cylindre de verre                                            | Verre courbé    |
 

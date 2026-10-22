@@ -3,6 +3,24 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.20.0] — 22/10/2026
+
+Lot C, premier point : le combo du Sable.
+
+### Ajouté
+
+- **Jauge de combo du Sable** : un effacement remplit la jauge ; chaque effacement suivant
+  avant qu'elle soit vide multiplie ses points par 2, 3… jusqu'à ×10. Elle dure 9 s à ×1, de
+  moins en moins à chaque palier (5 s au plus serré), et les grands moments des éléments
+  (foudre, brasier, liane, glace) la regonflent. Dans le puits, un badge en coin montre
+  l'anneau qui se vide et le multiplicateur du prochain effacement ; « ×N » s'élève au-dessus
+  des points, le son monte d'une note à chaque palier, deux notes retombent quand la chaîne
+  s'éteint.
+
+### Corrigé
+
+- L'annonce d'un effacement du Sable parle de zones, plus de lignes.
+
 ## [1.19.1] — 22/10/2026
 
 Le premier écran sans attente : Lighthouse mobile passe de 93–97 à **100** en Performance.

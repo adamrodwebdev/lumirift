@@ -59,10 +59,11 @@ export class SandSoundscape {
           haptics.pulse([40, 30, 40, 30, 160]);
         }
       }),
-      session.onGame('clear', ({ regions }) => {
-        audio.play(sounds.sweep(regions));
+      session.onGame('clear', ({ regions, multiplier }) => {
+        audio.play(sounds.sweep(regions, multiplier));
         haptics.pulse(regions > 1 ? [30, 40, 70] : 30);
       }),
+      session.onGame('comboEnd', () => audio.play(sounds.comboLost)),
       session.onGame('quench', () => audio.play(sounds.hiss)),
       session.onGame('burn', () => {
         audio.play(sounds.crackle);

@@ -173,6 +173,7 @@ export class SandRenderer {
       ctx.fillStyle = `rgb(255 248 220 / ${(effects.flash * 0.35).toFixed(3)})`;
       ctx.fillRect(0, 0, width, height);
     }
+    this.drawCombo(palette);
   }
 
   /**
@@ -435,6 +436,41 @@ export class SandRenderer {
   }
 
   /** The outline of a piece (or of where it would land). */
+  /**
+   * The combo badge, top right of the well: a ring that runs dry, and what
+   * the next clear would score with (red, pulsing, when nearly dry).
+   */
+  private drawCombo(palette: TonePalette): void {
+    const combo = this.view.comboGauge;
+    if (combo.fill <= 0 || this.effects.hidden) return;
+    const { ctx, cell, canvas } = this;
+    const radius = cell * 1.25;
+    const x = canvas.width - cell * 1.9;
+    const y = cell * 1.9;
+    const low = combo.fill < 0.3;
+    const color = low ? palette.danger : palette.accent;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = Math.max(2, cell * 0.22);
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = palette.wellGrid;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha =
+      low && this.effects.motion ? 0.65 + 0.35 * Math.sin(performance.now() / 90) : 1;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * combo.fill);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.font = `900 ${Math.round(cell * 0.85)}px ui-rounded, system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`×${combo.next}`, x, y + cell * 0.04);
+    ctx.globalAlpha = 1;
+    ctx.lineCap = 'butt';
+  }
+
   /** The next piece in red where it would appear, when the sand leaves it no room to enter. */
   private drawSpawnWarning(piece: SandPiece, grain: number, palette: TonePalette): void {
     const { ctx } = this;

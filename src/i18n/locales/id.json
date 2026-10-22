@@ -137,6 +137,7 @@
   "notice": {
     "closeCall": "Nyaris! +{value}",
     "lines": "{n} baris dihapus",
+    "regions": "Satu area terhapus | {n} area terhapus",
     "combo": "Kombo × {n}",
     "levelUp": "Level {level}",
     "chargeGained": "Muatan pembalikan baru",

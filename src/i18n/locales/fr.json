@@ -137,6 +137,7 @@
   "notice": {
     "closeCall": "De justesse ! +{value}",
     "lines": "Une ligne effacée | {n} lignes effacées",
+    "regions": "Une zone effacée | {n} zones effacées",
     "combo": "Combo × {n}",
     "levelUp": "Niveau {level}",
     "chargeGained": "Nouvelle charge de renversement",
