@@ -12,6 +12,8 @@ export default defineConfigWithVueTs(
       'reports/**',
       'test-results/**',
       'playwright-report/**',
+      // Other sessions' git worktrees, made by the desktop app inside the project.
+      '.claude/worktrees/**',
     ],
   },
   pluginVue.configs['flat/recommended'],
