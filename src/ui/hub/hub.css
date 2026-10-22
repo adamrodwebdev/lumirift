@@ -15,7 +15,7 @@
 }
 
 /* Wide screens: the content keeps a readable width, centred (`cqw`: the pages' width). */
-@media (min-width: 1280px) {
+@media (width >= 80rem) {
   .page {
     padding-inline: max(var(--space-6), (100cqw - 84rem) / 2);
   }
@@ -44,5 +44,14 @@
 @container hub (max-height: 44rem) {
   .page__lead {
     display: none;
+  }
+}
+
+/* A tiny window (a 400 % zoom, 320 × 256): the page scrolls rather than cut what it holds. */
+@container hub (height < 20rem) {
+  .page {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
   }
 }

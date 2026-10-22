@@ -180,6 +180,8 @@ onMounted(async () => {
     formatPoints: (points) => format.number(points),
     still: still || settings.current.effects === 'off',
     onScene: (id) => (shownScene.value = id),
+    // Touch screens: 60 frames a second at most, like the game.
+    maxFps: isTouchScreen() ? 60 : null,
   });
   liveObserver.observe(box);
   liveObserver.observe(stage);
@@ -361,7 +363,7 @@ onBeforeUnmount(() => {
   gap: var(--space-2);
   min-width: 0;
   min-height: 3.6rem;
-  padding: 0.4rem var(--space-3) 0.4rem 0.45rem;
+  padding: 0.4rem var(--space-3);
   border: 1px solid color-mix(in srgb, var(--tint) 45%, transparent);
   border-radius: 1.15rem;
   background: linear-gradient(
@@ -382,8 +384,9 @@ onBeforeUnmount(() => {
   transform: scale(0.97);
 }
 
+/* A phone held upright (the base): the cards share its width; their words take the icons' room. */
 .challenge__icon {
-  display: grid;
+  display: none;
   flex: none;
   place-items: center;
   width: 2.1rem;
@@ -406,8 +409,14 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
+/* A long name (Golem de céramique) takes two lines rather than losing its end. */
 .challenge__text strong {
+  display: -webkit-box;
   font-size: 0.85rem;
+  white-space: normal;
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .challenge__text small {
@@ -439,23 +448,21 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0.8rem color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-/* A phone held upright: the cards share its width; their words need the icons' room. */
-@media (max-width: 29.99rem) {
+/* From 30rem (a phone on its side, a tablet, a desktop): each card has room for its icon. */
+@media (width >= 30rem) {
   .challenge {
-    padding-left: var(--space-3);
+    padding-left: 0.45rem;
   }
 
   .challenge__icon {
-    display: none;
+    display: grid;
   }
 
-  /* A long name (Golem de céramique) takes two lines rather than losing its end. */
   .challenge__text strong {
-    display: -webkit-box;
-    white-space: normal;
-    line-height: 1.15;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    display: block;
+    white-space: nowrap;
+    line-height: inherit;
+    -webkit-line-clamp: none;
   }
 }
 
@@ -656,7 +663,9 @@ onBeforeUnmount(() => {
   font-size: 0.85rem;
 }
 
+/* Play and the day's objectives adapt to their column (a container query). */
 .home__cta {
+  container: cta / inline-size;
   display: grid;
   justify-items: center;
   gap: var(--space-3);
@@ -831,6 +840,71 @@ onBeforeUnmount(() => {
 
   .home__cta {
     grid-area: cta;
+  }
+}
+/*
+ * A narrow column for Play (a 200 % zoom, a small window): a smaller key and
+ * word, sized to the column, and the objectives may take two lines.
+ */
+@container cta (inline-size < 15rem) {
+  .play {
+    min-width: 0;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3) var(--space-3) var(--space-2);
+  }
+
+  .play__icon {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.8rem;
+  }
+
+  .play__text {
+    min-width: 0;
+  }
+
+  .play__label {
+    font-size: clamp(1.2rem, 10cqi, 1.9rem);
+  }
+
+  .goals {
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-inline: var(--space-3);
+    text-align: center;
+  }
+}
+
+/*
+ * A tiny window (a 400 % zoom, 320 × 256): one column that scrolls, every
+ * word whole; the live reel steps aside.
+ */
+@container hub (height < 20rem) {
+  .home__content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    min-height: 100%;
+    padding-inline: var(--space-2);
+  }
+
+  .home__live {
+    display: none;
+  }
+
+  .challenges {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .challenge__text strong,
+  .challenge__text small {
+    display: block;
+    overflow: visible;
+    white-space: normal;
+    -webkit-line-clamp: none;
   }
 }
 </style>

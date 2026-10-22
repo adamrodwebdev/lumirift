@@ -154,6 +154,9 @@ Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAME
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 13
   modes, une partie complète, défi du jour, réglages retenus, menu (onglets, glissement,
   carte, Atelier), clavier seul.
+- Garde responsive : aucun défilement horizontal de 320 à 2560 px (tous les 20 px), et
+  quatre tailles clés : petit téléphone et téléphone en paysage au toucher, zooms 200 % et
+  400 % (cibles tactiles, textes du HUD, part du puits).
 - Lighthouse : 100 dans les quatre catégories, mobile et bureau (seuils exigés : 98 en
   Performance, 95 dans les trois autres).
 - Intégration continue : `.github/workflows/ci.yml` rejoue tout cela à chaque envoi.

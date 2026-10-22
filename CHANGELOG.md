@@ -3,6 +3,56 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.26.0] — 22/10/2026
+
+Le responsive de bout en bout, après l'audit du 22/10 (directive mise à jour) : chaque taille
+vérifiée, du petit téléphone au 2560 px et aux zooms 200 % et 400 %.
+
+### Corrigé
+
+- **Mosaïque en paysage** : la légende des touches (premières parties, au clavier) ouvrait une
+  colonne de trop, au détriment du plateau ; elle a sa place sous les jokers. Plateau de
+  330 px au lieu de 232 en 821 × 462 (la plus petite fenêtre de CrazyGames), et de toute la
+  hauteur au lieu de 64 px au zoom 200 %.
+- **Barre du haut à 320 px** : le bouton Réglages débordait de 11 px. Sur une barre étroite,
+  les étoiles gardent leur nombre sans le total ; au zoom 400 %, le niveau se lit sur son
+  anneau.
+- **Zooms 200 % et 400 %** : le bouton Jouer et les objectifs du jour ne sont plus coupés. Au
+  zoom 400 % (320 × 256), l'accueil et les modes défilent en une colonne, sans mot coupé, et
+  le jeu garde un puits visible.
+- **Duel sur petit téléphone** : ses cinq compteurs dépassaient des deux côtés de l'écran ; ils
+  tiennent sur deux ou trois lignes, et le nom de l'IA dans sa colonne.
+
+### Modifié
+
+- **HUD lisible** : libellés de 14 px au moins (9 à 10 px avant), chiffres de 16 px. Dans un
+  mode chargé (trois compteurs ou plus), chaque compteur tient sur une ligne, libellé puis
+  nombre. En portrait, les pièces suivantes se passent d'étiquette (leur zone garde son nom
+  pour les lecteurs d'écran).
+- **Grands écrans** : le HUD grandit avec l'écran (×1,17 en 1080p, ×1,4 en 1440p, ×1,5 au
+  plus).
+- En paysage court, la légende des touches garde l'essentiel : tourner dans l'autre sens et
+  la surcharge (qui a son bouton) restent dans la fenêtre des touches.
+- Cibles tactiles de 44 px dans les réglages (choix segmentés) et sur les tuiles de mode du
+  plus petit téléphone.
+- Compteurs du Duel aux libellés plus courts : « En approche », « Envoyées », « Lignes IA ».
+- **Écrans tactiles** : 60 images par seconde au plus (un téléphone à 120 Hz dessinait deux
+  fois plus pour le même jeu, et chauffait), pour le jeu comme pour le carrousel de
+  l'accueil ; la boucle s'arrête en pause et sous la fenêtre de fin de partie.
+- Points de rupture en `rem` (ils suivent la taille de police choisie), styles mobile-first,
+  zones sûres avec valeur de repli et `max()` (plus de place sur les téléphones à encoche) ;
+  le débordement horizontal n'est plus masqué (`overflow-x: hidden` retiré de `body`).
+- Container queries pour les composants qui dépendent de leur place : compteurs du HUD,
+  barre du haut, bouton Jouer, tuiles de mode.
+
+### Ajouté
+
+- `e2e/responsive.spec.ts` : aucun défilement horizontal de 320 à 2560 px, tous les 20 px, au
+  menu et dans chaque famille (éléments fautifs nommés, contrôles coupés par le bord
+  détectés) ; quatre tailles clés (320 × 568 et 844 × 390 au toucher, zooms 200 % et 400 %) :
+  cibles tactiles, textes du HUD, part du puits, accueil à 400 % ; l'option boutons à part.
+  Il remplace l'ancien balayage de 320 à 1920 px.
+
 ## [1.25.0] — 22/10/2026
 
 Lot C, cinquième point : la surcharge de la faille, pour sauver une partie.

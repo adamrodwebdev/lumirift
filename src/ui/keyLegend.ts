@@ -43,7 +43,8 @@ const MOVE = row('controls.move', main('left', 'right'));
 const SOFT_DROP = minor(row('controls.softDrop', main('softDrop')));
 const HARD_DROP = row('controls.hardDrop', main('hardDrop'));
 const ROTATE = row('controls.rotateCw', every('rotateCw'));
-const ROTATE_BACK = row('controls.rotateCcw', every('rotateCcw'));
+// Turning the other way can step aside where room is short: the keys window lists every key.
+const ROTATE_BACK = minor(row('controls.rotateCcw', every('rotateCcw')));
 const HOLD = row('controls.hold', main('hold'));
 // The pause also has its button on screen.
 const PAUSE = minor(row('controls.pause', main('pause')));
@@ -73,8 +74,8 @@ const BY_FAMILY: Readonly<Record<FamilyId, readonly RowSpec[]>> = {
   ],
 };
 
-/** The rift surge, in every mode that has one (see `surgeTuningFor`). */
-const SURGE = row('surge.name', main('surge'));
+/** The rift surge, in every mode that has one (see `surgeTuningFor`); its button shows its key. */
+const SURGE = minor(row('surge.name', main('surge')));
 
 /** A mode with a key of its own (the Flip's ability). */
 const EXTRA: Readonly<Partial<Record<ModeId, RowSpec>>> = {

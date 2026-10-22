@@ -43,9 +43,14 @@ const rows = computed(() => keyLegendFor(props.family, props.modeId, bindings.va
 </template>
 
 <style scoped>
+/*
+ * Sizes in `em`: the legend takes the size of where it stands (the HUD's,
+ * larger on large screens, or a window's). What a key does reads at 14 px at
+ * least; a key's letters at 12 px, in bold capitals.
+ */
 .legend {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.35em;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -53,47 +58,46 @@ const rows = computed(() => keyLegendFor(props.family, props.modeId, bindings.va
 
 .legend__row {
   display: grid;
-  grid-template-columns: minmax(4.6rem, auto) minmax(0, 1fr);
+  grid-template-columns: minmax(4.6em, auto) minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-2);
+  gap: 0.5em;
 }
 
 .legend__keys {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0.2rem;
+  gap: 0.2em;
 }
 
 /* A key: a raised cap, its label in the display face. */
 .legend__key {
   display: grid;
   place-items: center;
-  min-width: 1.55rem;
-  height: 1.55rem;
-  padding: 0 0.3rem;
+  min-width: 2.2em;
+  height: 2.2em;
+  padding: 0 0.4em;
   border: 1px solid var(--border);
   border-bottom-width: 3px;
-  border-radius: 0.4rem;
+  border-radius: 0.55em;
   background: var(--surface-2);
   color: var(--text);
   font-family: var(--font-display);
-  font-size: 0.68rem;
+  font-size: 0.75em;
   font-weight: 800;
   line-height: 1;
 }
 
 .legend__key--wide {
-  padding: 0 0.45rem;
+  padding: 0 0.6em;
   font-family: var(--font-ui);
-  font-size: 0.62rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .legend__action {
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: 0.875em;
   line-height: 1.2;
 }
 </style>

@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                    |
-| ------- | ---------- | ------------------------- |
-| 1.25    | 22/10/2026 | La surcharge de la faille |
+| Version | Date       | Statut                     |
+| ------- | ---------- | -------------------------- |
+| 1.26    | 22/10/2026 | Responsive de bout en bout |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -930,14 +930,25 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 - Rendu du puits sur `<canvas>` 2D, boucle `requestAnimationFrame`. Dans le moteur, les
   tests de collision et le calcul de la pièce fantôme n'allouent rien (grille `Uint8Array`,
   orientations précalculées, sondes par décalage). 60 images/s visées sur téléphone d'entrée
-  de gamme.
+  de gamme, et jamais plus sur un écran tactile (`FrameCap` : un téléphone à 120 Hz
+  dessinerait deux fois plus pour le même jeu) ; la boucle s'arrête en pause et sous la
+  fenêtre de fin.
 
 ### 4.2 Responsive
 
-- **Mobile d'abord** : styles de base pour ~360 px, puis `min-width` aux points de rupture
-  640 / 768 / 1024 / 1280 px.
-- Aucun défilement horizontal de 320 à 1920 px ; largeurs fluides (`%`, `fr`, `clamp()`,
-  `min()`), typographie fluide, espacements en `rem`.
+- **Mobile d'abord** : styles de base pour ~360 px, puis `min-width` en `rem` (40 / 48 / 64 /
+  80rem, soit 640 / 768 / 1024 / 1280 px à la taille par défaut), placés où le contenu casse ;
+  les hauteurs et l'orientation pour le squelette des écrans. Les composants qui dépendent de
+  leur place s'adaptent par **container queries** (compteurs du HUD, barre du haut, bouton
+  Jouer, pages du menu).
+- Aucun défilement horizontal de 320 à 2560 px (test automatique tous les 20 px) ; largeurs
+  fluides (`%`, `fr`, `clamp()`, `min()`), typographie fluide, espacements en `rem`.
+- **HUD** (1.26) : libellés de 14 px au moins, chiffres de 16 px, à la plus petite taille ;
+  tailles en `em` sous `--hud-size` (16 px jusqu'au portable, puis selon le petit côté de
+  l'écran : ×1,4 en 1440p, ×1,5 au plus). Un mode chargé (trois compteurs ou plus) les met
+  chacun sur une ligne.
+- **Zooms 200 % et 400 %** (WCAG 1.4.10) : au plus petit (320 × 256), le menu passe en une
+  colonne qui défile, sans texte coupé ; le jeu, exempté, garde son puits visible.
 - Le puits occupe la hauteur disponible (`dvh`) en gardant son rapport 1:2.
 - **Écran de jeu** (1.7) : aucune page ne défile ni n'a d'en-tête pendant une partie. Une
   seule grille, aux zones nommées : en **portrait**, une bande en haut (pause, score, son ;
@@ -951,7 +962,9 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   (vérifié par un test de bout en bout ; le défilement interne ne reste qu'en dernier
   recours, texte agrandi ou très petit écran). En paysage, les plus chargées passent sur deux
   colonnes (pause et gestes, réglages, résultats, améliorations, fiche de niveau).
-- Cibles tactiles ≥ 44 × 44 px ; aucune action réservée au survol.
+- Cibles tactiles ≥ 44 × 44 px, 48 px pour les commandes fréquentes du jeu (boutons à
+  l'écran, réserve) ; aucune action réservée au survol. Zones sûres avec valeur de repli,
+  en `max()` avec les marges.
 
 ### 4.3 Accessibilité (complétée au lot 11)
 
@@ -1498,7 +1511,10 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   installé, en **mobile (390 × 844) et bureau (1280 × 800)** : accueil, ouverture, pause,
   reprise et sortie des 13 modes, partie complète au clavier jusqu'au record, défi du jour,
   Mosaïque au clavier, langue et thème retenus, Atelier, console sans erreur, navigation au
-  clavier seul, aucun défilement horizontal de 320 à 1920 px.
+  clavier seul. **Garde responsive** (`e2e/responsive.spec.ts`) : aucun défilement
+  horizontal de 320 à 2560 px tous les 20 px, puis quatre tailles clés (320 × 568 et
+  844 × 390 au toucher, zooms 200 % et 400 %) : cibles tactiles, textes du HUD, part du
+  puits.
 - **Audits d'accessibilité** axe-core WCAG 2.2 AA (§ 4.3).
 - **Lighthouse** mobile et bureau : 100 dans les quatre catégories (`npm run lighthouse`).
 - `npm run verify` (lint, format, types y compris des tests e2e, tests, build) avant
@@ -1516,9 +1532,10 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
 ## 8. Critères d'acceptation
 
 1. Les quatorze modes sont jouables du début à la fin, au clavier et au tactile.
-2. Lighthouse sur mobile, build de production de notre site : Performance ≥ 98, les trois
-   autres catégories ≥ 95.
-3. Aucun défilement horizontal de 320 à 1920 px ; le puits reste entièrement visible.
+2. Lighthouse, build de production de notre site : 100 dans les quatre catégories, mobile
+   (le pire de trois passages) et bureau.
+3. Aucun défilement horizontal de 320 à 2560 px ; le puits reste entièrement visible ;
+   zooms 200 % et 400 % sans perte de contenu.
 4. Les trois langues sont complètes ; changer de langue ne recharge pas la page.
 5. Le thème sombre s'applique sans flash au chargement.
 6. Les destructions décrites au § 3.5 tiennent 60 images/s sur un téléphone d'entrée de
@@ -1574,44 +1591,45 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 
 ## 12. Journal des versions du document
 
-| Version | Date       | Changements                                                                                                                                                       |
-| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                                                                                |
-| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations.                                                               |
-| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9.                                                               |
-| 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5).                                                           |
-| 0.5     | 12/10/2026 | Direction artistique et son (§ 3.5), personnalisation commerciale (§ 3.6), distribution : démo portfolio et portails après la 1.0 (§ 3.7) ; lots 3 à 13.          |
-| 0.6     | 12/10/2026 | Lot 3 : interface (§ 5.6), mesures Lighthouse et budget (§ 5.7), tests de l'interface (§ 6).                                                                      |
-| 0.7     | 12/10/2026 | Lot 4 : effets réalisés et profils (§ 3.5), délai après effacement (§ 3.1), architecture des effets (§ 5.8), mesures (§ 5.7).                                     |
-| 0.8     | 12/10/2026 | Lot 5 : règles détaillées de Fusion (seuil porté à 6), Bascule (sens corrigé), Silhouette, Rythme ; architecture des modes avancés (§ 5.9).                       |
-| 0.9     | 12/10/2026 | Lot 6 : règles et niveaux du Duel (§ 3.2), architecture du duel et de l'IA (§ 5.10).                                                                              |
-| 0.10    | 12/10/2026 | Lot 7 : règles complètes de la Mosaïque et de ses jokers (§ 3.2), famille Placement et socle de couleurs partagé (§ 5.11).                                        |
-| 0.11    | 12/10/2026 | Lot 8 : règles complètes du Sable et de ses éléments (§ 3.2), famille Sable (§ 5.12).                                                                             |
-| 0.12    | 12/10/2026 | Lot 9 : règles et caméra de la Tour (§ 3.2), famille Volume (§ 5.13), séparation du rendu et des règles (§ 5.14).                                                 |
-| 0.13    | 12/10/2026 | Règles des éléments du Sable, de la Mosaïque et cinq niveaux d'IA, fondés sur une recherche des jeux du genre (§ 3.2).                                            |
-| 0.14    | 12/10/2026 | Lot 10 : progression et personnalisation (§ 3.6), architecture (§ 5.15) ; musique d'ambiance non retenue pour la 1.0.                                             |
-| 1.0     | 12/10/2026 | Lot 11 : accessibilité vérifiée (§ 4.3), référencement et partage (§ 4.8), tests de bout en bout et CI (§ 6), état des critères d'acceptation (§ 8). Version 1.0. |
-| 1.1     | 13/10/2026 | Campagne et dix améliorations (§ 3.2 bis, § 5.16), nouvel accueil et carrousel des modes (§ 3.2 ter).                                                             |
-| 1.2     | 13/10/2026 | Version CrazyGames : abstraction `Platform`, build, médias et contrôle des exigences (§ 3.7, CRAZYGAMES.md).                                                      |
-| 1.3     | 13/10/2026 | Lot 12 : démo du portfolio, éditions complète et démo (§ 3.7).                                                                                                    |
-| 1.4     | 14/10/2026 | Identité « Rift » (§ 3.8), première partie guidée, musique, Playgama (§ 3.7, PLAYGAMA.md), sans Échap ni Ctrl.                                                    |
-| 1.5     | 14/10/2026 | Nouveau nom : Lumirift (§ 3.9), vérification des marques et des domaines.                                                                                         |
-| 1.6     | 15/10/2026 | Publicités : pub récompensée facultative (doubler l'XP), interstitiel à toute sortie de fin de partie (§ 3.7).                                                    |
-| 1.7     | 20/10/2026 | La partie au doigt : gestes partout, boutons sur demande (§ 3.3), écran de jeu sans en-tête ni défilement, paysage (§ 4.2), chute et effacement animés (§ 5.6).   |
-| 1.8     | 20/10/2026 | Le menu à onglets : Accueil, Modes, Carte, Atelier sans défilement, glissement, rail en paysage, transition de la faille (§ 3.2 ter, § 5.6).                      |
-| 1.9     | 20/10/2026 | Les fenêtres en feuilles sans défilement, résultats mis en scène, garde à l'ouverture (§ 4.2, § 5.6).                                                             |
-| 1.10    | 20/10/2026 | Prêt pour CrazyGames : 1-1 calme, touches dessinées, console centrée, pubs par portail (§ 3.7), vidéos refaites.                                                  |
-| 1.11    | 21/10/2026 | Couleurs des pièces loin du standard du genre (§ 2), menus inchangés, médias refaits.                                                                             |
-| 1.12    | 21/10/2026 | Les éléments du Sable : huile, glace, foudre, graine, acide, vapeur et pluie, réactions entre eux, entrée fracassante du 1-1 (§ 3.2).                             |
-| 1.13    | 21/10/2026 | La Tour piégée : gemmes-bombes qui soufflent un secteur de la tour, réactions en chaîne, secteur visé avant la pose (§ 3.2).                                      |
-| 1.14    | 21/10/2026 | Premier Gardien de la faille : le Ver des dunes au niveau 2-7, phases, coups des éléments, récompense Écailles des dunes (§ 3.2).                                 |
-| 1.15    | 21/10/2026 | Principes des Gardiens ; le Golem de céramique au niveau 3-7 : pierres annoncées, parade, pierres qui se fissurent, récompense Kintsugi (§ 3.2).                  |
-| 1.16    | 21/10/2026 | L'Œil de la Tour au niveau 4-7 : regard tournant, charge annoncée, pierres, aveuglé par les bombes, récompense Éclats d'iris (§ 3.2).                             |
-| 1.17    | 21/10/2026 | Le Cœur de la faille au niveau 5-7 : battements annoncés, gravats porteurs d'éclats, miroir en dernière phase, récompense La Faille (§ 3.2).                      |
-| 1.18    | 22/10/2026 | Accrocher dès les premières secondes : boucle des moments forts sur l'accueil, promesse du Ver des dunes, 1-2 de pratique, guide plus discret (§ 3.2 ter, § 5.6). |
-| 1.19    | 22/10/2026 | La tension de l'échec : musique de danger et de délivrance, puits qui se fend, « Close call! », défaite mise en scène, dernières secondes (§ 3.8, § 5.6).         |
-| 1.20    | 22/10/2026 | Jauge de combo du Sable, jusqu'à ×10 (§ 3.2).                                                                                                                     |
-| 1.21    | 22/10/2026 | Des gestes qui jouent la musique : notes de l'accord en cours, basse à la pose, accent sur le temps ; le Rythme mène la musique (§ 3.8, § 5.6).                   |
-| 1.22    | 22/10/2026 | Commandes réglables : deux touches par action, échange, touches refusées, répétition DAS et ARR (§ 3.3, § 5.6).                                                   |
-| 1.23    | 22/10/2026 | Le défi des Gardiens : un Gardien par semaine pour tous, points × bonus de victoire, record de la semaine, XP au premier essai du jour (§ 3.2, § 5.6).            |
-| 1.25    | 22/10/2026 | La surcharge de la faille : jauge remplie par les lignes, huit secondes de temps ralenti au choix du joueur, bonus de sortie (§ 3.3, § 3.8, § 5.6).               |
+| Version | Date       | Changements                                                                                                                                                          |
+| ------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1     | 12/10/2026 | Création : cadrage complet, lot 0.                                                                                                                                   |
+| 0.2     | 12/10/2026 | Lot 1 : architecture du moteur (§ 5.3), équilibrage du Renversement, précision sur les allocations.                                                                  |
+| 0.3     | 12/10/2026 | Atelier des modes : 14 modes en 4 familles (§ 3.2), architecture `GameSession` (§ 5.4), lots 2 à 9.                                                                  |
+| 0.4     | 12/10/2026 | Lot 2 : Défi du jour transversal, précisions Marée, Renversement, Miroir ; session et registre (§ 5.5).                                                              |
+| 0.5     | 12/10/2026 | Direction artistique et son (§ 3.5), personnalisation commerciale (§ 3.6), distribution : démo portfolio et portails après la 1.0 (§ 3.7) ; lots 3 à 13.             |
+| 0.6     | 12/10/2026 | Lot 3 : interface (§ 5.6), mesures Lighthouse et budget (§ 5.7), tests de l'interface (§ 6).                                                                         |
+| 0.7     | 12/10/2026 | Lot 4 : effets réalisés et profils (§ 3.5), délai après effacement (§ 3.1), architecture des effets (§ 5.8), mesures (§ 5.7).                                        |
+| 0.8     | 12/10/2026 | Lot 5 : règles détaillées de Fusion (seuil porté à 6), Bascule (sens corrigé), Silhouette, Rythme ; architecture des modes avancés (§ 5.9).                          |
+| 0.9     | 12/10/2026 | Lot 6 : règles et niveaux du Duel (§ 3.2), architecture du duel et de l'IA (§ 5.10).                                                                                 |
+| 0.10    | 12/10/2026 | Lot 7 : règles complètes de la Mosaïque et de ses jokers (§ 3.2), famille Placement et socle de couleurs partagé (§ 5.11).                                           |
+| 0.11    | 12/10/2026 | Lot 8 : règles complètes du Sable et de ses éléments (§ 3.2), famille Sable (§ 5.12).                                                                                |
+| 0.12    | 12/10/2026 | Lot 9 : règles et caméra de la Tour (§ 3.2), famille Volume (§ 5.13), séparation du rendu et des règles (§ 5.14).                                                    |
+| 0.13    | 12/10/2026 | Règles des éléments du Sable, de la Mosaïque et cinq niveaux d'IA, fondés sur une recherche des jeux du genre (§ 3.2).                                               |
+| 0.14    | 12/10/2026 | Lot 10 : progression et personnalisation (§ 3.6), architecture (§ 5.15) ; musique d'ambiance non retenue pour la 1.0.                                                |
+| 1.0     | 12/10/2026 | Lot 11 : accessibilité vérifiée (§ 4.3), référencement et partage (§ 4.8), tests de bout en bout et CI (§ 6), état des critères d'acceptation (§ 8). Version 1.0.    |
+| 1.1     | 13/10/2026 | Campagne et dix améliorations (§ 3.2 bis, § 5.16), nouvel accueil et carrousel des modes (§ 3.2 ter).                                                                |
+| 1.2     | 13/10/2026 | Version CrazyGames : abstraction `Platform`, build, médias et contrôle des exigences (§ 3.7, CRAZYGAMES.md).                                                         |
+| 1.3     | 13/10/2026 | Lot 12 : démo du portfolio, éditions complète et démo (§ 3.7).                                                                                                       |
+| 1.4     | 14/10/2026 | Identité « Rift » (§ 3.8), première partie guidée, musique, Playgama (§ 3.7, PLAYGAMA.md), sans Échap ni Ctrl.                                                       |
+| 1.5     | 14/10/2026 | Nouveau nom : Lumirift (§ 3.9), vérification des marques et des domaines.                                                                                            |
+| 1.6     | 15/10/2026 | Publicités : pub récompensée facultative (doubler l'XP), interstitiel à toute sortie de fin de partie (§ 3.7).                                                       |
+| 1.7     | 20/10/2026 | La partie au doigt : gestes partout, boutons sur demande (§ 3.3), écran de jeu sans en-tête ni défilement, paysage (§ 4.2), chute et effacement animés (§ 5.6).      |
+| 1.8     | 20/10/2026 | Le menu à onglets : Accueil, Modes, Carte, Atelier sans défilement, glissement, rail en paysage, transition de la faille (§ 3.2 ter, § 5.6).                         |
+| 1.9     | 20/10/2026 | Les fenêtres en feuilles sans défilement, résultats mis en scène, garde à l'ouverture (§ 4.2, § 5.6).                                                                |
+| 1.10    | 20/10/2026 | Prêt pour CrazyGames : 1-1 calme, touches dessinées, console centrée, pubs par portail (§ 3.7), vidéos refaites.                                                     |
+| 1.11    | 21/10/2026 | Couleurs des pièces loin du standard du genre (§ 2), menus inchangés, médias refaits.                                                                                |
+| 1.12    | 21/10/2026 | Les éléments du Sable : huile, glace, foudre, graine, acide, vapeur et pluie, réactions entre eux, entrée fracassante du 1-1 (§ 3.2).                                |
+| 1.13    | 21/10/2026 | La Tour piégée : gemmes-bombes qui soufflent un secteur de la tour, réactions en chaîne, secteur visé avant la pose (§ 3.2).                                         |
+| 1.14    | 21/10/2026 | Premier Gardien de la faille : le Ver des dunes au niveau 2-7, phases, coups des éléments, récompense Écailles des dunes (§ 3.2).                                    |
+| 1.15    | 21/10/2026 | Principes des Gardiens ; le Golem de céramique au niveau 3-7 : pierres annoncées, parade, pierres qui se fissurent, récompense Kintsugi (§ 3.2).                     |
+| 1.16    | 21/10/2026 | L'Œil de la Tour au niveau 4-7 : regard tournant, charge annoncée, pierres, aveuglé par les bombes, récompense Éclats d'iris (§ 3.2).                                |
+| 1.17    | 21/10/2026 | Le Cœur de la faille au niveau 5-7 : battements annoncés, gravats porteurs d'éclats, miroir en dernière phase, récompense La Faille (§ 3.2).                         |
+| 1.18    | 22/10/2026 | Accrocher dès les premières secondes : boucle des moments forts sur l'accueil, promesse du Ver des dunes, 1-2 de pratique, guide plus discret (§ 3.2 ter, § 5.6).    |
+| 1.19    | 22/10/2026 | La tension de l'échec : musique de danger et de délivrance, puits qui se fend, « Close call! », défaite mise en scène, dernières secondes (§ 3.8, § 5.6).            |
+| 1.20    | 22/10/2026 | Jauge de combo du Sable, jusqu'à ×10 (§ 3.2).                                                                                                                        |
+| 1.21    | 22/10/2026 | Des gestes qui jouent la musique : notes de l'accord en cours, basse à la pose, accent sur le temps ; le Rythme mène la musique (§ 3.8, § 5.6).                      |
+| 1.22    | 22/10/2026 | Commandes réglables : deux touches par action, échange, touches refusées, répétition DAS et ARR (§ 3.3, § 5.6).                                                      |
+| 1.23    | 22/10/2026 | Le défi des Gardiens : un Gardien par semaine pour tous, points × bonus de victoire, record de la semaine, XP au premier essai du jour (§ 3.2, § 5.6).               |
+| 1.25    | 22/10/2026 | La surcharge de la faille : jauge remplie par les lignes, huit secondes de temps ralenti au choix du joueur, bonus de sortie (§ 3.3, § 3.8, § 5.6).                  |
+| 1.26    | 22/10/2026 | Responsive de bout en bout : HUD lisible (14/16 px) et à l'échelle des grands écrans, container queries, zooms 200 et 400 %, 60 images/s sur tactile (§ 4.1, § 4.2). |

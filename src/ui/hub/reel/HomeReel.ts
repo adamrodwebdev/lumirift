@@ -1,3 +1,4 @@
+import { FrameCap } from '@/app/FrameCap';
 import type { EffectsProfile } from '@/fx/EffectsProfile';
 import type { TonePalette } from '@/render/TonePalette';
 import {
@@ -97,6 +98,8 @@ export interface HomeReelOptions {
   readonly still: boolean;
   /** A moment comes on screen (its caption follows). */
   readonly onScene: (id: SceneId) => void;
+  /** Frames drawn per second at most (60 on touch screens); none by default. */
+  readonly maxFps?: number | null;
 }
 
 /**
@@ -116,12 +119,15 @@ export class HomeReel {
   private width = 0;
   private height = 0;
   private disposed = false;
+  private readonly cap: FrameCap;
 
   constructor(
     private readonly box: HTMLElement,
     private palette: TonePalette,
     private readonly options: HomeReelOptions,
-  ) {}
+  ) {
+    this.cap = new FrameCap(options.maxFps ?? null);
+  }
 
   /** The reel is shown: the first moment comes in, or the loop goes on. */
   start(): void {
@@ -129,10 +135,13 @@ export class HomeReel {
     if (!this.playing && !this.switching) void this.next();
     if (this.frame || this.options.still) return;
     this.last = performance.now();
+    this.cap.reset();
     const tick = (now: number) => {
-      const delta = Math.min(MAX_FRAME_MS, now - this.last);
-      this.last = now;
-      this.advance(delta);
+      if (this.cap.admits(now)) {
+        const delta = Math.min(MAX_FRAME_MS, now - this.last);
+        this.last = now;
+        this.advance(delta);
+      }
       this.frame = requestAnimationFrame(tick);
     };
     this.frame = requestAnimationFrame(tick);

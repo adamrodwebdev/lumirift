@@ -43,20 +43,21 @@ const shown = (n: number) =>
 </template>
 
 <style scoped>
+/* Sizes in `em`, like the rest of the HUD: 14 px at least. */
 .goal {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 0.15rem var(--space-2);
-  flex: 1 1 12rem;
+  gap: 0.15em 0.5em;
+  flex: 1 1 12em;
   min-width: 0;
-  padding: var(--space-2) var(--space-3);
+  padding: 0.5em 0.75em;
   border-radius: var(--radius);
   background: var(--surface-2);
 }
 
 .goal__level {
-  font-size: 0.75rem;
+  font-size: 0.875em;
   font-weight: 800;
   color: var(--accent);
 }
@@ -65,7 +66,7 @@ const shown = (n: number) =>
 .goal__text {
   display: -webkit-box;
   overflow: hidden;
-  font-size: 0.82rem;
+  font-size: 0.875em;
   font-weight: 700;
   line-height: 1.2;
   -webkit-line-clamp: 2;
@@ -73,14 +74,14 @@ const shown = (n: number) =>
 }
 
 .goal__count {
-  font-size: 0.8rem;
+  font-size: 0.875em;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
 
 .goal__bar {
   grid-column: 1 / -1;
-  block-size: 0.35rem;
+  block-size: 0.35em;
   border-radius: 999px;
   background: var(--surface);
   overflow: hidden;
@@ -94,7 +95,8 @@ const shown = (n: number) =>
   transition: inline-size 200ms ease;
 }
 
-@media (min-width: 1024px) {
+/* A desktop (the dashboard's column beside the well): the level above the goal. */
+@media (width >= 64rem) {
   .goal {
     flex: none;
     inline-size: 100%;

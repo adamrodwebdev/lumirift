@@ -73,21 +73,24 @@
   color: var(--text);
 }
 
+/* A HUD label: 14 px at least, in `em` like the rest of the HUD. */
 .stage__label {
-  font-size: 0.6rem;
+  font-size: 0.875em;
   font-weight: 800;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
 }
 
-/* Portrait: the coming pieces in a row, their label written upward. */
+/*
+ * Portrait: the coming pieces in a row speak for themselves, without a label
+ * (the region keeps its name for screen readers): its room goes to the well.
+ */
 .stage__next .stage__label {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  display: none;
 }
 
-/* Landscape: the coming pieces stand in a column beside the well. */
+/* Landscape: the coming pieces stand in a column beside the well, under their label. */
 @media (orientation: landscape) {
   .stage__next {
     flex-direction: column;
@@ -96,7 +99,6 @@
   }
 
   .stage__next .stage__label {
-    writing-mode: horizontal-tb;
-    transform: none;
+    display: block;
   }
 }

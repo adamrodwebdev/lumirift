@@ -69,12 +69,14 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
+/* A HUD label: 14 px at least (`em`, the HUD's size); it may take two lines. */
 .opponent__label {
-  font-size: 0.7rem;
+  font-size: 0.875em;
+  line-height: 1.15;
   color: var(--text-muted);
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 /* The box sets the size; a canvas is 300 px wide by default and must not push it. */

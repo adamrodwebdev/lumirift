@@ -12,10 +12,11 @@
   inset: auto 0 0;
   width: min(100%, 30rem);
   max-width: 100%;
-  max-height: calc(100dvh - env(safe-area-inset-top) - var(--space-2));
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - var(--space-2));
   margin: 0 auto;
-  padding: 1.1rem calc(1.1rem + env(safe-area-inset-right))
-    calc(1.1rem + env(safe-area-inset-bottom)) calc(1.1rem + env(safe-area-inset-left));
+  /* The notch and the home indicator take their room, never less than the sheet's own margin. */
+  padding: 1.1rem max(1.1rem, env(safe-area-inset-right, 0px))
+    max(1.1rem, env(safe-area-inset-bottom, 0px)) max(1.1rem, env(safe-area-inset-left, 0px));
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;

@@ -109,14 +109,24 @@ const onVariant = (variant: string) => {
 </template>
 
 <style scoped>
-/* Portrait: two rows of large tiles, three rows of small ones, then the detail. */
+/*
+ * Portrait: two rows of large tiles, three rows of small ones, then the
+ * detail. A tile never gets under a thumb's size (44 px).
+ */
 .modes__grid {
   flex: 1;
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1.3fr)) repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(var(--touch), 1.3fr)) repeat(3, minmax(var(--touch), 1fr));
   gap: var(--space-2);
+}
+
+/* The smallest phones (320 × 568): tighter gaps keep the five rows on screen. */
+@container hub (orientation: portrait) and (height < 36rem) {
+  .modes__grid {
+    gap: 0.375rem;
+  }
 }
 
 .tile {
@@ -286,6 +296,27 @@ const onVariant = (variant: string) => {
 
   .detail__pitch {
     -webkit-line-clamp: 1;
+  }
+}
+/*
+ * A tiny window (a 400 % zoom, 320 × 256): the portrait grid, every tile at a
+ * thumb's size; the page scrolls (hub.css).
+ */
+@container hub (height < 20rem) {
+  .modes__grid {
+    flex: none;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: minmax(var(--touch), auto);
+  }
+
+  .modes__grid .tile {
+    grid-area: auto;
+    grid-column: span 2;
+  }
+
+  .modes__grid .tile--big {
+    grid-column: span 3;
   }
 }
 </style>

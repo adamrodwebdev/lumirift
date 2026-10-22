@@ -99,4 +99,15 @@ const xpText = computed(() =>
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
 }
+
+/* A tiny top bar (a 400 % zoom): the ring alone tells the level and its share of XP. */
+@container top (inline-size < 16rem) {
+  .chip {
+    padding: 0.2rem;
+  }
+
+  .chip__text {
+    display: none;
+  }
+}
 </style>

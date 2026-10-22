@@ -280,20 +280,40 @@ onMounted(() => {
   user-select: none;
 }
 
+/* The bar adapts to its own width (its parts' container queries). */
 .hub__top {
+  container: top / inline-size;
   grid-area: top;
   position: relative;
   z-index: 3;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: calc(var(--space-2) + env(safe-area-inset-top))
-    calc(var(--space-3) + env(safe-area-inset-right)) 0.375rem
-    calc(var(--space-3) + env(safe-area-inset-left));
+  padding: max(var(--space-2), env(safe-area-inset-top, 0px))
+    max(var(--space-3), env(safe-area-inset-right, 0px)) 0.375rem
+    max(var(--space-3), env(safe-area-inset-left, 0px));
 }
 
 .hub__grow {
   flex: 1;
+}
+
+/* A narrow bar (a 320-px phone): the stars keep their count, without the total. */
+@container top (inline-size < 20rem) {
+  .stars small {
+    display: none;
+  }
+}
+
+/* A tiny bar (a 400 % zoom): nothing pushed apart, the stars' chip tighter. */
+@container top (inline-size < 16rem) {
+  .hub__grow {
+    display: none;
+  }
+
+  .stars {
+    padding-inline: var(--space-2);
+  }
 }
 
 .stars {
@@ -351,8 +371,9 @@ onMounted(() => {
   grid-area: tabs;
   position: relative;
   z-index: 3;
-  padding: var(--space-1) calc(0.625rem + env(safe-area-inset-right))
-    calc(var(--space-2) + env(safe-area-inset-bottom)) calc(0.625rem + env(safe-area-inset-left));
+  padding: var(--space-1) max(0.625rem, env(safe-area-inset-right, 0px))
+    max(var(--space-2), env(safe-area-inset-bottom, 0px))
+    max(0.625rem, env(safe-area-inset-left, 0px));
 }
 
 .tabs {
@@ -484,8 +505,8 @@ onMounted(() => {
   .hub__tabs {
     display: flex;
     align-items: center;
-    padding: calc(0.625rem + env(safe-area-inset-top)) 0
-      calc(0.625rem + env(safe-area-inset-bottom)) calc(0.625rem + env(safe-area-inset-left));
+    padding: max(0.625rem, env(safe-area-inset-top, 0px)) 0
+      max(0.625rem, env(safe-area-inset-bottom, 0px)) max(0.625rem, env(safe-area-inset-left, 0px));
   }
 
   .tabs {

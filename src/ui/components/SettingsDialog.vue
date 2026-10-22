@@ -231,7 +231,7 @@ const onMusic = (event: Event) =>
 }
 
 .row__button {
-  min-height: 2.5rem;
+  min-height: var(--touch);
   padding-block: 0;
   font-size: 0.8rem;
 }
@@ -288,7 +288,7 @@ const onMusic = (event: Event) =>
 .segmented__option span {
   display: grid;
   place-items: center;
-  min-height: 2.35rem;
+  min-height: var(--touch);
   padding: 0 0.55rem;
   border-radius: 0.6rem;
   color: var(--text-muted);
@@ -387,6 +387,21 @@ const onMusic = (event: Event) =>
 
   .settings__about {
     font-size: 0.72rem;
+  }
+}
+
+/* A phone on its side (844 × 390): the rows closer together (their targets keep 44 px). */
+@media (orientation: landscape) and (max-height: 26rem) {
+  .rows {
+    gap: 0.25rem;
+  }
+
+  .row {
+    padding-block: 0;
+  }
+
+  .segmented {
+    padding: 0.1rem;
   }
 }
 
