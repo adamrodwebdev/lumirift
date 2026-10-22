@@ -102,7 +102,12 @@ describe('KeyBindings', () => {
       'ArrowRight',
     ]);
     const flip = keyLegendFor('falling', 'flip', custom);
-    expect(flip.at(-2)?.codes).toEqual(['KeyF']);
+    expect(flip.at(-3)?.codes).toEqual(['KeyF']);
+    // The surge, before Pause, but not in the Rhythm.
+    expect(flip.at(-2)?.codes).toEqual(['KeyV']);
+    expect(
+      keyLegendFor('falling', 'rhythm', custom).some((row) => row.action === 'surge.name'),
+    ).toBe(false);
     const mosaic = keyLegendFor('placement', 'mosaic', custom);
     expect(mosaic.find((row) => row.action === 'keys.place')?.codes).toEqual(['Enter']);
   });

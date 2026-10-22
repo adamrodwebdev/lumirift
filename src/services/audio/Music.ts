@@ -43,6 +43,9 @@ export class Music {
   private target = 0.15;
   private danger = 0;
   private dangerTarget = 0;
+  /** A rift surge: the music sinks under water while time slows (0 to 1). */
+  private surge = 0;
+  private surgeTarget = 0;
   private readonly grid = new BeatGrid(CALM_BPM);
   /** Until then, the pad's filter belongs to the relief. */
   private reliefUntil = 0;
@@ -96,6 +99,11 @@ export class Music {
     this.grid.follow(this.context.currentTime, count);
   }
 
+  /** A rift surge running (1) or not (0): the pad sinks, as if time thickened. */
+  setSurge(value: number): void {
+    this.surgeTarget = clamp(value);
+  }
+
   /** How close the game is to being lost (0 to 1): the heartbeat, the muffled pad. */
   setDanger(value: number): void {
     this.dangerTarget = clamp(value);
@@ -137,13 +145,11 @@ export class Music {
   private schedule(): void {
     this.intensity += (this.target - this.intensity) * SMOOTHING;
     this.danger += (this.dangerTarget - this.danger) * DANGER_SMOOTHING;
+    this.surge += (this.surgeTarget - this.surge) * DANGER_SMOOTHING;
     const now = this.context.currentTime;
     if (now >= this.reliefUntil) {
-      this.padBus.frequency.setTargetAtTime(
-        OPEN_HZ * (MUFFLED_HZ / OPEN_HZ) ** this.danger,
-        now,
-        0.3,
-      );
+      const muffle = Math.max(this.danger, this.surge * 0.85);
+      this.padBus.frequency.setTargetAtTime(OPEN_HZ * (MUFFLED_HZ / OPEN_HZ) ** muffle, now, 0.3);
     }
     this.grid.advance(now, now + LOOKAHEAD_S, (beat, time, beatS) =>
       this.playBeat(beat, time, beatS),

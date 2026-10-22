@@ -228,7 +228,8 @@
         "defeated": "The Heart of the Rift is defeated!"
       },
       "tease": "Something stirs beneath the sand…"
-    }
+    },
+    "surge": "Rift surge: +{value}"
   },
   "controls": {
     "label": "Touch controls",
@@ -724,5 +725,12 @@
     "breakdown": "{points} points, {factor} for the victory",
     "best": "Best this week: {value}",
     "share": "Lumirift · Guardian challenge, {boss}: {value}. Your turn: {url}"
+  },
+  "surge": {
+    "name": "Rift surge",
+    "ready": "Rift surge ready: tap the hourglass",
+    "readyKey": "Rift surge ready: press {key}",
+    "charging": "Rift surge, gauge at {n}%",
+    "running": "Rift surge: time slowed"
   }
 }

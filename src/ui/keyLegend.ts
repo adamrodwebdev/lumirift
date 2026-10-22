@@ -72,20 +72,27 @@ const BY_FAMILY: Readonly<Record<FamilyId, readonly RowSpec[]>> = {
   ],
 };
 
+/** The rift surge, in every mode that has one (not the Rhythm, not the Duel). */
+const SURGE = row('surge.name', main('surge'));
+const WITHOUT_SURGE: ReadonlySet<ModeId> = new Set(['rhythm', 'duel']);
+
 /** A mode with a key of its own (the Flip's ability). */
 const EXTRA: Readonly<Partial<Record<ModeId, RowSpec>>> = {
   flip: row('controls.ability.flip', main('ability')),
 };
 
-/** The legend of a mode, with the player's keys: its family's rows, plus its own, before Pause. */
+/** The legend of a mode, with the player's keys: its family's rows, its own and the surge, before Pause. */
 export function keyLegendFor(
   family: FamilyId,
   modeId: ModeId,
   bindings: KeyBindings = KeyBindings.DEFAULT,
 ): readonly LegendRow[] {
   const specs = BY_FAMILY[family];
-  const extra = EXTRA[modeId];
-  const rows = extra ? [...specs.slice(0, -1), extra, ...specs.slice(-1)] : specs;
+  const extras = [
+    ...(EXTRA[modeId] ? [EXTRA[modeId]] : []),
+    ...(family !== 'placement' && !WITHOUT_SURGE.has(modeId) ? [SURGE] : []),
+  ];
+  const rows = [...specs.slice(0, -1), ...extras, ...specs.slice(-1)];
   return rows.map(({ action, keys, minor: isMinor }) => ({
     action,
     codes: keys(bindings),

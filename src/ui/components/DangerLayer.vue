@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import type { EffectsLevel } from '@/fx/EffectsProfile';
+import { useWellBox } from './useWellBox';
 import { REVEAL, splitCrack, wellCracks } from './wellCracks';
 
 /**
@@ -24,52 +25,8 @@ const props = defineProps<{
   broken: boolean;
 }>();
 
-interface Box {
-  readonly left: number;
-  readonly top: number;
-  readonly width: number;
-  readonly height: number;
-}
-
 const layer = ref<HTMLElement | null>(null);
-const box = ref<Box | null>(null);
-
-const measure = () => {
-  const well = props.well;
-  const own = layer.value;
-  if (!well || !own) {
-    box.value = null;
-    return;
-  }
-  const a = well.getBoundingClientRect();
-  const b = own.getBoundingClientRect();
-  box.value =
-    a.width < 1 || a.height < 1
-      ? null
-      : { left: a.left - b.left, top: a.top - b.top, width: a.width, height: a.height };
-};
-const observer = new ResizeObserver(measure);
-watch(
-  () => props.well,
-  (well, old) => {
-    if (old) observer.unobserve(old);
-    if (well) observer.observe(well);
-    measure();
-  },
-);
-onMounted(() => {
-  if (layer.value) observer.observe(layer.value);
-  if (props.well) observer.observe(props.well);
-  measure();
-});
-onBeforeUnmount(() => observer.disconnect());
-
-const boxStyle = computed(() => {
-  const at = box.value;
-  return at
-    ? { left: `${at.left}px`, top: `${at.top}px`, width: `${at.width}px`, height: `${at.height}px` }
-    : {};
-});
+const { box, boxStyle } = useWellBox(() => props.well, layer);
 const cracks = computed(() => (box.value ? wellCracks(box.value.width, box.value.height) : []));
 const split = computed(() => (box.value ? splitCrack(box.value.width, box.value.height) : null));
 /** How much of a crack shows: it grows with the danger; a broken well shows them all. */

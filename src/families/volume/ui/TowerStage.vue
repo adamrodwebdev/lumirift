@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import type { FrameClock } from '@/app/FrameClock';
@@ -17,6 +26,8 @@ import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
 import { useGameSurface } from '@/ui/useGameSurface';
 import { useKeyBindings } from '@/ui/useKeyBindings';
+import SurgeButton from '@/ui/components/SurgeButton.vue';
+import { SURGE } from '@/ui/surgeControl';
 import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { TowerCamera, TURN_STEP } from '../camera/TowerCamera';
 import * as sounds from '@/fx/sounds';
@@ -49,6 +60,8 @@ const ROUND_WELL_ARR_MS = 16;
 
 const { t } = useI18n();
 const { theme, settings, audio, haptics, profile: progression } = useServices();
+/** The rift surge, the game screen's: its key and its button are here. */
+const surge = inject(SURGE, null);
 const keys = useKeyBindings();
 const format = useFormat();
 const landscape = useLandscape();
@@ -160,8 +173,9 @@ watch(
 const sameSpecs = (a: readonly PieceSpec[], b: readonly PieceSpec[]) =>
   a.length === b.length && a.every((spec, i) => spec === b[i]);
 
-const offFrame = props.clock.subscribe((delta) => {
-  input.update(props.active ? delta : 0);
+// The player's moves repeat in real time, even while the surge slows the game.
+const offFrame = props.clock.subscribe((delta, real) => {
+  input.update(props.active ? real : 0);
   if (props.active || session.state === 'over') {
     effects.update(delta);
     eyeEffects?.update(delta);
@@ -185,6 +199,12 @@ const onKey = (event: KeyboardEvent, down: boolean) => {
     return;
   const action = keys.value.actionFor(event.code);
   if (!action) return;
+  // The rift surge is the screen's: the stage passes the call on.
+  if (action === 'surge') {
+    event.preventDefault();
+    if (down && !event.repeat && props.active) surge?.trigger();
+    return;
+  }
   if (action === 'turnLeft' || action === 'turnRight') {
     event.preventDefault();
     if (down && props.active) camera.turn((action === 'turnLeft' ? -1 : 1) * TURN_STEP);
@@ -272,6 +292,7 @@ onBeforeUnmount(() => {
         <span class="stage__label" aria-hidden="true">{{ t('hud.hold') }}</span>
         <PiecePreview :spec="held" :palette="palette" :size="previewSize" :dimmed="!canHold" />
       </button>
+      <SurgeButton />
     </section>
 
     <div ref="wellArea" class="stage__well">

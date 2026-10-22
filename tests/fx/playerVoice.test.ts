@@ -94,6 +94,9 @@ describe('gestures in the music', () => {
     sweep: () => sounds.sweep(3, 10),
     sweepCombo: () => sounds.sweep(1, 4),
     ceramicBreak: () => sounds.ceramicBreak(5, 7),
+    surgeReady: () => sounds.surgeReady,
+    surgeIn: () => sounds.surgeIn,
+    surgeOut: () => sounds.surgeOut(2.5),
   };
 
   it('plays only notes of the chord playing, over each chord, on and off the beat', () => {

@@ -117,6 +117,10 @@ export class FallingSession implements GameSession<FallingCommand> {
     return this.game.pressure();
   }
 
+  awardBonus(points: number, reason: string): void {
+    this.game.awardPoints(Math.round(points), reason);
+  }
+
   indicators(): readonly Indicator[] {
     const game = this.game;
     const common: Indicator[] = [

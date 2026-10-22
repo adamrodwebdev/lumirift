@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut               |
-| ------- | ---------- | -------------------- |
-| 1.23    | 22/10/2026 | Le défi des Gardiens |
+| Version | Date       | Statut                    |
+| ------- | ---------- | ------------------------- |
+| 1.25    | 22/10/2026 | La surcharge de la faille |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -566,6 +566,7 @@ Règles détaillées :
 | Rotation inverse  | W (AZERTY) / Z (QWERTY) | Toucher à deux doigts                         |
 | Réserve           | C ou Maj                | Glisser vite vers le haut, ou toucher la case |
 | Renversement      | F                       | Bouton à côté de la réserve                   |
+| Surcharge         | V                       | Toucher le sablier (bouton)                   |
 | Pause             | P                       | Bouton en haut de l'écran                     |
 
 Sur écran tactile, **les gestes sont la règle** (1.7) : le réglage « Commandes » fait revenir
@@ -855,6 +856,25 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
     bas, puis la fenêtre de fin.
   - Partie chronométrée : à 10 s, un appel ; un tic par seconde, plus aigu les trois
     dernières ; le temps en rouge qui bat ; la musique au plus vite.
+- **Surcharge de la faille** (1.25, `RiftSurge`) : dans la Chute, le Sable et la Tour (pas en
+  Rythme, dont la pulsation mène, ni en Duel, par équité), défis compris.
+  - **Jauge** : chaque ligne effacée la remplit d'un douzième (une zone du Sable d'un quart).
+    Pleine, le bouton à côté de la réserve (un sablier dans son anneau) s'allume, un son et une
+    annonce « Surcharge prête » (avec la touche, V par défaut) le disent.
+  - **Au choix du joueur** : déclenchée, elle dure **huit secondes de temps réel** pendant
+    lesquelles le temps du jeu passe au **tiers** (la chute, le verrouillage, le chrono, les
+    effets), atteint et quitté en douceur ; les commandes du joueur, elles, gardent le temps
+    réel (la répétition des déplacements ne ralentit pas). Les lignes faites pendant ne
+    remplissent pas la jauge suivante.
+  - **Bonus de sortie** : les points marqués pendant la surcharge, multipliés par 1 + 0,25 par
+    ligne (0,5 par zone dans le Sable), jusqu'à ×3 ; annoncé « Surcharge : +N ». Un mode compté
+    en temps n'a pas de points à multiplier.
+  - **Image et son** : lumière froide sur le verre, anneaux lents depuis le cœur du puits,
+    l'anneau du bouton qui se vide ; la nappe s'étouffe ; à la sortie, une onde de choc et
+    l'accord lancé vers le haut, plus long avec le facteur. Effets calmes : sans anneaux ;
+    aucun effet : un cadre bleu immobile.
+  - Une partie qui se termine pendant une surcharge l'arrête sans bonus ; la pause l'arrête
+    aussi, la reprise la poursuit.
 - **Ambiance** : derrière le jeu, la lumière de la famille dérive lentement, une faille
   lointaine respire.
 
@@ -1172,6 +1192,13 @@ src/
   par tous les abonnés), et ce que dessine `DangerLayer` (fissures en SVG calées sur le
   canvas du puits, vignettes en opacité seule). Les avertissements d'apparition sont
   dessinés par chaque moteur de rendu (`spawnWarning()` de la vue).
+- **Surcharge de la faille** (1.25) : `RiftSurge` (session : jauge, durée, facteur) ;
+  `useSurge` (écran de jeu) l'abonne aux effacements, ralentit l'horloge (`FrameClock.setPace`,
+  qui atteint un rythme en douceur ; ses abonnés reçoivent aussi le temps réel, que les scènes
+  donnent à `FallingInput`), étouffe la musique (`AudioEngine.setSurge`) et verse le bonus
+  (`GameSession.awardBonus`). La scène reçoit son état par injection (`SURGE`) : la touche
+  (`KeyBindings`, action `surge`) et le bouton (`SurgeButton`) ; `SurgeLayer` la dessine sur le
+  puits (sa position vient de `useWellBox`, partagé avec `DangerLayer`).
 - **Défi des Gardiens** (1.23) : `GuardianChallenge` (campagne : règles de la semaine, du
   Gardien, du score) s'appuie sur `guardianLevel` ; l'écran de jeu le reçoit comme le défi du
   jour (`guardian`) : options de partie, clé du record, facteur de victoire lu sur le temps
@@ -1583,3 +1610,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.21    | 22/10/2026 | Des gestes qui jouent la musique : notes de l'accord en cours, basse à la pose, accent sur le temps ; le Rythme mène la musique (§ 3.8, § 5.6).                   |
 | 1.22    | 22/10/2026 | Commandes réglables : deux touches par action, échange, touches refusées, répétition DAS et ARR (§ 3.3, § 5.6).                                                   |
 | 1.23    | 22/10/2026 | Le défi des Gardiens : un Gardien par semaine pour tous, points × bonus de victoire, record de la semaine, XP au premier essai du jour (§ 3.2, § 5.6).            |
+| 1.25    | 22/10/2026 | La surcharge de la faille : jauge remplie par les lignes, huit secondes de temps ralenti au choix du joueur, bonus de sortie (§ 3.3, § 3.8, § 5.6).               |

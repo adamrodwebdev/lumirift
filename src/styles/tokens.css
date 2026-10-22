@@ -32,6 +32,9 @@
   /* Danger (1.19): the vignette closing in on the well, wide then close. */
   --danger-vignette: rgb(120 14 70 / 0.55);
   --danger-vignette-deep: rgb(64 4 36 / 0.72);
+  /* The rift surge: time thickens, cold light (1.25). */
+  --surge: #8ee9ff;
+  --surge-veil: rgb(46 120 190 / 0.34);
   /* Materials of the effects: embers and ash of the fire, clay body of the tiles. */
   --fx-ember-hot: #ffc43c;
   --fx-ember: #ff6e28;

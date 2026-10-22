@@ -32,11 +32,16 @@ import type { GameOutcome } from '../GameOutcome';
 import type { BestLine } from '../BestLine';
 import HudPanel from '../components/HudPanel.vue';
 import RecordBurst from '../components/RecordBurst.vue';
+import SurgeLayer from '../components/SurgeLayer.vue';
 import KeyLegend from '../components/KeyLegend.vue';
 import PauseDialog from '../components/PauseDialog.vue';
 import { stageFor } from '../stages';
+import { SURGE } from '../surgeControl';
 import { GAME_SURFACE } from '../useGameSurface';
+import { useKeyBindings } from '../useKeyBindings';
+import { useKeyLabels } from '../useKeyLabels';
 import { isTouchScreen } from '../useOrientation';
+import { useSurge } from './useSurge';
 import { useTension } from './useTension';
 
 const props = defineProps<{
@@ -174,6 +179,22 @@ const {
   broken: wellBroken,
   well: wellCanvas,
 } = tension;
+const bindings = useKeyBindings();
+const keyLabels = useKeyLabels();
+/** The rift surge: its gauge, the player's call, time slowed, the exit bonus. */
+const surge = useSurge({
+  audio,
+  haptics,
+  clock,
+  onReady: () => {
+    const code = bindings.value.codes('surge')[0];
+    announce(
+      code && !touch ? t('surge.readyKey', { key: keyLabels.label(code) }) : t('surge.ready'),
+    );
+  },
+});
+provide(SURGE, surge.control);
+const { active: surgeActive, shock: surgeShock } = surge;
 /** One per game: the stage is rebuilt for each new session. */
 const round = ref(0);
 /** The game-over dialog waits for the stack to finish collapsing. */
@@ -235,11 +256,13 @@ const sameIndicators = (a: readonly Indicator[], b: readonly Indicator[]) =>
     return other?.id === item.id && other.value === item.value;
   });
 
-clock.subscribe((delta) => {
+clock.subscribe((delta, real) => {
   const current = session.value;
   if (!current) return;
   if (current.state === 'running') tracker?.tick(delta);
   current.update(delta);
+  // The surge counts real time: eight seconds of it, however slow the game runs.
+  surge.update(real, current.state === 'running');
   const next = current.indicators();
   if (!sameIndicators(next, indicators.value)) indicators.value = next;
   // The danger, played: the music follows it, the well cracks, the clock counts down.
@@ -334,6 +357,7 @@ const finish = (reason: string, decided: CampaignOutcome | null = null, teased =
   const current = session.value;
   if (!current || phase.value === 'over') return;
   tension.end(reason);
+  surge.end();
   const result = current.result();
   // The Guardian challenge counts a victory's time left: points × (1 + share of the clock left).
   const timeLeft = current.indicators().find((item) => item.id === 'timeLeft')?.value ?? 0;
@@ -419,6 +443,7 @@ const start = async () => {
   best.value = chase ? { value: chase.shown(0), beaten: false } : null;
   recordBurst.value = 0;
   listen(created);
+  surge.attach(created, descriptor.family, props.modeId);
   showOutcome.value = false;
   round.value++;
   // The guide hears every command that took effect, whatever the input.
@@ -477,6 +502,7 @@ const dispose = () => {
   unsubscribe = [];
   tracker?.dispose();
   tracker = null;
+  surge.detach();
   session.value?.dispose();
   session.value = null;
 };
@@ -628,6 +654,12 @@ onBeforeUnmount(() => {
       :flash="closeCallFlash"
       :relief="reliefCount"
       :broken="wellBroken"
+    />
+    <SurgeLayer
+      :active="surgeActive"
+      :shock="surgeShock"
+      :level="settings.current.effects"
+      :well="wellCanvas"
     />
 
     <div class="game__overlay">

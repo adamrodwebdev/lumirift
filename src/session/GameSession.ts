@@ -98,6 +98,11 @@ export interface GameSession<C extends Command = Command> {
   /** The boss of this game and how it stands; absent or null outside a boss level. */
   boss?(): BossStatus | null;
   /**
+   * Pays points won outside the mode's rules (the rift surge's exit), with a
+   * notice `reason`. Absent where the game keeps no points to add to.
+   */
+  awardBonus?(points: number, reason: string): void;
+  /**
    * A Guardian of a later chapter shows itself as this level ends (the
    * campaign's teaser): the game stops taking pieces and its clock, its world
    * keeps moving. False when this game cannot show that Guardian.
