@@ -12,6 +12,8 @@ export const EXTRA_LINE_XP = 2;
 export const MAX_CLEAR_XP = 150;
 /** The first daily challenge of the day. */
 export const DAILY_XP = 25;
+/** The first Guardian challenge of the day, every day of its week. */
+export const GUARDIAN_XP = 30;
 /** Beating the AI, by its level: a harder opponent is worth more. */
 export const VICTORY_XP: Readonly<Record<string, number>> = {
   rookie: 10,
@@ -22,7 +24,8 @@ export const VICTORY_XP: Readonly<Record<string, number>> = {
 };
 
 /** `bonus`: the experience of a game doubled by a rewarded ad. */
-export type XpSource = 'game' | 'time' | 'clears' | 'daily' | 'victory' | 'objective' | 'bonus';
+export type XpSource =
+  'game' | 'time' | 'clears' | 'daily' | 'guardian' | 'victory' | 'objective' | 'bonus';
 
 export interface XpLine {
   readonly source: XpSource;

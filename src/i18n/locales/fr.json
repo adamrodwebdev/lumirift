@@ -430,6 +430,7 @@
       "time": "Temps de jeu",
       "clears": "Effacements",
       "daily": "Défi du jour",
+      "guardian": "Défi des Gardiens",
       "victory": "Victoire",
       "objective": "Objectif",
       "bonus": "Bonus (pub regardée)"
@@ -609,8 +610,7 @@
     "level": "Niveau {level} · {mode}",
     "space": "{key} pour jouer",
     "spaceKey": "Espace",
-    "player": "Niveau {level}, {xp}. Ouvrir l’Atelier",
-    "dailyShort": "Défi du jour · {mode}"
+    "player": "Niveau {level}, {xp}. Ouvrir l’Atelier"
   },
   "coach": {
     "move": "Déplacez la pièce",
@@ -714,5 +714,15 @@
     "shift": "Maj",
     "escape": "Échap",
     "mosaicNote": "La Mosaïque garde ses propres touches."
+  },
+  "guardianChallenge": {
+    "title": "Défi des Gardiens",
+    "timeLeft": "encore {d} j {h} h",
+    "bonus": "+{xp} XP aujourd’hui",
+    "bonusShort": "+{xp} XP",
+    "score": "Score du défi",
+    "breakdown": "{points} points, {factor} pour la victoire",
+    "best": "Record de la semaine : {value}",
+    "share": "Lumirift · Défi des Gardiens, {boss} : {value}. À vous de jouer : {url}"
   }
 }

@@ -24,6 +24,11 @@ export class ScoreBoard {
     return `daily:${dayKey}`;
   }
 
+  /** The week's Guardian challenge, by the key of its Monday. */
+  static guardianKey(weekKey: string): string {
+    return `guardian:${weekKey}`;
+  }
+
   best(key: string): number | null {
     return this.records[key] ?? null;
   }

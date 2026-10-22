@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut              |
-| ------- | ---------- | ------------------- |
-| 1.22    | 22/10/2026 | Commandes réglables |
+| Version | Date       | Statut               |
+| ------- | ---------- | -------------------- |
+| 1.23    | 22/10/2026 | Le défi des Gardiens |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -141,6 +141,24 @@ Règles détaillées :
   distinctes sont dérivées de la date (`mode:AAAAMMJJ` et `pieces:AAAAMMJJ`) : le tirage du
   mode ne décale pas la suite des pièces. Les modes éligibles sont ceux déjà livrés : la
   liste s'allonge à chaque lot, et sera figée à la version 1.0.
+- **Défi des Gardiens** (1.23, `GuardianChallenge`) : la semaine va du lundi au lundi (heure
+  locale) ; sa clé est la date de son lundi (AAAAMMJJ). Un Gardien par semaine, à tour de rôle
+  depuis la semaine du 5 janvier 2026 : Ver des dunes, Golem de céramique, Œil de la Tour, Cœur
+  de la faille. **Ouvert à tous** depuis l'accueil, quelle que soit la campagne (sauf dans une
+  édition qui n'offre pas son niveau). Le combat est celui de son niveau de campagne (même mode,
+  4 minutes), **sans améliorations**, avec une graine commune (`guardian:AAAAMMJJ`) : les mêmes
+  pièces pour tous, toute la semaine.
+  - **Score** : les points de la partie ; une **victoire** les multiplie par 1 + la part du
+    temps restant, arrondie au centième (40 % du temps : ×1,4 ; 0 % : ×1). Une défaite garde
+    ses points. Le record de la semaine est gardé (`guardian:AAAAMMJJ` dans les records) ; pas
+    de chasse au record en direct (le facteur ne se connaît qu'à la fin).
+  - **Premier essai du jour** : +30 XP (`GUARDIAN_XP`), chaque jour de la semaine ; le profil
+    retient le dernier jour joué. La carte de l'accueil le signale par une pastille « +30 XP ».
+  - La chute du Gardien n'y donne pas son cosmétique (il reste à la campagne). Partage : le
+    Gardien et le score.
+  - **Accueil** : les deux défis côte à côte en portrait (en colonne en paysage), chacun sur
+    trois lignes (le défi, ce qui se joue, le temps qui reste) ; en portrait étroit, sans
+    icônes, et le nom d'un Gardien peut passer sur deux lignes.
 - **Marée** : une rangée de déchets (un seul trou) monte du fond toutes les 10 s au départ ;
   l'intervalle diminue de 0,5 s par rangée, jusqu'à 3 s. Chaque ligne effacée retarde la
   prochaine montée de 1 s. Score principal : temps de survie. Une nouvelle rangée garde le
@@ -1154,6 +1172,11 @@ src/
   par tous les abonnés), et ce que dessine `DangerLayer` (fissures en SVG calées sur le
   canvas du puits, vignettes en opacité seule). Les avertissements d'apparition sont
   dessinés par chaque moteur de rendu (`spawnWarning()` de la vue).
+- **Défi des Gardiens** (1.23) : `GuardianChallenge` (campagne : règles de la semaine, du
+  Gardien, du score) s'appuie sur `guardianLevel` ; l'écran de jeu le reçoit comme le défi du
+  jour (`guardian`) : options de partie, clé du record, facteur de victoire lu sur le temps
+  restant (`timeLeft`), fin de partie (`GameOutcome.guardian`), partage. Le rapport de partie
+  porte `guardian`, et le profil `guardianDay` pour le bonus du premier essai du jour.
 - **Musique et gestes** (1.21) : `BeatGrid` (audio) tient les temps de la musique sur
   l'horloge audio, change de tempo à la mesure et peut suivre la pulsation d'un mode
   (`follow`). `Music.groove()` dit où en est la musique (temps en cours, durée d'un temps) ;
@@ -1559,3 +1582,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.20    | 22/10/2026 | Jauge de combo du Sable, jusqu'à ×10 (§ 3.2).                                                                                                                     |
 | 1.21    | 22/10/2026 | Des gestes qui jouent la musique : notes de l'accord en cours, basse à la pose, accent sur le temps ; le Rythme mène la musique (§ 3.8, § 5.6).                   |
 | 1.22    | 22/10/2026 | Commandes réglables : deux touches par action, échange, touches refusées, répétition DAS et ARR (§ 3.3, § 5.6).                                                   |
+| 1.23    | 22/10/2026 | Le défi des Gardiens : un Gardien par semaine pour tous, points × bonus de victoire, record de la semaine, XP au premier essai du jour (§ 3.2, § 5.6).            |

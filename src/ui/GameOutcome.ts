@@ -28,4 +28,6 @@ export interface GameOutcome {
   readonly progress: GameProgress;
   /** Set for a campaign level. */
   readonly campaign?: CampaignResult;
+  /** Set for the Guardian challenge: the game's points and, on a victory, their factor. */
+  readonly guardian?: { readonly points: string; readonly factor: string | null };
 }

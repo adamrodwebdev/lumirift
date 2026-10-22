@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
+import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import { MAX_STARS, type CampaignLevel } from '@/campaign/Levels';
 import { newCosmetics } from '@/progression/Profile';
 import type { DailyChallenge } from '@/session/DailyChallenge';
@@ -32,6 +33,7 @@ const page = defineModel<HubPage>('page', { required: true });
 const emit = defineEmits<{
   play: [modeId: ModeId, variant: string | null, origin: Element];
   daily: [challenge: DailyChallenge, origin: Element];
+  guardian: [challenge: GuardianChallenge, origin: Element];
   level: [level: CampaignLevel, origin: Element];
   settings: [];
 }>();
@@ -199,6 +201,7 @@ onMounted(() => {
           :active="page === 'home'"
           @play="(modeId, origin) => emit('play', modeId, null, origin)"
           @daily="(challenge, origin) => emit('daily', challenge, origin)"
+          @guardian="(challenge, origin) => emit('guardian', challenge, origin)"
           @level="(level, origin) => emit('level', level, origin)"
         />
         <section v-else v-bind="panel('home')" class="page" />

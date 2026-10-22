@@ -12,6 +12,7 @@ import {
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { loadMessages } from '@/i18n';
+import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import type { CampaignLevel } from '@/campaign/Levels';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { ModeId } from '@/session/ModeId';
@@ -28,6 +29,8 @@ const GameScreen = defineAsyncComponent(loadGame);
 interface Game {
   readonly modeId: ModeId;
   readonly daily: DailyChallenge | null;
+  /** Set for the week's Guardian challenge. */
+  readonly guardian: GuardianChallenge | null;
   readonly variant: string | null;
   /** Set for a campaign level. */
   readonly level: CampaignLevel | null;
@@ -86,12 +89,15 @@ const play = (game: Game, origin: Element | null) =>
     ]);
     return { kind: 'game', id: ++gameId, ...game };
   });
+const NONE = { daily: null, guardian: null, variant: null, level: null } as const;
 const playMode = (modeId: ModeId, variant: string | null, origin: Element | null) =>
-  play({ modeId, daily: null, variant, level: null }, origin);
+  play({ ...NONE, modeId, variant }, origin);
 const playDaily = (challenge: DailyChallenge, origin: Element | null) =>
-  play({ modeId: challenge.modeId, daily: challenge, variant: null, level: null }, origin);
+  play({ ...NONE, modeId: challenge.modeId, daily: challenge }, origin);
+const playGuardian = (challenge: GuardianChallenge, origin: Element | null) =>
+  play({ ...NONE, modeId: challenge.modeId, guardian: challenge }, origin);
 const playLevel = (level: CampaignLevel, origin: Element | null = null) =>
-  play({ modeId: level.modeId, daily: null, variant: null, level }, origin);
+  play({ ...NONE, modeId: level.modeId, level }, origin);
 const backToHub = (page?: HubPage) => {
   if (page) hubPage.value = page;
   void change(null, () => ({ kind: 'hub', returning: true }));
@@ -170,6 +176,7 @@ onBeforeUnmount(() => {
       :returning="screen.returning"
       @play="playMode"
       @daily="playDaily"
+      @guardian="playGuardian"
       @level="playLevel"
       @settings="settingsOpen = true"
     />
@@ -178,6 +185,7 @@ onBeforeUnmount(() => {
       :key="screen.id"
       :mode-id="screen.modeId"
       :daily="screen.daily"
+      :guardian="screen.guardian"
       :variant="screen.variant"
       :level="screen.level"
       @home="backToHub()"
