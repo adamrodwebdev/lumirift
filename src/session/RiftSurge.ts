@@ -1,49 +1,25 @@
 import { Emitter } from '@/core/Emitter';
-import type { FamilyId } from './ModeId';
-
-/** How long a surge lasts, in real time (ms), and the pace of the game meanwhile. */
-export const SURGE_MS = 8000;
-export const SURGE_PACE = 1 / 3;
-/** The exit factor's ceiling. */
-export const MAX_SURGE_FACTOR = 3;
-
-/** How a family fills the gauge and rewards a surge. */
-export interface SurgeTuning {
-  /** Clears (lines, or the Sand's regions) that fill the gauge. */
-  readonly clearsToFill: number;
-  /** What each clear made during a surge adds to its exit factor. */
-  readonly bonusPerClear: number;
-}
-
-/** The families with a fall to slow down; a region of sand is worth three lines or so. */
-export const SURGE_TUNING: Readonly<Partial<Record<FamilyId, SurgeTuning>>> = {
-  falling: { clearsToFill: 12, bonusPerClear: 0.25 },
-  volume: { clearsToFill: 12, bonusPerClear: 0.25 },
-  sand: { clearsToFill: 4, bonusPerClear: 0.5 },
-};
-
-/** The modes whose time is not the player's to bend: the Rhythm's pulse, the Duel's fairness. */
-const WITHOUT_SURGE: ReadonlySet<string> = new Set(['rhythm', 'duel']);
-
-/** The surge's tuning for a mode, or null when it has none. */
-export function surgeTuningFor(family: FamilyId, modeId: string): SurgeTuning | null {
-  return WITHOUT_SURGE.has(modeId) ? null : (SURGE_TUNING[family] ?? null);
-}
+import { MAX_SURGE_FACTOR, SURGE_MS, type SurgeTuning } from './SurgeTuning';
 
 export interface RiftSurgeEventMap {
   /** The gauge is full: the player may trigger the surge. */
   ready: Readonly<Record<string, never>>;
   start: Readonly<Record<string, never>>;
-  /** The surge ends: the clears it saw, and the factor on the points it scored. */
-  end: { readonly clears: number; readonly factor: number };
+  /**
+   * The surge ends: the clears it saw, the factor on the points it scored,
+   * and its bonus (those points multiplied, less themselves).
+   */
+  end: { readonly clears: number; readonly factor: number; readonly bonus: number };
 }
 
 /**
  * The rift surge (1.25): clears fill a gauge; full, the player triggers it
  * and time runs at a third of its pace for eight seconds, the time to save a
  * game. On the way out, the points scored meanwhile are multiplied by
- * 1 + `bonusPerClear` for each clear made during it (×3 at most). Rules and
- * timing only: the screen slows the clock and pays the bonus.
+ * 1 + `bonusPerClear` for each clear made during it (×3 at most): the surge
+ * reckons that bonus from the game's points (`points`, 0 where the game keeps
+ * none). Rules and timing only: the screen slows the clock and hands the
+ * bonus to the game.
  */
 export class RiftSurge {
   readonly events = new Emitter<RiftSurgeEventMap>();
@@ -52,8 +28,13 @@ export class RiftSurge {
   /** Real time left in a surge (ms); 0 outside one. */
   private left = 0;
   private clears = 0;
+  /** The game's points when the surge began. */
+  private pointsAtStart = 0;
 
-  constructor(private readonly tuning: SurgeTuning) {}
+  constructor(
+    private readonly tuning: SurgeTuning,
+    private readonly points: () => number = () => 0,
+  ) {}
 
   get active(): boolean {
     return this.left > 0;
@@ -90,6 +71,7 @@ export class RiftSurge {
     if (!this.ready) return false;
     this.charge = 0;
     this.clears = 0;
+    this.pointsAtStart = this.points();
     this.left = SURGE_MS;
     this.events.emit('start', {});
     return true;
@@ -100,7 +82,9 @@ export class RiftSurge {
     if (!this.active) return;
     this.left = Math.max(0, this.left - realMs);
     if (this.left > 0) return;
-    this.events.emit('end', { clears: this.clears, factor: this.factor });
+    const scored = Math.max(0, this.points() - this.pointsAtStart);
+    const bonus = Math.round(scored * (this.factor - 1));
+    this.events.emit('end', { clears: this.clears, factor: this.factor, bonus });
     this.clears = 0;
   }
 
@@ -109,5 +93,6 @@ export class RiftSurge {
     this.charge = 0;
     this.left = 0;
     this.clears = 0;
+    this.pointsAtStart = 0;
   }
 }

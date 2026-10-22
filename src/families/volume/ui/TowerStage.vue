@@ -95,7 +95,8 @@ watch(
   (shatter) => effects.setShatter(shatter),
   { immediate: true },
 );
-const detachSounds = new FallingSoundscape(audio, haptics).attach(session);
+const soundscape = new FallingSoundscape(audio, haptics);
+const detachSounds = soundscape.attach(session);
 
 // The Eye of the Tower, on its boss level: its own effects and sounds.
 const mode = session.view.mode;
@@ -179,6 +180,7 @@ const offFrame = props.clock.subscribe((delta, real) => {
   if (props.active || session.state === 'over') {
     effects.update(delta);
     eyeEffects?.update(delta);
+    soundscape.update(delta);
   }
   const view = session.view;
   const piece = view.active;

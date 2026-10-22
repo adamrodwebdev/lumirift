@@ -1040,7 +1040,8 @@ Chrome Android). Cible de compilation ES2022.
 
 ```
 src/engine/
-  core/     Emitter (événements typés), Random (RandomSource, SeededRandom à graine)
+  core/     Emitter (événements typés), Random (RandomSource, SeededRandom à graine),
+            GameTimers (appels différés en temps de jeu)
   pieces/   PieceType et Tone, Shapes (orientations SRS, décalages muraux), Piece, Bag
   board/    Board : grille, collisions, lignes (pureté), déchets, renversement
   rules/    Scoring, GravityCurve
@@ -1192,11 +1193,13 @@ src/
   par tous les abonnés), et ce que dessine `DangerLayer` (fissures en SVG calées sur le
   canvas du puits, vignettes en opacité seule). Les avertissements d'apparition sont
   dessinés par chaque moteur de rendu (`spawnWarning()` de la vue).
-- **Surcharge de la faille** (1.25) : `RiftSurge` (session : jauge, durée, facteur) ;
-  `useSurge` (écran de jeu) l'abonne aux effacements, ralentit l'horloge (`FrameClock.setPace`,
-  qui atteint un rythme en douceur ; ses abonnés reçoivent aussi le temps réel, que les scènes
-  donnent à `FallingInput`), étouffe la musique (`AudioEngine.setSurge`) et verse le bonus
-  (`GameSession.awardBonus`). La scène reçoit son état par injection (`SURGE`) : la touche
+- **Surcharge de la faille** (1.25) : `SurgeTuning` (règles : réglages par famille, et
+  `surgeTuningFor`, seule règle des modes qui l'ont, lue aussi par la légende des touches) ;
+  `RiftSurge` (session : jauge, durée, facteur, et le bonus, calculé sur les points qu'elle lit
+  via `pointsOf`) ; `useSurge` (écran de jeu) l'abonne aux effacements, ralentit l'horloge
+  (`FrameClock.setPace`, qui atteint un rythme en douceur ; ses abonnés reçoivent aussi le
+  temps réel, que les scènes donnent à `FallingInput`), étouffe la musique
+  (`AudioEngine.setSurge`) et remet le bonus à la partie (`GameSession.awardBonus`). La scène reçoit son état par injection (`SURGE`) : la touche
   (`KeyBindings`, action `surge`) et le bouton (`SurgeButton`) ; `SurgeLayer` la dessine sur le
   puits (sa position vient de `useWellBox`, partagé avec `DangerLayer`).
 - **Défi des Gardiens** (1.23) : `GuardianChallenge` (campagne : règles de la semaine, du
@@ -1284,7 +1287,8 @@ src/services/audio/     AudioEngine (contexte, volume, veille), Synth (oscillate
 src/services/Haptics    Vibrations, absentes sans erreur là où l'API n'existe pas
 src/families/falling/
   fx/FallingEffects     Metteur en scène : écoute le moteur, simule les effets en cases
-  fx/FallingSoundscape  Sons et vibrations, en phase avec l'image
+  fx/FallingSoundscape  Sons et vibrations, en phase avec l'image (délais en temps de jeu,
+                        `GameTimers`, que la scène fait avancer comme les effets)
   render/EffectsPainter Dessine l'état des effets
   render/WellDecor      Décors propres à un mode (eau de la Marée), par polymorphisme
 ```

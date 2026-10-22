@@ -1,9 +1,10 @@
 import { onBeforeUnmount, ref } from 'vue';
 import type { FrameClock } from '@/app/FrameClock';
 import { surgeIn, surgeOut, surgeReady } from '@/fx/sounds';
-import type { GameSession } from '@/session/GameSession';
+import { pointsOf, type GameSession } from '@/session/GameSession';
 import type { FamilyId } from '@/session/ModeId';
-import { RiftSurge, SURGE_PACE, surgeTuningFor } from '@/session/RiftSurge';
+import { RiftSurge } from '@/session/RiftSurge';
+import { SURGE_PACE, surgeTuningFor } from '@/session/SurgeTuning';
 import type { AudioEngine } from '@/services/audio/AudioEngine';
 import type { Haptics } from '@/services/Haptics';
 import type { SurgeControl } from '../surgeControl';
@@ -19,8 +20,8 @@ export interface SurgeOptions {
 /**
  * The rift surge of a game (1.25), for the game screen: the game's clears
  * fill its gauge; triggered, it slows the clock to a third for eight seconds
- * of real time, sinks the music, then pays the exit bonus (the points scored
- * meanwhile, multiplied) with a shock wave. The stage gets its gauge and the
+ * of real time, sinks the music, then hands the game the exit bonus the
+ * surge reckons (the points scored meanwhile, multiplied), with a shock wave. The stage gets its gauge and the
  * player's call (`control`); the screen draws the surge over the well.
  */
 export function useSurge(options: SurgeOptions) {
@@ -28,7 +29,6 @@ export function useSurge(options: SurgeOptions) {
   let surge: RiftSurge | null = null;
   let session: GameSession | null = null;
   let off: (() => void) | null = null;
-  let pointsAtStart = 0;
 
   const enabled = ref(false);
   const fill = ref(0);
@@ -36,12 +36,6 @@ export function useSurge(options: SurgeOptions) {
   const active = ref(false);
   /** Bumped at each surge's end: the shock wave. */
   const shock = ref(0);
-
-  /** The game's points so far (a mode scored in time keeps no points to multiply). */
-  const points = () => {
-    const result = session?.result();
-    return result?.kind === 'score' ? result.value : 0;
-  };
 
   const sync = () => {
     const shown = surge ? Math.round(surge.fill * 100) / 100 : 0;
@@ -62,7 +56,7 @@ export function useSurge(options: SurgeOptions) {
     detach();
     const tuning = surgeTuningFor(family, modeId);
     if (!tuning) return;
-    const own = new RiftSurge(tuning);
+    const own = new RiftSurge(tuning, () => pointsOf(current.result()));
     surge = own;
     session = current;
     const offs = [
@@ -73,15 +67,13 @@ export function useSurge(options: SurgeOptions) {
         options.onReady?.();
       }),
       own.events.on('start', () => {
-        pointsAtStart = points();
         clock.setPace(SURGE_PACE);
         audio.setSurge(1);
         audio.play(surgeIn);
         haptics.pulse(30);
       }),
-      own.events.on('end', ({ factor }) => {
+      own.events.on('end', ({ factor, bonus }) => {
         calm();
-        const bonus = Math.round((points() - pointsAtStart) * (factor - 1));
         if (bonus > 0) session?.awardBonus?.(bonus, 'surge');
         audio.play(surgeOut(factor));
         haptics.pulse([20, 30, 60]);

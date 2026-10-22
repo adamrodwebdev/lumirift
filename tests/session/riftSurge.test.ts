@@ -1,13 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { FrameClock } from '@/app/FrameClock';
 import { createSoloSession } from '@/families/falling';
-import {
-  MAX_SURGE_FACTOR,
-  RiftSurge,
-  SURGE_MS,
-  SURGE_TUNING,
-  surgeTuningFor,
-} from '@/session/RiftSurge';
+import { pointsOf } from '@/session/GameSession';
+import { RiftSurge } from '@/session/RiftSurge';
+import { MAX_SURGE_FACTOR, SURGE_MS, SURGE_TUNING, surgeTuningFor } from '@/session/SurgeTuning';
 import { ConstantRandom } from '../falling/helpers';
 
 const lines = () => new RiftSurge(SURGE_TUNING.falling!);
@@ -47,9 +43,26 @@ describe('RiftSurge', () => {
     expect(surge.factor).toBe(2.5);
     surge.update(SURGE_MS / 2);
     expect(surge.active).toBe(false);
-    expect(end).toHaveBeenCalledWith({ clears: 6, factor: 2.5 });
+    expect(end).toHaveBeenCalledWith({ clears: 6, factor: 2.5, bonus: 0 });
     expect(surge.fill).toBe(0);
     expect(surge.trigger()).toBe(false);
+  });
+
+  it('reckons its bonus from the points scored meanwhile, not from those before', () => {
+    let points = 1000;
+    const surge = new RiftSurge(SURGE_TUNING.falling!, () => points);
+    const end = vi.fn();
+    surge.events.on('end', end);
+    surge.cleared(12);
+    surge.trigger();
+    points += 400;
+    // Four lines: ×2 on the 400 points of the surge, so 400 more.
+    surge.cleared(4);
+    surge.update(SURGE_MS);
+    expect(end).toHaveBeenCalledWith({ clears: 4, factor: 2, bonus: 400 });
+    // A game ranked on time keeps no points to multiply.
+    expect(pointsOf({ modeId: 'classic', kind: 'score', value: 120 })).toBe(120);
+    expect(pointsOf({ modeId: 'classic', kind: 'time', value: 95_000 })).toBe(0);
   });
 
   it('caps its factor, and forgets everything on a new game', () => {

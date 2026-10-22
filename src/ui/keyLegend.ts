@@ -1,5 +1,6 @@
 import { KeyBindings, type KeyAction } from '@/families/falling/input/KeyBindings';
 import type { FamilyId, ModeId } from '@/session/ModeId';
+import { surgeTuningFor } from '@/session/SurgeTuning';
 
 /** A row of the controls legend: the keys (by physical place) and what they do. */
 export interface LegendRow {
@@ -72,9 +73,8 @@ const BY_FAMILY: Readonly<Record<FamilyId, readonly RowSpec[]>> = {
   ],
 };
 
-/** The rift surge, in every mode that has one (not the Rhythm, not the Duel). */
+/** The rift surge, in every mode that has one (see `surgeTuningFor`). */
 const SURGE = row('surge.name', main('surge'));
-const WITHOUT_SURGE: ReadonlySet<ModeId> = new Set(['rhythm', 'duel']);
 
 /** A mode with a key of its own (the Flip's ability). */
 const EXTRA: Readonly<Partial<Record<ModeId, RowSpec>>> = {
@@ -90,7 +90,7 @@ export function keyLegendFor(
   const specs = BY_FAMILY[family];
   const extras = [
     ...(EXTRA[modeId] ? [EXTRA[modeId]] : []),
-    ...(family !== 'placement' && !WITHOUT_SURGE.has(modeId) ? [SURGE] : []),
+    ...(surgeTuningFor(family, modeId) ? [SURGE] : []),
   ];
   const rows = [...specs.slice(0, -1), ...extras, ...specs.slice(-1)];
   return rows.map(({ action, keys, minor: isMinor }) => ({

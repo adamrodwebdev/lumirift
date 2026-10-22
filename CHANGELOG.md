@@ -23,6 +23,18 @@ Lot C, cinquième point : la surcharge de la faille, pour sauver une partie.
 - La touche de la surcharge apparaît dans la légende, dans la fenêtre des touches, et dans
   l'annonce « Surcharge prête ».
 
+### Corrigé
+
+- Les sons d'impact et de brisure de la Chute et de la Tour suivent le temps du jeu, et non
+  plus l'horloge du navigateur : ils restent calés sur l'image pendant la surcharge, les
+  ralentis et la pause.
+
+### Modifié
+
+- Une seule règle dit quels modes ont la surcharge (le jeu, sa jauge et la légende des
+  touches la lisent), et la surcharge calcule elle-même son bonus de sortie : l'interface ne
+  fait plus que le remettre à la partie.
+
 ## [1.23.0] — 22/10/2026
 
 Lot C, quatrième point : le défi des Gardiens, pour revenir chaque jour.

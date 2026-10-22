@@ -27,6 +27,11 @@ export interface SessionResult {
   readonly value: number;
 }
 
+/** The points a result holds: a game ranked on time keeps none (nothing to multiply or add to). */
+export function pointsOf(result: SessionResult): number {
+  return result.kind === 'score' ? result.value : 0;
+}
+
 /** Events every family publishes, for announcements, sounds and best scores. */
 export interface SessionEventMap {
   state: { readonly state: SessionState };

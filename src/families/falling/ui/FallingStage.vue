@@ -103,9 +103,8 @@ watch(
   (shatter) => effects.setShatter(shatter),
   { immediate: true },
 );
-const detachSounds = new FallingSoundscape(audio, haptics, (distance) =>
-  effects.dropWait(distance),
-).attach(session);
+const soundscape = new FallingSoundscape(audio, haptics, (distance) => effects.dropWait(distance));
+const detachSounds = soundscape.attach(session);
 
 // The mode's scenery; the last Guardian brings its own, and its sounds.
 const mode = session.view.mode;
@@ -217,8 +216,12 @@ const syncPreviews = () => {
 // The player's moves repeat in real time, even while the surge slows the game.
 const offFrame = props.clock.subscribe((delta, real) => {
   input.update(props.active ? real : 0);
-  // Effects freeze with the pause, but the final collapse plays after game over.
-  if (props.active || session.state === 'over') effects.update(delta);
+  // Effects, and the sounds waiting for them, freeze with the pause; the final collapse plays
+  // after game over.
+  if (props.active || session.state === 'over') {
+    effects.update(delta);
+    soundscape.update(delta);
+  }
   syncPreviews();
   renderer?.render();
 });

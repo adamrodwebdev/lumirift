@@ -142,7 +142,6 @@ describe('FallingEffects', () => {
 
 describe('FallingSoundscape', () => {
   it('plays a crack, then the shatter in step with the visuals, and vibrates', () => {
-    vi.useFakeTimers();
     const played: unknown[] = [];
     const audio = { play: (recipe: unknown) => played.push(recipe) } as unknown as AudioEngine;
     const vibrate = vi.fn(() => true);
@@ -151,18 +150,21 @@ describe('FallingSoundscape', () => {
       random: new ConstantRandom(),
       timeLimitMs: null,
     });
-    const detach = new FallingSoundscape(audio, haptics).attach(session);
+    const soundscape = new FallingSoundscape(audio, haptics);
+    const detach = soundscape.attach(session);
     session.start();
     fillForFlip(session);
 
     session.execute({ type: 'ability' });
     const immediate = played.length;
-    vi.advanceTimersByTime(CRACK_MS);
+    // The shatter waits for the game's time, not the wall clock's: slowed down, it waits longer.
+    soundscape.update(CRACK_MS / 3);
+    expect(played.length).toBe(immediate);
+    soundscape.update(CRACK_MS);
     expect(played.length).toBeGreaterThan(immediate);
     expect(vibrate).toHaveBeenCalled();
 
     detach();
-    vi.useRealTimers();
   });
 
   it('respects the vibration setting', () => {
