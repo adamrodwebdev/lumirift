@@ -108,6 +108,11 @@ export function newCosmetics(data: ProfileData): readonly Cosmetic[] {
   );
 }
 
+/** The day's first Guardian challenge is still to play: it earns its bonus (every day of the week). */
+export function guardianBonusOpen(data: ProfileData, day: string): boolean {
+  return data.guardianDay !== day;
+}
+
 /**
  * The player's progression: experience and level, objectives of the day,
  * streak of daily challenges, and the cosmetics they wear. Changes only
@@ -167,7 +172,7 @@ export class Profile {
       streak = { count, best: Math.max(before.streak.best, count), lastDay: day };
     }
     let guardianDay = before.guardianDay;
-    if (report.guardian && before.guardianDay !== day) {
+    if (report.guardian && guardianBonusOpen(before, day)) {
       // The first Guardian challenge of the day: every day of the week brings it back.
       xp.push({ source: 'guardian', amount: GUARDIAN_XP });
       guardianDay = day;

@@ -12,6 +12,8 @@ export class DailyChallenge {
   /** Local date as YYYYMMDD: the seed, and the key of the day's best score. */
   readonly key: string;
   readonly modeId: ModeId;
+  /** When the next challenge comes: the next local midnight. */
+  readonly endsAt: Date;
 
   constructor(date: Date, eligible: readonly ModeId[]) {
     if (eligible.length === 0) throw new Error('No mode is eligible for the daily challenge');
@@ -20,6 +22,7 @@ export class DailyChallenge {
     this.key = `${date.getFullYear()}${month}${day}`;
     const pick = SeededRandom.fromString(`mode:${this.key}`).nextInt(eligible.length);
     this.modeId = eligible[pick]!;
+    this.endsAt = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
   }
 
   /** A fresh, identical piece sequence for each attempt of the day. */

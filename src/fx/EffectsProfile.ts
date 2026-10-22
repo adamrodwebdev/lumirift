@@ -15,20 +15,23 @@ export interface EffectsProfile {
   readonly gameOverDelayMs: number;
 }
 
+/** Each level's effects; only `full` lets the player's shake through. */
+const PROFILES: Readonly<
+  Record<EffectsLevel, Omit<EffectsProfile, 'shake'> & { readonly shakes: boolean }>
+> = {
+  full: { particles: 1, destruction: true, motion: true, gameOverDelayMs: 1100, shakes: true },
+  // Calmer: fewer particles, nothing moves the whole well, no shake.
+  reduced: {
+    particles: 0.35,
+    destruction: true,
+    motion: false,
+    gameOverDelayMs: 600,
+    shakes: false,
+  },
+  off: { particles: 0, destruction: false, motion: false, gameOverDelayMs: 0, shakes: false },
+};
+
 export function effectsProfile(level: EffectsLevel, shake: boolean): EffectsProfile {
-  switch (level) {
-    case 'full':
-      return { particles: 1, destruction: true, shake, motion: true, gameOverDelayMs: 1100 };
-    case 'reduced':
-      // Calmer: fewer particles, nothing moves the whole well, no shake.
-      return {
-        particles: 0.35,
-        destruction: true,
-        shake: false,
-        motion: false,
-        gameOverDelayMs: 600,
-      };
-    case 'off':
-      return { particles: 0, destruction: false, shake: false, motion: false, gameOverDelayMs: 0 };
-  }
+  const { shakes, ...profile } = PROFILES[level];
+  return { ...profile, shake: shakes && shake };
 }

@@ -5,6 +5,19 @@ export function dayKey(date: Date): string {
   return `${date.getFullYear()}${month}${day}`;
 }
 
+/** What is left until `end`, from `now`: whole days, hours and minutes, never negative. */
+export function timeLeft(
+  end: Date,
+  now: Date,
+): { readonly days: number; readonly hours: number; readonly minutes: number } {
+  const minutes = Math.max(0, Math.floor((end.getTime() - now.getTime()) / 60_000));
+  return {
+    days: Math.floor(minutes / 1440),
+    hours: Math.floor(minutes / 60) % 24,
+    minutes: minutes % 60,
+  };
+}
+
 /** The key of the day before, across months and years. */
 export function previousDay(key: string): string {
   const date = new Date(Number(key.slice(0, 4)), Number(key.slice(4, 6)) - 1, Number(key.slice(6)));

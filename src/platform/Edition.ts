@@ -30,3 +30,18 @@ export function allowsMode(edition: Edition, modeId: ModeId): boolean {
 export function allowsLevel(edition: Edition, level: CampaignLevel): boolean {
   return edition.campaignLevels === null || LEVELS.indexOf(level) < edition.campaignLevels;
 }
+
+/** Play's next game: a campaign level, or a free game of a mode. */
+export type NextPlay =
+  | { readonly kind: 'level'; readonly level: CampaignLevel }
+  | { readonly kind: 'mode'; readonly modeId: ModeId };
+
+/** Past the levels an edition opens (the demo's), Play starts a game of Sand, the game's hook. */
+const FREE_PLAY: ModeId = 'sand';
+
+/** Play goes on with the campaign's next level, if this edition opens it. */
+export function nextPlay(edition: Edition, nextLevel: CampaignLevel): NextPlay {
+  return allowsLevel(edition, nextLevel)
+    ? { kind: 'level', level: nextLevel }
+    : { kind: 'mode', modeId: FREE_PLAY };
+}

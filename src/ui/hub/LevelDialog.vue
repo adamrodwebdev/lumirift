@@ -3,12 +3,12 @@ import { computed, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
-import { timeBonusMs, UPGRADES } from '@/campaign/Upgrades';
+import { levelTimeMs, timeBonusMs, upgradeHelps, UPGRADES } from '@/campaign/Upgrades';
 import { allowsLevel } from '@/platform/Edition';
 import AppIcon from '../components/AppIcon.vue';
 import ModalDialog from '../components/ModalDialog.vue';
 import StarRow from '../components/StarRow.vue';
-import { upgradeHelps, useCampaignText } from '../useCampaignText';
+import { useCampaignText } from '../useCampaignText';
 import GemCanvas from './GemCanvas.vue';
 
 /**
@@ -38,13 +38,14 @@ const detail = computed(() => {
   const model = campaign.model;
   const family = catalog.get(level.modeId).family;
   const bonus = timeBonusMs(model.snapshot.ranks);
+  const time = levelTimeMs(level, model.snapshot.ranks);
   const inEdition = allowsLevel(platform.edition, level);
   const previous = LEVELS[LEVELS.indexOf(level) - 1];
   return {
     level,
     best: model.starsOf(level.id),
-    time: level.timeLimitMs === null ? null : text.duration(level.timeLimitMs + bonus),
-    bonus: level.timeLimitMs === null || bonus === 0 ? null : text.duration(bonus),
+    time: time === null ? null : text.duration(time),
+    bonus: time === null || bonus === 0 ? null : text.duration(bonus),
     helping: UPGRADES.filter(
       (upgrade) => model.rankOf(upgrade.id) > 0 && upgradeHelps(upgrade, level.modeId, family),
     ),

@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n';
 import { useFormat } from '@/app/useFormat';
 import type { Indicator } from '@/session/GameSession';
-import type { BestLine } from '../BestLine';
+import type { BestLine } from '@/progression/BestLine';
 import AppIcon from './AppIcon.vue';
 
 /**

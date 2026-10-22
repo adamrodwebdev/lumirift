@@ -174,7 +174,10 @@ au § 5 du cahier des charges.
 ```
 src/
   core/          Briques partagées (événements, hasard à graine, tons, jours)
-  session/       Contrat GameSession, registre des modes, défi du jour
+  session/       Contrat GameSession, registre des modes, défi du jour, surcharge
+  run/           Une partie à l'écran : sa sorte (libre, défi, Gardien, niveau), son
+                 déroulé et sa fin réglée ; l'écran ne fait que dessiner
+  campaign/      Niveaux, objectifs, étoiles, améliorations, défi des Gardiens
   showcase/      Scènes mises en scène (boucle de l'accueil, vidéos des portails)
   families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface
   progression/   Expérience, objectifs, cosmétiques, profil
