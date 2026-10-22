@@ -20,20 +20,65 @@ const load = (locale: string): Tree =>
     readFileSync(new URL(`../../src/i18n/locales/${locale}.json`, import.meta.url), 'utf8'),
   ) as Tree;
 
-const LOCALES: Record<string, Tree> = { fr: load('fr'), en: load('en'), id: load('id') };
+const LOCALES: Record<string, Tree> = {
+  fr: load('fr'),
+  en: load('en'),
+  id: load('id'),
+  ru: load('ru'),
+};
 const fr = LOCALES.fr!;
+
+/** Every message of a language, with its key. */
+const messages = (locale: string): [string, string][] =>
+  keys(LOCALES[locale]!).map((key) => [key, String(leaf(LOCALES[locale]!, key))]);
+
+/** The forms of a message "a | b | c". */
+const forms = (message: string) => message.split(' | ').length;
 
 describe('translations', () => {
   const reference = keys(fr).sort();
 
-  it.each(['en', 'id'])('%s has exactly the keys of the French reference', (locale) => {
+  it.each(['en', 'id', 'ru'])('%s has exactly the keys of the French reference', (locale) => {
     expect(keys(LOCALES[locale]!).sort()).toEqual(reference);
   });
 
   it.each(Object.keys(LOCALES))('%s has no empty message', (locale) => {
-    for (const key of keys(LOCALES[locale]!)) {
-      expect(String(leaf(LOCALES[locale]!, key)).trim(), key).not.toBe('');
+    for (const [key, message] of messages(locale)) expect(message.trim(), key).not.toBe('');
+  });
+
+  it.each(Object.keys(LOCALES))('%s keeps the placeholders of the French reference', (locale) => {
+    const names = (message: string) => [...message.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
+    for (const [key, message] of messages(locale)) {
+      const own = new Set(names(message));
+      expect([...own].sort(), key).toEqual([...new Set(names(String(leaf(fr, key))))].sort());
     }
+  });
+
+  it('counts in Russian with one, few and many (and a zero first where French has one)', () => {
+    for (const [key, message] of messages('ru')) {
+      const french = forms(String(leaf(fr, key)));
+      const english = forms(String(leaf(LOCALES.en!, key)));
+      if (french === 1 && english === 1 && forms(message) === 1) continue;
+      expect(forms(message), key).toBe(french === 3 ? 4 : 3);
+    }
+  });
+
+  it('writes French with its no-break spaces and curly apostrophes', () => {
+    for (const [key, message] of messages('fr')) {
+      expect(message, key).not.toMatch(/ [:;!?%»]|« /);
+      expect(message, key).not.toContain("'");
+    }
+  });
+
+  it('writes Russian with its own punctuation: «ёлочки», no space before ! ? : ;', () => {
+    for (const [key, message] of messages('ru')) {
+      expect(message, key).not.toMatch(/\s[!?:;]/);
+      expect(message, key).not.toMatch(/["'„“”]/);
+    }
+  });
+
+  it('writes English apostrophes curly', () => {
+    for (const [key, message] of messages('en')) expect(message, key).not.toContain("'");
   });
 
   it('names and pitches every mode', () => {
@@ -110,6 +155,8 @@ describe('detectLocale', () => {
   it('takes the first supported language of the browser', () => {
     expect(detectLocale(['de-DE', 'fr-FR', 'en'])).toBe('fr');
     expect(detectLocale(['id-ID'])).toBe('id');
+    expect(detectLocale(['ru-RU', 'en-US'])).toBe('ru');
+    expect(detectLocale(['ru'])).toBe('ru');
   });
 
   it('understands the legacy Indonesian code', () => {

@@ -82,7 +82,7 @@ langue, sauvegarde, coupure du son et publicités. Notre site ne charge jamais l
   > and unlock block skins, ambiances and shatter effects, one of them from each Guardian.
   >
   > No sign-up, progress saved automatically. Play with the keyboard, or by touch on phones and
-  > tablets, in portrait or landscape. Available in English, French and Indonesian.
+  > tablets, in portrait or landscape. Available in English, French, Indonesian and Russian.
 
 - **Controls** :
 
@@ -135,7 +135,7 @@ au SDK journalisé. Le « débutant » est un joueur simulé qui lâche chaque p
 | Bloqueur de pub (SDK bloqué)               | ✅         | Jeu complet ; « Play again » relance en 0,2 s ; seule erreur : le script bloqué lui-même                                                                        |
 | Sauvegarde (module Data)                   | ✅         | Progression gardée au rechargement ; moins de 1 Ko pour une limite de 1 Mo                                                                                      |
 | Tailles d'iframe                           | ✅         | 821 × 462, 907 × 510, 1280 × 720, 1920 × 1080, 800 × 450, 390 × 844, 844 × 390 : rien ne déborde ; fenêtre de fin sans défilement                               |
-| Langues                                    | ✅         | Français et indonésien sans débordement (langue réglée dans le jeu : le SDK local dit toujours `en-US`)                                                         |
+| Langues                                    | ✅         | Français, indonésien et russe sans débordement (langue réglée dans le jeu : le SDK local dit toujours `en-US`)                                                  |
 | 144 / 165 Hz                               | ✅         | Moteurs identiques à 60, 144 et 165 Hz (graines fixes, 5 cas) ; Chrome sans synchro verticale tourne à 150–165 i/s                                              |
 | Performances (processeur ralenti 4×)       | ✅         | 95 % des images en moins de 8 ms, aucune image lente : 1-1 et les quatre boss                                                                                   |
 | Console, réseau                            | ✅         | Aucune erreur ; seuls `localhost` et `sdk.crazygames.com` contactés                                                                                             |

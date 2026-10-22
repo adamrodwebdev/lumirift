@@ -35,6 +35,7 @@ export class FallingReelView implements ReelView {
       context.profile,
       context.palette,
       context.formatPoints,
+      context.comboWord,
     );
     this.renderer = new FallingRenderer(context.canvas, session.view);
     this.renderer.setGhost(false);

@@ -178,6 +178,7 @@ onMounted(async () => {
     profile: reelProfile,
     dark: () => theme.resolved.value === 'dark',
     formatPoints: (points) => format.number(points),
+    comboWord: (combo) => t('wellWords.combo', { n: combo }),
     still: still || settings.current.effects === 'off',
     onScene: (id) => (shownScene.value = id),
   });
@@ -310,7 +311,7 @@ onBeforeUnmount(() => {
               :class="{ 'goals__dot--done': entry.done }"
             />
           </span>
-          {{ t('profile.objectives') }}
+          <span class="goals__label">{{ t('profile.objectives') }}</span>
           <strong>{{ t('hub.objectivesDone', { n: done, total: objectives.length }) }}</strong>
         </button>
       </div>
@@ -346,6 +347,7 @@ onBeforeUnmount(() => {
 
 /* The two challenges, side by side: each says what it is, what it plays, how long it lasts. */
 .challenges {
+  container-type: inline-size;
   display: flex;
   gap: var(--space-2);
   width: min(100%, 27rem);
@@ -399,15 +401,23 @@ onBeforeUnmount(() => {
   line-height: 1.2;
 }
 
-.challenge__text strong,
 .challenge__text small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/*
+ * A long name (Golem de céramique, Керамический голем) takes two lines rather
+ * than losing its end, upright or on its side.
+ */
 .challenge__text strong {
+  display: -webkit-box;
+  overflow: hidden;
   font-size: 0.85rem;
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .challenge__text small {
@@ -439,6 +449,14 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0.8rem color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
+/* A narrow column of cards (a small phone on its side): the bonus pins the card's lower edge, clear of its title. */
+@container (max-width: 12rem) {
+  .challenge__bonus {
+    top: auto;
+    bottom: -0.45rem;
+  }
+}
+
 /* A phone held upright: the cards share its width; their words need the icons' room. */
 @media (max-width: 29.99rem) {
   .challenge {
@@ -447,15 +465,6 @@ onBeforeUnmount(() => {
 
   .challenge__icon {
     display: none;
-  }
-
-  /* A long name (Golem de céramique) takes two lines rather than losing its end. */
-  .challenge__text strong {
-    display: -webkit-box;
-    white-space: normal;
-    line-height: 1.15;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
   }
 }
 
@@ -777,6 +786,7 @@ onBeforeUnmount(() => {
 
 .goals strong {
   color: var(--accent);
+  white-space: nowrap;
 }
 
 .goals__dots {
@@ -829,8 +839,62 @@ onBeforeUnmount(() => {
     width: min(100%, 17rem);
   }
 
+  /*
+   * A narrow column (a small phone on its side): the play button's word and
+   * icon scale down to it, so that a longer word (ИГРАТЬ) stays inside.
+   */
   .home__cta {
     grid-area: cta;
+    container-type: inline-size;
+  }
+
+  .play__label {
+    font-size: clamp(1.3rem, 12.5cqi, 1.9rem);
+  }
+
+  .play__icon {
+    width: clamp(2.5rem, 24cqi, 3.4rem);
+    height: clamp(2.5rem, 24cqi, 3.4rem);
+  }
+
+  .goals {
+    max-width: 100%;
+  }
+
+  /* Too narrow for its words: the dots and the count say it, a screen reader reads it all. */
+  @container (max-width: 12rem) {
+    .goals__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+}
+
+/*
+ * A phone on its side: little height for two challenges, Play and the
+ * objectives. Tighter rows, the cards without their icons, the bonus clear of
+ * the card's first line.
+ */
+@media (orientation: landscape) and (max-height: 26.875rem) {
+  .home__content {
+    row-gap: var(--space-2);
+  }
+
+  .home__cta {
+    gap: var(--space-2);
+  }
+
+  .challenge {
+    min-height: 3rem;
+    padding: 0.3rem var(--space-3);
+  }
+
+  .challenge__icon {
+    display: none;
   }
 }
 </style>
