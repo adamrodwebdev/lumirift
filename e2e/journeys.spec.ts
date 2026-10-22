@@ -57,6 +57,8 @@ async function openMode(page: Page, name: string) {
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  // The game mounts one frame after its title card is painted (see bootPlugin).
+  await page.locator('main').waitFor();
 });
 
 test('the title screen: the logo, one big Play, the daily challenge, every mode', async ({

@@ -3,6 +3,23 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.19.1] — 22/10/2026
+
+Le premier écran sans attente : Lighthouse mobile passe de 93–97 à **100** en Performance.
+
+### Modifié
+
+- **L'écran de chargement est le titre du jeu** (LUMI / RIFT / BLOCKS, en grand), peint par
+  la page seule ; le jeu le dissout une fois monté.
+- **Seule la langue du joueur est téléchargée** : chaque langue est un module à part, demandé
+  avec le code ; le module d'entrée passe de 37 à 15 Ko compressés. Une autre langue choisie
+  dans les réglages arrive à la demande.
+- **Les styles du premier écran sont dans la page** : plus aucune feuille de style bloquante.
+- **Le code est demandé après la première image** de l'écran-titre, et les images des menus
+  (gemmes, scène vivante, boucle de l'accueil) une fois la page chargée et le navigateur
+  libre : rien ne retarde ce que le joueur voit en premier.
+- Seuil Lighthouse relevé : Performance ≥ 98 (95 dans les trois autres catégories).
+
 ## [1.19.0] — 22/10/2026
 
 La tension de l'échec : le danger se voit, s'entend et se joue ; s'en sortir est
