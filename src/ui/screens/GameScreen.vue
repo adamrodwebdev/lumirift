@@ -297,6 +297,8 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
   const verdict = run ? (decided ?? run.end(reason, liveState(current))) : null;
   // The goal bar shows the last blow (a Guardian's last hit ends the game in the same frame).
   if (run) goal.value = run.progress(liveState(current));
+  // Read before this game is recorded: the record it may beat.
+  const previousBest = run ? null : scores.best(key);
   // Whole points or milliseconds: no float noise in the saved records. Campaign
   // games bring upgrades along: they never count as records.
   const record = run
@@ -311,10 +313,15 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
     ...(verdict?.won && props.level?.boss ? { boss: props.level.boss } : {}),
   });
   platform.gameOver(verdict ? verdict.won : reason === 'victory');
-  // Read before the verdict is recorded: does this game beat the level's best?
-  const improved = verdict?.won ? campaign.model.starsOf(verdict.levelId) < verdict.stars : false;
-  // A record or a better level result is worth a celebration on the portal.
-  if (record.isNewBest || improved) platform.happyTime();
+  // Only a real feat is worth the portal's celebration (it asks for it sparingly,
+  // never for every level): a record beaten, a Guardian defeated for the first
+  // time. Read before the verdict is recorded.
+  const recordBeaten = record.isNewBest && previousBest !== null;
+  const guardianDown =
+    verdict?.won === true &&
+    props.level?.boss !== undefined &&
+    campaign.model.starsOf(verdict.levelId) === 0;
+  if (recordBeaten || guardianDown) platform.happyTime();
   outcome.value = {
     // A Guardian's fall is told as such, not as a duel's victory.
     reason: reason === 'victory' && props.level?.boss ? 'guardian' : reason,

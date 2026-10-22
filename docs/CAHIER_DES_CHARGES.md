@@ -783,7 +783,9 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   lien sortant. Refusé en 1.2.0 sur la qualité ; **resoumission préparée en 1.10** (revue
   complète du build, corrections, médias refaits). Chaque portail décide de ses pubs
   (`midgameAd(hooks, moment)`) : CrazyGames n'en montre jamais en allant vers un menu (boutons
-  de navigation) et n'offre pas de pub récompensée.
+  de navigation), jamais avant 3 minutes de jeu réel dans la session (1.17.2 : pauses, menus et
+  fins de partie exclus), et n'offre pas de pub récompensée. Le signal `happytime` du portail
+  est réservé aux vrais exploits : un record battu, un Gardien vaincu pour la première fois.
 
 - **Maintenant** : le jeu de base, sur notre propre site, sans publicité ni SDK tiers.
 - **Démo pour le portfolio (1.3)** : `npm run build:demo` produit `dist-demo`, servi par

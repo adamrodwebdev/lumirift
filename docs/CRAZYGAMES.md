@@ -114,6 +114,65 @@ langue, sauvegarde, coupure du son et publicités. Notre site ne charge jamais l
 - **Genre** : Puzzle (blocs qui tombent). **Public** : PEGI 3 de fait (aucune violence, aucun
   achat, aucun chat).
 
+## Revue modérateur du 21/10/2026 (build 1.17.2)
+
+**Méthode.** Le build CrazyGames est servi en local (`vite preview --mode crazygames`), avec le
+SDK v3 dans son environnement `local` : les pubs y sont simulées (5 s), sans l'attente de 3
+minutes du portail, et `systemInfo` y est factice (langue toujours `en-US`). Les essais tournent
+dans Chrome sans profil, en iframe 907 × 510 à DPR 1 sauf mention contraire, avec chaque appel
+au SDK journalisé. Le « débutant » est un joueur simulé qui lâche chaque pièce toutes les 2 s.
+
+| Contrôle                                   | Statut     | Preuve                                                                                                                                                          |
+| ------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chargement, chemin vers le jeu             | ✅         | Premier affichage à 0,26 s ; un clic (« PLAY · Level 1-1 ») ; `gameplayStart` 1 s après l'ouverture                                                             |
+| Entrée fracassante (débutant)              | ✅         | Choc électrique à 10 s, embrasement à 16 s, liane à 22 s ; 1-1 gagné entre 23 et 31 s                                                                           |
+| Événements SDK                             | ✅         | `loadingStart`/`loadingStop` puis `gameplayStart` à chaque partie ; `gameplayStop` sur P et en fin de partie ; aucun sur perte de focus                         |
+| Échap, Ctrl+W                              | ✅         | Échap ne fait rien en jeu et laisse la pause ouverte ; Ctrl n'est jamais utilisé                                                                                |
+| Défilement, clic droit, sélection          | ✅         | Flèches, Espace, Fin, molette : la page ne bouge pas ; menu contextuel bloqué ; `user-select: none`                                                             |
+| Bouton muet du portail                     | ✅         | `?muteAudio=true` : moteur audio coupé, réglage du joueur intact                                                                                                |
+| Pub midgame                                | ✅ corrigé | Avant : pub à 25 s (passage au 1-2). Après : aucune avant 3 min de jeu ; à 3 min, « Try again » → pub, son suspendu pendant, repris après, puis `gameplayStart` |
+| Pas de pub sur la navigation               | ✅         | « Home » : aucun appel au SDK                                                                                                                                   |
+| Bloqueur de pub (SDK bloqué)               | ✅         | Jeu complet ; « Play again » relance en 0,2 s ; seule erreur : le script bloqué lui-même                                                                        |
+| Sauvegarde (module Data)                   | ✅         | Progression gardée au rechargement ; moins de 1 Ko pour une limite de 1 Mo                                                                                      |
+| Tailles d'iframe                           | ✅         | 821 × 462, 907 × 510, 1280 × 720, 1920 × 1080, 800 × 450, 390 × 844, 844 × 390 : rien ne déborde ; fenêtre de fin sans défilement                               |
+| Langues                                    | ✅         | Français et indonésien sans débordement (langue réglée dans le jeu : le SDK local dit toujours `en-US`)                                                         |
+| 144 / 165 Hz                               | ✅         | Moteurs identiques à 60, 144 et 165 Hz (graines fixes, 5 cas) ; Chrome sans synchro verticale tourne à 150–165 i/s                                              |
+| Performances (processeur ralenti 4×)       | ✅         | 95 % des images en moins de 8 ms, aucune image lente : 1-1 et les quatre boss                                                                                   |
+| Console, réseau                            | ✅         | Aucune erreur ; seuls `localhost` et `sdk.crazygames.com` contactés                                                                                             |
+| `happytime`                                | ✅ corrigé | N'est plus envoyé à chaque niveau gagné : seulement pour un record battu ou un Gardien vaincu                                                                   |
+| Pause au clavier                           | ✅ corrigé | P ouvre la pause et la referme                                                                                                                                  |
+| Safari, téléphone réel, Chromebook, volume | 🟡         | Pas de WebKit sur la machine : à faire dans l'outil QA du portail et sur appareil                                                                               |
+
+### La page qualité, point par point
+
+| Attente du portail                                      | Statut  | Constat                                                                                                                             |
+| ------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Prise en main dans le jeu, courte, passable, visuelle   | ✅      | Partie guidée sur le puits, « Skip the guide », touches dessinées à côté du jeu, gestes dans la pause sur écran tactile             |
+| Interface claire, boutons nommés par leur destination   | ✅      | « PLAY · Level 1-1 », « Level 1-2 », « Try again », « Campaign map »                                                                |
+| Boutons ni grossis ni retardés pour pousser une pub     | ✅      | Aucune pub récompensée sur CrazyGames ; boutons de fin égaux                                                                        |
+| Objectifs clairs, facile à apprendre et à comprendre    | ✅      | Carte d'objectif (« Clear 2 regions 0 / 2 ») et minuteur ; chaque élément nommé quand il arrive                                     |
+| Commandes cohérentes, suivant la disposition du clavier | ✅      | Mêmes touches dans toute la famille ; touches par position physique (AZERTY vérifié)                                                |
+| Réactif, fluide                                         | ✅      | Voir performances ; relance en 0,2 s                                                                                                |
+| Défi et rythme équilibrés                               | 🟡      | Après la démonstration du 1-1 (25 s), le 1-2 est du Classique pur pendant 2 à 3 minutes : le genre de base, noté 7,4 sur CrazyGames |
+| Mise en page, interface adaptée à l'appareil            | ✅      | Toutes les tailles d'iframe ; portrait et paysage ; gestes au doigt                                                                 |
+| Plusieurs profils de joueurs                            | ✅      | Campagne, défi du jour, 13 modes, duel contre l'IA, quatre boss                                                                     |
+| Scénario intéressant, si le jeu en a un                 | ✅      | La faille et ses quatre Gardiens donnent un fil ; pas d'histoire racontée                                                           |
+| Pas de tâche répétitive                                 | ✅      | Chaque niveau change de mode ou d'objectif                                                                                          |
+| Unique, facile à enrichir, entretenu                    | ✅      | Nom et iconographie propres ; niveaux et boss en données ; six versions cette semaine                                               |
+| Graphismes et sons de qualité, style cohérent           | ✅ / 🟡 | Une identité commune (gemmes, verre, céramique, sable) ; le volume sonore reste à juger à l'oreille                                 |
+| Clair sur ce qu'il est : nom et images fidèles au jeu   | 🟡      | Covers et vidéos montrent de vrais moments du jeu, mais l'Œil de la Tour de la cover n'arrive qu'au niveau 4-7                      |
+
+### Recommandations (à décider)
+
+1. **Rythme du chapitre 1** : faire du 1-2 un second niveau de Sable (éléments au hasard, sans
+   vent) et décaler le Classique. Les trois à quatre premières minutes, celles du modérateur,
+   resteraient sur ce qu'aucun autre jeu du tag n'a.
+2. **Cover et premières minutes** : le monde de l'Œil (la Tour) est jouable tout de suite depuis
+   « Modes », mais pas l'Œil lui-même. Risque faible : la vidéo montre les quatre boss.
+3. **Outil QA du portail** : les brouillons et l'aperçu restent ouverts pendant la pause des
+   soumissions. Téléverser le dossier `dist-crazygames/` de la 1.17.2 dans le brouillon pour
+   relire le journal du SDK, Safari et un téléphone avant le 28/10.
+
 ## Contrôle des exigences (1.11.0, vitrine 1.17.0)
 
 Légende : ✅ conforme, vérifié · 🟡 conforme, vérification humaine à faire sur le portail ·

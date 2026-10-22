@@ -18,6 +18,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--mode", "playgama", "--port", "5176", "--strictPort"],
       "port": 5176
+    },
+    {
+      "name": "lumirift-crazygames",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "preview", "--mode", "crazygames", "--port", "4180", "--strictPort"],
+      "port": 4180
     }
   ]
 }
