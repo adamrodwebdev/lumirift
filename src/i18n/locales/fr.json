@@ -21,7 +21,17 @@
     "play": "Jouer",
     "best": "Record : {value}",
     "noBest": "Pas encore de record",
-    "quick": "Une partie de Classique, tout de suite"
+    "quick": "Une partie de Classique, tout de suite",
+    "reel": {
+      "elements": "Foudre, feu, graines : le sable réagit",
+      "flip": "Retournez le puits : les trous disparaissent",
+      "duneWorm": "Il jaillit du sable",
+      "tilt": "Le mur devient le sol",
+      "ceramicGolem": "Il lance des pierres sur votre mosaïque",
+      "mirror": "Le puits devient son propre reflet",
+      "towerEye": "Aveuglez-le dans sa tour de verre",
+      "riftHeart": "Frappez son cœur avec vos lignes"
+    }
   },
   "daily": {
     "title": "Défi du jour",
@@ -152,7 +162,7 @@
     "windSoonRight": "Coup de vent vers la droite",
     "elementWater": "Pièce d’eau",
     "elementFire": "Pièce de feu",
-    "burn": "Le feu a consumé {value} grains",
+    "burn": "Le feu a consumé {value} grain | Le feu a consumé {value} grains",
     "quench": "L’eau éteint le feu",
     "rescue": "Seconde chance !",
     "elementOil": "Pièce d’huile : elle flotte, et le feu l’embrase",
@@ -169,14 +179,14 @@
       "sprout": "La graine pousse en liane"
     },
     "strike": {
-      "shock": "Électrocution ! {value} grains brisés par l’eau",
-      "shatter": "Foudre : {value} grains éclatés",
+      "shock": "Électrocution ! {value} grain brisé par l’eau | Électrocution ! {value} grains brisés par l’eau",
+      "shatter": "Foudre : {value} grain éclaté | Foudre : {value} grains éclatés",
       "spark": "La foudre embrase l’huile",
       "thaw": "La foudre brise la glace",
       "fuse": "La foudre enflamme la liane"
     },
     "bombPiece": "Gemme-bombe : effacez son anneau pour faire sauter la tour autour",
-    "blast": "Boum ! {value} blocs pulvérisés",
+    "blast": "Boum ! {value} bloc pulvérisé | Boum ! {value} blocs pulvérisés",
     "blastChain": "Réaction en chaîne : {value} bombes !",
     "boss": {
       "warn": "Fissures rouges : le Ver va surgir là !",
@@ -214,7 +224,8 @@
         "phase2": "Le Cœur s'emballe : il bat plus vite !",
         "phase3": "Dernier souffle : la faille se déchire !",
         "defeated": "Le Cœur de la faille est vaincu !"
-      }
+      },
+      "tease": "Quelque chose bouge sous le sable…"
     }
   },
   "controls": {
@@ -521,7 +532,10 @@
     "retry": "Rejouer",
     "map": "Carte de campagne",
     "lockedNote": "Gagnez le niveau {level} pour ouvrir celui-ci.",
-    "guardian": "Gardien"
+    "guardian": "Gardien",
+    "teaser": "Le {name} s’éveille : il vous attend au niveau {level}.",
+    "chapterGuardian": "Gardien : {name}",
+    "nextGuardian": "Prochain Gardien : {name}, chapitre {n}"
   },
   "upgrades": {
     "title": "Améliorations",

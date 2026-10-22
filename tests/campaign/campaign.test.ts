@@ -46,14 +46,14 @@ describe('Campaign levels', () => {
 });
 
 describe('CampaignRun', () => {
-  const lines = levelById('1-2')!; // 10 lines in 2 min 30
+  const lines = levelById('1-3')!; // 10 lines in 2 min 30
 
   it('ends the level as soon as a live goal is met, stars by the time left', () => {
     const run = new CampaignRun(lines, lines.timeLimitMs);
     expect(run.check(state({ lines: 9 }))).toBeNull();
     expect(run.progress(state({ lines: 12 }))).toEqual({ value: 10, target: 10 });
     expect(run.check(state({ lines: 10, durationMs: 60_000 }))).toEqual({
-      levelId: '1-2',
+      levelId: '1-3',
       won: true,
       stars: 3,
     });
@@ -64,7 +64,7 @@ describe('CampaignRun', () => {
   it('loses when the game ends before the goal', () => {
     const run = new CampaignRun(lines, lines.timeLimitMs);
     expect(run.end('timeUp', state({ lines: 4 }))).toEqual({
-      levelId: '1-2',
+      levelId: '1-3',
       won: false,
       stars: 0,
     });

@@ -16,6 +16,8 @@ const BOLT_MS = 320;
 /** Points of a stream join the running popup when they come within this long (ms). */
 const TALLY_MS = 400;
 const FLASH_MS = 260;
+/** While a Guardian passes under the sand (a teaser), the surface above it trembles this often (ms). */
+const TREMBLE_EVERY_MS = 70;
 
 /** A bolt being drawn: a jagged line from where it left the piece to where it struck. */
 export interface Bolt {
@@ -51,6 +53,7 @@ export class SandEffects {
   flash = 0;
   /** The Guardian was just hurt: it blinks pale this long (ms). */
   wormHurt = 0;
+  private trembleIn = 0;
 
   private readonly colorIndex = new Map<string, number>();
   private readonly world: ParticleWorld;
@@ -78,6 +81,9 @@ export class SandEffects {
       session.onGame('react', (event) => this.onReact(event)),
       session.onGame('strike', (event) => this.onStrike(event)),
       session.onGame('boss', ({ event }) => this.onBoss(event)),
+      session.onGame('tease', () => {
+        if (this.profile().shake) this.shake.kick(3);
+      }),
       session.onGame('over', () => this.collapse()),
     ];
     return () => offs.forEach((off) => off());
@@ -110,6 +116,18 @@ export class SandEffects {
     this.bolts.length = bolts;
     this.flash = Math.max(0, this.flash - deltaMs / FLASH_MS);
     this.wormHurt = Math.max(0, this.wormHurt - deltaMs);
+    if (this.view.isTeasing) this.tremble(deltaMs);
+  }
+
+  /** A Guardian passing under the sand (the teaser): the surface above its head trembles. */
+  private tremble(deltaMs: number): void {
+    const worm = this.view.worm;
+    if (!worm || worm.out) return;
+    this.trembleIn -= deltaMs;
+    if (this.trembleIn > 0) return;
+    this.trembleIn = TREMBLE_EVERY_MS;
+    const x = worm.headX;
+    this.spray(x, worm.surfaceAt(x), 4, 70);
   }
 
   boltProgress(bolt: Bolt): number {

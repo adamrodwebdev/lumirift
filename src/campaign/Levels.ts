@@ -26,8 +26,12 @@ export interface CampaignLevel {
   readonly calm?: boolean;
   /** Opens on the mode's best moments, scripted: the campaign's crushing entrance. */
   readonly showcase?: boolean;
+  /** Practises what the show showed: in Sand, its elements by chance, without wind. */
+  readonly practice?: boolean;
   /** A Guardian of the rift to defeat: the level is a boss fight. */
   readonly boss?: BossId;
+  /** A Guardian of a later chapter shows itself once this level is won (a teaser). */
+  readonly teaser?: BossId;
   readonly timeLimitMs: number | null;
   readonly goal: Goal;
   readonly stars: StarRule;
@@ -73,10 +77,19 @@ export const LEVELS: readonly CampaignLevel[] = [
   // 1. Premiers blocs
   // Sand first, as a show: one idea to learn (link the walls), and within a
   // minute the elements no other game has (lightning through water, a blaze,
-  // a vine); no wind and no random element yet, those come in chapter 2.
-  { ...timed('1-1', 'sand', 3, { kind: 'lines', target: 2 }), calm: true, showcase: true },
-  timed('1-2', 'classic', 2.5, { kind: 'lines', target: 10 }),
-  timed('1-3', 'chroma', 2.5, { kind: 'score', target: 2500 }),
+  // a vine); no wind and no random element yet: the elements come by chance
+  // in 1-2, the wind in chapter 2.
+  // Won, it ends on a promise: the Dune Wyrm's shadow passes under the sand.
+  {
+    ...timed('1-1', 'sand', 3, { kind: 'lines', target: 2 }),
+    calm: true,
+    showcase: true,
+    teaser: 'duneWorm',
+  },
+  // Then the player tries those elements alone: what no other game has stays
+  // first, for three to four minutes, before the falling basics.
+  { ...timed('1-2', 'sand', 3, { kind: 'lines', target: 3 }), practice: true },
+  timed('1-3', 'classic', 2.5, { kind: 'lines', target: 10 }),
   timed('1-4', 'mirror', 3, { kind: 'lines', target: 12 }),
   timed('1-5', 'classic', 3, { kind: 'bigClear', target: 4 }),
   duel('1-6', 'rookie'),
@@ -158,6 +171,11 @@ export const LEVELS: readonly CampaignLevel[] = [
 ];
 
 export const MAX_STARS = LEVELS.length * 3;
+
+/** The level where a Guardian waits. */
+export function guardianLevel(boss: BossId): CampaignLevel | undefined {
+  return LEVELS.find((level) => level.boss === boss);
+}
 
 export function levelById(id: string): CampaignLevel | undefined {
   return LEVELS.find((level) => level.id === id);

@@ -23,6 +23,8 @@ export const EYE_BOMB_CHANCE = 0.32;
 export interface TowerOptions extends ModeOptions {
   /** The Eye of the Tower to defeat (the boss level of the Vertigos). */
   readonly boss?: 'towerEye';
+  /** The Eye's first charge after this long (ms); by default the player sees it turn first. */
+  readonly bossDelayMs?: number;
 }
 
 export interface EyeEventMap {
@@ -43,6 +45,7 @@ export class TowerMode extends AbstractMode {
   readonly eyeEvents = new Emitter<EyeEventMap>();
   private lastBomb = -BOMBS_AFTER;
   private readonly withEye: boolean;
+  private readonly bossDelayMs: number | undefined;
   private _eye: TowerEye | null = null;
   private game: Game | null = null;
   private readonly told = new Set<string>();
@@ -50,6 +53,7 @@ export class TowerMode extends AbstractMode {
   constructor(options: TowerOptions = {}) {
     super(options);
     this.withEye = options.boss === 'towerEye';
+    this.bossDelayMs = options.bossDelayMs;
   }
 
   /** The Guardian of the boss level, or null. */
@@ -69,7 +73,7 @@ export class TowerMode extends AbstractMode {
     if (!this.withEye) return;
     this.game = game;
     // It starts face on, where the camera looks, so that it is seen at once.
-    this._eye = new TowerEye(TOWER_WELL.width, game.random, TOWER_WELL.width / 2);
+    this._eye = new TowerEye(TOWER_WELL.width, game.random, TOWER_WELL.width / 2, this.bossDelayMs);
     game.events.on('clear', ({ lines }) => {
       this._eye?.ringsCleared(lines);
       this.flush();

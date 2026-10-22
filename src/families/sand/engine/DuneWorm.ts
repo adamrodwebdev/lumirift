@@ -131,6 +131,21 @@ export class DuneWorm {
     return this.ys[0]!;
   }
 
+  /**
+   * Lays its body along a row, the head at (x, y) and the tail behind it
+   * (to the left when heading right), and sets it swimming towards (tx, ty):
+   * a passage under the sand, as in the campaign's teaser.
+   */
+  passTo(x: number, y: number, tx: number, ty: number): void {
+    const back = tx >= x ? -1 : 1;
+    for (let k = 0; k < SEGMENTS; k++) {
+      this.xs[k] = x + back * k * 1.2;
+      this.ys[k] = y;
+    }
+    this.heading = back < 0 ? 0 : Math.PI;
+    this.target = [tx, ty];
+  }
+
   /** True when (x, y) is within its body (plus `extra` grains). */
   touches(x: number, y: number, extra = 0): boolean {
     const r = (WORM_RADIUS + extra) ** 2;

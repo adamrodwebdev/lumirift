@@ -48,8 +48,13 @@ export class Dealer {
   }
 
   /** A given shape, in a random glaze (the cube joker). */
-  piece(shape: Shape): OfferedPiece {
-    return { id: this.nextId++, shape, tone: GLAZES[this.random.nextInt(GLAZES.length)]! };
+  /** A piece of this shape, glazed at random unless a tone is given. */
+  piece(shape: Shape, tone?: Tone): OfferedPiece {
+    return {
+      id: this.nextId++,
+      shape,
+      tone: tone ?? GLAZES[this.random.nextInt(GLAZES.length)]!,
+    };
   }
 
   /** The same piece turned a quarter (the rotation joker). */

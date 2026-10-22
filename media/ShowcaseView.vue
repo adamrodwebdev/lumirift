@@ -25,7 +25,7 @@ props.clock.subscribe((delta) => {
 
 defineExpose({
   show(next: Scene) {
-    scene.value?.session.dispose();
+    scene.value?.dispose();
     stage.value = stageFor(catalog.get(next.session.modeId));
     scene.value = next;
     key.value++;

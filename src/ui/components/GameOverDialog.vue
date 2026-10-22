@@ -106,6 +106,17 @@ const shownScore = computed(() =>
         <p v-else-if="outcome.campaign.won" class="results__gained">
           {{ t('campaign.noBetter') }}
         </p>
+        <i18n-t
+          v-if="outcome.campaign.teaser"
+          keypath="campaign.teaser"
+          tag="p"
+          class="results__teaser"
+        >
+          <template #name>{{ t(`bosses.${outcome.campaign.teaser.boss}.name`) }}</template>
+          <template #level>
+            <span class="results__level">{{ outcome.campaign.teaser.levelId }}</span>
+          </template>
+        </i18n-t>
       </div>
 
       <div class="score results__left">
@@ -461,5 +472,22 @@ const shownScore = computed(() =>
   .results__right {
     grid-column: 2;
   }
+}
+
+/* A level number never breaks at its hyphen. */
+.results__level {
+  white-space: nowrap;
+}
+
+/* A Guardian's promise: the danger colour, a pulse of light. */
+.results__teaser {
+  max-width: 22rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--danger) 55%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
 }
 </style>

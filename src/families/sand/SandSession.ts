@@ -1,5 +1,5 @@
 import { Emitter, type Listener } from '@/core/Emitter';
-import type { BossStatus } from '@/session/GameSession';
+import type { BossId, BossStatus } from '@/session/GameSession';
 import { WORM_HEALTH, type DuneWorm } from './engine/DuneWorm';
 import type { FallingCommand } from '@/families/falling/FallingSession';
 import type {
@@ -22,8 +22,10 @@ export interface SandView {
   dropDistance(): number;
   /** Grains the falling fire would burn, or the lightning strike, where it would land; or null. */
   elementTarget(): readonly number[] | null;
-  /** The Guardian of a boss level, or null. */
+  /** The Guardian of a boss level, or the one passing by in a teaser; or null. */
   readonly worm: DuneWorm | null;
+  /** The next chapter's Guardian is passing under the sand (the level is won). */
+  readonly isTeasing: boolean;
 }
 
 type Handlers = {
@@ -125,7 +127,19 @@ export class SandSession implements GameSession<FallingCommand> {
 
   boss(): BossStatus | null {
     const worm = this.game.worm;
-    return worm ? { id: 'duneWorm', health: worm.health, maxHealth: WORM_HEALTH } : null;
+    // A worm passing by in a teaser is not a fight.
+    if (!worm || this.game.isTeasing) return null;
+    return { id: 'duneWorm', health: worm.health, maxHealth: WORM_HEALTH };
+  }
+
+  /** A Guardian passes under the sand: the game is over, its world still moves. */
+  get teasing(): boolean {
+    return this.game.isTeasing;
+  }
+
+  /** Only the Dune Wyrm lives in sand. */
+  tease(boss: BossId): boolean {
+    return boss === 'duneWorm' && this.game.tease();
   }
 
   dispose(): void {
@@ -152,6 +166,7 @@ export class SandSession implements GameSession<FallingCommand> {
       told.add(id);
       this.events.emit('notice', { id: `boss.${id}` });
     };
+    events.on('tease', () => this.events.emit('notice', { id: 'boss.tease' }));
     events.on('boss', ({ event }) => {
       if (event.type === 'warn') tell('warn');
       else if (event.type === 'surge') tell('exposed');

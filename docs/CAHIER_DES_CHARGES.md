@@ -499,6 +499,16 @@ Règles détaillées :
   faille, qui respire et jette des étincelles), logo, défi du jour, grand bouton Jouer à
   portée du pouce (la campagne continue ; au-delà des niveaux de la démo, une partie de
   Sable), objectifs du jour en fenêtre. Espace lance la partie au clavier.
+- **Boucle des moments forts** (1.18), entre le titre et Jouer : de vraies parties se
+  jouent seules, huit moments d'environ 3 à 5 s (27 s par tour), chacun à son sommet en
+  moins de 3 s : éléments du Sable (foudre dans l'eau dès la première seconde, brasier,
+  liane), Renversement (quatre lignes), Ver des dunes (fissures, il jaillit, la foudre sur
+  sa tête), Bascule (le mur devient le sol), Golem de céramique (pierres, lignes et
+  colonnes), Miroir (puis un RIFT!), Œil de la Tour (un anneau effacé fait sauter la bombe
+  dans son regard), Cœur de la faille (ses éclats effacés). Une légende par moment : le mode
+  ou « Gardien : nom », puis ce qu'il montre. Fondu d'un puits à l'autre ; muette ; arrêtée
+  hors écran ; une image fixe (le brasier) si le mouvement est réduit ou les effets coupés ;
+  masquée quand la place manque (téléphone bas tenu en largeur).
 - **Modes** : les 13 modes sur un écran, les quatre inédits en grand ; illustrations
   dessinées avec les vraies gemmes, recadrées sur leur contenu. Le mode choisi montre son
   principe, son record et Jouer (le Duel demande d'abord l'adversaire).
@@ -755,9 +765,15 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   moments dans le puits (×2, ×3, COMBO ×N, RIFT!), identiques dans toutes les langues.
 - **Prise en main** : la première partie est guidée (déplacer, tourner, faire tomber, puis le
   but), chaque étape validée en la faisant, quelle que soit l'entrée ; « Passer » à tout moment.
+  La carte du guide se tient au-dessus du puits, et deux pièces lâchées sans faire l'étape
+  montrée mènent droit au but (1.18) : le guide ne retient pas un joueur qui a compris.
   La campagne s'ouvre sur le **Sable** (1-1 : deux zones en trois minutes), en version
-  **calme** (1.10) : ni vent, ni eau, ni feu, qui arrivent au chapitre 2 (`calm` du niveau,
-  `hazards: false` du jeu).
+  **calme** (1.10) : ni vent, ni élément au hasard (`calm` du niveau, `hazards: false` du jeu).
+  Gagné, le 1-1 se termine sur une **promesse** (1.18) : l'ombre du Ver des dunes passe sous
+  le sable, yeux rouges et sable qui tremble, puis la fenêtre de fin dit qu'il attend au
+  niveau 2-7 ; la carte nomme le Gardien du chapitre, ou le prochain. Le **1-2** fait
+  pratiquer ces éléments (`practice` : sans vent, eau, foudre, huile, feu et graine dès la
+  troisième pièce, une chance sur trois) avant le Classique du 1-3.
 - **Son** : tous les sons dans une même tonalité (ré mineur pentatonique) ; **musique
   générative** dans cette tonalité (nappe i – VI – III – VII, puis basse, arpège et battement
   quand l'intensité monte), dont l'intensité suit le danger (`pressure()` de chaque famille) ;
@@ -794,8 +810,9 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   que le build ouvre ; la plateforme `DemoPlatform` porte l'édition démo :
   - jeu libre : **Classique, Sable, Mosaïque, Tour et Duel** (un mode par famille, plus le
     duel) ; les huit autres restent visibles dans le carrousel, grisés, « Jeu complet » ;
-  - campagne : le **premier chapitre** (niveaux 1-1 à 1-6, qui passent aussi par Chroma et
-    Miroir) ; la carte montre la suite verrouillée, pas de « niveau suivant » après 1-6 ;
+  - campagne : le **premier chapitre** (niveaux 1-1 à 1-6 : deux de Sable, puis Classique,
+    Miroir et un premier duel) ; la carte montre la suite verrouillée, pas de « niveau
+    suivant » après 1-6 ;
   - défi du jour et objectifs quotidiens tirés parmi les modes ouverts ;
   - un bandeau d'accueil annonce la démo. Progression, Atelier et améliorations sont complets.
 - **Versions portails** (CrazyGames, Poki, GameDistribution, GamePix, itch.io, Newgrounds…) :
@@ -1021,7 +1038,8 @@ src/
                          ThemeController, ScoreBoard, ShareService
   i18n/                  locales.ts (langues, détection), index.ts (instance), locales/*.json
   ui/                    stages.ts, components/ (réglages, HUD, pause, fin), screens/ (menu, jeu),
-                         hub/ (pages du menu, art des gemmes, scène, faille)
+                         hub/ (pages du menu, art des gemmes, scène, faille, reel/ : boucle)
+  showcase/              Scènes mises en scène : boucle de l'accueil et vidéos des portails
   families/falling/
     render/              TonePalette (jetons CSS), CrystalSprites, FallingRenderer, PieceRenderer
     input/               FallingInput (clavier et boutons, répétition), WellGestures (gestes)
@@ -1064,6 +1082,16 @@ src/
   code de rendu des gemmes, chargé après le premier affichage ; la scène ne tourne que
   visible. `RiftWipe` couvre le changement d'écran, précharge (`ModeCatalog.preload`,
   `preloadStage`) puis se retire une fois le nouvel écran peint.
+- **Boucle de l'accueil** (1.18, `HomeReel`) : chaque moment est une `Scene`
+  (`src/showcase/`) : une vraie partie réglée par des **options publiques** des moteurs
+  (`bossDelayMs` des Gardiens, `opening` de la Mosaïque, `Board.fromRows` en couleurs avec
+  gemmes), et la main qui la joue (un script ou l'IA experte). La vue de sa famille
+  (`ReelView` : moteur de rendu et effets du jeu, sans commandes ni sons) la dessine sur un
+  canvas neuf, en fondu sur le précédent. Le code de chaque famille est un chunk chargé
+  quand la boucle arrive à elle (et préparé une scène à l'avance), jamais avant le premier
+  affichage ; un canvas n'entre pas dans le calcul du LCP. Les vidéos des portails jouent
+  les mêmes scènes (`media/scenes.ts`), et un test vérifie que chaque moment atteint son
+  sommet à temps.
 - **Fenêtres** (1.9, `ModalDialog`) : la boîte de dialogue native (`showModal`) garde le
   focus, Échap et l'arrière-plan inerte ; ouverte, c'est une grille dont les éléments sont la
   ligne de titre et chaque bloc de contenu, et chaque fenêtre y place ses colonnes en paysage.
@@ -1432,3 +1460,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.15    | 21/10/2026 | Principes des Gardiens ; le Golem de céramique au niveau 3-7 : pierres annoncées, parade, pierres qui se fissurent, récompense Kintsugi (§ 3.2).                  |
 | 1.16    | 21/10/2026 | L'Œil de la Tour au niveau 4-7 : regard tournant, charge annoncée, pierres, aveuglé par les bombes, récompense Éclats d'iris (§ 3.2).                             |
 | 1.17    | 21/10/2026 | Le Cœur de la faille au niveau 5-7 : battements annoncés, gravats porteurs d'éclats, miroir en dernière phase, récompense La Faille (§ 3.2).                      |
+| 1.18    | 22/10/2026 | Accrocher dès les premières secondes : boucle des moments forts sur l'accueil, promesse du Ver des dunes, 1-2 de pratique, guide plus discret (§ 3.2 ter, § 5.6). |

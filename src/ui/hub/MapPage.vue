@@ -62,7 +62,20 @@ const view = computed(() => {
           : 'open';
     return { level, stars, state, inEdition, family: catalog.get(level.modeId).family };
   });
-  return { chapter, levels, stars: levels.reduce((sum, entry) => sum + entry.stars, 0) };
+  // The chapter's Guardian, or the next chapter's: the first chapter announces it.
+  const own = LEVELS.find((level) => level.chapter === chapter && level.boss)?.boss;
+  const ahead = LEVELS.find((level) => level.chapter === chapter + 1 && level.boss);
+  const guardian = own
+    ? t('campaign.chapterGuardian', { name: t(`bosses.${own}.name`) })
+    : ahead?.boss
+      ? t('campaign.nextGuardian', { name: t(`bosses.${ahead.boss}.name`), n: ahead.chapter })
+      : null;
+  return {
+    chapter,
+    levels,
+    stars: levels.reduce((sum, entry) => sum + entry.stars, 0),
+    guardian,
+  };
 });
 const spare = computed(() => campaign.model.availableStars);
 
@@ -142,6 +155,7 @@ const shopOpen = ref(false);
         <span>{{
           t('campaign.chapterStars', { n: view.stars, max: view.levels.length * 3 })
         }}</span>
+        <strong v-if="view.guardian" class="map__guardian">{{ view.guardian }}</strong>
       </div>
       <button
         type="button"
@@ -251,6 +265,14 @@ const shopOpen = ref(false);
 .map__title span {
   color: var(--text-muted);
   font-size: 0.75rem;
+}
+
+/* The Guardian of the chapter (or the next one): in the danger colour. */
+.map__guardian {
+  margin-top: 0.15rem;
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
 .map__dots {

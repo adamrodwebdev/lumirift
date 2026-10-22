@@ -42,6 +42,11 @@ export class SandSoundscape {
         haptics.pulse(kind === 'shock' ? [40, 30, 90] : 40);
       }),
       session.onGame('react', ({ kind }) => this.react(kind)),
+      // The next Guardian passing under the sand: a deep rumble, the pad shaking.
+      session.onGame('tease', () => {
+        audio.play(sounds.rumble);
+        haptics.pulse([40, 60, 40, 60, 40]);
+      }),
       session.onGame('boss', ({ event }) => {
         if (event.type === 'warn') audio.play(sounds.rumble);
         else if (event.type === 'surge') {

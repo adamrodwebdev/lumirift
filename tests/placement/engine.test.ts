@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { SeededRandom } from '@/core/Random';
-import { Dealer } from '@/families/placement/engine/Dealer';
+import { Tone } from '@/core/Tone';
+import { Dealer, type OfferedPiece } from '@/families/placement/engine/Dealer';
 import { Grid } from '@/families/placement/engine/Grid';
 import { canPlaceAll } from '@/families/placement/engine/HandSolver';
 import {
@@ -13,6 +14,29 @@ import {
 import { Shape, SHAPES } from '@/families/placement/engine/Shape';
 import { JOKERS, type JokerId } from '@/families/placement/jokers/Joker';
 import { ConstantRandom } from '../falling/helpers';
+
+describe('MosaicGame opening', () => {
+  it('deals the first hand it is given, then hands of its own', () => {
+    const opening = [
+      { shape: Shape.parse('#|#|#'), tone: Tone.I },
+      { shape: Shape.parse('##'), tone: Tone.T },
+    ];
+    const game = new MosaicGame({ random: new SeededRandom(1), opening });
+    const hands: (OfferedPiece | null)[][] = [];
+    game.events.on('deal', ({ hand }) => hands.push([...hand]));
+    game.start();
+    const [first] = hands;
+    expect(first?.map((piece) => piece?.shape)).toEqual([
+      opening[0]!.shape,
+      opening[1]!.shape,
+      undefined,
+    ]);
+    expect(first?.map((piece) => piece?.tone)).toEqual([Tone.I, Tone.T, undefined]);
+    // Dealt once: a new hand comes from the dealer.
+    game.redeal();
+    expect(hands[1]?.every((piece) => piece !== null)).toBe(true);
+  });
+});
 
 /** A started game whose hand is replaced by the given shapes. */
 function gameWith(rows: string[] | null, shapes: string[]) {

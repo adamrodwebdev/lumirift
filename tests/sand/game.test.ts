@@ -135,6 +135,55 @@ describe('SandGame', () => {
     expect(session.indicators().map((indicator) => indicator.id)).not.toContain('windIn');
   });
 
+  it('practises the elements without wind: early and often (the second level)', () => {
+    const game = new SandGame({
+      random: new SeededRandom(9),
+      wind: false,
+      elements: [Tone.Water, Tone.Lightning],
+      elementPace: { after: 2, chance: 1 },
+    });
+    game.start();
+    expect(game.windInMs).toBeNull();
+    const tones = Array.from({ length: 12 }, () => {
+      const spec = game.preview(1)[0]!;
+      (game as unknown as { upcoming: unknown[] }).upcoming.shift();
+      return spec.tone;
+    });
+    // The active piece was the first: elements from the third piece on.
+    expect(tones.slice(0, 1).some((tone) => tone === Tone.Water || tone === Tone.Lightning)).toBe(
+      false,
+    );
+    expect(
+      tones.filter((tone) => tone === Tone.Water || tone === Tone.Lightning).length,
+    ).toBeGreaterThanOrEqual(3);
+  });
+
+  it('lets the Dune Wyrm pass under the sand once the level is won (the teaser)', () => {
+    const game = started();
+    for (let t = 0; t < 600; t += STEP_MS) game.update(STEP_MS);
+    const elapsed = game.elapsedMs;
+    const teased = vi.fn();
+    game.events.on('tease', teased);
+    expect(game.worm).toBeNull();
+    expect(game.tease()).toBe(true);
+    expect(game.tease()).toBe(false);
+    expect(teased).toHaveBeenCalledOnce();
+    expect(game.isTeasing).toBe(true);
+    expect(game.active).toBeNull();
+    const worm = game.worm!;
+    const from = worm.headX;
+    for (let t = 0; t < 1500; t += STEP_MS) game.update(STEP_MS);
+    // It swims across, never bursts out; no piece comes, the clock stands still.
+    expect(worm.headX).toBeGreaterThan(from + 20);
+    expect(worm.out).toBe(false);
+    expect(game.active).toBeNull();
+    expect(game.elapsedMs).toBe(elapsed);
+    // The Guardian's own level has no teaser.
+    const boss = new SandGame({ random: new SeededRandom(4), boss: 'duneWorm' });
+    boss.start();
+    expect(boss.tease()).toBe(false);
+  });
+
   it('ends when a new piece cannot appear', () => {
     const game = new SandGame({ random: new SeededRandom(1) });
     for (let y = 0; y < 3 * G; y++)

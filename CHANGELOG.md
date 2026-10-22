@@ -3,6 +3,40 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.18.0] — 22/10/2026
+
+Accrocher dès les premières secondes : ce que les autres jeux de blocs n'ont pas, montré
+avant même de jouer, puis pratiqué, puis promis.
+
+### Ajouté
+
+- **La boucle des moments forts sur l'accueil** : de vraies parties, jouées par les vrais
+  moteurs, se succèdent sur l'écran titre (environ 27 s par tour) : les éléments du Sable
+  (foudre dans l'eau, huile en feu, graine), le Renversement et ses quatre lignes, le Ver des
+  dunes qui jaillit et reçoit la foudre, la Bascule, les pierres du Golem de céramique, le
+  Miroir suivi d'un RIFT!, l'Œil de la Tour aveuglé par une bombe, le Cœur de la faille
+  blessé. Chaque moment a sa légende traduite (le mode ou le Gardien, puis ce qu'il montre).
+  Le code d'une famille se charge quand la boucle arrive à elle, après le premier affichage.
+  Mouvement réduit ou effets coupés : une seule image fixe (le brasier).
+- **Des scènes partagées** (`src/showcase/`) : la boucle et les vidéos des portails jouent
+  les mêmes scènes, réglées par des options publiques des moteurs (premier geste d'un
+  Gardien avancé, première main de la Mosaïque, puits dessiné en couleurs avec ses gemmes)
+  au lieu d'écrire dans leurs champs privés ; un test vérifie que chaque moment atteint son
+  sommet à temps.
+- **La promesse du premier Gardien** : à la fin du 1-1, le Ver des dunes passe sous le sable
+  (ombre sombre, yeux rouges qui luisent, sable qui tremble au-dessus de lui) ; la fenêtre de
+  fin annonce qu'il attend au niveau 2-7, et la carte nomme le Gardien de chaque chapitre, ou
+  le prochain.
+- **Niveau 1-2, la pratique des éléments** : du Sable sans vent, eau, foudre, huile, feu et
+  graine dès la troisième pièce et souvent. Le Classique passe au 1-3 ; Chroma quitte le
+  chapitre 1 (il reste au 3-5).
+
+### Modifié
+
+- **Le guide ne cache plus le spectacle** : sa carte monte au-dessus du puits, et après deux
+  pièces lâchées sans faire l'étape montrée, il passe directement au but.
+- Les annonces des éléments s'accordent au pluriel (« 1 grain », « 12 grains »).
+
 ## [1.17.2] — 21/10/2026
 
 Corrections issues de la revue modérateur CrazyGames.

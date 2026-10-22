@@ -1,5 +1,6 @@
 import type { GemArt } from './GemArt';
 import type { HubScene } from './HubScene';
+import type { HomeReel } from './reel/HomeReel';
 
 let art: Promise<GemArt> | null = null;
 
@@ -16,4 +17,12 @@ export function loadGemArt(): Promise<GemArt> {
 export async function createHubScene(canvas: HTMLCanvasElement, still: boolean): Promise<HubScene> {
   const [{ HubScene: Scene }, gems] = await Promise.all([import('./HubScene'), loadGemArt()]);
   return new Scene(canvas, gems, still);
+}
+
+/** The title screen's reel (real games playing their best moments), after the first paint. */
+export async function createHomeReel(
+  ...args: ConstructorParameters<typeof HomeReel>
+): Promise<HomeReel> {
+  const { HomeReel: Reel } = await import('./reel/HomeReel');
+  return new Reel(...args);
 }

@@ -21,7 +21,17 @@
     "play": "Main",
     "best": "Rekor: {value}",
     "noBest": "Belum ada rekor",
-    "quick": "Satu permainan Klasik, sekarang"
+    "quick": "Satu permainan Klasik, sekarang",
+    "reel": {
+      "elements": "Petir, api, benih: pasirnya bereaksi",
+      "flip": "Balikkan sumur: lubangnya menghilang",
+      "duneWorm": "Ia menyembur keluar dari pasir",
+      "tilt": "Dinding menjadi lantai",
+      "ceramicGolem": "Ia melempar batu ke mozaikmu",
+      "mirror": "Sumur menjadi bayangannya sendiri",
+      "towerEye": "Butakan ia di menara kacanya",
+      "riftHeart": "Serang jantungnya dengan barismu"
+    }
   },
   "daily": {
     "title": "Tantangan Harian",
@@ -214,7 +224,8 @@
         "phase2": "Jantung berpacu: ia berdetak lebih cepat!",
         "phase3": "Napas terakhir: retakan terkoyak!",
         "defeated": "Jantung Retakan dikalahkan!"
-      }
+      },
+      "tease": "Sesuatu bergerak di bawah pasir…"
     }
   },
   "controls": {
@@ -521,7 +532,10 @@
     "retry": "Coba lagi",
     "map": "Peta kampanye",
     "lockedNote": "Menangkan level {level} untuk membuka level ini.",
-    "guardian": "Penjaga"
+    "guardian": "Penjaga",
+    "teaser": "{name} terbangun: ia menunggumu di level {level}.",
+    "chapterGuardian": "Penjaga: {name}",
+    "nextGuardian": "Penjaga berikutnya: {name}, bab {n}"
   },
   "upgrades": {
     "title": "Peningkatan",

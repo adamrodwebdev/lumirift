@@ -1,7 +1,7 @@
 import type { GameSession, SessionOptions } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import { SandGame } from './engine/SandGame';
-import { SHOWCASE } from './engine/Showcase';
+import { PRACTICE_ELEMENTS, PRACTICE_PACE, SHOWCASE } from './engine/Showcase';
 import { SandSession } from './SandSession';
 
 export { SandSession, type SandView } from './SandSession';
@@ -16,6 +16,9 @@ export function createSandSession(modeId: ModeId, options: SessionOptions): Game
       timeLimitMs: options.timeLimitMs,
       hazards: options.calm !== true,
       ...(options.showcase ? { script: SHOWCASE } : {}),
+      ...(options.practice
+        ? { wind: false, elements: PRACTICE_ELEMENTS, elementPace: PRACTICE_PACE }
+        : {}),
       ...(options.boss === 'duneWorm' ? { boss: 'duneWorm' as const } : {}),
       ...(options.boosts ? { boosts: options.boosts } : {}),
     }),

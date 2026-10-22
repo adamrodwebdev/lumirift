@@ -361,36 +361,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 1px 0 var(--accent-edge);
 }
 
-.stage__canvas--flip {
-  animation: well-flip 560ms cubic-bezier(0.3, 1.3, 0.5, 1);
-}
-
-.stage__canvas--mirror {
-  animation: well-mirror 460ms cubic-bezier(0.3, 1.2, 0.5, 1);
-}
-
-.stage__canvas--tilt {
-  animation: well-tilt 520ms cubic-bezier(0.3, 1.2, 0.5, 1);
-}
-
-@keyframes well-tilt {
-  from {
-    transform: rotate(90deg) scale(0.85);
-  }
-}
-
-@keyframes well-flip {
-  from {
-    transform: perspective(60rem) rotateX(180deg);
-  }
-}
-
-@keyframes well-mirror {
-  from {
-    transform: perspective(60rem) rotateY(180deg);
-  }
-}
-
 /* Landscape: the hold box and the ability side by side, under the stats. */
 @media (orientation: landscape) {
   .stage__hold {
