@@ -1,9 +1,17 @@
-import { degree, PROGRESSION, ROOT, semitone } from '@/fx/harmony';
+import {
+  BEATS_PER_CHORD,
+  chordAt,
+  degree,
+  inChord,
+  PROGRESSION,
+  ROOT,
+  semitone,
+  type Groove,
+} from '@/fx/harmony';
+import { BeatGrid } from './BeatGrid';
 
 /** 84 beats a minute: calm enough for menus, steady under play. */
 export const CALM_BPM = 84;
-/** Each chord lasts two bars of four beats. */
-const BEATS_PER_CHORD = 8;
 /** The scheduler looks this far ahead, on the audio clock. */
 const LOOKAHEAD_S = 0.4;
 const TICK_MS = 120;
@@ -15,6 +23,9 @@ const OPEN_HZ = 12_000;
 const MUFFLED_HZ = 650;
 /** No heartbeat under this much danger. */
 const HEART_FROM = 0.04;
+/** The crystal arpeggio's notes: degrees of the key from D5 to F6. */
+const ARP_LOW = 10;
+const ARP_HIGH = 16;
 
 /**
  * Lumirift's music, generated live in the game's key (D minor pentatonic):
@@ -23,17 +34,16 @@ const HEART_FROM = 0.04;
  * the game (calm in menus, tense when the stack is high); in danger the
  * tempo quickens, a heartbeat rises under it and the pad closes in, until
  * the relief opens it again on a major chord. Notes are scheduled ahead on
- * the audio clock, so a slow frame never makes it stutter.
+ * the audio clock, so a slow frame never makes it stutter. The player's
+ * gestures read where it is (`groove`) to play along; a game with its own
+ * pulse leads its beat (`follow`).
  */
 export class Music {
   private intensity = 0.15;
   private target = 0.15;
   private danger = 0;
   private dangerTarget = 0;
-  private beat = 0;
-  private nextTime = 0;
-  private beatS = 60 / CALM_BPM;
-  private nextBpm = CALM_BPM;
+  private readonly grid = new BeatGrid(CALM_BPM);
   /** Until then, the pad's filter belongs to the relief. */
   private reliefUntil = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -56,7 +66,7 @@ export class Music {
 
   start(): void {
     if (this.timer !== null) return;
-    this.nextTime = this.context.currentTime + 0.1;
+    this.grid.start(this.context.currentTime);
     this.timer = setInterval(() => this.schedule(), TICK_MS);
     this.schedule();
   }
@@ -73,7 +83,17 @@ export class Music {
 
   /** Beats a minute; a new tempo starts on the next bar, so the rhythm never stumbles. */
   setTempo(bpm: number): void {
-    this.nextBpm = Math.min(200, Math.max(40, bpm));
+    this.grid.setTempo(bpm);
+  }
+
+  /** Where the music is now: the chord playing, the place in the beat. */
+  groove(): Groove {
+    return this.grid.at(this.context.currentTime);
+  }
+
+  /** A game's own pulse: its beat `count` falls now, the music's beats follow it. */
+  follow(count: number): void {
+    this.grid.follow(this.context.currentTime, count);
   }
 
   /** How close the game is to being lost (0 to 1): the heartbeat, the muffled pad. */
@@ -125,36 +145,32 @@ export class Music {
         0.3,
       );
     }
-    // A suspended context (hidden page, an ad) stands still: nothing to catch up.
-    if (this.nextTime < now) this.nextTime = now + 0.05;
-    while (this.nextTime < now + LOOKAHEAD_S) {
-      if (this.beat % 4 === 0) this.beatS = 60 / this.nextBpm;
-      this.playBeat(this.beat, this.nextTime);
-      this.beat++;
-      this.nextTime += this.beatS;
-    }
+    this.grid.advance(now, now + LOOKAHEAD_S, (beat, time, beatS) =>
+      this.playBeat(beat, time, beatS),
+    );
   }
 
-  private playBeat(beat: number, time: number): void {
-    const chord = PROGRESSION[Math.floor(beat / BEATS_PER_CHORD) % PROGRESSION.length]!;
+  private playBeat(beat: number, time: number, beatS: number): void {
+    const place = chordAt(beat);
+    const chord = PROGRESSION[place]!;
     const inBar = beat % 4;
     const level = this.intensity;
-    if (beat % BEATS_PER_CHORD === 0) this.pad(chord, time, level);
-    if (level > 0.3 && (inBar === 0 || inBar === 2)) this.bass(chord[0]!, time, level);
+    if (beat % BEATS_PER_CHORD === 0) this.pad(chord, time, level, beatS);
+    if (level > 0.3 && (inBar === 0 || inBar === 2)) this.bass(chord[0]!, time, level, beatS);
     if (level > 0.5) {
-      this.arp(beat, time, level);
-      this.arp(beat + 0.5, time + this.beatS / 2, level);
+      this.arp(place, beat, time, level);
+      this.arp(place, beat + 0.5, time + beatS / 2, level);
     }
     if (level > 0.72) {
       if (inBar === 0 || inBar === 2) this.kick(time, level);
-      this.hat(time + this.beatS / 2, level);
+      this.hat(time + beatS / 2, level);
     }
     if (this.danger > HEART_FROM) this.heart(time, this.danger);
   }
 
   /** The chord, held for two bars: detuned voices through a soft filter. */
-  private pad(chord: readonly number[], time: number, level: number): void {
-    const length = this.beatS * BEATS_PER_CHORD;
+  private pad(chord: readonly number[], time: number, level: number, beatS: number): void {
+    const length = beatS * BEATS_PER_CHORD;
     const filter = this.context.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 500 + level * 1600;
@@ -174,22 +190,22 @@ export class Music {
     }
   }
 
-  private bass(step: number, time: number, level: number): void {
+  private bass(step: number, time: number, level: number, beatS: number): void {
     const osc = this.context.createOscillator();
     osc.type = 'triangle';
     osc.frequency.value = semitone(ROOT, step - 12);
-    osc.connect(this.envelope(time, 0.01, this.beatS * 0.9, 0.09 + level * 0.06));
+    osc.connect(this.envelope(time, 0.01, beatS * 0.9, 0.09 + level * 0.06));
     osc.start(time);
-    osc.stop(time + this.beatS);
+    osc.stop(time + beatS);
   }
 
-  /** Crystal notes of the scale, more of them as the game heats up. */
-  private arp(beat: number, time: number, level: number): void {
+  /** Crystal notes of the chord playing, more of them as the game heats up. */
+  private arp(chord: number, beat: number, time: number, level: number): void {
     if (Math.random() > 0.35 + level * 0.55) return;
-    const step = 10 + Math.floor(Math.random() * 7);
+    const notes = ARP_NOTES[chord]!;
     const osc = this.context.createOscillator();
     osc.type = 'triangle';
-    osc.frequency.value = degree(step);
+    osc.frequency.value = degree(notes[Math.floor(Math.random() * notes.length)]!);
     const accent = beat % 2 === 0 ? 1 : 0.7;
     osc.connect(this.envelope(time, 0.005, 0.45, 0.025 * accent));
     osc.start(time);
@@ -257,3 +273,10 @@ export class Music {
 }
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
+
+/** The arpeggio's notes over each chord: the degrees of its notes between ARP_LOW and ARP_HIGH. */
+const ARP_NOTES: readonly (readonly number[])[] = PROGRESSION.map((_, chord) =>
+  Array.from({ length: ARP_HIGH - ARP_LOW + 1 }, (_, i) => ARP_LOW + i).filter((index) =>
+    inChord(chord, index),
+  ),
+);

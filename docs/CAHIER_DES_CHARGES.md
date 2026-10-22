@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut               |
-| ------- | ---------- | -------------------- |
-| 1.17    | 21/10/2026 | Le Cœur de la faille |
+| Version | Date       | Statut                           |
+| ------- | ---------- | -------------------------------- |
+| 1.21    | 22/10/2026 | Des gestes qui jouent la musique |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -786,6 +786,15 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   générative** dans cette tonalité (nappe i – VI – III – VII, puis basse, arpège et battement
   quand l'intensité monte), dont l'intensité suit le danger (`pressure()` de chaque famille) ;
   volumes séparés, une même réverbération.
+- **Gestes musicaux** (1.21) : les sons du joueur jouent avec la musique, sur les notes de
+  l'accord qui sonne (pour un accord dont une note manque à la gamme, si♭ ou mi, sa neuvième :
+  jamais une note à un demi-ton de l'accord). Les rotations dessinent une mélodie qui monte
+  puis redescend l'accord de ré5 à sol6, d'une pièce à l'autre ; chaque pièce posée joue la
+  fondamentale comme une basse, avec sa quinte sur le temps ; les effacements égrènent
+  l'accord. Un geste sur le temps (à moins d'un quart de temps) sonne plus fort ; aucun son
+  n'est retardé pour attendre le temps. En **Rythme**, la musique prend le tempo du mode et
+  cale ses temps et ses mesures sur sa pulsation (au-delà de 30 ms d'écart, sans rejouer un
+  temps) ; l'arpège de la musique suit lui aussi l'accord.
 - **Tension de l'échec** (1.19) : la pression de la partie (0 à 1 : hauteur de la pile ou du
   sable, remplissage de la Mosaïque) fixe trois états, calme, **danger** dès 70 % et
   **critique** dès 85 %, avec une marge au retour (critique jusqu'à 80 %, danger jusqu'à
@@ -1116,6 +1125,15 @@ src/
   par tous les abonnés), et ce que dessine `DangerLayer` (fissures en SVG calées sur le
   canvas du puits, vignettes en opacité seule). Les avertissements d'apparition sont
   dessinés par chaque moteur de rendu (`spawnWarning()` de la vue).
+- **Musique et gestes** (1.21) : `BeatGrid` (audio) tient les temps de la musique sur
+  l'horloge audio, change de tempo à la mesure et peut suivre la pulsation d'un mode
+  (`follow`). `Music.groove()` dit où en est la musique (temps en cours, durée d'un temps) ;
+  le moteur audio le passe à chaque recette de son (`SoundRecipe(synth, groove)`). Les règles
+  sont des fonctions pures de `harmony.ts` (accord d'un temps, notes de chaque accord dans la
+  gamme, accent sur le temps) ; `PlayerVoice` (une par partie, dans chaque paysage sonore)
+  tient la ligne des rotations. Le mode Rythme publie ses temps (`beat`) : le paysage sonore
+  les passe au moteur audio (`pulse`), et `useTension` donne à la musique le tempo du mode
+  (indicateur `bpm`).
 - **Boucle de l'accueil** (1.18, `HomeReel`) : chaque moment est une `Scene`
   (`src/showcase/`) : une vraie partie réglée par des **options publiques** des moteurs
   (`bossDelayMs` des Gardiens, `opening` de la Mosaïque, `Board.fromRows` en couleurs avec
@@ -1509,3 +1527,5 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.17    | 21/10/2026 | Le Cœur de la faille au niveau 5-7 : battements annoncés, gravats porteurs d'éclats, miroir en dernière phase, récompense La Faille (§ 3.2).                      |
 | 1.18    | 22/10/2026 | Accrocher dès les premières secondes : boucle des moments forts sur l'accueil, promesse du Ver des dunes, 1-2 de pratique, guide plus discret (§ 3.2 ter, § 5.6). |
 | 1.19    | 22/10/2026 | La tension de l'échec : musique de danger et de délivrance, puits qui se fend, « Close call! », défaite mise en scène, dernières secondes (§ 3.8, § 5.6).         |
+| 1.20    | 22/10/2026 | Jauge de combo du Sable, jusqu'à ×10 (§ 3.2).                                                                                                                     |
+| 1.21    | 22/10/2026 | Des gestes qui jouent la musique : notes de l'accord en cours, basse à la pose, accent sur le temps ; le Rythme mène la musique (§ 3.8, § 5.6).                   |

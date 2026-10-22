@@ -1,3 +1,4 @@
+import { PlayerVoice } from '@/fx/PlayerVoice';
 import * as sounds from '@/fx/sounds';
 import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
 import type { Haptics } from '@/services/Haptics';
@@ -5,17 +6,18 @@ import type { JokerId } from '../jokers/Joker';
 import type { PlacementSession } from '../PlacementSession';
 import { BREAK_MS, FLIGHT_MS } from './MosaicEffects';
 
-const JOKER_SOUNDS: Readonly<Record<JokerId, SoundRecipe>> = {
-  rotate: sounds.rotate,
-  reroll: sounds.shuffle,
-  bomb: sounds.bomb,
-  undo: sounds.rewind,
-  cube: sounds.tick,
+const JOKER_SOUNDS: Readonly<Record<JokerId, (voice: PlayerVoice) => SoundRecipe>> = {
+  rotate: (voice) => voice.rotate(),
+  reroll: () => sounds.shuffle,
+  bomb: () => sounds.bomb,
+  undo: () => sounds.rewind,
+  cube: () => sounds.tick(0),
 };
 
-/** Sounds and vibrations of the Mosaic, in step with its visuals. */
+/** Sounds and vibrations of the Mosaic, in step with its visuals and with the music. */
 export class MosaicSoundscape {
   private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+  private readonly voice = new PlayerVoice();
   private dealSound: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
@@ -43,7 +45,7 @@ export class MosaicSoundscape {
       session.onGame('jokerGained', () => audio.play(sounds.bonus)),
       session.onGame('jokerUsed', ({ joker }) => {
         this.cancel(this.dealSound);
-        audio.play(JOKER_SOUNDS[joker]);
+        audio.play(JOKER_SOUNDS[joker](this.voice));
         if (joker === 'bomb') haptics.pulse([40, 30, 80]);
       }),
       session.onGame('over', ({ reason }) => {
