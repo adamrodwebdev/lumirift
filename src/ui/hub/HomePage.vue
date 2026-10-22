@@ -4,9 +4,11 @@ import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
 import { dayKey } from '@/core/Day';
-import type { CampaignLevel } from '@/campaign/Levels';
+import { GuardianChallenge } from '@/campaign/GuardianChallenge';
+import { guardianLevel, type CampaignLevel } from '@/campaign/Levels';
 import { allowsLevel, allowsMode } from '@/platform/Edition';
 import { effectsProfile } from '@/fx/EffectsProfile';
+import { GUARDIAN_XP } from '@/progression/Experience';
 import { TonePalette } from '@/render/TonePalette';
 import { DailyChallenge } from '@/session/DailyChallenge';
 import { BOSS_IDS } from '@/session/GameSession';
@@ -23,7 +25,8 @@ import ObjectivesDialog from './ObjectivesDialog.vue';
  * The title screen: the living scene, the logo, the reel (real games playing
  * what no other game has: the Sand's elements within seconds, the wells that
  * turn, the four Guardians), one big Play in the thumb's reach (the campaign
- * goes on), the daily challenge, the day's objectives.
+ * goes on), the two challenges (the day's, the week's Guardian), the day's
+ * objectives.
  */
 const props = defineProps<{
   /** Shown (its tab chosen, the menu on screen): the scene runs only then. */
@@ -32,6 +35,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   play: [modeId: ModeId, origin: Element];
   daily: [challenge: DailyChallenge, origin: Element];
+  guardian: [challenge: GuardianChallenge, origin: Element];
   level: [level: CampaignLevel, origin: Element];
 }>();
 
@@ -56,6 +60,21 @@ const dailyLeft = (() => {
   const minutes = Math.max(0, Math.floor((midnight.getTime() - today.getTime()) / 60_000));
   return { h: Math.floor(minutes / 60), m: minutes % 60 };
 })();
+
+/** The week's Guardian, open to every player (but not past what an edition offers: the demo). */
+const guardian = new GuardianChallenge(today);
+const guardianLevelOf = guardianLevel(guardian.boss);
+const guardianOpen =
+  guardianLevelOf !== undefined &&
+  allowsLevel(edition, guardianLevelOf) &&
+  allowsMode(edition, guardian.modeId);
+/** Days and hours before the next Guardian. */
+const guardianLeft = (() => {
+  const hours = Math.max(0, Math.floor((guardian.endsAt.getTime() - today.getTime()) / 3_600_000));
+  return { d: Math.floor(hours / 24), h: hours % 24 };
+})();
+/** The day's first attempt is still to play: it earns its bonus. */
+const guardianBonus = computed(() => profile.current.guardianDay !== dayKey(today));
 
 /** Play goes on with the campaign; past the demo's levels, a game of Sand. */
 const next = computed(() => {
@@ -179,18 +198,45 @@ onBeforeUnmount(() => {
   <section class="page home">
     <canvas ref="sceneCanvas" class="home__scene" aria-hidden="true" />
     <div class="home__content">
-      <button
-        type="button"
-        class="daily"
-        @click="emit('daily', daily, $event.currentTarget as Element)"
-      >
-        <span class="daily__icon" aria-hidden="true"><AppIcon name="calendar" :size="22" /></span>
-        <span class="daily__text">
-          <strong>{{ t('title.dailyShort', { mode: t(`modes.${daily.modeId}.name`) }) }}</strong>
-          <small>{{ t('hub.timeLeft', { h: dailyLeft.h, m: dailyLeft.m }) }}</small>
-        </span>
-        <AppIcon name="right" :size="18" class="daily__go" />
-      </button>
+      <!-- The two challenges side by side: the day's, and the week's Guardian. -->
+      <div class="challenges">
+        <button
+          type="button"
+          class="challenge"
+          @click="emit('daily', daily, $event.currentTarget as Element)"
+        >
+          <span class="challenge__icon" aria-hidden="true">
+            <AppIcon name="calendar" :size="20" />
+          </span>
+          <span class="challenge__text">
+            <small class="challenge__kicker">{{ t('daily.title') }}</small>
+            <strong>{{ t(`modes.${daily.modeId}.name`) }}</strong>
+            <small>{{ t('hub.timeLeft', { h: dailyLeft.h, m: dailyLeft.m }) }}</small>
+          </span>
+        </button>
+        <button
+          v-if="guardianOpen"
+          type="button"
+          class="challenge challenge--guardian"
+          @click="emit('guardian', guardian, $event.currentTarget as Element)"
+        >
+          <span class="challenge__icon" aria-hidden="true">
+            <AppIcon name="guardian" :size="20" />
+          </span>
+          <span class="challenge__text">
+            <small class="challenge__kicker">{{ t('guardianChallenge.title') }}</small>
+            <strong>{{ t(`bosses.${guardian.boss}.name`) }}</strong>
+            <small>{{ t('guardianChallenge.timeLeft', guardianLeft) }}</small>
+          </span>
+          <!-- The day's first attempt still to play: its bonus, pinned to the card. -->
+          <span v-if="guardianBonus" class="challenge__bonus">
+            <span aria-hidden="true">{{
+              t('guardianChallenge.bonusShort', { xp: GUARDIAN_XP })
+            }}</span>
+            <span class="sr-only">{{ t('guardianChallenge.bonus', { xp: GUARDIAN_XP }) }}</span>
+          </span>
+        </button>
+      </div>
 
       <div class="home__title">
         <h1 class="logo">
@@ -298,54 +344,119 @@ onBeforeUnmount(() => {
   padding: var(--space-1) var(--space-4) var(--space-3);
 }
 
-.daily {
+/* The two challenges, side by side: each says what it is, what it plays, how long it lasts. */
+.challenges {
   display: flex;
+  gap: var(--space-2);
+  width: min(100%, 27rem);
+}
+
+.challenge {
+  /* The day's challenge in gold; the Guardian's in the red of the rift. */
+  --tint: var(--accent);
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
   align-items: center;
-  gap: var(--space-3);
-  min-height: 3.25rem;
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 3.6rem;
+  padding: 0.4rem var(--space-3) 0.4rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--tint) 45%, transparent);
   border-radius: 1.15rem;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--accent) 17%, transparent),
-    color-mix(in srgb, var(--accent) 5%, transparent)
+    color-mix(in srgb, var(--tint) 17%, transparent),
+    color-mix(in srgb, var(--tint) 5%, transparent)
   );
   color: var(--text);
   text-align: start;
   transition: transform 120ms ease;
 }
 
-.daily:active {
+.challenge--guardian {
+  --tint: var(--danger);
+}
+
+.challenge:active {
   transform: scale(0.97);
 }
 
-.daily__icon {
+.challenge__icon {
   display: grid;
+  flex: none;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  color: var(--accent);
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--tint) 20%, transparent);
+  color: var(--tint);
 }
 
-.daily__text {
+.challenge__text {
   display: grid;
+  min-width: 0;
+  line-height: 1.2;
 }
 
-.daily__text strong {
+.challenge__text strong,
+.challenge__text small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.challenge__text strong {
   font-size: 0.85rem;
 }
 
-.daily__text small {
-  font-size: 0.78rem;
+.challenge__text small {
   color: var(--text-muted);
+  font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
 }
 
-.daily__go {
-  color: var(--accent);
+.challenge__text .challenge__kicker {
+  color: var(--tint);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The day's first attempt still to play: a gold pill on the card's edge. */
+.challenge__bonus {
+  position: absolute;
+  top: -0.6rem;
+  right: 0.6rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--accent-fill);
+  color: var(--on-accent-fill);
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1.3;
+  box-shadow: 0 0 0.8rem color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* A phone held upright: the cards share its width; their words need the icons' room. */
+@media (max-width: 29.99rem) {
+  .challenge {
+    padding-left: var(--space-3);
+  }
+
+  .challenge__icon {
+    display: none;
+  }
+
+  /* A long name (Golem de céramique) takes two lines rather than losing its end. */
+  .challenge__text strong {
+    display: -webkit-box;
+    white-space: normal;
+    line-height: 1.15;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 }
 
 .home__title {
@@ -711,9 +822,11 @@ onBeforeUnmount(() => {
     height: 100%;
   }
 
-  .daily {
+  .challenges {
     grid-area: daily;
+    flex-direction: column;
     justify-self: center;
+    width: min(100%, 17rem);
   }
 
   .home__cta {

@@ -430,6 +430,7 @@
       "time": "Waktu bermain",
       "clears": "Penghapusan",
       "daily": "Tantangan harian",
+      "guardian": "Tantangan Penjaga",
       "victory": "Kemenangan",
       "objective": "Tujuan",
       "bonus": "Bonus (iklan ditonton)"
@@ -609,8 +610,7 @@
     "level": "Level {level} · {mode}",
     "space": "{key} untuk main",
     "spaceKey": "Spasi",
-    "player": "Level {level}, {xp}. Buka Atelier",
-    "dailyShort": "Harian · {mode}"
+    "player": "Level {level}, {xp}. Buka Atelier"
   },
   "coach": {
     "move": "Geser kepingan",
@@ -714,5 +714,15 @@
     "shift": "Shift",
     "escape": "Esc",
     "mosaicNote": "Mozaik memakai tombolnya sendiri."
+  },
+  "guardianChallenge": {
+    "title": "Tantangan Penjaga",
+    "timeLeft": "sisa {d} hr {h} j",
+    "bonus": "+{xp} XP hari ini",
+    "bonusShort": "+{xp} XP",
+    "score": "Skor tantangan",
+    "breakdown": "{points} poin, {factor} untuk kemenangan",
+    "best": "Rekor minggu ini: {value}",
+    "share": "Lumirift · Tantangan Penjaga, {boss}: {value}. Giliranmu: {url}"
   }
 }

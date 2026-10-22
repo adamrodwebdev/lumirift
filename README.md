@@ -22,6 +22,9 @@ Cahier des charges (règles détaillées, architecture, décisions) :
   gagner et **dix améliorations** à acheter avec elles.
 - **Défi du jour** : chaque jour, un mode et les mêmes pièces pour tout le monde, deux
   minutes, résultat à partager.
+- **Défi des Gardiens** : chaque semaine, un Gardien de la faille ouvert à tous depuis
+  l'accueil ; ses points, multipliés par une victoire rapide, font le record de la semaine, et
+  le premier essai de chaque jour rapporte de l'XP.
 - **Duel** contre une IA, cinq niveaux calés sur la vitesse de vrais joueurs.
 - **Progression** : expérience et niveaux, trois objectifs du jour, série de défis ;
   **Atelier** de matières, d'ambiances et de signatures de bris, tous cosmétiques.

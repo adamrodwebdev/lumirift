@@ -10,6 +10,7 @@ import { dayKey } from '@/core/Day';
 import { SeededRandom } from '@/core/Random';
 import { CampaignRun, type CampaignOutcome } from '@/campaign/CampaignRun';
 import type { LiveState } from '@/campaign/Goals';
+import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import { type CampaignLevel, guardianLevel, LEVELS } from '@/campaign/Levels';
 import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
 import { allowsLevel } from '@/platform/Edition';
@@ -41,6 +42,8 @@ import { useTension } from './useTension';
 const props = defineProps<{
   modeId: ModeId;
   daily: DailyChallenge | null;
+  /** The week's Guardian challenge, or null. */
+  guardian: GuardianChallenge | null;
   /** Variant chosen on the home screen (AI level of a duel), or null. */
   variant: string | null;
   /** The campaign level played, or null outside the campaign. */
@@ -87,7 +90,12 @@ const best = shallowRef<BestLine | null>(null);
 /** Counts the records beaten: each one plays the burst again. */
 const recordBurst = ref(0);
 let recordTimer: ReturnType<typeof setTimeout> | undefined;
-const recordKey = () => (props.daily ? ScoreBoard.dailyKey(props.daily.key) : props.modeId);
+const recordKey = () =>
+  props.guardian
+    ? ScoreBoard.guardianKey(props.guardian.key)
+    : props.daily
+      ? ScoreBoard.dailyKey(props.daily.key)
+      : props.modeId;
 const celebrateRecord = () => {
   audio.play(newRecord);
   haptics.pulse([20, 40, 20, 40, 90]);
@@ -201,6 +209,8 @@ const sessionOptions = (): SessionOptions => {
       ...(level.boss ? { boss: level.boss } : {}),
     };
   }
+  // The Guardian challenge: the week's Guardian, its clock, everybody's pieces, no upgrades.
+  if (props.guardian) return { ...props.guardian.sessionOptions(), today: today() };
   return {
     ...(props.daily?.sessionOptions() ?? { random, timeLimitMs: null }),
     today: today(),
@@ -325,6 +335,10 @@ const finish = (reason: string, decided: CampaignOutcome | null = null, teased =
   if (!current || phase.value === 'over') return;
   tension.end(reason);
   const result = current.result();
+  // The Guardian challenge counts a victory's time left: points × (1 + share of the clock left).
+  const timeLeft = current.indicators().find((item) => item.id === 'timeLeft')?.value ?? 0;
+  const factor = props.guardian?.factor(reason === 'victory', timeLeft) ?? 1;
+  const amount = Math.round(Math.round(result.value) * factor);
   const key = recordKey();
   const verdict = run ? (decided ?? run.end(reason, liveState(current))) : null;
   // The goal bar shows the last blow (a Guardian's last hit ends the game in the same frame).
@@ -335,10 +349,11 @@ const finish = (reason: string, decided: CampaignOutcome | null = null, teased =
   // games bring upgrades along: they never count as records.
   const record = run
     ? { best: scores.best(key) ?? Math.round(result.value), isNewBest: false }
-    : scores.record(key, Math.round(result.value));
+    : scores.record(key, amount);
   const report = tracker?.report({
     modeId: props.modeId,
     daily: props.daily !== null,
+    guardian: props.guardian !== null,
     variant: props.variant,
     reason,
     // A Guardian defeated is remembered (it earns its cosmetic).
@@ -356,16 +371,24 @@ const finish = (reason: string, decided: CampaignOutcome | null = null, teased =
   if (recordBeaten || guardianDown) platform.happyTime();
   outcome.value = {
     // A Guardian's fall is told as such, not as a duel's victory.
-    reason: reason === 'victory' && props.level?.boss ? 'guardian' : reason,
-    amount: Math.round(result.value),
+    reason: reason === 'victory' && (props.level?.boss ?? props.guardian) ? 'guardian' : reason,
+    amount,
     kind: result.kind,
-    value: format.result(result.kind, result.value),
+    value: format.result(result.kind, amount),
     best: format.result(result.kind, record.best),
     isNewBest: record.isNewBest,
     progress: report
       ? profile.recordGame(report, dayKey(today()))
       : { xp: [], total: 0, levelBefore: 1, levelAfter: 1, completed: [], unlocked: [], streak: 0 },
     ...(verdict ? { campaign: judge(verdict, teased) } : {}),
+    ...(props.guardian
+      ? {
+          guardian: {
+            points: format.number(result.value),
+            factor: factor > 1 ? format.factor(factor) : null,
+          },
+        }
+      : {}),
   };
   status.value = '';
   rewardWatched = false;
@@ -387,8 +410,12 @@ const start = async () => {
   platform.loadingStop();
   run = props.level ? new CampaignRun(props.level, levelTime(props.level)) : null;
   goal.value = run ? { value: 0, target: run.level.goal.target } : null;
-  // Campaign games never count as records: no record to chase there.
-  chase = descriptor.showsBest && !run ? new RecordChase(scores.best(recordKey())) : null;
+  // Campaign games never count as records: no record to chase there. The
+  // Guardian challenge's record counts the victory's factor: not to chase in points.
+  chase =
+    descriptor.showsBest && !run && !props.guardian
+      ? new RecordChase(scores.best(recordKey()))
+      : null;
   best.value = chase ? { value: chase.shown(0), beaten: false } : null;
   recordBurst.value = 0;
   listen(created);
@@ -486,14 +513,20 @@ const onShare = async () => {
   const current = session.value;
   if (!current || !outcome.value) return;
   const url = `${location.origin}${location.pathname}`;
-  const text = props.daily
-    ? t('share.daily', {
-        date: format.date(today()),
-        mode: modeName.value,
+  const text = props.guardian
+    ? t('guardianChallenge.share', {
+        boss: t(`bosses.${props.guardian.boss}.name`),
         value: outcome.value.value,
         url,
       })
-    : t('share.mode', { mode: modeName.value, value: outcome.value.value, url });
+    : props.daily
+      ? t('share.daily', {
+          date: format.date(today()),
+          mode: modeName.value,
+          value: outcome.value.value,
+          url,
+        })
+      : t('share.mode', { mode: modeName.value, value: outcome.value.value, url });
   const result = await share.share(text);
   status.value = result === 'copied' ? t('over.copied') : '';
 };
@@ -539,9 +572,11 @@ onBeforeUnmount(() => {
       {{
         level
           ? t('campaign.levelTitle', { level: level.id, mode: modeName })
-          : daily
-            ? `${t('daily.title')} · ${modeName}`
-            : modeName
+          : guardian
+            ? `${t('guardianChallenge.title')} · ${t(`bosses.${guardian.boss}.name`)}`
+            : daily
+              ? `${t('daily.title')} · ${modeName}`
+              : modeName
       }}
     </h1>
 

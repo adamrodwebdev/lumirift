@@ -15,7 +15,7 @@ import {
   type CosmeticKind,
   type Equipment,
 } from './Cosmetics';
-import { DAILY_XP, experienceFor, levelProgress, type XpLine } from './Experience';
+import { DAILY_XP, experienceFor, GUARDIAN_XP, levelProgress, type XpLine } from './Experience';
 import type { GameReport } from './GameReport';
 import {
   advance,
@@ -52,6 +52,8 @@ export interface ProfileData {
   readonly seen: readonly string[];
   /** The Guardians of the rift the player has defeated. */
   readonly bosses: readonly BossId[];
+  /** The last day a Guardian challenge was played (its first attempt of a day earns a bonus). */
+  readonly guardianDay: string | null;
 }
 
 /** What a game brought, for the end-of-game dialog. */
@@ -76,6 +78,7 @@ export const EMPTY_PROFILE: ProfileData = {
   // What a new player starts with is not news.
   seen: COSMETICS.filter((cosmetic) => cosmetic.unlock.by === 'default').map(cosmeticKey),
   bosses: [],
+  guardianDay: null,
 };
 
 const COSMETIC_KEYS = new Set(COSMETICS.map(cosmeticKey));
@@ -163,6 +166,12 @@ export class Profile {
       const count = before.streak.lastDay === previousDay(day) ? before.streak.count + 1 : 1;
       streak = { count, best: Math.max(before.streak.best, count), lastDay: day };
     }
+    let guardianDay = before.guardianDay;
+    if (report.guardian && before.guardianDay !== day) {
+      // The first Guardian challenge of the day: every day of the week brings it back.
+      xp.push({ source: 'guardian', amount: GUARDIAN_XP });
+      guardianDay = day;
+    }
 
     const completed: Objective[] = [];
     const objectives = this.objectivesFor(day, modes).map((entry) => {
@@ -187,6 +196,7 @@ export class Profile {
       objectivesDone: before.objectivesDone + completed.length,
       streak,
       objectives,
+      guardianDay,
       bosses:
         report.boss && !before.bosses.includes(report.boss)
           ? [...before.bosses, report.boss]
@@ -269,6 +279,10 @@ export class Profile {
       equipment: parseEquipment(record.equipment),
       seen: [],
       bosses: parseBosses(record.bosses),
+      guardianDay:
+        typeof record.guardianDay === 'string' && /^\d{8}$/.test(record.guardianDay)
+          ? record.guardianDay
+          : null,
     };
     // Saved before the Atelier marked its new looks: what was earned then is not new.
     const seen = Array.isArray(record.seen)

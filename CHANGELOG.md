@@ -3,6 +3,29 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.23.0] — 22/10/2026
+
+Lot C, quatrième point : le défi des Gardiens, pour revenir chaque jour.
+
+### Ajouté
+
+- **Défi des Gardiens** : chaque semaine (du lundi au lundi), un Gardien de la faille à
+  affronter directement depuis l'accueil, **ouvert à tous** quelle que soit la campagne : le
+  Ver des dunes, le Golem de céramique, l'Œil de la Tour puis le Cœur de la faille, à tour de
+  rôle. Le combat est celui de son niveau de campagne (même mode, 4 minutes), sans
+  améliorations, avec les mêmes pièces pour tout le monde toute la semaine.
+  - **Score à battre** : les points de la partie, multipliés en cas de victoire par 1 + la
+    part du temps restant (un Gardien abattu avec 40 % du temps : ×1,4). La fin de partie
+    montre le score du défi, le détail de la victoire et le **record de la semaine**.
+  - **Premier essai du jour** : +30 XP, chaque jour de la semaine ; une pastille dorée le
+    rappelle sur la carte.
+  - Les récompenses des Gardiens restent celles de la campagne. Le résultat se partage.
+
+### Modifié
+
+- L'accueil montre les deux défis côte à côte (le défi du jour et celui des Gardiens), chacun
+  sur trois lignes : ce que c'est, ce qui se joue, le temps qui reste.
+
 ## [1.22.0] — 22/10/2026
 
 Lot C, troisième point : des commandes réglables, pour les joueurs exigeants.

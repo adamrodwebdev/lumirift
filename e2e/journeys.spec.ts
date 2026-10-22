@@ -194,6 +194,16 @@ test('the first level is calm Sand, with the keys drawn beside the game', async 
   }
 });
 
+test('the week’s Guardian is one tap away from the home, for every player', async ({ page }) => {
+  const card = panel(page, 'Accueil').getByRole('button', { name: /^Défi des Gardiens/ });
+  await expect(card).toBeVisible();
+  // The day’s first attempt is still to play: its bonus shows.
+  await expect(card).toContainText('XP');
+  await card.click();
+  await expect(page.getByRole('heading', { level: 1, name: /Défi des Gardiens/ })).toBeAttached();
+  await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
+});
+
 test('the daily challenge is timed', async ({ page }) => {
   await panel(page, 'Accueil')
     .getByRole('button', { name: /Défi du jour/ })

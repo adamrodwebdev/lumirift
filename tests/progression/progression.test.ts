@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Emitter } from '@/core/Emitter';
 import { dayKey, previousDay } from '@/core/Day';
 import { COSMETICS, isUnlocked } from '@/progression/Cosmetics';
-import { experienceFor, levelProgress, MIN_GAME_MS } from '@/progression/Experience';
+import { experienceFor, GUARDIAN_XP, levelProgress, MIN_GAME_MS } from '@/progression/Experience';
 import { GameTracker, type GameReport } from '@/progression/GameReport';
 import { objectivesOfDay } from '@/progression/Objectives';
 import { newCosmetics, Profile } from '@/progression/Profile';
@@ -146,6 +146,24 @@ describe('Profile', () => {
     expect(profile.snapshot.streak).toMatchObject({ count: 2, best: 2 });
     bonus('20261014'); // a day missed
     expect(profile.snapshot.streak).toMatchObject({ count: 1, best: 2 });
+  });
+
+  it('pays the Guardian challenge bonus on the first attempt of each day, and remembers it', () => {
+    const profile = new Profile();
+    const challenge = report({ guardian: true, modeId: 'sand' });
+    const bonus = (day: string) =>
+      profile.recordGame(challenge, day, MODES).xp.find((line) => line.source === 'guardian')
+        ?.amount ?? 0;
+    expect(bonus('20261019')).toBe(GUARDIAN_XP);
+    expect(bonus('20261019')).toBe(0);
+    expect(bonus('20261020')).toBe(GUARDIAN_XP);
+    // An ordinary game never pays it.
+    expect(
+      profile.recordGame(report(), '20261021', MODES).xp.some((line) => line.source === 'guardian'),
+    ).toBe(false);
+    const saved = Profile.parse(JSON.parse(JSON.stringify(profile.snapshot)));
+    expect(saved.snapshot.guardianDay).toBe('20261020');
+    expect(Profile.parse({ guardianDay: 'yesterday' }).snapshot.guardianDay).toBeNull();
   });
 
   it('unlocks cosmetics with the level, and only lets the player wear unlocked ones', () => {

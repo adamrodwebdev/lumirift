@@ -6,6 +6,8 @@ import type { ModeId } from '@/session/ModeId';
 export interface GameReport {
   readonly modeId: ModeId;
   readonly daily: boolean;
+  /** The week's Guardian challenge (absent: not it). */
+  readonly guardian?: boolean;
   /** The variant played (AI level of a duel), or null. */
   readonly variant: string | null;
   /** Why it ended: `victory` and `defeat` for a duel, the family's reasons otherwise. */
@@ -58,7 +60,9 @@ export class GameTracker {
     this.durationMs += deltaMs;
   }
 
-  report(game: Pick<GameReport, 'modeId' | 'daily' | 'variant' | 'reason' | 'boss'>): GameReport {
+  report(
+    game: Pick<GameReport, 'modeId' | 'daily' | 'guardian' | 'variant' | 'reason' | 'boss'>,
+  ): GameReport {
     return {
       ...game,
       durationMs: this.durationMs,

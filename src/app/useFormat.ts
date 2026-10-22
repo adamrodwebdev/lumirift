@@ -13,6 +13,7 @@ export function useFormat() {
     () => new Intl.NumberFormat(locale.value, { style: 'percent', maximumFractionDigits: 0 }),
   );
   const dates = computed(() => new Intl.DateTimeFormat(locale.value, { dateStyle: 'long' }));
+  const factors = computed(() => new Intl.NumberFormat(locale.value, { maximumFractionDigits: 2 }));
   const millis = computed(
     () => new Intl.NumberFormat(locale.value, { style: 'unit', unit: 'millisecond' }),
   );
@@ -39,5 +40,8 @@ export function useFormat() {
   /** "170 ms" (a setting's timing). */
   const milliseconds = (value: number): string => millis.value.format(value);
 
-  return { number, duration, indicator, result, date, milliseconds };
+  /** "×1.4", a multiplier. */
+  const factor = (value: number): string => `×${factors.value.format(value)}`;
+
+  return { number, duration, indicator, result, date, milliseconds, factor };
 }

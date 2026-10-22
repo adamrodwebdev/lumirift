@@ -123,12 +123,24 @@ const shownScore = computed(() =>
         <span v-if="!outcome.campaign && outcome.isNewBest" class="score__badge">
           {{ t('over.newBest') }}
         </span>
-        <span class="score__label">{{ t('over.result') }}</span>
+        <span class="score__label">{{
+          outcome.guardian ? t('guardianChallenge.score') : t('over.result')
+        }}</span>
         <!-- The final value for screen readers; the count is for the eyes. -->
         <span class="sr-only">{{ outcome.value }}</span>
         <span class="score__value" aria-hidden="true">{{ shownScore }}</span>
+        <span v-if="outcome.guardian?.factor" class="score__factor">
+          {{
+            t('guardianChallenge.breakdown', {
+              points: outcome.guardian.points,
+              factor: outcome.guardian.factor,
+            })
+          }}
+        </span>
         <span v-if="!outcome.campaign && !outcome.isNewBest" class="score__best">
-          {{ t('over.best', { value: outcome.best }) }}
+          {{
+            t(outcome.guardian ? 'guardianChallenge.best' : 'over.best', { value: outcome.best })
+          }}
         </span>
       </div>
 
@@ -317,6 +329,14 @@ const shownScore = computed(() =>
   font-size: clamp(2.1rem, 1.7rem + 2vw, 2.9rem);
   font-weight: 900;
   line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The Guardian challenge: the points, and the factor a quick victory earned. */
+.score__factor {
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 

@@ -430,6 +430,7 @@
       "time": "Time played",
       "clears": "Clears",
       "daily": "Daily challenge",
+      "guardian": "Guardian challenge",
       "victory": "Victory",
       "objective": "Objective",
       "bonus": "Bonus (ad watched)"
@@ -609,8 +610,7 @@
     "level": "Level {level} · {mode}",
     "space": "{key} to play",
     "spaceKey": "Space",
-    "player": "Level {level}, {xp}. Open the Atelier",
-    "dailyShort": "Daily · {mode}"
+    "player": "Level {level}, {xp}. Open the Atelier"
   },
   "coach": {
     "move": "Move the piece",
@@ -714,5 +714,15 @@
     "shift": "Shift",
     "escape": "Esc",
     "mosaicNote": "The Mosaic keeps its own keys."
+  },
+  "guardianChallenge": {
+    "title": "Guardian challenge",
+    "timeLeft": "{d} d {h} h left",
+    "bonus": "+{xp} XP today",
+    "bonusShort": "+{xp} XP",
+    "score": "Challenge score",
+    "breakdown": "{points} points, {factor} for the victory",
+    "best": "Best this week: {value}",
+    "share": "Lumirift · Guardian challenge, {boss}: {value}. Your turn: {url}"
   }
 }
