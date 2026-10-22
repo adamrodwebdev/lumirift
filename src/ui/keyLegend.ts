@@ -1,3 +1,4 @@
+import { KeyBindings, type KeyAction } from '@/families/falling/input/KeyBindings';
 import type { FamilyId, ModeId } from '@/session/ModeId';
 
 /** A row of the controls legend: the keys (by physical place) and what they do. */
@@ -10,20 +11,44 @@ export interface LegendRow {
   readonly minor?: boolean;
 }
 
-const row = (action: string, ...codes: string[]): LegendRow => ({ codes, action });
-const minor = (legend: LegendRow): LegendRow => ({ ...legend, minor: true });
+/** Where a row's keys come from: the player's bindings, or fixed keys (the Mosaic). */
+type Keys = (bindings: KeyBindings) => readonly string[];
 
-const MOVE = row('controls.move', 'ArrowLeft', 'ArrowRight');
-const SOFT_DROP = minor(row('controls.softDrop', 'ArrowDown'));
-const HARD_DROP = row('controls.hardDrop', 'Space');
-const ROTATE = row('controls.rotateCw', 'ArrowUp', 'KeyX');
-const ROTATE_BACK = row('controls.rotateCcw', 'KeyZ');
-const HOLD = row('controls.hold', 'KeyC');
+interface RowSpec {
+  readonly action: string;
+  readonly keys: Keys;
+  readonly minor?: boolean;
+}
+
+/** The main key of each action. */
+const main =
+  (...actions: KeyAction[]): Keys =>
+  (bindings) =>
+    actions.flatMap((action) => bindings.codes(action).slice(0, 1));
+/** Every key of an action (the rotation shows its two). */
+const every =
+  (action: KeyAction): Keys =>
+  (bindings) =>
+    bindings.codes(action);
+const fixed =
+  (...codes: string[]): Keys =>
+  () =>
+    codes;
+
+const row = (action: string, keys: Keys): RowSpec => ({ action, keys });
+const minor = (spec: RowSpec): RowSpec => ({ ...spec, minor: true });
+
+const MOVE = row('controls.move', main('left', 'right'));
+const SOFT_DROP = minor(row('controls.softDrop', main('softDrop')));
+const HARD_DROP = row('controls.hardDrop', main('hardDrop'));
+const ROTATE = row('controls.rotateCw', every('rotateCw'));
+const ROTATE_BACK = row('controls.rotateCcw', every('rotateCcw'));
+const HOLD = row('controls.hold', main('hold'));
 // The pause also has its button on screen.
-const PAUSE = minor(row('controls.pause', 'KeyP'));
+const PAUSE = minor(row('controls.pause', main('pause')));
 
-/** The keys of each family (the bindings live in each family's input). */
-const BY_FAMILY: Readonly<Record<FamilyId, readonly LegendRow[]>> = {
+/** The keys of each family: the player's, but the Mosaic's are its own. */
+const BY_FAMILY: Readonly<Record<FamilyId, readonly RowSpec[]>> = {
   falling: [MOVE, SOFT_DROP, HARD_DROP, ROTATE, ROTATE_BACK, HOLD, PAUSE],
   // Sand keeps no piece aside.
   sand: [MOVE, SOFT_DROP, HARD_DROP, ROTATE, ROTATE_BACK, PAUSE],
@@ -34,27 +59,36 @@ const BY_FAMILY: Readonly<Record<FamilyId, readonly LegendRow[]>> = {
     ROTATE,
     ROTATE_BACK,
     HOLD,
-    row('tower.turn', 'KeyQ', 'KeyE'),
+    row('tower.turn', main('turnLeft', 'turnRight')),
     PAUSE,
   ],
   placement: [
-    row('keys.pick', 'Digit1', 'Digit2', 'Digit3'),
-    row('keys.aim', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowRight'),
-    row('keys.place', 'Enter'),
-    row('keys.joker', 'KeyJ'),
-    row('keys.cancel', 'Backspace'),
-    PAUSE,
+    row('keys.pick', fixed('Digit1', 'Digit2', 'Digit3')),
+    row('keys.aim', fixed('ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowRight')),
+    row('keys.place', fixed('Enter')),
+    row('keys.joker', fixed('KeyJ')),
+    row('keys.cancel', fixed('Backspace')),
+    minor(row('controls.pause', fixed('KeyP'))),
   ],
 };
 
 /** A mode with a key of its own (the Flip's ability). */
-const EXTRA: Readonly<Partial<Record<ModeId, LegendRow>>> = {
-  flip: row('controls.ability.flip', 'KeyF'),
+const EXTRA: Readonly<Partial<Record<ModeId, RowSpec>>> = {
+  flip: row('controls.ability.flip', main('ability')),
 };
 
-/** The legend of a mode: its family's keys, plus its own, before Pause. */
-export function keyLegendFor(family: FamilyId, modeId: ModeId): readonly LegendRow[] {
-  const rows = BY_FAMILY[family];
+/** The legend of a mode, with the player's keys: its family's rows, plus its own, before Pause. */
+export function keyLegendFor(
+  family: FamilyId,
+  modeId: ModeId,
+  bindings: KeyBindings = KeyBindings.DEFAULT,
+): readonly LegendRow[] {
+  const specs = BY_FAMILY[family];
   const extra = EXTRA[modeId];
-  return extra ? [...rows.slice(0, -1), extra, ...rows.slice(-1)] : rows;
+  const rows = extra ? [...specs.slice(0, -1), extra, ...specs.slice(-1)] : specs;
+  return rows.map(({ action, keys, minor: isMinor }) => ({
+    action,
+    codes: keys(bindings),
+    ...(isMinor ? { minor: true } : {}),
+  }));
 }

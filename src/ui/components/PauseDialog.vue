@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { FamilyId, ModeId } from '@/session/ModeId';
 import AppIcon, { type IconName } from './AppIcon.vue';
+import { useKeyBindings } from '../useKeyBindings';
 import KeyLegend from './KeyLegend.vue';
+import KeysDialog from './KeysDialog.vue';
 import ModalDialog from './ModalDialog.vue';
 
 /**
@@ -47,9 +49,22 @@ const gestures = computed<readonly Gesture[]>(() => {
 /** Words for what the drawings cannot say (the Mosaic's touch controls). */
 const texts = computed(() => (props.touch && gestures.value.length === 0 ? props.help : []));
 
-/** P pauses, P resumes: the key works both ways (the game's own keys sleep under a window). */
+const bindings = useKeyBindings();
+/** The keys window, over the pause, for the families that take the player's keys. */
+const keysOpen = ref(false);
+const ownKeys = computed(() => !props.touch && props.family !== 'placement');
+
+/**
+ * The pause key pauses and resumes: it works both ways (the game's own keys
+ * sleep under a window). The Mosaic keeps its P.
+ */
 const onKey = (event: KeyboardEvent) => {
-  if (event.code !== 'KeyP' || event.repeat) return;
+  if (event.repeat || keysOpen.value) return;
+  const pause =
+    props.family === 'placement'
+      ? event.code === 'KeyP'
+      : bindings.value.actionFor(event.code) === 'pause';
+  if (!pause) return;
   event.preventDefault();
   emit('resume');
 };
@@ -93,7 +108,13 @@ const onKey = (event: KeyboardEvent) => {
         </span>
       </li>
     </ul>
-    <KeyLegend v-if="!touch" class="pause__legend" :family="family" :mode-id="modeId" />
+    <div v-if="!touch" class="pause__legend">
+      <KeyLegend :family="family" :mode-id="modeId" />
+      <button v-if="ownKeys" type="button" class="pause__change" @click="keysOpen = true">
+        {{ t('keymap.change') }}
+      </button>
+    </div>
+    <KeysDialog v-if="ownKeys" :open="keysOpen" @close="keysOpen = false" />
     <div v-if="texts.length > 0" class="pause__keys">
       <p v-for="key in texts" :key="key" class="sheet-note">{{ t(key) }}</p>
     </div>
@@ -112,6 +133,26 @@ const onKey = (event: KeyboardEvent) => {
 .pause__keys {
   display: grid;
   gap: var(--space-2);
+}
+
+.pause__legend {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* Under the keys: a quiet link to change them. */
+.pause__change {
+  justify-self: center;
+  min-height: var(--touch);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent-strong);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .gestures {

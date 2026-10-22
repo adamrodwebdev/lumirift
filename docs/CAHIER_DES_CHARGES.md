@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                           |
-| ------- | ---------- | -------------------------------- |
-| 1.21    | 22/10/2026 | Des gestes qui jouent la musique |
+| Version | Date       | Statut              |
+| ------- | ---------- | ------------------- |
+| 1.22    | 22/10/2026 | Commandes réglables |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -576,6 +576,30 @@ Les touches lettres se lisent par **position physique** (`KeyboardEvent.code`) :
 position fonctionne en AZERTY et en QWERTY. Répétition automatique horizontale : délai
 170 ms puis une case toutes les 50 ms.
 
+**Commandes réglables** (1.22) : la fenêtre « Commandes au clavier » (Réglages, « Clavier » ;
+ou le lien sous les touches de la pause) donne **deux touches** à chaque action de la Chute,
+du Sable et de la Tour : gauche, droite, chute douce, rotation horaire et inverse, chute
+instantanée, réserve, capacité (Renversement), tourner la Tour à gauche et à droite, pause.
+Les touches du tableau ci-dessus sont celles par défaut.
+
+- On choisit une case, puis on appuie sur la nouvelle touche. Une touche ne sert qu'à une
+  action : prise ailleurs, elle **échange** sa place avec l'ancienne touche de la case (une
+  action peut ainsi rester sans touche : elle s'affiche en rouge). Suppr vide la case, Échap
+  ou Tab abandonnent ; les deux touches Maj comptent pour une.
+- **Touches refusées** : Échap, Tab, Ctrl, Alt, les touches système, de fonction et de
+  média, Suppr (qui vide une case). Le message dit pourquoi : le navigateur et les portails
+  les gardent.
+- **Répétition** : délai avant répétition (DAS) de 50 à 300 ms par pas de 10, intervalle
+  (ARR) de 0 à 100 ms par pas de 5. À 0, la pièce va droit au mur et y revient après une
+  rotation tant que la touche est tenue ; dans la Tour, sans mur, la répétition la plus
+  rapide reste d'une colonne par image (16 ms). Les boutons tactiles suivent les mêmes
+  réglages.
+- « Rétablir par défaut » remet les touches et la répétition. Tout s'enregistre aussitôt, et
+  s'applique même en pleine partie.
+- La légende des touches et le guide de la première partie montrent les touches du joueur
+  (ses touches principales) ; la touche de pause reprend la partie depuis la pause. La
+  Mosaïque garde ses propres touches.
+
 ### 3.4 Paramètres et données
 
 - Langue (FR, EN, ID ; détection de la langue du navigateur au premier lancement).
@@ -1095,7 +1119,12 @@ src/
 - **Motifs gravés** par couleur (point, barre, triangle, anneau, croix…), les quatre plus
   distincts réservés aux couleurs de Chroma : la couleur ne porte jamais seule l'information.
 - **Commandes** : les appareils ne signalent que des **actions** (`left`, `hardDrop`…) ;
-  `FallingInput` les traduit en commandes et gère seul la répétition (170 ms, puis 50 ms).
+  `FallingInput` les traduit en commandes et gère seul la répétition, au rythme du joueur
+  (`RepeatTiming`, lu à chaque image). Les touches sont un objet valeur, `KeyBindings`
+  (règles : deux cases par action, échange, touches refusées, lecture d'une sauvegarde qui
+  rend ses touches par défaut à une action ajoutée depuis) ; les réglages en gardent la forme
+  simple (`keys`, `das`, `arr`), `useKeyBindings` les relit pour les scènes, la légende
+  (`keyLegendFor`), le guide et la pause. `KeysDialog` (1.22) les modifie.
   Gestes (`WellGestures`), reçus par tout l'écran de jeu (`useGameSurface`) : glisser d'une
   case par case, toucher pour tourner, toucher à deux doigts pour l'autre sens, glisser vite
   vers le bas pour la chute instantanée ou vers le haut pour la réserve, glisser lentement pour
@@ -1529,3 +1558,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.19    | 22/10/2026 | La tension de l'échec : musique de danger et de délivrance, puits qui se fend, « Close call! », défaite mise en scène, dernières secondes (§ 3.8, § 5.6).         |
 | 1.20    | 22/10/2026 | Jauge de combo du Sable, jusqu'à ×10 (§ 3.2).                                                                                                                     |
 | 1.21    | 22/10/2026 | Des gestes qui jouent la musique : notes de l'accord en cours, basse à la pose, accent sur le temps ; le Rythme mène la musique (§ 3.8, § 5.6).                   |
+| 1.22    | 22/10/2026 | Commandes réglables : deux touches par action, échange, touches refusées, répétition DAS et ARR (§ 3.3, § 5.6).                                                   |

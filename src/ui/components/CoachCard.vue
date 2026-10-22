@@ -1,24 +1,44 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { KeyAction } from '@/families/falling/input/KeyBindings';
 import type { CoachStep } from '@/session/Coach';
+import { useKeyBindings } from '../useKeyBindings';
+import { useKeyLabels } from '../useKeyLabels';
 
 /**
  * One step of the first game's guide, over the upper part of the well: the
- * keys on a keyboard device, the gesture on a touch screen, a short
- * sentence. It never takes the input (only its Skip button does).
+ * keys on a keyboard device (the player's own, main ones), the gesture on a
+ * touch screen, a short sentence. It never takes the input (only its Skip
+ * button does).
  */
 const props = defineProps<{ step: CoachStep; goal: 'sand' | 'lines' }>();
 const emit = defineEmits<{ skip: [] }>();
 
 const { t } = useI18n();
+const bindings = useKeyBindings();
+const labels = useKeyLabels();
+
+/** The actions each step teaches. */
+const STEP_ACTIONS: Readonly<Record<Exclude<CoachStep, 'goal'>, readonly KeyAction[]>> = {
+  move: ['left', 'right'],
+  rotate: ['rotateCw'],
+  drop: ['hardDrop'],
+};
 
 const text = computed(() =>
   props.step === 'goal'
     ? t(props.goal === 'sand' ? 'coach.goalSand' : 'coach.goalLines')
     : t(`coach.${props.step}`),
 );
-const keys = computed(() => (props.step === 'goal' ? null : t(`coach.${props.step}Keys`)));
+const keys = computed(() =>
+  props.step === 'goal'
+    ? null
+    : STEP_ACTIONS[props.step]
+        .flatMap((action) => bindings.value.codes(action).slice(0, 1))
+        .map((code) => labels.label(code))
+        .join(' ') || null,
+);
 const gesture = computed(() => (props.step === 'goal' ? null : t(`coach.${props.step}Touch`)));
 </script>
 

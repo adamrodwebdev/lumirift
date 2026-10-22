@@ -1,4 +1,6 @@
 import { reactive, readonly } from 'vue';
+import { ARR_RANGE, DAS_RANGE, type RepeatTiming } from '@/families/falling/input/RepeatTiming';
+import { KeyBindings, type KeyMap } from '@/families/falling/input/KeyBindings';
 import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, type Locale } from '@/i18n/locales';
 import { readJson, type KeyValueStorage } from './KeyValueStorage';
@@ -7,7 +9,7 @@ import { readJson, type KeyValueStorage } from './KeyValueStorage';
 export type ControlScheme = 'gestures' | 'buttons';
 export const CONTROL_SCHEMES: readonly ControlScheme[] = ['gestures', 'buttons'];
 
-export interface Settings {
+export interface Settings extends RepeatTiming {
   readonly locale: Locale;
   readonly ghost: boolean;
   readonly effects: EffectsLevel;
@@ -19,6 +21,8 @@ export interface Settings {
   readonly musicVolume: number;
   readonly muted: boolean;
   readonly controls: ControlScheme;
+  /** The keyboard's keys (falling family, Sand, Tower); `das` and `arr` time a held move. */
+  readonly keys: KeyMap;
 }
 
 /** The game's first name (Stackrift) stays in the save keys: no player loses progress. */
@@ -32,6 +36,9 @@ const isControlScheme = (value: unknown): value is ControlScheme =>
 
 const isEffectsLevel = (value: unknown): value is EffectsLevel =>
   typeof value === 'string' && (EFFECT_LEVELS as readonly string[]).includes(value);
+
+const within = (value: unknown, range: { readonly min: number; readonly max: number }) =>
+  typeof value === 'number' && value >= range.min && value <= range.max;
 
 /**
  * The player's preferences: validated when read, saved on every change, and
@@ -71,6 +78,9 @@ export class SettingsService {
     if (isUnit(record.volume)) settings.volume = record.volume;
     if (isUnit(record.musicVolume)) settings.musicVolume = record.musicVolume;
     if (isControlScheme(record.controls)) settings.controls = record.controls;
+    if (record.keys !== undefined) settings.keys = KeyBindings.parse(record.keys).toJSON();
+    if (within(record.das, DAS_RANGE)) settings.das = record.das as number;
+    if (within(record.arr, ARR_RANGE)) settings.arr = record.arr as number;
     return settings;
   }
 }

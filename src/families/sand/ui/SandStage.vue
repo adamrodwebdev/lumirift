@@ -5,13 +5,15 @@ import { useServices } from '@/app/AppServices';
 import type { FrameClock } from '@/app/FrameClock';
 import { useFormat } from '@/app/useFormat';
 import type { FallingCommand } from '@/families/falling/FallingSession';
-import { FallingInput, KEY_BINDINGS } from '@/families/falling/input/FallingInput';
+import { FallingInput } from '@/families/falling/input/FallingInput';
+import { isFallingAction } from '@/families/falling/input/KeyBindings';
 import { WellGestures } from '@/families/falling/input/WellGestures';
 import TouchControls from '@/families/falling/ui/TouchControls.vue';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
 import { useGameSurface } from '@/ui/useGameSurface';
+import { useKeyBindings } from '@/ui/useKeyBindings';
 import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import type { PieceSpec } from '../engine/SandGame';
 import { SandEffects } from '../fx/SandEffects';
@@ -39,6 +41,7 @@ const session: SandSession = props.session;
 const { t } = useI18n();
 const format = useFormat();
 const { theme, settings, audio, haptics } = useServices();
+const keys = useKeyBindings();
 const landscape = useLandscape();
 /** The on-screen buttons, for the touch players who chose them. */
 const touch = isTouchScreen();
@@ -66,10 +69,12 @@ const detachSounds = new SandSoundscape(audio, haptics).attach(session);
 
 let renderer: SandRenderer | null = null;
 
-const execute = (command: FallingCommand) => {
-  if (props.active) session.execute(command);
-};
-const input = new FallingInput(execute, () => emit('pause'));
+const execute = (command: FallingCommand) => props.active && session.execute(command);
+const input = new FallingInput(
+  execute,
+  () => emit('pause'),
+  () => settings.current,
+);
 const gestures = new WellGestures(execute, () => cellSize.value);
 
 const observer = new ResizeObserver(([entry]) => {
@@ -113,8 +118,8 @@ const offFrame = props.clock.subscribe((delta) => {
 });
 
 const onKey = (event: KeyboardEvent, down: boolean) => {
-  const action = KEY_BINDINGS[event.code];
-  if (!action || document.querySelector('dialog[open]')) return;
+  const action = keys.value.actionFor(event.code);
+  if (!action || !isFallingAction(action) || document.querySelector('dialog[open]')) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, select, textarea'))
     return;
   event.preventDefault();

@@ -1,4 +1,5 @@
 import type { FallingCommand } from '../FallingSession';
+import { DEFAULT_REPEAT, type RepeatTiming } from './RepeatTiming';
 
 /** What the player wants to do, whatever the device. */
 export type FallingAction =
@@ -12,32 +13,8 @@ export type FallingAction =
   | 'ability'
   | 'pause';
 
-/** Delayed auto shift, then auto repeat rate, for held horizontal moves. */
-export const DAS_MS = 170;
-export const ARR_MS = 50;
-
-/**
- * Keys by physical position (`KeyboardEvent.code`): the same places work on
- * AZERTY and QWERTY. `KeyZ` is W on AZERTY, `KeyA` is Q. No Esc (it leaves
- * full screen) and no Ctrl (Ctrl+W closes the tab): game portals reserve them.
- */
-export const KEY_BINDINGS: Readonly<Record<string, FallingAction>> = {
-  ArrowLeft: 'left',
-  KeyA: 'left',
-  ArrowRight: 'right',
-  KeyD: 'right',
-  ArrowDown: 'softDrop',
-  KeyS: 'softDrop',
-  Space: 'hardDrop',
-  ArrowUp: 'rotateCw',
-  KeyX: 'rotateCw',
-  KeyZ: 'rotateCcw',
-  KeyC: 'hold',
-  ShiftLeft: 'hold',
-  ShiftRight: 'hold',
-  KeyF: 'ability',
-  KeyP: 'pause',
-};
+/** The most moves an instant repeat makes in a frame (wider than any well). */
+const MAX_SLIDE = 64;
 
 const ONE_SHOT: Readonly<Partial<Record<FallingAction, FallingCommand>>> = {
   hardDrop: { type: 'hardDrop' },
@@ -49,8 +26,9 @@ const ONE_SHOT: Readonly<Partial<Record<FallingAction, FallingCommand>>> = {
 
 /**
  * Turns presses and releases (keyboard keys, touch buttons) into commands,
- * including the auto-repeat of held moves. Devices only report actions;
- * timing lives here, in one place.
+ * including the auto-repeat of held moves, at the player's timing (read each
+ * frame: a change in the settings applies at once). Devices only report
+ * actions; timing lives here, in one place.
  */
 export class FallingInput {
   /** Horizontal directions currently held, most recent last. */
@@ -58,9 +36,11 @@ export class FallingInput {
   private charge = 0;
   private repeating = false;
 
+  /** `execute` answers whether the command did something (a move against a wall does not). */
   constructor(
-    private readonly execute: (command: FallingCommand) => void,
+    private readonly execute: (command: FallingCommand) => boolean,
     private readonly onPause: () => void,
+    private readonly timing: () => RepeatTiming = () => DEFAULT_REPEAT,
   ) {}
 
   press(action: FallingAction): void {
@@ -107,20 +87,28 @@ export class FallingInput {
   update(deltaMs: number): void {
     const direction = this.held.at(-1);
     if (!direction) return;
+    const { das, arr } = this.timing();
     this.charge += deltaMs;
     if (!this.repeating) {
-      if (this.charge < DAS_MS) return;
-      this.charge -= DAS_MS;
+      if (this.charge < das) return;
+      this.charge -= das;
       this.repeating = true;
-      this.shift(direction);
+      if (arr > 0) this.shift(direction);
     }
-    while (this.charge >= ARR_MS) {
-      this.charge -= ARR_MS;
+    if (arr <= 0) {
+      // Instant: to the wall, and back to it after a rotation, while held.
+      this.charge = 0;
+      for (let moves = 0; moves < MAX_SLIDE && this.shift(direction); moves++);
+      return;
+    }
+    while (this.charge >= arr) {
+      this.charge -= arr;
       this.shift(direction);
     }
   }
 
-  private shift(direction: 'left' | 'right'): void {
-    this.execute({ type: 'move', direction: direction === 'left' ? -1 : 1 });
+  /** True when the piece moved. */
+  private shift(direction: 'left' | 'right'): boolean {
+    return this.execute({ type: 'move', direction: direction === 'left' ? -1 : 1 });
   }
 }

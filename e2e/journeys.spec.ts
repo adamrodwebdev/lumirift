@@ -134,6 +134,49 @@ test('a classic game is played with the keyboard to the end, then counted', asyn
   await expect(panel(page, 'Modes')).toContainText('Record');
 });
 
+test('a key changed in the settings plays at once; the portals’ keys are refused', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'A keyboard: the desktop');
+  await page.getByRole('button', { name: 'Réglages' }).click();
+  await page
+    .getByRole('dialog', { name: 'Réglages' })
+    .getByRole('button', { name: 'Personnaliser' })
+    .click();
+  const keys = page.getByRole('dialog', { name: 'Commandes au clavier' });
+  const status = keys.getByRole('status');
+  // The hard drop on K instead of Space.
+  await keys.getByRole('button', { name: /^Chute instantanée, touche 1/ }).click();
+  await expect(status).toContainText('Appuyez sur une touche');
+  await page.keyboard.press('KeyK');
+  await expect(status).toContainText('Chute instantanée');
+  await expect(
+    keys.getByRole('button', { name: /^Chute instantanée, touche 1\s: K$/ }),
+  ).toBeVisible();
+  // Ctrl is the browser's: refused, and the slot keeps listening until Escape.
+  await keys.getByRole('button', { name: /^Tourner, touche 2/ }).click();
+  await page.keyboard.press('ControlLeft');
+  await expect(status).toContainText('Touche réservée');
+  await page.keyboard.press('Escape');
+  await expect(keys).toBeVisible();
+  await expect(keys.getByRole('button', { name: /^Tourner, touche 2\s: X$/ })).toBeVisible();
+  await keys.getByRole('button', { name: 'Fermer' }).last().click();
+  await page
+    .getByRole('dialog', { name: 'Réglages' })
+    .getByRole('button', { name: 'Fermer' })
+    .first()
+    .click();
+
+  await openMode(page, 'Classique');
+  await expect(page.getByRole('list', { name: 'Touches' })).toContainText('K');
+  const over = page.getByRole('dialog', { name: 'Partie terminée' });
+  for (let i = 0; i < 60 && !(await over.isVisible()); i++) {
+    await page.keyboard.press('KeyK');
+    await page.waitForTimeout(60);
+  }
+  await expect(over).toBeVisible({ timeout: 5000 });
+});
+
 test('the first level is calm Sand, with the keys drawn beside the game', async ({
   page,
 }, info) => {

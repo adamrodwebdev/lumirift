@@ -1,4 +1,6 @@
 import { inject, type InjectionKey } from 'vue';
+import { DEFAULT_KEYS } from '@/families/falling/input/KeyBindings';
+import { DEFAULT_REPEAT } from '@/families/falling/input/RepeatTiming';
 import { detectLocale } from '@/i18n/locales';
 import { allowsMode } from '@/platform/Edition';
 import { WebPlatform, type Platform } from '@/platform/Platform';
@@ -50,6 +52,8 @@ export function createBrowserServices(
     musicVolume: 0.5,
     controls: 'gestures',
     muted: false,
+    keys: DEFAULT_KEYS,
+    ...DEFAULT_REPEAT,
   });
   // A portal's language wins at each launch over the saved one (Playgama and
   // CrazyGames both check that the game follows it).

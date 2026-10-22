@@ -3,6 +3,34 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.22.0] — 22/10/2026
+
+Lot C, troisième point : des commandes réglables, pour les joueurs exigeants.
+
+### Ajouté
+
+- **Touches réglables** (Réglages, « Clavier », ou le lien sous les touches de la pause) :
+  deux touches pour chaque action de la Chute, du Sable et de la Tour (déplacer, descendre,
+  tourner dans les deux sens, chute instantanée, réserve, renversement, tourner la tour,
+  pause).
+  - On choisit une case puis on appuie sur la nouvelle touche ; une touche déjà prise ailleurs
+    échange sa place, Suppr vide la case, Échap abandonne.
+  - Les touches que gardent le navigateur et les portails (Échap, Tab, Ctrl, Alt, touches
+    système et de fonction) sont refusées, avec la raison.
+  - Une action restée sans touche est signalée en rouge ; « Rétablir par défaut » remet tout
+    comme avant.
+  - La Mosaïque garde ses touches.
+- **Répétition des déplacements réglable** : délai avant répétition (DAS, 50 à 300 ms) et
+  intervalle (ARR, 0 à 100 ms ; 0 envoie la pièce droit au mur, et l'y ramène après une
+  rotation tant que la touche est tenue). Dans la Tour, sans mur, la répétition la plus
+  rapide reste d'une colonne par image. Elle vaut aussi pour les boutons tactiles.
+
+### Modifié
+
+- La légende des touches (à côté du jeu, dans la pause) et le guide de la première partie
+  montrent les touches du joueur.
+- La touche de pause reprend aussi la partie depuis la fenêtre de pause, quelle qu'elle soit.
+
 ## [1.21.0] — 22/10/2026
 
 Lot C, deuxième point : des gestes qui jouent la musique.

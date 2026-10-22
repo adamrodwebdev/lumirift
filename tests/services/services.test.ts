@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { BrowserStorage, MemoryStorage } from '@/services/KeyValueStorage';
 import { SCORES_KEY, ScoreBoard } from '@/services/ScoreBoard';
+import { DEFAULT_KEYS, KeyBindings } from '@/families/falling/input/KeyBindings';
+import { DEFAULT_REPEAT } from '@/families/falling/input/RepeatTiming';
 import { SETTINGS_KEY, SettingsService } from '@/services/SettingsService';
 import { ShareService } from '@/services/ShareService';
 
@@ -14,6 +16,8 @@ const DEFAULTS = {
   musicVolume: 0.5,
   controls: 'gestures',
   muted: false,
+  keys: DEFAULT_KEYS,
+  ...DEFAULT_REPEAT,
 } as const;
 
 describe('SettingsService', () => {
@@ -51,6 +55,20 @@ describe('SettingsService', () => {
     const storage = new MemoryStorage();
     new SettingsService(storage, DEFAULTS).update({ controls: 'buttons' });
     expect(new SettingsService(storage, DEFAULTS).current.controls).toBe('buttons');
+  });
+
+  it('remembers the keys and the repeat timing, within their bounds', () => {
+    const storage = new MemoryStorage();
+    const keys = KeyBindings.DEFAULT.with('rotateCw', 0, 'KeyK').toJSON();
+    new SettingsService(storage, DEFAULTS).update({ keys, das: 120, arr: 0 });
+    const saved = new SettingsService(storage, DEFAULTS).current;
+    expect(saved.keys).toEqual(keys);
+    expect([saved.das, saved.arr]).toEqual([120, 0]);
+
+    storage.set(SETTINGS_KEY, JSON.stringify({ das: 5, arr: 500, keys: { left: ['Escape'] } }));
+    const fixed = new SettingsService(storage, DEFAULTS).current;
+    expect([fixed.das, fixed.arr]).toEqual([DEFAULT_REPEAT.das, DEFAULT_REPEAT.arr]);
+    expect(KeyBindings.parse(fixed.keys).codes('left')).toEqual([]);
   });
 
   it('survives corrupt storage', () => {

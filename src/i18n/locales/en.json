@@ -619,9 +619,6 @@
     "goalSand": "Link both walls with a single colour: the region vanishes.",
     "goalLines": "Fill a row: it breaks.",
     "skip": "Skip the guide",
-    "moveKeys": "← →",
-    "rotateKeys": "↑",
-    "dropKeys": "Space",
     "moveTouch": "Swipe",
     "rotateTouch": "Tap",
     "dropTouch": "Flick down"
@@ -688,5 +685,34 @@
     "riftHeart": {
       "name": "Heart of the Rift"
     }
+  },
+  "keymap": {
+    "title": "Keyboard controls",
+    "row": "Keyboard",
+    "open": "Customize",
+    "change": "Change keys",
+    "hint": "Choose a slot, then press the new key (Delete to clear it).",
+    "groupMore": "More",
+    "turnLeft": "Turn the tower left",
+    "turnRight": "Turn the tower right",
+    "slot": "{action}, key {n}: {key}",
+    "slotEmpty": "{action}, key {n}: none",
+    "press": "Press a key for “{action}”",
+    "set": "“{action}”: {key}",
+    "reserved": "Key kept by the browser and game portals: {key}",
+    "swapped": "Keys swapped with “{action}”",
+    "unbound": "“{action}” has no key left",
+    "cleared": "Key removed",
+    "missing": "No key",
+    "das": "Repeat delay (DAS)",
+    "dasHint": "Before a held move repeats",
+    "arr": "Repeat interval (ARR)",
+    "arrHint": "Between two moves; 0 goes straight to the wall",
+    "instant": "Instant",
+    "reset": "Restore defaults",
+    "restored": "Default keys restored",
+    "shift": "Shift",
+    "escape": "Esc",
+    "mosaicNote": "The Mosaic keeps its own keys."
   }
 }
