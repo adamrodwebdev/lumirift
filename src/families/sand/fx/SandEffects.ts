@@ -67,6 +67,11 @@ export class SandEffects {
     this.world = { gravity: GRAVITY, width: view.grid.width, floor: view.grid.height };
   }
 
+  /** Things may move on their own (pulses, glows): the player's effect level allows it. */
+  get motion(): boolean {
+    return this.profile().motion;
+  }
+
   attach(session: SandSession): () => void {
     const offs = [
       session.onGame('clear', ({ samples, points, regions }) =>

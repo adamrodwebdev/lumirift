@@ -1,5 +1,6 @@
 import { Emitter } from '@/core/Emitter';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
+import { inDanger } from '@/session/Tension';
 import type { RandomSource } from '@/core/Random';
 import { JOKER_IDS, JOKERS, type JokerId, type JokerTarget } from '../jokers/Joker';
 import { CeramicGolem, type GolemEvent, type GolemSnapshot } from './CeramicGolem';
@@ -39,6 +40,8 @@ export interface MosaicEventMap {
   state: { readonly state: MosaicState };
   deal: { readonly hand: readonly (OfferedPiece | null)[] };
   place: { readonly piece: OfferedPiece; readonly cells: readonly Cell[] };
+  /** Cleared in danger: these points again, as a bonus (see `Tension`). */
+  closeCall: { readonly points: number };
   clear: {
     readonly lines: number;
     readonly rows: readonly number[];
@@ -327,6 +330,17 @@ export class MosaicGame {
 
   // --- Internals ------------------------------------------------------------
 
+  /** How full the board is (0 to 1): a full tray is the danger of the Mosaic. */
+  pressure(): number {
+    return this.grid.tileCount() / (this.grid.size * this.grid.size);
+  }
+
+  /** Lines cleared on a nearly full board count double: the rescue is a feat. */
+  private closeCall(points: number): void {
+    this._score += points;
+    this.events.emit('closeCall', { points });
+  }
+
   private resolveLines(): void {
     const lines = this.grid.fullLines();
     const count = lines.rows.length + lines.columns.length;
@@ -334,6 +348,8 @@ export class MosaicGame {
       if (++this.misses >= COMBO_GRACE) this._streak = 0;
       return;
     }
+    // Measured before the clear: lines cleared on a board this full are a close call.
+    const tense = inDanger(this.pressure());
     const cracked: Cell[] = [];
     const removed = this.grid.clearLines(lines, cracked);
     this.misses = 0;
@@ -353,6 +369,7 @@ export class MosaicGame {
       points,
       streak: this._streak,
     });
+    if (tense) this.closeCall(points);
 
     const perfect = this.grid.isEmpty();
     if (perfect) {

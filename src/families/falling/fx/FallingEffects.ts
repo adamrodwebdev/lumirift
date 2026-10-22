@@ -178,6 +178,11 @@ export class FallingEffects {
   }
 
   /** Subscribes to the session's engine events; returns the unsubscribe function. */
+  /** Things may move on their own (pulses, glows): the player's effect level allows it. */
+  get motion(): boolean {
+    return this.profile().motion;
+  }
+
   attach(session: FallingSession): () => void {
     const offs = [
       session.onGame('hardDrop', ({ piece, distance }) => this.onHardDrop(piece, distance)),

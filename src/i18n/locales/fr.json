@@ -135,6 +135,7 @@
     "nextBeat": "Prochain battement"
   },
   "notice": {
+    "closeCall": "De justesse ! +{value}",
     "lines": "Une ligne effacée | {n} lignes effacées",
     "combo": "Combo × {n}",
     "levelUp": "Niveau {level}",

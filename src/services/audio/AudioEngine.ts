@@ -1,4 +1,4 @@
-import { Music } from './Music';
+import { CALM_BPM, Music } from './Music';
 import { createNoiseBuffer, Synth } from './Synth';
 
 /** A sound: a few scheduled notes and noise bursts. */
@@ -30,6 +30,8 @@ export class AudioEngine {
   private musicVolume = 0.5;
   private muted = false;
   private intensity = 0.15;
+  private tempo = CALM_BPM;
+  private danger = 0;
 
   constructor(private readonly createContext: ContextFactory | null) {}
 
@@ -58,6 +60,8 @@ export class AudioEngine {
       this.synth = new Synth(context, this.sfx, noise);
       this.music = new Music(context, this.musicBus, noise);
       this.music.setIntensity(this.intensity);
+      this.music.setTempo(this.tempo);
+      this.music.setDanger(this.danger);
       this.music.start();
       this.applyVolume();
     }
@@ -83,6 +87,25 @@ export class AudioEngine {
   setIntensity(intensity: number): void {
     this.intensity = clamp(intensity);
     this.music?.setIntensity(this.intensity);
+  }
+
+  /** The music's tempo, in beats a minute (it changes on the next bar). */
+  setTempo(bpm: number): void {
+    this.tempo = bpm;
+    this.music?.setTempo(bpm);
+  }
+
+  /** How close the game is to being lost (0 to 1): a heartbeat under the music, a muffled pad. */
+  setDanger(danger: number): void {
+    this.danger = clamp(danger);
+    this.music?.setDanger(this.danger);
+  }
+
+  /** The player got out of danger: the music opens and resolves. */
+  relief(): void {
+    this.danger = 0;
+    if (this.context?.state !== 'running') return;
+    this.music?.relief();
   }
 
   /** Stops the audio clock while the page is hidden. */

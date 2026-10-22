@@ -14,6 +14,7 @@ import type { GameEventMap } from './game/GameEvents';
 import type { AbilityId, GameMode } from './modes/GameMode';
 import type { Piece } from './pieces/Piece';
 import type { RotationDirection } from './pieces/PieceType';
+import type { Cell } from './pieces/Shapes';
 
 /** Player intentions of the falling family. */
 export type FallingCommand =
@@ -42,6 +43,8 @@ export interface FallingView {
   dropDistance(): number;
   /** Blocks the bombs would blow away if the piece landed where its ghost is (the Tower). */
   blastPreview(): readonly RemovedCell[];
+  /** The next piece's cells where it would appear, when it has no room to enter; or null. */
+  spawnWarning(): readonly Cell[] | null;
 }
 
 /** Adapts a falling-family `Game` to the common `GameSession` contract. */
@@ -111,8 +114,7 @@ export class FallingSession implements GameSession<FallingCommand> {
   }
 
   pressure(): number {
-    const { board } = this.view;
-    return Math.min(1, board.stackHeight() / (board.height - board.hiddenRows));
+    return this.game.pressure();
   }
 
   indicators(): readonly Indicator[] {
@@ -155,6 +157,7 @@ export class FallingSession implements GameSession<FallingCommand> {
     );
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));
+    events.on('closeCall', (event) => this.events.emit('closeCall', event));
     events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('flip', ({ lines }) => this.events.emit('notice', { id: 'flip', value: lines }));
     events.on('mirror', () => this.events.emit('notice', { id: 'mirror' }));

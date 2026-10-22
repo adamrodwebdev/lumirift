@@ -121,6 +121,58 @@ export const warning: SoundRecipe = (s) => {
   s.tone({ type: 'triangle', frequency: degree(13), duration: 0.09, gain: 0.06, start: 0.16 });
 };
 
+// --- The tension of a game (1.19) -------------------------------------------------
+
+/** The final ten seconds of a timed game: a hurried call, twice, a step higher. */
+export const hurry: SoundRecipe = (s) => {
+  [13, 15, 17, 15, 17, 20].forEach((step, i) =>
+    s.tone({
+      type: 'square',
+      frequency: degree(step),
+      duration: 0.07,
+      gain: 0.035,
+      start: i * 0.075 + (i >= 3 ? 0.06 : 0),
+    }),
+  );
+};
+
+/** One of the last seconds going by: a wood block, higher for the last three. */
+export const countdown =
+  (last: boolean): SoundRecipe =>
+  (s) => {
+    s.tone({
+      frequency: degree(last ? 20 : 17),
+      to: degree(last ? 18 : 15),
+      duration: 0.07,
+      gain: 0.07,
+    });
+    s.noise({ filter: 'highpass', frequency: 4000, duration: 0.02, gain: 0.03 });
+  };
+
+/** A line cleared at the edge of defeat: a golden rush up the scale, time slowing down. */
+export const closeCall: SoundRecipe = (s) => {
+  [10, 12, 14, 15, 17, 20].forEach((step, i) =>
+    s.tone({
+      type: 'triangle',
+      frequency: degree(step),
+      duration: 0.14,
+      gain: 0.05,
+      start: i * 0.035,
+    }),
+  );
+  s.noise({ filter: 'highpass', frequency: 5000, duration: 0.5, gain: 0.035, start: 0.1 });
+  s.noise({ filter: 'lowpass', frequency: 1200, to: 200, duration: 0.45, gain: 0.07 });
+};
+
+/** The rift breaks the well: a pane of glass shattering over a deep blow. */
+export const wellBreak: SoundRecipe = (s) => {
+  s.tone({ frequency: 90, to: 38, duration: 0.55, gain: 0.2 });
+  s.noise({ filter: 'highpass', frequency: 2500, duration: 0.9, gain: 0.13 });
+  [18, 21, 23].forEach((step, i) =>
+    s.tone({ frequency: degree(step) * 1.013, duration: 0.5, gain: 0.025, start: 0.03 + i * 0.05 }),
+  );
+};
+
 export const bonus: SoundRecipe = (s) => {
   s.tone({ frequency: degree(17), duration: 0.3, gain: 0.07 });
   s.tone({ frequency: degree(20), duration: 0.35, gain: 0.05, start: 0.06 });

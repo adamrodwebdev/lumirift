@@ -39,6 +39,7 @@ onMounted(() => {
   if (!canvas.value) return;
   renderer = new FallingRenderer(canvas.value, props.session.view);
   renderer.setGhost(false);
+  renderer.setDangerEdge(true);
   if (box.value) observer.observe(box.value);
   void refreshPalette();
 });

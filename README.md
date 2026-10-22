@@ -27,6 +27,9 @@ Cahier des charges (règles détaillées, architecture, décisions) :
   **Atelier** de matières, d'ambiances et de signatures de bris, tous cosmétiques.
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde.
+- **La tension de l'échec** : en danger, la musique presse et un cœur bat, le verre du
+  puits se fend d'or ; une ligne sauvée au bord du gouffre compte double, une défaite
+  brise le puits.
 - **Écran titre vivant** : une boucle de vraies parties montre, avant même de jouer, ce
   qu'aucun autre jeu de blocs n'a : les éléments du Sable, les puits qui se retournent,
   basculent et se reflètent, les quatre Gardiens de la faille.

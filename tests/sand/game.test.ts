@@ -9,7 +9,7 @@ import {
   WIND_EVERY_MS,
   WIND_GUST_MS,
 } from '@/families/sand/engine/SandGame';
-import { GRAINS_PER_CELL } from '@/families/sand/engine/SandGrid';
+import { GRAINS_PER_CELL, SAND_TONES } from '@/families/sand/engine/SandGrid';
 
 const G = GRAINS_PER_CELL;
 
@@ -182,6 +182,16 @@ describe('SandGame', () => {
     const boss = new SandGame({ random: new SeededRandom(4), boss: 'duneWorm' });
     boss.start();
     expect(boss.tease()).toBe(false);
+  });
+
+  it('warns where the next piece would appear once the sand leaves it no room', () => {
+    const game = started();
+    expect(game.spawnWarning()).toBeNull();
+    const { grid } = game;
+    for (let y = 2 * G; y < grid.height; y++) {
+      for (let x = 0; x < grid.width; x++) grid.put(x, y, SAND_TONES[(x >> 3) % 2]!, 0);
+    }
+    expect(game.spawnWarning()?.y).toBe(0);
   });
 
   it('ends when a new piece cannot appear', () => {

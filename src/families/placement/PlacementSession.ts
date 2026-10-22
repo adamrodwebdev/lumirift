@@ -91,8 +91,7 @@ export class PlacementSession implements GameSession<MosaicCommand> {
 
   /** A full tray is the danger of the Mosaic. */
   pressure(): number {
-    const { grid } = this.view;
-    return grid.tileCount() / (grid.size * grid.size);
+    return this.game.pressure();
   }
 
   indicators(): readonly Indicator[] {
@@ -134,6 +133,10 @@ export class PlacementSession implements GameSession<MosaicCommand> {
       this.events.emit('clear', { lines, points, combo: streak - 1 }),
     );
     events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
+    events.on('closeCall', (event) => {
+      this.events.emit('closeCall', event);
+      this.events.emit('notice', { id: 'closeCall', value: event.points });
+    });
     events.on('perfect', ({ points }) =>
       this.events.emit('notice', { id: 'perfectGrid', value: points }),
     );

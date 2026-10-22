@@ -16,6 +16,14 @@ describe('Game', () => {
     expect(game.preview().map((spec) => spec.type)).toEqual(['O', 'T', 'S']);
   });
 
+  it('warns where the next piece would appear once it has no room to enter', () => {
+    expect(startedGame().spawnWarning()).toBeNull();
+    // The well full to its top row: the next piece, an O, could not come down.
+    const full = startedGame({ rows: row('####.#####', 20) });
+    expect(full.preview(1)[0]?.type).toBe('O');
+    expect(full.spawnWarning()).toHaveLength(4);
+  });
+
   it('stays ready until started', () => {
     const game = new Game(new ClassicMode(), { random: new ConstantRandom() });
     expect(game.state).toBe('ready');

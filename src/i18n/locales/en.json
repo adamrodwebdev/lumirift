@@ -135,6 +135,7 @@
     "nextBeat": "Next beat"
   },
   "notice": {
+    "closeCall": "Close call! +{value}",
     "lines": "One line cleared | {n} lines cleared",
     "combo": "Combo × {n}",
     "levelUp": "Level {level}",

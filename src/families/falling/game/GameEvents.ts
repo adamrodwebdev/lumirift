@@ -44,6 +44,8 @@ export interface GameEventMap {
   lock: { readonly piece: Piece };
   hold: { readonly type: PieceType };
   clear: LinesClearedEvent;
+  /** Cleared in danger: these points again, as a bonus (see `Tension`). */
+  closeCall: { readonly points: number };
   levelUp: { readonly level: number };
   garbage: { readonly rows: number };
   /** Stones dropped on top of columns by a mode rule (the Eye of the Tower's strike). */
