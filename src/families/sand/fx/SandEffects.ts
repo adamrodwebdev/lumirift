@@ -74,8 +74,8 @@ export class SandEffects {
 
   attach(session: SandSession): () => void {
     const offs = [
-      session.onGame('clear', ({ samples, points, regions }) =>
-        this.onClear(samples, points, regions),
+      session.onGame('clear', ({ samples, points, regions, multiplier }) =>
+        this.onClear(samples, points, regions, multiplier),
       ),
       session.onGame('burn', ({ samples, points }) => this.onBurn(samples, points)),
       session.onGame('quench', ({ samples }) => this.onQuench(samples)),
@@ -143,8 +143,13 @@ export class SandEffects {
     return popup.age / POPUP_MS;
   }
 
-  private onClear(samples: readonly GrainSample[], points: number, regions: number): void {
-    this.popup(samples, points);
+  private onClear(
+    samples: readonly GrainSample[],
+    points: number,
+    regions: number,
+    multiplier: number,
+  ): void {
+    this.popup(samples, points, multiplier >= 2 ? `×${multiplier}` : null);
     const profile = this.profile();
     if (profile.shake) this.shake.kick(2 + regions * 2);
     if (profile.particles === 0) return;
@@ -434,11 +439,17 @@ export class SandEffects {
     this.running = { points, at: now, popup };
   }
 
-  private popup(samples: readonly GrainSample[], points: number): void {
+  /** The points over what vanished, and above them a word of the moment (the combo's ×N). */
+  private popup(
+    samples: readonly GrainSample[],
+    points: number,
+    label: string | null = null,
+  ): void {
     if (samples.length === 0) return;
     const x = samples.reduce((sum, s) => sum + s.x, 0) / samples.length;
     const y = samples.reduce((sum, s) => sum + s.y, 0) / samples.length;
     this.popups.push({ text: `+${this.formatPoints(points)}`, x, y, age: 0 });
+    if (label) this.popups.push({ text: label, x, y: y - GRAINS_PER_CELL * 1.2, age: 0 });
   }
 
   /** Fewer particles on calm effects. */

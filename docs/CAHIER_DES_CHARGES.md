@@ -241,6 +241,13 @@ Règles détaillées :
 - Chaque pièce porte l'une de **4 couleurs**. Une **zone d'une même couleur, continue, qui
   relie le mur gauche au mur droit** est effacée, même si elle serpente. Points : 1 par grain
   effacé, multiplié par le nombre de zones effacées d'un coup. Niveau + 1 toutes les 5 zones.
+- **Combo** (1.20, `ComboGauge`) : un effacement remplit une jauge ; chaque effacement suivant
+  avant qu'elle soit vide multiplie ses points par 2, 3… jusqu'à **×10**. La jauge dure 9 s
+  à ×1, une demi-seconde de moins à chaque palier (5 s au plus serré). Les grands moments des
+  éléments (foudre, brasier, feu qui brûle une zone, liane, glace) **regonflent** une jauge en
+  cours d'un quart, sans faire monter le multiplicateur. Dans le puits, un badge en coin montre
+  l'anneau qui se vide et le multiplicateur du prochain effacement (« ×3 »), rouge quand la
+  jauge est presque vide ; le son de l'effacement monte d'une note à chaque palier.
 - **Éléments** (à partir de la 6ᵉ pièce, **au moins 3 pièces de sable entre deux éléments**,
   jamais deux de suite ; une pièce sur cinq environ en est un ensuite), annoncés à leur arrivée
   et **reconnaissables dans l'aperçu** à leur motif gravé. Ils arrivent **niveau après niveau**

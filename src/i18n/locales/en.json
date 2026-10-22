@@ -137,6 +137,7 @@
   "notice": {
     "closeCall": "Close call! +{value}",
     "lines": "One line cleared | {n} lines cleared",
+    "regions": "One region cleared | {n} regions cleared",
     "combo": "Combo × {n}",
     "levelUp": "Level {level}",
     "chargeGained": "New flip charge",

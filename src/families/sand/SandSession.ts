@@ -1,4 +1,5 @@
 import { Emitter, type Listener } from '@/core/Emitter';
+import type { ComboView } from '@/session/ComboGauge';
 import type { BossId, BossStatus } from '@/session/GameSession';
 import { WORM_HEALTH, type DuneWorm } from './engine/DuneWorm';
 import type { FallingCommand } from '@/families/falling/FallingSession';
@@ -28,6 +29,8 @@ export interface SandView {
   readonly worm: DuneWorm | null;
   /** The next chapter's Guardian is passing under the sand (the level is won). */
   readonly isTeasing: boolean;
+  /** The combo gauge: what the next clear would score with, and how full it is. */
+  readonly comboGauge: ComboView;
 }
 
 type Handlers = {
@@ -151,8 +154,8 @@ export class SandSession implements GameSession<FallingCommand> {
   private forwardEvents(): void {
     const { events } = this.game;
     events.on('state', (event) => this.events.emit('state', event));
-    events.on('clear', ({ regions, points }) =>
-      this.events.emit('clear', { lines: regions, points, combo: 0 }),
+    events.on('clear', ({ regions, points, multiplier }) =>
+      this.events.emit('clear', { lines: regions, points, combo: multiplier - 1 }),
     );
     events.on('burn', ({ grains }) => this.events.emit('notice', { id: 'burn', value: grains }));
     events.on('quench', () => this.events.emit('notice', { id: 'quench' }));

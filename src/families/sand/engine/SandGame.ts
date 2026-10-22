@@ -1,5 +1,6 @@
 import { Emitter } from '@/core/Emitter';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
+import { ComboGauge, type ComboView } from '@/session/ComboGauge';
 import { inDanger } from '@/session/Tension';
 import type { RandomSource } from '@/core/Random';
 import { Tone } from '@/core/Tone';
@@ -44,6 +45,11 @@ export const WIND_EVERY_MS = 30_000;
 export const WIND_WARNING_MS = 3_000;
 export const WIND_GUST_MS = 2_500;
 export const CLEARS_PER_LEVEL = 5;
+/**
+ * The reactions that feed a running combo: the great moments of the elements.
+ * A blaze's scorching, acid and steam come too often to count.
+ */
+const FEEDING: ReadonlySet<string> = new Set(['blaze', 'sprout', 'melt', 'freeze', 'fuse']);
 /** Grains reported per clear for the effects (a sample is enough to show it). */
 const SAMPLE = 160;
 
@@ -70,10 +76,14 @@ export interface SandEventMap {
     readonly regions: number;
     readonly grains: number;
     readonly points: number;
+    /** The combo's multiplier this clear scored with (1 without a chain). */
+    readonly multiplier: number;
     readonly samples: readonly GrainSample[];
   };
   /** Cleared in danger: these points again, as a bonus (see `Tension`). */
   closeCall: { readonly points: number };
+  /** A combo of ×2 or more ran dry: the chain is over. */
+  comboEnd: { readonly multiplier: number };
   /** Fire burnt a region of sand. */
   burn: {
     readonly grains: number;
@@ -178,6 +188,8 @@ export class SandGame {
   private _active: SandPiece | null = null;
   private _score = 0;
   private _clears = 0;
+  /** Clear again before it runs dry: the multiplier climbs to ×10. */
+  private readonly combo = new ComboGauge();
   private _level = 1;
   private _elapsedMs = 0;
   private dealt = 0;
@@ -258,6 +270,11 @@ export class SandGame {
   get score(): number {
     return this._score;
   }
+  /** The combo gauge, for the well's badge. */
+  get comboGauge(): ComboView {
+    return this.combo;
+  }
+
   get clears(): number {
     return this._clears;
   }
@@ -411,6 +428,8 @@ export class SandGame {
       this.finish('timeUp');
       return;
     }
+    const reached = this.combo.update(deltaMs);
+    if (reached >= 2) this.events.emit('comboEnd', { multiplier: reached });
     this.updateWind();
     this.stepAccumulator += deltaMs;
     // Burning or a block out may end the game during a step.
@@ -666,9 +685,11 @@ export class SandGame {
     if (kind === 'burn') {
       const points = this.elementPoints(removed.length);
       this._score += points;
+      this.combo.feed();
       this.events.emit('burn', { grains: removed.length, points, samples });
       return;
     }
+    if (FEEDING.has(kind) && removed.length > 0) this.combo.feed();
     // Acid is a tool to dig: it scores nothing.
     const points =
       removed.length > 0 && kind !== 'dissolve' ? this.elementPoints(removed.length) : 0;
@@ -712,6 +733,7 @@ export class SandGame {
     } else if (worm && strike.kind === 'shatter' && worm.touchesAny(strike.removed, 3)) {
       this.hurtBoss(worm, 'boltNear');
     }
+    if (strike.removed.length > 0) this.combo.feed();
     // Through water, the shock is the great combo of the elements: full points.
     const points = this.elementPoints(strike.removed.length, strike.kind === 'shock' ? 1 : 0.5);
     this._score += points;
@@ -736,6 +758,7 @@ export class SandGame {
     this.grid.remove(region);
     const points = Math.round((region.length / 2) * (1 + this.boosts.scoreBonus));
     this._score += points;
+    this.combo.feed();
     this.events.emit('burn', { grains: region.length, points, samples });
   }
 
@@ -818,10 +841,19 @@ export class SandGame {
     // Measured before the clear: regions cleared with the sand this high are a close call.
     const tense = inDanger(this.pressure()) && !this.teasing;
     this.grid.remove(all);
-    const points = Math.round(all.length * regions.length * (1 + this.boosts.scoreBonus));
+    const multiplier = this.combo.clear();
+    const points = Math.round(
+      all.length * regions.length * multiplier * (1 + this.boosts.scoreBonus),
+    );
     this._score += points;
     this._clears += regions.length;
-    this.events.emit('clear', { regions: regions.length, grains: all.length, points, samples });
+    this.events.emit('clear', {
+      regions: regions.length,
+      grains: all.length,
+      points,
+      multiplier,
+      samples,
+    });
     if (tense) this.closeCall(points);
     const level = 1 + Math.floor(this._clears / CLEARS_PER_LEVEL);
     if (level > this._level) {

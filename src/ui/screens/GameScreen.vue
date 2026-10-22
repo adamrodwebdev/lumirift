@@ -272,7 +272,8 @@ const listen = (current: GameSession) => {
   unsubscribe = [
     events.on('clear', ({ lines, combo }) => {
       if (coach?.cleared()) coachUpdate();
-      const text = t('notice.lines', lines);
+      // The Sand clears regions (linking the walls), the other families lines.
+      const text = t(descriptor.family === 'sand' ? 'notice.regions' : 'notice.lines', lines);
       announce(
         combo > 0 ? `${text} · ${t('notice.combo', { n: combo + 1 })}` : text,
         lines >= 2 || combo > 0,
