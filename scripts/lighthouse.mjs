@@ -1,15 +1,15 @@
 // Lighthouse audit of the production build, mobile profile (the default).
 // Usage: npm run build && npm run lighthouse  [-- --desktop]
-// Fails when a category scores below the threshold of the specification (95).
+// Fails when a category scores below the threshold of the specification
+// (Performance 98, the three others 95).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import * as chromeLauncher from 'chrome-launcher';
 import lighthouse from 'lighthouse';
 import desktopConfig from 'lighthouse/core/config/desktop-config.js';
 import { preview } from 'vite';
 
-const THRESHOLD = 95;
-/** The four categories the specification requires; others (experimental) are informative. */
-const REQUIRED = ['performance', 'accessibility', 'best-practices', 'seo'];
+/** The four categories the specification requires, and their minimum; others (experimental) are informative. */
+const THRESHOLDS = { performance: 98, accessibility: 95, 'best-practices': 95, seo: 95 };
 const PORT = 4176;
 const desktop = process.argv.includes('--desktop');
 
@@ -35,11 +35,12 @@ try {
 
   for (const category of Object.values(result.lhr.categories)) {
     const score = Math.round((category.score ?? 0) * 100);
-    const required = REQUIRED.includes(category.id);
-    const ok = score >= THRESHOLD;
+    const threshold = THRESHOLDS[category.id];
+    const required = threshold !== undefined;
+    const ok = required && score >= threshold;
     if (required) failed ||= !ok;
     const mark = required ? (ok ? '✓' : '✗') : '·';
-    const note = required ? '' : ' (informative)';
+    const note = required ? ` (≥ ${threshold})` : ' (informative)';
     console.log(`${mark} ${category.title.padEnd(16)} ${score}${note}`);
   }
   console.log(`Report: ${name}`);
@@ -49,6 +50,6 @@ try {
 }
 
 if (failed) {
-  console.error(`At least one category is below ${THRESHOLD}.`);
+  console.error('At least one category is below its threshold.');
   process.exit(1);
 }

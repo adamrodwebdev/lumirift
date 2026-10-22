@@ -139,7 +139,8 @@ Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAME
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 13
   modes, une partie complète, défi du jour, réglages retenus, menu (onglets, glissement,
   carte, Atelier), clavier seul.
-- Lighthouse : 100 dans les quatre catégories (seuil exigé : 95).
+- Lighthouse : 100 dans les quatre catégories, mobile et bureau (seuils exigés : 98 en
+  Performance, 95 dans les trois autres).
 - Intégration continue : `.github/workflows/ci.yml` rejoue tout cela à chaque envoi.
 
 ## Architecture en bref

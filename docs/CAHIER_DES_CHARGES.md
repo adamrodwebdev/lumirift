@@ -22,7 +22,8 @@ Objectifs :
 2. **Rejouabilité** : quatorze modes en quatre familles de jeux (chute, sable, placement,
    volume), dont un **défi du jour** identique pour tous les joueurs.
 3. **Viralité** : le résultat du défi du jour se partage en un geste (texte court + lien).
-4. **Qualité web exemplaire** : Lighthouse ≥ 95 dans les quatre catégories, sur mobile.
+4. **Qualité web exemplaire** : Lighthouse sur mobile, Performance ≥ 98 (depuis 1.19.1), les
+   trois autres catégories ≥ 95.
 5. **International dès le lancement** : français, anglais et indonésien.
 
 ## 2. Positionnement marketing
@@ -842,8 +843,8 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 
 ### 4.1 Performance et Lighthouse
 
-- **Lighthouse ≥ 95** en Performance, Accessibilité, Bonnes pratiques et SEO, mesuré sur le
-  build de production en profil mobile. Mesure automatisée : `npm run build` puis
+- **Lighthouse : Performance ≥ 98** (seuil relevé en 1.19.1), **Accessibilité, Bonnes
+  pratiques et SEO ≥ 95**, mesuré sur le build de production en profil mobile. Mesure automatisée : `npm run build` puis
   `npm run lighthouse` (ajouter `-- --desktop` pour le profil bureau). Résultats : § 5.7.
 - Budget : JavaScript initial < 100 Ko compressés, aucune police web (polices système),
   aucune requête tierce. Chaque famille de jeux (et l'IA du Duel, et le synthétiseur du
@@ -1149,6 +1150,17 @@ catégories, mobile et bureau ; JavaScript initial **56,5 Ko** compressés ; mod
 **18,3 Ko** compressés. Pendant une destruction de 4 lignes avec renversement, dans le
 navigateur intégré : **12,1 ms** par image en moyenne, **12,4 ms** au pire.
 
+- **Premier écran sans attente (1.19.1)** : mobile **100** dans les quatre catégories
+  (FCP 1,1 s, LCP 1,2 à 1,4 s, TBT sous 15 ms, CLS 0,004 ; 93 à 97 avant), bureau 100.
+  - L'écran de chargement est le titre du jeu (LUMI / RIFT / BLOCKS, en grand) : il est
+    peint par la page seule, puis le jeu le dissout une fois monté (0,28 s, sans prendre
+    de toucher).
+  - Les feuilles de style du premier écran sont dans `index.html` (`bootPlugin`).
+  - Le code et les messages de la langue du joueur ne sont demandés qu'après la première
+    image de l'écran-titre, ensemble ; chaque langue est un module à part (7,5 à 8,5 Ko
+    compressés), le module d'entrée tombe de 37 à 15 Ko.
+  - Les images des menus (gemmes, scène vivante, boucle de l'accueil) attendent que la
+    page soit chargée et le navigateur libre (`afterLoad`).
 - Lighthouse 13 ajoute une catégorie expérimentale, « Agentic Browsing » (50) : hors des
   quatre catégories exigées, elle est affichée à titre indicatif par `npm run lighthouse`.
 - Sur ce poste, le Chromium de Playwright ne peut pas être lancé par Node (`spawn UNKNOWN`) ;
@@ -1396,7 +1408,8 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
 ## 8. Critères d'acceptation
 
 1. Les quatorze modes sont jouables du début à la fin, au clavier et au tactile.
-2. Lighthouse ≥ 95 dans les quatre catégories (mobile, build de production de notre site).
+2. Lighthouse sur mobile, build de production de notre site : Performance ≥ 98, les trois
+   autres catégories ≥ 95.
 3. Aucun défilement horizontal de 320 à 1920 px ; le puits reste entièrement visible.
 4. Les trois langues sont complètes ; changer de langue ne recharge pas la page.
 5. Le thème sombre s'applique sans flash au chargement.
@@ -1432,7 +1445,8 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames livré (1.2) |
 | 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                  |
 
-Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 95.
+Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 98 en
+Performance (95 jusqu'à la 1.19.0), ni sous 95 dans les trois autres catégories.
 
 ## 10. Hors périmètre (v1)
 

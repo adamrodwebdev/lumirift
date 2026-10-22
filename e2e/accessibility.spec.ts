@@ -31,6 +31,7 @@ for (const theme of ['dark'] as const) {
     test.beforeEach(async ({ page }) => {
       await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
       await page.goto('/');
+      await page.locator('main').waitFor();
     });
 
     test('the menu: home, modes and Atelier pages', async ({ page }) => {
@@ -86,6 +87,7 @@ for (const theme of ['dark'] as const) {
 test('new looks: the badge of the Atelier tab and the marks on the shelf', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
+  await page.locator('main').waitFor();
   await page.evaluate(() =>
     localStorage.setItem('stackrift:profile', JSON.stringify({ xp: 300, seen: [] })),
   );
@@ -100,6 +102,7 @@ for (const theme of ['dark'] as const) {
   test(`${theme} theme: campaign map, level and upgrades`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
     await page.goto('/');
+    await page.locator('main').waitFor();
     await page.getByRole('tab', { name: 'Carte' }).click();
     const map = page.getByRole('tabpanel', { name: 'Carte' });
     await expect(map.getByRole('heading', { name: 'Premiers blocs' })).toBeVisible();

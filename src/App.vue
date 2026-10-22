@@ -6,10 +6,12 @@ import {
   onMounted,
   ref,
   shallowRef,
+  watch,
   watchEffect,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
+import { loadMessages } from '@/i18n';
 import type { CampaignLevel } from '@/campaign/Levels';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { ModeId } from '@/session/ModeId';
@@ -38,7 +40,8 @@ type Screen =
   | { readonly kind: 'hub'; readonly returning: boolean }
   | ({ readonly kind: 'game'; readonly id: number } & Game);
 
-const { t, locale } = useI18n();
+const i18n = useI18n();
+const { t, locale } = i18n;
 const { settings, audio, platform, catalog } = useServices();
 
 const screen = shallowRef<Screen>({ kind: 'hub', returning: false });
@@ -100,10 +103,19 @@ const backToHub = (page?: HubPage) => {
  */
 const focusMain = () => main.value?.focus({ preventScroll: true });
 
-// Language: interface, <html lang>, title and description follow the setting.
+// Language: a language chosen for the first time brings its messages first;
+// then the interface, <html lang>, title and description follow it.
+watch(
+  () => settings.current.locale,
+  async (next) => {
+    if (!i18n.availableLocales.includes(next))
+      i18n.setLocaleMessage(next, await loadMessages(next));
+    if (settings.current.locale === next) locale.value = next;
+  },
+  { immediate: true },
+);
 watchEffect(() => {
-  locale.value = settings.current.locale;
-  document.documentElement.lang = settings.current.locale;
+  document.documentElement.lang = locale.value;
   document.title = t('meta.title');
   document
     .querySelector('meta[name="description"]')

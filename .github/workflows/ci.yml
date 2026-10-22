@@ -18,7 +18,7 @@ jobs:
       - run: npm run verify
       # Journeys and accessibility audits on the build, phone and desktop (installed Chrome).
       - run: npm run test:e2e
-      # Fails below 95 in any of the four required categories.
+      # Fails below 98 in Performance, or below 95 in the three other required categories.
       - run: npm run lighthouse
       - uses: actions/upload-artifact@v4
         if: always()

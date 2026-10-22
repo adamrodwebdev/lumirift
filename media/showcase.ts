@@ -38,7 +38,7 @@ services.settings.update({ effects: 'full', locale: 'en' });
 
 const app = createApp(ShowcaseView, { clock })
   .provide(APP_SERVICES, services)
-  .use(createAppI18n('en'));
+  .use(await createAppI18n('en'));
 const view = app.mount('#showcase') as unknown as { show(scene: unknown): void };
 clock.start();
 

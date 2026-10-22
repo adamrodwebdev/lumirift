@@ -4,6 +4,7 @@ import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
+import { bootPlugin } from './scripts/bootPlugin.ts';
 import { portalPlugin } from './scripts/portalPlugin.ts';
 import { seoPlugin } from './scripts/seoPlugin.ts';
 
@@ -32,6 +33,8 @@ export default defineConfig(({ mode }) => {
       // Canonical URL and sitemap, when the site's address is known (SITE_URL).
       seoPlugin(platform ? undefined : process.env.SITE_URL),
       portalPlugin(platform),
+      // The first screen without waiting: inline styles, the player's language fetched early.
+      bootPlugin(),
     ],
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

@@ -50,32 +50,56 @@
       html {
         background: #0d0a26;
       }
+      /*
+       * The title card, painted at once (the game's code runs after it, see
+       * bootPlugin): the logo, large, while the game loads; the game
+       * dissolves it once mounted (main.ts). It never takes a tap.
+       */
       .splash {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
         display: grid;
-        place-items: center;
-        min-height: 100vh;
+        place-content: center;
+        justify-items: center;
+        background: #0d0a26;
         color: #f4f1ff;
         font:
-          900 clamp(2.5rem, 10vw, 5rem) / 1 system-ui,
+          900 min(20vw, 12vh) / 0.95 system-ui,
           sans-serif;
-        letter-spacing: -0.03em;
+        letter-spacing: -0.02em;
+        pointer-events: none;
+        transition: opacity 280ms ease;
       }
-      .splash span {
+      .splash b {
+        display: block;
+      }
+      .splash .splash__rift {
         color: #ffb547;
       }
       .splash small {
-        display: block;
-        font-size: 0.28em;
-        letter-spacing: 0.4em;
-        text-align: center;
+        margin-top: 0.45em;
+        padding-left: 0.6em;
+        font-size: 0.24em;
+        letter-spacing: 0.6em;
+        color: #b9b2dd;
+      }
+      .splash--out {
+        opacity: 0;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .splash {
+          transition: none;
+        }
       }
     </style>
   </head>
   <body>
-    <!-- Shown at once, replaced by the game when it mounts (a portal-style loading screen). -->
-    <div id="app">
-      <div class="splash" aria-hidden="true">LUMI<span>RIFT</span><small>BLOCKS</small></div>
+    <!-- The title card while the game loads (a portal-style loading screen). -->
+    <div id="splash" class="splash" aria-hidden="true">
+      <b>LUMI</b><b class="splash__rift">RIFT</b><small>BLOCKS</small>
     </div>
+    <div id="app"></div>
     <noscript>
       <h1>Lumirift — le jeu de blocs réinventé</h1>
       <p>

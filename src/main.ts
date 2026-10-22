@@ -15,10 +15,16 @@ const platform = await createPlatform();
 document.documentElement.dataset.platform = platform.id;
 const services = createBrowserServices(platform);
 
-createApp(App)
-  .provide(APP_SERVICES, services)
-  .use(createAppI18n(services.settings.current.locale))
-  .mount('#app');
+// The messages of the player's language only (fetched early by the page itself).
+const i18n = await createAppI18n(services.settings.current.locale);
+createApp(App).provide(APP_SERVICES, services).use(i18n).mount('#app');
+
+// The game is on screen: the title card shown while it loaded dissolves.
+const splash = document.getElementById('splash');
+if (splash) {
+  splash.classList.add('splash--out');
+  setTimeout(() => splash.remove(), 400);
+}
 
 // The first screen is painted and interactive: the portal may stop its loading screen.
 requestAnimationFrame(() => requestAnimationFrame(() => platform.ready()));
