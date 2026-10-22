@@ -21,7 +21,17 @@
     "play": "Play",
     "best": "Best: {value}",
     "noBest": "No record yet",
-    "quick": "A game of Classic, right now"
+    "quick": "A game of Classic, right now",
+    "reel": {
+      "elements": "Lightning, fire, seeds: the sand reacts",
+      "flip": "Turn the well over: the holes vanish",
+      "duneWorm": "It bursts out of the sand",
+      "tilt": "The wall becomes the floor",
+      "ceramicGolem": "It hurls stones at your mosaic",
+      "mirror": "The well becomes its own reflection",
+      "towerEye": "Blind it in its glass tower",
+      "riftHeart": "Strike its heart with your lines"
+    }
   },
   "daily": {
     "title": "Daily Challenge",
@@ -152,7 +162,7 @@
     "windSoonRight": "Wind blowing to the right",
     "elementWater": "Water piece",
     "elementFire": "Fire piece",
-    "burn": "Fire burnt {value} grains",
+    "burn": "Fire burnt {value} grain | Fire burnt {value} grains",
     "quench": "Water puts the fire out",
     "rescue": "Second chance!",
     "elementOil": "Oil piece: it floats, and fire makes it blaze",
@@ -169,14 +179,14 @@
       "sprout": "The seed sprouts a vine"
     },
     "strike": {
-      "shock": "Shock! {value} grains broken through the water",
-      "shatter": "Lightning: {value} grains shattered",
+      "shock": "Shock! {value} grain broken through the water | Shock! {value} grains broken through the water",
+      "shatter": "Lightning: {value} grain shattered | Lightning: {value} grains shattered",
       "spark": "Lightning sets the oil ablaze",
       "thaw": "Lightning breaks the ice",
       "fuse": "Lightning sets the vine on fire"
     },
     "bombPiece": "Bomb gem: clear its ring to blow up the tower around it",
-    "blast": "Boom! {value} blocks blown away",
+    "blast": "Boom! {value} block blown away | Boom! {value} blocks blown away",
     "blastChain": "Chain reaction: {value} bombs!",
     "boss": {
       "warn": "Red cracks: the Dune Wyrm is coming up there!",
@@ -214,7 +224,8 @@
         "phase2": "The Heart races: it beats faster!",
         "phase3": "Last stand: the rift tears open!",
         "defeated": "The Heart of the Rift is defeated!"
-      }
+      },
+      "tease": "Something stirs beneath the sand…"
     }
   },
   "controls": {
@@ -521,7 +532,10 @@
     "retry": "Try again",
     "map": "Campaign map",
     "lockedNote": "Win level {level} to open this one.",
-    "guardian": "Guardian"
+    "guardian": "Guardian",
+    "teaser": "The {name} stirs: it awaits you at level {level}.",
+    "chapterGuardian": "Guardian: {name}",
+    "nextGuardian": "Next Guardian: {name}, chapter {n}"
   },
   "upgrades": {
     "title": "Upgrades",

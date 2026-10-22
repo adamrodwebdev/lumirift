@@ -2,8 +2,13 @@ import { Emitter } from '@/core/Emitter';
 import type { BossStatus, Indicator } from '@/session/GameSession';
 import { GUARDIAN_HEALTH } from '@/session/GuardianHealth';
 import type { Game } from '../game/Game';
-import { AbstractMode } from './AbstractMode';
+import { AbstractMode, type ModeOptions } from './AbstractMode';
 import { RiftHeart, type HeartEvent } from './RiftHeart';
+
+export interface RiftHeartOptions extends ModeOptions {
+  /** The Heart's first beat after this long (ms); by default the player can start building. */
+  readonly bossDelayMs?: number;
+}
 
 export interface HeartEventMap {
   boss: { readonly event: HeartEvent };
@@ -21,6 +26,12 @@ export class RiftHeartMode extends AbstractMode {
   private _heart: RiftHeart | null = null;
   private game: Game | null = null;
   private readonly told = new Set<string>();
+  private readonly bossDelayMs: number | undefined;
+
+  constructor(options: RiftHeartOptions = {}) {
+    super(options);
+    this.bossDelayMs = options.bossDelayMs;
+  }
 
   /** The Guardian. */
   get heart(): RiftHeart | null {
@@ -29,7 +40,7 @@ export class RiftHeartMode extends AbstractMode {
 
   override attach(game: Game): void {
     this.game = game;
-    this._heart = new RiftHeart(game.board.width, game.random);
+    this._heart = new RiftHeart(game.board.width, game.random, this.bossDelayMs);
     game.events.on('clear', ({ lines, rows }) => {
       const shards = rows.reduce((sum, row) => sum + row.bombs.length, 0);
       this._heart?.cleared(lines, shards);

@@ -13,6 +13,17 @@ export interface ClearedRow {
   readonly bombs: readonly number[];
 }
 
+/** The colour a board drawn in text gives a piece's letter. */
+const LETTER_TONES: Readonly<Record<string, Tone>> = {
+  I: Tone.I,
+  O: Tone.O,
+  T: Tone.T,
+  S: Tone.S,
+  Z: Tone.Z,
+  J: Tone.J,
+  L: Tone.L,
+};
+
 export interface RemovedCell extends Cell {
   readonly tone: Tone;
 }
@@ -49,13 +60,24 @@ export class Board {
     this.bombs = new Uint8Array(this.width * this.height);
   }
 
-  /** Builds a board from rows of text, bottom row last ('.' empty, '#' garbage). */
-  static fromRows(rows: readonly string[], width = Board.WIDTH, visibleHeight = 20): Board {
-    const board = new Board(width, visibleHeight);
+  /**
+   * Builds a board from rows of text, bottom row last: '.' empty, '#' garbage,
+   * '*' garbage carrying a gem, a piece's letter a block of its colour.
+   */
+  static fromRows(
+    rows: readonly string[],
+    width = Board.WIDTH,
+    visibleHeight = 20,
+    wraps = false,
+  ): Board {
+    const board = new Board(width, visibleHeight, Board.HIDDEN_ROWS, wraps);
     const offset = board.height - rows.length;
     rows.forEach((row, r) => {
       for (let x = 0; x < Math.min(row.length, width); x++) {
-        if (row[x] !== '.') board.set(x, offset + r, Tone.Garbage);
+        const mark = row[x]!;
+        if (mark === '.') continue;
+        board.set(x, offset + r, LETTER_TONES[mark] ?? Tone.Garbage);
+        if (mark === '*') board.bombs[(offset + r) * width + x] = 1;
       }
     });
     return board;

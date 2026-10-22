@@ -51,6 +51,8 @@ export interface SessionOptions {
   readonly calm?: boolean;
   /** The mode opens on its best moments, scripted (the first level of the campaign). */
   readonly showcase?: boolean;
+  /** The mode's practice after its show: what was shown, dealt by chance, without the extra hazards (no wind in Sand). */
+  readonly practice?: boolean;
   /** A Guardian of the rift to defeat (a boss level of the campaign). */
   readonly boss?: BossId;
 }
@@ -93,6 +95,12 @@ export interface GameSession<C extends Command = Command> {
   subtitleKey(): string | null;
   /** The boss of this game and how it stands; absent or null outside a boss level. */
   boss?(): BossStatus | null;
+  /**
+   * A Guardian of a later chapter shows itself as this level ends (the
+   * campaign's teaser): the game stops taking pieces and its clock, its world
+   * keeps moving. False when this game cannot show that Guardian.
+   */
+  tease?(boss: BossId): boolean;
   /** Releases listeners; the session cannot be used afterwards. */
   dispose(): void;
 }

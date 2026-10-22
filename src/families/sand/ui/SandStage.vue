@@ -104,7 +104,8 @@ watch(
 
 const offFrame = props.clock.subscribe((delta) => {
   input.update(props.active ? delta : 0);
-  if (props.active || session.state === 'over') effects.update(delta);
+  // The effects go on at the end of a game, and while a Guardian passes by.
+  if (props.active || session.state === 'over' || session.teasing) effects.update(delta);
   const next = session.view.preview();
   if (next.length !== queue.value.length || next.some((spec, i) => spec !== queue.value[i]))
     queue.value = next;

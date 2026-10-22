@@ -384,7 +384,7 @@ test('the campaign: map, a level, its goal, then back to the map', async ({ page
   await expect(map.getByRole('heading', { name: 'Premiers blocs' })).toBeVisible();
   // Only the first level is open; a closed one says what opens it.
   await map.getByRole('button', { name: /1-2/ }).click();
-  const closed = page.getByRole('dialog', { name: 'Niveau 1-2 · Classique' });
+  const closed = page.getByRole('dialog', { name: 'Niveau 1-2 · Sable' });
   await expect(closed).toContainText('Gagnez le niveau 1-1 pour ouvrir celui-ci.');
   await expect(closed.getByRole('button', { name: 'Jouer' })).toBeDisabled();
   await page.keyboard.press('Escape');

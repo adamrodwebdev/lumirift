@@ -4,9 +4,9 @@ import { useI18n } from 'vue-i18n';
 import type { CoachStep } from '@/session/Coach';
 
 /**
- * One step of the first game's guide, over the top of the well: the keys on
- * a keyboard device, the gesture on a touch screen, a short sentence. It
- * never takes the input (only its Skip button does).
+ * One step of the first game's guide, over the upper part of the well: the
+ * keys on a keyboard device, the gesture on a touch screen, a short
+ * sentence. It never takes the input (only its Skip button does).
  */
 const props = defineProps<{ step: CoachStep; goal: 'sand' | 'lines' }>();
 const emit = defineEmits<{ skip: [] }>();
@@ -42,9 +42,10 @@ const gesture = computed(() => (props.step === 'goal' ? null : t(`coach.${props.
 
 <style scoped>
 .coach {
-  /* Low in the well: the pieces come in at the top. */
+  /* A third of the way down: under the piece coming in, above the stack,
+     where the show happens (the elements, the clears). */
   position: absolute;
-  inset: auto var(--space-3) 14%;
+  inset: 22% var(--space-3) auto;
   z-index: 5;
   display: grid;
   justify-items: center;

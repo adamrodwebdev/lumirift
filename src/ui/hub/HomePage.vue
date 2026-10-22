@@ -1,21 +1,29 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
+import { useFormat } from '@/app/useFormat';
 import { dayKey } from '@/core/Day';
 import type { CampaignLevel } from '@/campaign/Levels';
 import { allowsLevel, allowsMode } from '@/platform/Edition';
+import { effectsProfile } from '@/fx/EffectsProfile';
+import { TonePalette } from '@/render/TonePalette';
 import { DailyChallenge } from '@/session/DailyChallenge';
+import { BOSS_IDS } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
+import type { SceneId } from '@/showcase/Scene';
 import AppIcon from '../components/AppIcon.vue';
 import { isTouchScreen } from '../useOrientation';
 import type { HubScene } from './HubScene';
-import { createHubScene } from './loadArt';
+import { createHomeReel, createHubScene } from './loadArt';
+import type { HomeReel } from './reel/HomeReel';
 import ObjectivesDialog from './ObjectivesDialog.vue';
 
 /**
- * The title screen: the living scene, the logo, one big Play in the thumb's
- * reach (the campaign goes on), the daily challenge, the day's objectives.
+ * The title screen: the living scene, the logo, the reel (real games playing
+ * what no other game has: the Sand's elements within seconds, the wells that
+ * turn, the four Guardians), one big Play in the thumb's reach (the campaign
+ * goes on), the daily challenge, the day's objectives.
  */
 const props = defineProps<{
   /** Shown (its tab chosen, the menu on screen): the scene runs only then. */
@@ -30,7 +38,8 @@ const emit = defineEmits<{
 const { t } = useI18n();
 /** The game's name, split by the rift, then its kicker (never translated). */
 const LOGO = ['Lumi', 'rift', 'Blocks'] as const;
-const { catalog, clock, platform, campaign, profile } = useServices();
+const { catalog, clock, platform, campaign, profile, settings, theme } = useServices();
+const format = useFormat();
 const { edition } = platform;
 const touch = isTouchScreen();
 
@@ -81,9 +90,53 @@ const sceneCanvas = ref<HTMLCanvasElement | null>(null);
 let scene: HubScene | null = null;
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const observer = new ResizeObserver(() => scene?.resize());
+
+// --- The reel: real games playing the moments no other game has ------------
+
+const liveBox = ref<HTMLElement | null>(null);
+const reelStage = ref<HTMLElement | null>(null);
+let reel: HomeReel | null = null;
+/** Too small a box (a short phone held sideways): no reel, the title alone. */
+const MIN_LIVE_HEIGHT = 140;
+const liveShown = ref(true);
+const liveObserver = new ResizeObserver((entries) => {
+  for (const { target, contentRect } of entries) {
+    if (target === liveBox.value) liveShown.value = contentRect.height >= MIN_LIVE_HEIGHT;
+    else if (contentRect.width > 0 && contentRect.height > 0) {
+      reel?.resize(contentRect.width, contentRect.height);
+    }
+  }
+  sync();
+});
+/** No shake on a title screen; the player's own effect level otherwise. */
+const reelProfile = () => ({
+  ...effectsProfile(settings.current.effects, settings.current.shake),
+  shake: false,
+});
+watch(theme.resolved, async () => {
+  await nextTick();
+  reel?.setPalette(TonePalette.fromElement(document.documentElement));
+});
+
+/** The moment on screen, and its caption: the mode (or the Guardian), then what it shows. */
+const shownScene = ref<SceneId | null>(null);
+const isGuardian = (id: SceneId) => (BOSS_IDS as readonly string[]).includes(id);
+const caption = computed(() => {
+  const id = shownScene.value;
+  if (!id) return null;
+  const guardian = isGuardian(id);
+  const kicker = guardian
+    ? t('campaign.chapterGuardian', { name: t(`bosses.${id}.name`) })
+    : t(`modes.${id === 'elements' ? 'sand' : id}.name`);
+  return { guardian, kicker, line: t(`home.reel.${id}`) };
+});
+
 const sync = () => {
-  if (props.active && !document.hidden) scene?.start();
+  const shown = props.active && !document.hidden;
+  if (shown) scene?.start();
   else scene?.stop();
+  if (shown && liveShown.value) reel?.start();
+  else reel?.stop();
 };
 watch(() => props.active, sync);
 
@@ -98,12 +151,27 @@ onMounted(async () => {
   observer.observe(canvas);
   scene.resize();
   sync();
+  // Then the reel, whose code is the games': loaded once the title is up.
+  const box = liveBox.value;
+  const stage = reelStage.value;
+  if (!box || !stage) return;
+  reel = await createHomeReel(stage, TonePalette.fromElement(document.documentElement), {
+    profile: reelProfile,
+    dark: () => theme.resolved.value === 'dark',
+    formatPoints: (points) => format.number(points),
+    still: still || settings.current.effects === 'off',
+    onScene: (id) => (shownScene.value = id),
+  });
+  liveObserver.observe(box);
+  liveObserver.observe(stage);
 });
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKey);
   document.removeEventListener('visibilitychange', sync);
   observer.disconnect();
+  liveObserver.disconnect();
   scene?.stop();
+  reel?.dispose();
 });
 </script>
 
@@ -142,6 +210,24 @@ onBeforeUnmount(() => {
         <p v-if="edition.id === 'demo'" class="home__demo" role="note">
           <strong>{{ t('demo.title') }}</strong> {{ t('demo.banner') }}
         </p>
+      </div>
+
+      <!-- Real games playing their best moments; the title says the rest. -->
+      <div ref="liveBox" class="home__live" aria-hidden="true">
+        <div v-show="liveShown" class="reel__captions">
+          <Transition name="reel-caption" mode="out-in">
+            <p
+              v-if="caption"
+              :key="shownScene ?? ''"
+              class="reel__caption"
+              :class="{ 'reel__caption--guardian': caption.guardian }"
+            >
+              <span class="reel__kicker">{{ caption.kicker }}</span>
+              <span class="reel__line">{{ caption.line }}</span>
+            </p>
+          </Transition>
+        </div>
+        <div v-show="liveShown" ref="reelStage" class="reel__stage" />
       </div>
 
       <div class="home__cta">
@@ -201,7 +287,8 @@ onBeforeUnmount(() => {
 
 /* Portrait: the challenge on top, the title in the middle, Play in the thumb's reach. */
 .home__content {
-  --logo: min(19cqw, 11.8cqh);
+  /* Room for the live well between the title and Play. */
+  --logo: min(17cqw, 10.2cqh);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -262,8 +349,7 @@ onBeforeUnmount(() => {
 }
 
 .home__title {
-  flex: 1;
-  min-height: 0;
+  flex: none;
   display: grid;
   place-content: center;
   justify-items: center;
@@ -359,6 +445,96 @@ onBeforeUnmount(() => {
 .tagline {
   font-weight: 600;
   color: var(--text-muted);
+}
+
+/* The reel takes the room between the title and Play: its caption, then the well. */
+.home__live {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Two lines kept for every caption: the well never jumps when the text changes. */
+.reel__captions {
+  display: grid;
+  align-items: end;
+  min-height: 2.6rem;
+  max-width: 22rem;
+  text-align: center;
+}
+
+.reel__caption {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.reel__kicker {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.reel__caption--guardian .reel__kicker {
+  color: var(--danger);
+}
+
+.reel__line {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.reel__stage {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+/* Each moment is a fresh canvas, fading in over the last one. */
+.reel__stage :deep(.reel__canvas) {
+  grid-area: 1 / 1;
+  transition: opacity 320ms ease;
+}
+
+.reel__stage :deep(.reel__canvas--hidden),
+.reel__stage :deep(.reel__canvas--out) {
+  opacity: 0;
+}
+
+.reel-caption-enter-active,
+.reel-caption-leave-active {
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.reel-caption-enter-from {
+  opacity: 0;
+  transform: translateY(0.4rem);
+}
+
+.reel-caption-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel__stage :deep(.reel__canvas) {
+    transition: none;
+  }
+
+  .reel-caption-enter-active,
+  .reel-caption-leave-active {
+    transition: none;
+  }
 }
 
 .home__demo {
@@ -512,22 +688,27 @@ onBeforeUnmount(() => {
 /* Landscape: the title on the left, the challenge and Play on the right. */
 @media (orientation: landscape) {
   .home__content {
-    --logo: min(10.5cqw, 19.8cqh);
+    --logo: min(9.6cqw, 19.8cqh);
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.6fr) minmax(0, 0.95fr);
     grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr);
     grid-template-areas:
-      'title .'
-      'title daily'
-      'title cta'
-      'title .';
+      'title live .'
+      'title live daily'
+      'title live cta'
+      'title live .';
     align-items: center;
     gap: var(--space-4);
-    padding: 0 var(--space-6) var(--space-3) var(--space-2);
+    padding: var(--space-3) var(--space-6) var(--space-3) var(--space-2);
   }
 
   .home__title {
     grid-area: title;
+  }
+
+  .home__live {
+    grid-area: live;
+    height: 100%;
   }
 
   .daily {

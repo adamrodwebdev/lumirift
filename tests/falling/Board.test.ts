@@ -12,6 +12,26 @@ describe('Board', () => {
     expect(board.toRows()).toHaveLength(20);
   });
 
+  it('is drawn in text: colours by letter, gems, and a cylinder for the Tower', () => {
+    const board = Board.fromRows(['IO*.', '#LLJ'], 4, 4, true);
+    const top = board.height - 2;
+    expect([0, 1, 2, 3].map((x) => board.get(x, top))).toEqual([
+      Tone.I,
+      Tone.O,
+      Tone.Garbage,
+      Tone.Empty,
+    ]);
+    expect([0, 1, 2, 3].map((x) => board.get(x, top + 1))).toEqual([
+      Tone.Garbage,
+      Tone.L,
+      Tone.L,
+      Tone.J,
+    ]);
+    expect(board.hasBomb(2, top)).toBe(true);
+    expect(board.bombCount()).toBe(1);
+    expect(board.wraps).toBe(true);
+  });
+
   it('rejects pieces outside the well or on blocks', () => {
     const board = Board.fromRows(['#.........']);
     const t = new Piece('T', Tone.T, 0, 0);

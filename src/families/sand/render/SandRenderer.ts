@@ -219,14 +219,17 @@ export class SandRenderer {
 
   /**
    * The Guardian under the sand: only its shadow, the grains above its body
-   * darkening and rippling as it swims.
+   * darkening and rippling as it swims (darker when it only passes by, in a
+   * teaser: there is no fight to keep readable, only a threat to show).
    */
   private paintWormShadow(): void {
     const worm = this.view.worm;
     if (!worm || worm.out || worm.state === 'dead' || this.effects.hidden) return;
     const { grid } = this.view;
     const W = grid.width;
-    const reach = WORM_RADIUS + 2;
+    const passing = this.view.isTeasing;
+    const reach = WORM_RADIUS + (passing ? 3 : 2);
+    const [deep, light] = passing ? [0.4, 0.52] : [0.62, 0.74];
     // Each grain darkens once, however many segments of the body lie under it.
     const shaded = this.shaded;
     shaded.fill(0);
@@ -245,7 +248,7 @@ export class SandRenderer {
           }
           shaded[i] = 1;
           const ripple = ((x + y + (this.frame >> 2)) & 3) === 0;
-          this.buffer[i] = this.darken(this.buffer[i]!, ripple ? 0.62 : 0.74);
+          this.buffer[i] = this.darken(this.buffer[i]!, ripple ? deep : light);
         }
       }
     }
@@ -284,7 +287,11 @@ export class SandRenderer {
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    if (!worm.out) return;
+    if (!worm.out) {
+      // Passing by in a teaser: its eyes glow through the sand.
+      if (this.view.isTeasing) this.drawBuriedEyes(worm.headX, worm.headY, grain, palette, pulse);
+      return;
+    }
     const hurt = this.effects.wormHurt > 0;
     // A dark hide, lighter than the well, ringed with the rift's gold.
     const body = shadeCss(palette.wellBackground, 0.22);
@@ -320,6 +327,32 @@ export class SandRenderer {
       ctx.arc((hx + 0.5 + ex) * grain, (hy + 0.8) * grain, grain * 0.7, 0, Math.PI * 2);
       ctx.fill();
     }
+  }
+
+  /** Two red eyes under the sand, each in a halo, pulsing. */
+  private drawBuriedEyes(
+    hx: number,
+    hy: number,
+    grain: number,
+    palette: TonePalette,
+    pulse: number,
+  ): void {
+    const { ctx } = this;
+    for (const ex of [-1.6, 1.6]) {
+      const x = (hx + 0.5 + ex) * grain;
+      const y = (hy + 0.8) * grain;
+      ctx.globalAlpha = 0.18 + 0.14 * pulse;
+      ctx.fillStyle = palette.danger;
+      ctx.beginPath();
+      ctx.arc(x, y, grain * 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.7 + 0.3 * pulse;
+      ctx.fillStyle = palette.crack;
+      ctx.beginPath();
+      ctx.arc(x, y, grain * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
   }
 
   /** Lightning bolts: a bright jagged line that fades. */

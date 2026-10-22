@@ -27,6 +27,9 @@ Cahier des charges (règles détaillées, architecture, décisions) :
   **Atelier** de matières, d'ambiances et de signatures de bris, tous cosmétiques.
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde.
+- **Écran titre vivant** : une boucle de vraies parties montre, avant même de jouer, ce
+  qu'aucun autre jeu de blocs n'a : les éléments du Sable, les puits qui se retournent,
+  basculent et se reflètent, les quatre Gardiens de la faille.
 - **Menu en quatre pages** (Accueil, Modes, Carte, Atelier) : onglets sous le pouce ou rail
   en paysage, glissement d'une page à l'autre, rien à faire défiler ; les fenêtres sont des
   feuilles qui tiennent à l'écran, et la fin de partie se dévoile pas à pas.
@@ -147,6 +150,7 @@ au § 5 du cahier des charges.
 src/
   core/          Briques partagées (événements, hasard à graine, tons, jours)
   session/       Contrat GameSession, registre des modes, défi du jour
+  showcase/      Scènes mises en scène (boucle de l'accueil, vidéos des portails)
   families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface
   progression/   Expérience, objectifs, cosmétiques, profil
   fx/, render/   Particules, secousses, sons ; palette et motifs partagés

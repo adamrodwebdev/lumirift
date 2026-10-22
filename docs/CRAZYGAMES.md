@@ -145,30 +145,28 @@ au SDK journalisé. Le « débutant » est un joueur simulé qui lâche chaque p
 
 ### La page qualité, point par point
 
-| Attente du portail                                      | Statut  | Constat                                                                                                                             |
-| ------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Prise en main dans le jeu, courte, passable, visuelle   | ✅      | Partie guidée sur le puits, « Skip the guide », touches dessinées à côté du jeu, gestes dans la pause sur écran tactile             |
-| Interface claire, boutons nommés par leur destination   | ✅      | « PLAY · Level 1-1 », « Level 1-2 », « Try again », « Campaign map »                                                                |
-| Boutons ni grossis ni retardés pour pousser une pub     | ✅      | Aucune pub récompensée sur CrazyGames ; boutons de fin égaux                                                                        |
-| Objectifs clairs, facile à apprendre et à comprendre    | ✅      | Carte d'objectif (« Clear 2 regions 0 / 2 ») et minuteur ; chaque élément nommé quand il arrive                                     |
-| Commandes cohérentes, suivant la disposition du clavier | ✅      | Mêmes touches dans toute la famille ; touches par position physique (AZERTY vérifié)                                                |
-| Réactif, fluide                                         | ✅      | Voir performances ; relance en 0,2 s                                                                                                |
-| Défi et rythme équilibrés                               | 🟡      | Après la démonstration du 1-1 (25 s), le 1-2 est du Classique pur pendant 2 à 3 minutes : le genre de base, noté 7,4 sur CrazyGames |
-| Mise en page, interface adaptée à l'appareil            | ✅      | Toutes les tailles d'iframe ; portrait et paysage ; gestes au doigt                                                                 |
-| Plusieurs profils de joueurs                            | ✅      | Campagne, défi du jour, 13 modes, duel contre l'IA, quatre boss                                                                     |
-| Scénario intéressant, si le jeu en a un                 | ✅      | La faille et ses quatre Gardiens donnent un fil ; pas d'histoire racontée                                                           |
-| Pas de tâche répétitive                                 | ✅      | Chaque niveau change de mode ou d'objectif                                                                                          |
-| Unique, facile à enrichir, entretenu                    | ✅      | Nom et iconographie propres ; niveaux et boss en données ; six versions cette semaine                                               |
-| Graphismes et sons de qualité, style cohérent           | ✅ / 🟡 | Une identité commune (gemmes, verre, céramique, sable) ; le volume sonore reste à juger à l'oreille                                 |
-| Clair sur ce qu'il est : nom et images fidèles au jeu   | 🟡      | Covers et vidéos montrent de vrais moments du jeu, mais l'Œil de la Tour de la cover n'arrive qu'au niveau 4-7                      |
+| Attente du portail                                      | Statut  | Constat                                                                                                                 |
+| ------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Prise en main dans le jeu, courte, passable, visuelle   | ✅      | Partie guidée sur le puits, « Skip the guide », touches dessinées à côté du jeu, gestes dans la pause sur écran tactile |
+| Interface claire, boutons nommés par leur destination   | ✅      | « PLAY · Level 1-1 », « Level 1-2 », « Try again », « Campaign map »                                                    |
+| Boutons ni grossis ni retardés pour pousser une pub     | ✅      | Aucune pub récompensée sur CrazyGames ; boutons de fin égaux                                                            |
+| Objectifs clairs, facile à apprendre et à comprendre    | ✅      | Carte d'objectif (« Clear 2 regions 0 / 2 ») et minuteur ; chaque élément nommé quand il arrive                         |
+| Commandes cohérentes, suivant la disposition du clavier | ✅      | Mêmes touches dans toute la famille ; touches par position physique (AZERTY vérifié)                                    |
+| Réactif, fluide                                         | ✅      | Voir performances ; relance en 0,2 s                                                                                    |
+| Défi et rythme équilibrés                               | ✅      | 1.18 : après la démonstration du 1-1, le 1-2 fait pratiquer les éléments ; le Classique attend le 1-3                   |
+| Mise en page, interface adaptée à l'appareil            | ✅      | Toutes les tailles d'iframe ; portrait et paysage ; gestes au doigt                                                     |
+| Plusieurs profils de joueurs                            | ✅      | Campagne, défi du jour, 13 modes, duel contre l'IA, quatre boss                                                         |
+| Scénario intéressant, si le jeu en a un                 | ✅      | La faille et ses quatre Gardiens donnent un fil ; pas d'histoire racontée                                               |
+| Pas de tâche répétitive                                 | ✅      | Chaque niveau change de mode ou d'objectif                                                                              |
+| Unique, facile à enrichir, entretenu                    | ✅      | Nom et iconographie propres ; niveaux et boss en données ; six versions cette semaine                                   |
+| Graphismes et sons de qualité, style cohérent           | ✅ / 🟡 | Une identité commune (gemmes, verre, céramique, sable) ; le volume sonore reste à juger à l'oreille                     |
+| Clair sur ce qu'il est : nom et images fidèles au jeu   | ✅      | 1.18 : l'accueil joue les huit moments des vidéos, l'Œil de la Tour compris, avant même de jouer                        |
 
 ### Recommandations (à décider)
 
-1. **Rythme du chapitre 1** : faire du 1-2 un second niveau de Sable (éléments au hasard, sans
-   vent) et décaler le Classique. Les trois à quatre premières minutes, celles du modérateur,
-   resteraient sur ce qu'aucun autre jeu du tag n'a.
-2. **Cover et premières minutes** : le monde de l'Œil (la Tour) est jouable tout de suite depuis
-   « Modes », mais pas l'Œil lui-même. Risque faible : la vidéo montre les quatre boss.
+1. ~~**Rythme du chapitre 1**~~ : fait en 1.18 (1-2 de Sable, éléments au hasard, sans vent).
+2. ~~**Cover et premières minutes**~~ : fait en 1.18, l'accueil joue l'Œil de la Tour parmi les
+   huit moments de sa boucle.
 3. **Outil QA du portail** : les brouillons et l'aperçu restent ouverts pendant la pause des
    soumissions. Téléverser le dossier `dist-crazygames/` de la 1.17.2 dans le brouillon pour
    relire le journal du SDK, Safari et un téléphone avant le 28/10.
@@ -238,7 +236,8 @@ autre façon de gagner le bonus.
 
 ### Covers et vidéos
 
-Refaites en 1.17 (`scripts/media-covers.mjs`, scènes dans `media/scenes.ts`).
+Refaites en 1.17 (`scripts/media-covers.mjs`, scènes dans `media/scenes.ts`, partagées
+depuis la 1.18 avec la boucle de l'accueil dans `src/showcase/`).
 
 | Exigence                                                   | Statut | Preuve                                                                                                                  |
 | ---------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------- |

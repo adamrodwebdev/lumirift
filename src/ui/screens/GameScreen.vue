@@ -10,7 +10,7 @@ import { dayKey } from '@/core/Day';
 import { SeededRandom } from '@/core/Random';
 import { CampaignRun, type CampaignOutcome } from '@/campaign/CampaignRun';
 import type { LiveState } from '@/campaign/Goals';
-import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
+import { type CampaignLevel, guardianLevel, LEVELS } from '@/campaign/Levels';
 import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
 import { allowsLevel } from '@/platform/Edition';
 import type { BreakMoment } from '@/platform/Platform';
@@ -183,6 +183,7 @@ const sessionOptions = (): SessionOptions => {
       ...(level.variant ? { variant: level.variant } : {}),
       ...(level.calm ? { calm: true } : {}),
       ...(level.showcase ? { showcase: true } : {}),
+      ...(level.practice ? { practice: true } : {}),
       ...(level.boss ? { boss: level.boss } : {}),
     };
   }
@@ -232,11 +233,14 @@ clock.subscribe((delta) => {
     const state = liveState(current);
     const progress = run.progress(state);
     if (progress.value !== goal.value?.value) goal.value = progress;
-    // A goal met during play ends the level at once.
+    // A goal met during play ends the level at once; a level that teases a
+    // Guardian lets it pass first, its world still moving, before its window.
     const won = run.check(state);
     if (won) {
-      current.pause();
-      finish('goal', won);
+      const teaser = props.level?.teaser;
+      const teased = won.won && teaser !== undefined && (current.tease?.(teaser) ?? false);
+      if (!teased) current.pause();
+      finish('goal', won, teased);
     }
   }
 });
@@ -263,8 +267,15 @@ const listen = (current: GameSession) => {
       );
     }),
     events.on('levelUp', ({ level }) => announce(t('notice.levelUp', { level }))),
+    // The value also picks the plural of the words that count (1 grain, 2 grains).
     events.on('notice', ({ id, value }) =>
-      announce(t(`notice.${id}`, { value: value === undefined ? '' : format.number(value) })),
+      announce(
+        t(
+          `notice.${id}`,
+          { value: value === undefined ? '' : format.number(value) },
+          value === undefined ? 1 : value,
+        ),
+      ),
     ),
     events.on('over', ({ reason }) => finish(reason)),
   ];
@@ -277,19 +288,25 @@ const nextLevel = (index: number): CampaignLevel | null => {
 };
 
 /** The campaign's verdict on this game, recorded; the next level once won. */
-const judge = (decided: CampaignOutcome) => {
+const judge = (decided: CampaignOutcome, teased: boolean) => {
   const gained = campaign.record(decided);
   const index = LEVELS.findIndex((level) => level.id === decided.levelId);
+  const teaser = teased ? props.level?.teaser : undefined;
+  const lair = teaser ? guardianLevel(teaser) : undefined;
   return {
     levelId: decided.levelId,
     won: decided.won,
     stars: decided.stars,
     gained,
     next: decided.won ? nextLevel(index) : null,
+    ...(teaser && lair ? { teaser: { boss: teaser, levelId: lair.id } } : {}),
   };
 };
 
-const finish = (reason: string, decided: CampaignOutcome | null = null) => {
+/** How long a teased Guardian passes before the level's end window. */
+const TEASER_MS = 2600;
+
+const finish = (reason: string, decided: CampaignOutcome | null = null, teased = false) => {
   const current = session.value;
   if (!current || phase.value === 'over') return;
   const result = current.result();
@@ -333,14 +350,17 @@ const finish = (reason: string, decided: CampaignOutcome | null = null) => {
     progress: report
       ? profile.recordGame(report, dayKey(today()))
       : { xp: [], total: 0, levelBefore: 1, levelAfter: 1, completed: [], unlocked: [], streak: 0 },
-    ...(verdict ? { campaign: judge(verdict) } : {}),
+    ...(verdict ? { campaign: judge(verdict, teased) } : {}),
   };
   status.value = '';
   rewardWatched = false;
   reward.value = platform.supportsRewarded && outcome.value.progress.total > 0 ? 'offer' : 'none';
   phase.value = 'over';
   const { gameOverDelayMs } = effectsProfile(settings.current.effects, settings.current.shake);
-  outcomeTimer = setTimeout(() => (showOutcome.value = true), gameOverDelayMs);
+  outcomeTimer = setTimeout(
+    () => (showOutcome.value = true),
+    teased ? Math.max(gameOverDelayMs, TEASER_MS) : gameOverDelayMs,
+  );
 };
 
 const start = async () => {

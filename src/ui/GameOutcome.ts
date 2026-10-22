@@ -1,6 +1,6 @@
 import type { CampaignLevel } from '@/campaign/Levels';
 import type { GameProgress } from '@/progression/Profile';
-import type { ResultKind } from '@/session/GameSession';
+import type { BossId, ResultKind } from '@/session/GameSession';
 
 /** A campaign level's ending: won or not, its stars, and the way on. */
 export interface CampaignResult {
@@ -11,6 +11,8 @@ export interface CampaignResult {
   readonly gained: number;
   /** The level after this one, open now that this one is won; null at the end. */
   readonly next: CampaignLevel | null;
+  /** A Guardian the won level teased, and the level where it waits. */
+  readonly teaser?: { readonly boss: BossId; readonly levelId: string };
 }
 
 /** What the game-over dialog shows; values are already formatted for the current language. */

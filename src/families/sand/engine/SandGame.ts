@@ -105,6 +105,8 @@ export interface SandEventMap {
   rescue: { readonly rows: number };
   /** The Guardian of the level did something (see `DuneWorm`). */
   boss: { readonly event: WormEvent };
+  /** The next chapter's Guardian passes under the sand (the campaign's teaser). */
+  tease: Readonly<Record<string, never>>;
   over: { readonly reason: SandOverReason };
 }
 
@@ -116,12 +118,25 @@ export interface SandOptions {
   readonly boosts?: Boosts;
   /** Wind and the elements shake the game up (true by default); false teaches Sand alone. */
   readonly hazards?: boolean;
+  /** Gusts of wind, when there are hazards (true by default); false keeps the elements alone. */
+  readonly wind?: boolean;
+  /** How soon and how often the elements come (by default after 5 pieces, one in five). */
+  readonly elementPace?: ElementPace;
   /** The elements dealt, whatever the level (by default they come level after level). */
   readonly elements?: readonly ElementTone[];
   /** Pieces dealt at a given rank whatever happens (the first level's show, a tutorial). */
   readonly script?: readonly ScriptedPiece[];
   /** A Guardian of the rift lives in this well (a boss level). */
   readonly boss?: 'duneWorm';
+  /** The Guardian's first move after this long (ms); by default the player sees the arena first. */
+  readonly bossDelayMs?: number;
+}
+
+/** When the elements start coming, and the chance of each new piece being one. */
+export interface ElementPace {
+  /** Pieces dealt before the first element. */
+  readonly after: number;
+  readonly chance: number;
 }
 
 /** A piece the game deals at a given rank (1 = the first piece). */
@@ -144,7 +159,9 @@ export class SandGame {
   readonly events = new Emitter<SandEventMap>();
   readonly random: RandomSource;
   /** The Dune Wyrm, on its boss level; null elsewhere. */
-  readonly worm: DuneWorm | null;
+  private _worm: DuneWorm | null;
+  /** The level is over and a Guardian passes under the sand: no piece, no clock. */
+  private teasing = false;
 
   private readonly reactions: SandReactions;
   /** A sandstorm the Guardian raised: the wind blows until then (ms of play). */
@@ -163,6 +180,8 @@ export class SandGame {
   private dealt = 0;
   private readonly boosts: Boosts;
   private readonly hazards: boolean;
+  private readonly windy: boolean;
+  private readonly elementPace: ElementPace;
   private readonly elements: readonly ElementTone[] | null;
   private readonly script: ReadonlyMap<number, ScriptedPiece>;
   /** Pieces dealt so far and the centre (in grains) of the last one that landed. */
@@ -194,10 +213,15 @@ export class SandGame {
     this.timeLimitMs = options.timeLimitMs ?? null;
     this.boosts = options.boosts ?? NO_BOOSTS;
     this.hazards = options.hazards ?? true;
+    this.windy = this.hazards && (options.wind ?? true);
+    this.elementPace = options.elementPace ?? { after: ELEMENTS_AFTER, chance: ELEMENT_CHANCE };
     this.elements = options.elements ?? null;
     this.script = new Map((options.script ?? []).map((piece) => [piece.at, piece]));
     this.reactions = new SandReactions(this.grid, this.random);
-    this.worm = options.boss === 'duneWorm' ? new DuneWorm(this.grid, this.random) : null;
+    this._worm =
+      options.boss === 'duneWorm'
+        ? new DuneWorm(this.grid, this.random, options.bossDelayMs)
+        : null;
     this.rescueReady = this.boosts.rescueRows > 0;
     this.wind = {
       direction: this.random.next() < 0.5 ? -1 : 1,
@@ -210,6 +234,17 @@ export class SandGame {
 
   get state(): SandState {
     return this._state;
+  }
+  /** The Guardian in this well: the boss of the level, or the one passing by in a teaser. */
+  get worm(): DuneWorm | null {
+    return this._worm;
+  }
+  get isTeasing(): boolean {
+    return this.teasing;
+  }
+  /** The rank of the piece in play (1 for the first), as a script counts them. */
+  get rank(): number {
+    return this.spawned;
   }
   get overReason(): SandOverReason | null {
     return this._overReason;
@@ -234,7 +269,7 @@ export class SandGame {
   }
   /** Milliseconds before the next gust, 0 while it blows; null in a game without wind. */
   get windInMs(): number | null {
-    if (!this.hazards) return null;
+    if (!this.windy) return null;
     return this.wind.phase === 'blowing' ? 0 : Math.max(0, this.wind.at - this._elapsedMs);
   }
 
@@ -321,8 +356,36 @@ export class SandGame {
     if (this._state === 'paused') this.setState('running');
   }
 
+  /**
+   * The Dune Wyrm passes under the sand as the level ends (the campaign's
+   * teaser): no more pieces, no clock, no wind; the sand keeps settling and
+   * the worm swims, never bursting out. Only in a running game without a boss.
+   */
+  tease(): boolean {
+    if (this._state !== 'running' || this._worm || this.teasing) return false;
+    this.teasing = true;
+    this._active = null;
+    this.grid.wind = 0;
+    const worm = new DuneWorm(this.grid, this.random, Number.POSITIVE_INFINITY);
+    // Across the well, inside the sand (its shadow shows only where there is sand).
+    const { height, width } = this.grid;
+    const depth = height - Math.max(5, Math.min(18, Math.round(this.grid.sandHeight() * 0.45)));
+    worm.passTo(2, depth, width - 2, depth);
+    this._worm = worm;
+    this.events.emit('tease', {});
+    return true;
+  }
+
   update(deltaMs: number): void {
     if (this._state !== 'running') return;
+    if (this.teasing) {
+      this.stepAccumulator += deltaMs;
+      while (this.stepAccumulator >= STEP_MS) {
+        this.stepAccumulator -= STEP_MS;
+        this.physicsStep();
+      }
+      return;
+    }
     this._elapsedMs += deltaMs;
     if (this.timeLimitMs !== null && this._elapsedMs >= this.timeLimitMs) {
       this.finish('timeUp');
@@ -504,7 +567,7 @@ export class SandGame {
     this.grid.simulate(this.random);
     for (const reaction of this.reactions.step()) this.onReaction(reaction);
     this.clearSpanning();
-    if (this.worm) this.bossStep(this.worm);
+    if (this._worm) this.bossStep(this._worm);
   }
 
   /** The Guardian moves and acts; flames and blazes against it hurt it. */
@@ -608,7 +671,7 @@ export class SandGame {
 
   private onStrike(piece: SandPiece): void {
     const [boltX, boltY] = this.boltOf(piece);
-    const worm = this.worm;
+    const worm = this._worm;
     if (worm?.exposed && Math.abs(worm.headX - boltX) < BOLT_REACH) {
       // On the Guardian's bare head: its weak point takes the whole bolt.
       this.events.emit('strike', {
@@ -724,7 +787,7 @@ export class SandGame {
     if (regions.length === 0) return;
     const all = regions.flat();
     const samples = this.sample(all);
-    if (this.worm?.touchesAny(all, 1)) this.hurtBoss(this.worm, 'link');
+    if (this._worm?.touchesAny(all, 1)) this.hurtBoss(this._worm, 'link');
     this.grid.remove(all);
     const points = Math.round(all.length * regions.length * (1 + this.boosts.scoreBonus));
     this._score += points;
@@ -777,7 +840,7 @@ export class SandGame {
   }
 
   private updateWind(): void {
-    if (!this.hazards) return;
+    if (!this.windy) return;
     const wind = this.wind;
     const now = this._elapsedMs;
     if (wind.phase === 'waiting' && now >= wind.at - WIND_WARNING_MS) {
@@ -854,7 +917,11 @@ export class SandGame {
       if (scripted) {
         tone = scripted.tone;
         type = scripted.type ?? type;
-      } else if (this.hazards && this.dealt > ELEMENTS_AFTER && this.sinceElement >= ELEMENT_GAP) {
+      } else if (
+        this.hazards &&
+        this.dealt > this.elementPace.after &&
+        this.sinceElement >= ELEMENT_GAP
+      ) {
         const element = this.drawElement();
         if (element !== null) tone = element;
       }
@@ -866,7 +933,10 @@ export class SandGame {
   /** An element now and then, weighted, among those of this level; fire boosted by upgrades. */
   private drawElement(): ElementTone | null {
     const roster = this.elements ?? elementsAt(this._level);
-    if (roster.length === 0 || this.random.next() >= ELEMENT_CHANCE + this.boosts.fireBonus) {
+    if (
+      roster.length === 0 ||
+      this.random.next() >= this.elementPace.chance + this.boosts.fireBonus
+    ) {
       return null;
     }
     const weight = (tone: ElementTone) =>

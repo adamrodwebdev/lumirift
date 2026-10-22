@@ -3,10 +3,10 @@ import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import type { RandomSource } from '@/core/Random';
 import { JOKER_IDS, JOKERS, type JokerId, type JokerTarget } from '../jokers/Joker';
 import { CeramicGolem, type GolemEvent, type GolemSnapshot } from './CeramicGolem';
-import { CUBE, Dealer, type OfferedPiece } from './Dealer';
+import { CUBE, Dealer, HAND_SIZE, type OfferedPiece } from './Dealer';
 import { Tone } from '@/core/Tone';
 import { Grid, type Lines, type RemovedTile } from './Grid';
-import type { Cell } from './Shape';
+import type { Cell, Shape } from './Shape';
 
 export type MosaicState = 'ready' | 'running' | 'paused' | 'over';
 export type MosaicOverReason = 'noMoves' | 'timeUp' | 'victory';
@@ -84,6 +84,14 @@ export interface MosaicOptions {
   readonly boosts?: Boosts;
   /** The Ceramic Golem to defeat (the boss level of the Mosaics). */
   readonly boss?: 'ceramicGolem';
+  /** The first hand, whatever the dealer would draw (a staged moment). */
+  readonly opening?: readonly OpeningPiece[];
+}
+
+/** A piece of the first hand, given. */
+export interface OpeningPiece {
+  readonly shape: Shape;
+  readonly tone: Tone;
 }
 
 /** Jokers the start-jokers upgrade adds, in this order. */
@@ -113,6 +121,8 @@ export class MosaicGame {
   /** The second chance has not been used yet. */
   private rescueReady: boolean;
   private history: Snapshot | null = null;
+  /** The first hand to deal, if one is given; dealt once. */
+  private opening: readonly OpeningPiece[] | null;
   private _state: MosaicState = 'ready';
   private _overReason: MosaicOverReason | null = null;
   private _score = 0;
@@ -127,6 +137,7 @@ export class MosaicGame {
   constructor(options: MosaicOptions) {
     this.grid = options.grid ?? new Grid();
     this.dealer = new Dealer(options.random);
+    this.opening = options.opening ?? null;
     this.boosts = options.boosts ?? NO_BOOSTS;
     this.rescueReady = this.boosts.rescueRows > 0;
     for (const joker of START_JOKERS.slice(0, this.boosts.startJokers)) this.inventory.push(joker);
@@ -369,7 +380,14 @@ export class MosaicGame {
   }
 
   private dealHand(): void {
-    this.hand = this.dealer.hand(this.grid, this.handsPlayed);
+    const opening = this.opening;
+    this.opening = null;
+    this.hand = opening
+      ? Array.from({ length: HAND_SIZE }, (_, i) => {
+          const given = opening[i];
+          return given ? this.dealer.piece(given.shape, given.tone) : null;
+        })
+      : this.dealer.hand(this.grid, this.handsPlayed);
     this.events.emit('deal', { hand: [...this.hand] });
   }
 

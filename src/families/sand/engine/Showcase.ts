@@ -1,5 +1,6 @@
 import { Tone } from '@/core/Tone';
-import type { ScriptedPiece } from './SandGame';
+import type { ElementTone } from './Elements';
+import type { ElementPace, ScriptedPiece } from './SandGame';
 
 /**
  * The first level's show: within about a minute the player sees what no
@@ -17,3 +18,16 @@ export const SHOWCASE: readonly ScriptedPiece[] = [
   { at: 10, tone: Tone.Seed, type: 'O' },
   { at: 11, tone: Tone.Water, type: 'O', above: true },
 ];
+
+/**
+ * The second level's practice: the elements the show has just shown, dealt
+ * by chance and soon, without wind, so the player tries them alone.
+ */
+export const PRACTICE_ELEMENTS: readonly ElementTone[] = [
+  Tone.Water,
+  Tone.Lightning,
+  Tone.Oil,
+  Tone.Fire,
+  Tone.Seed,
+];
+export const PRACTICE_PACE: ElementPace = { after: 2, chance: 0.35 };

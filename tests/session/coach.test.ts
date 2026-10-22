@@ -18,6 +18,20 @@ describe('Coach', () => {
     expect(coach.step).toBeNull();
   });
 
+  it('moves on to the goal after two pieces dropped without doing the step shown', () => {
+    const coach = new Coach();
+    expect(coach.command('hardDrop')).toBe(false);
+    expect(coach.step).toBe('move');
+    expect(coach.command('hardDrop')).toBe(true);
+    expect(coach.step).toBe('goal');
+    // A step done resets the count: the drop step itself is done by a drop.
+    const learning = new Coach();
+    learning.command('hardDrop');
+    learning.command('move');
+    expect(learning.command('hardDrop')).toBe(false);
+    expect(learning.step).toBe('rotate');
+  });
+
   it('ends at the first clear, or when skipped', () => {
     const early = new Coach();
     early.cleared();
