@@ -30,6 +30,8 @@ export class FallingRenderer {
   private ghost = true;
   private dark = true;
 
+  private dangerEdge = false;
+
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly view: FallingView,
@@ -74,6 +76,15 @@ export class FallingRenderer {
     if (material === this.material) return;
     this.material = material;
     this.rebuildSprites();
+  }
+
+  /**
+   * The red edges of a well in danger. The game screen shows the player's
+   * danger itself (cracks, vignette); a well watched from aside, the duel's
+   * opponent, wears them.
+   */
+  setDangerEdge(enabled: boolean): void {
+    this.dangerEdge = enabled;
   }
 
   setGhost(enabled: boolean): void {
@@ -124,6 +135,7 @@ export class FallingRenderer {
       this.painter.drops(effects, sprites, palette, cell);
     }
 
+    this.drawSpawnWarning(palette);
     const active = this.view.active;
     if (active) {
       if (this.ghost) this.drawGhost(active, this.view.dropDistance());
@@ -132,7 +144,7 @@ export class FallingRenderer {
 
     if (effects) this.painter.overlays(effects, palette, cell, this.dark, sprites);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.drawDanger(palette);
+    if (this.dangerEdge) this.drawDanger(palette);
     if (effects && effects.beatGlow > 0) {
       // The visual metronome: the frame of the well pulses on each beat.
       ctx.globalAlpha = 0.55 * effects.beatGlow;
@@ -171,7 +183,34 @@ export class FallingRenderer {
     ctx.stroke();
   }
 
-  /** A pulsing glow on the well's edges when the stack nears the top. */
+  /**
+   * The next piece in red where it would appear, when the well has no room
+   * left for it to enter: the last warning before the end.
+   */
+  private drawSpawnWarning(palette: TonePalette): void {
+    if (this.effects?.stackHidden) return;
+    const cells = this.view.spawnWarning();
+    if (!cells) return;
+    const { ctx, cell } = this;
+    let top = Number.POSITIVE_INFINITY;
+    for (const at of cells) top = Math.min(top, at.y);
+    const pulse = this.effects?.motion ? 0.5 + 0.5 * Math.sin(performance.now() / 120) : 0.5;
+    const line = Math.max(2, cell * 0.12);
+    ctx.fillStyle = palette.danger;
+    ctx.strokeStyle = palette.danger;
+    ctx.lineWidth = line;
+    for (const at of cells) {
+      const x = at.x * cell;
+      const y = (at.y - top) * cell;
+      ctx.globalAlpha = 0.28 + 0.27 * pulse;
+      ctx.fillRect(x, y, cell, cell);
+      ctx.globalAlpha = 1;
+      ctx.strokeRect(x + line / 2, y + line / 2, cell - line, cell - line);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /** A pulsing glow on the well's edges when the stack nears the top (the duel's other well). */
   private drawDanger(palette: TonePalette): void {
     if (this.effects?.stackHidden) return;
     if (this.view.board.stackHeight() < this.rows * DANGER_HEIGHT) return;

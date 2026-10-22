@@ -32,6 +32,8 @@ export interface SessionEventMap {
   state: { readonly state: SessionState };
   clear: { readonly lines: number; readonly points: number; readonly combo: number };
   levelUp: { readonly level: number };
+  /** A clear made in danger: its points counted twice (see `Tension`). */
+  closeCall: { readonly points: number };
   /** Something worth announcing; `id` is the translation key suffix (`notice.<id>`). */
   notice: { readonly id: string; readonly value?: number };
   over: { readonly reason: string };

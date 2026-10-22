@@ -5,10 +5,18 @@ import type { Indicator } from '@/session/GameSession';
 import type { BestLine } from '../BestLine';
 import AppIcon from './AppIcon.vue';
 
-/** `mainFirst`: the first indicator is the main one (the score), drawn large. */
+/**
+ * `mainFirst`: the first indicator is the main one (the score), drawn large.
+ * `urgent`: indicators to show in red (the final seconds of the clock).
+ */
 withDefaults(
-  defineProps<{ indicators: readonly Indicator[]; mainFirst?: boolean; best?: BestLine | null }>(),
-  { mainFirst: true, best: null },
+  defineProps<{
+    indicators: readonly Indicator[];
+    mainFirst?: boolean;
+    best?: BestLine | null;
+    urgent?: readonly string[];
+  }>(),
+  { mainFirst: true, best: null, urgent: () => [] },
 );
 
 const { t } = useI18n();
@@ -26,7 +34,10 @@ const format = useFormat();
       v-for="(item, index) in indicators"
       :key="item.id"
       class="hud__item"
-      :class="{ 'hud__item--main': mainFirst && index === 0 }"
+      :class="{
+        'hud__item--main': mainFirst && index === 0,
+        'hud__item--urgent': urgent.includes(item.id),
+      }"
     >
       <dt class="hud__label">{{ t(`hud.${item.id}`) }}</dt>
       <dd class="hud__value">{{ format.indicator(item) }}</dd>
@@ -81,6 +92,25 @@ const format = useFormat();
   line-height: 1.05;
   color: var(--accent-strong);
   text-shadow: 0 0 1.5rem rgb(255 160 60 / 0.45);
+}
+
+/* The final seconds: the clock in red, beating once a second. */
+.hud__item--urgent .hud__value {
+  color: var(--danger);
+  animation: hud-urgent 1s ease-out infinite;
+}
+
+@keyframes hud-urgent {
+  from {
+    transform: scale(1.25);
+  }
+  40% {
+    transform: none;
+  }
+}
+
+:global(:root[data-motion='still']) .hud__item--urgent .hud__value {
+  animation: none;
 }
 
 /* The record under the score: small, gold once beaten. */

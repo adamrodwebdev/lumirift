@@ -135,6 +135,7 @@
     "nextBeat": "Detak berikutnya"
   },
   "notice": {
+    "closeCall": "Nyaris! +{value}",
     "lines": "{n} baris dihapus",
     "combo": "Kombo × {n}",
     "levelUp": "Level {level}",

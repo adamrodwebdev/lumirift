@@ -8,7 +8,6 @@ import type { SandPiece } from '../engine/SandPiece';
 import type { SandView } from '../SandSession';
 
 /** Above this share of the height, the well glows with danger. */
-const DANGER_HEIGHT = 0.7;
 
 /**
  * Each colour of sand has its own texture, so colour never carries the
@@ -157,6 +156,8 @@ export class SandRenderer {
     ctx.drawImage(this.image, 0, 0, width, height);
     this.drawFog(width, height);
 
+    const warning = effects.hidden ? null : this.view.spawnWarning();
+    if (warning) this.drawSpawnWarning(warning, grain, palette);
     const piece = this.view.active;
     if (piece) {
       if (this.ghost) this.outline(piece, this.view.dropDistance(), palette.wellGrid, grain);
@@ -172,7 +173,6 @@ export class SandRenderer {
       ctx.fillStyle = `rgb(255 248 220 / ${(effects.flash * 0.35).toFixed(3)})`;
       ctx.fillRect(0, 0, width, height);
     }
-    this.drawDanger(palette);
   }
 
   /**
@@ -435,6 +435,26 @@ export class SandRenderer {
   }
 
   /** The outline of a piece (or of where it would land). */
+  /** The next piece in red where it would appear, when the sand leaves it no room to enter. */
+  private drawSpawnWarning(piece: SandPiece, grain: number, palette: TonePalette): void {
+    const { ctx } = this;
+    const g = GRAINS_PER_CELL;
+    const pulse = this.effects.motion ? 0.5 + 0.5 * Math.sin(performance.now() / 120) : 0.5;
+    ctx.fillStyle = palette.danger;
+    ctx.globalAlpha = 0.26 + 0.26 * pulse;
+    for (const cell of piece.localCells) {
+      ctx.fillRect(
+        (piece.x + cell.x * g) * grain,
+        (piece.y + cell.y * g) * grain,
+        g * grain,
+        g * grain,
+      );
+    }
+    ctx.globalAlpha = 1;
+    this.outline(piece, 0, palette.danger, grain);
+    ctx.globalAlpha = 1;
+  }
+
   private outline(piece: SandPiece, dy: number, color: string, grain: number): void {
     const { ctx } = this;
     const g = GRAINS_PER_CELL;
@@ -509,20 +529,6 @@ export class SandRenderer {
       ctx.strokeText(popup.text, popup.x * grain, y);
       ctx.fillText(popup.text, popup.x * grain, y);
     }
-    ctx.globalAlpha = 1;
-  }
-
-  private drawDanger(palette: TonePalette): void {
-    if (this.effects.hidden) return;
-    if (this.view.grid.sandHeight() < this.view.grid.height * DANGER_HEIGHT) return;
-    const { ctx, cell, canvas } = this;
-    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 260);
-    const side = cell * 0.4;
-    ctx.globalAlpha = 0.18 + 0.17 * pulse;
-    ctx.fillStyle = palette.danger;
-    ctx.fillRect(0, 0, side, canvas.height);
-    ctx.fillRect(canvas.width - side, 0, side, canvas.height);
-    ctx.fillRect(0, 0, canvas.width, side * 0.7);
     ctx.globalAlpha = 1;
   }
 }

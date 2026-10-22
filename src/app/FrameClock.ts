@@ -15,6 +15,9 @@ export class FrameClock {
   private readonly listeners: FrameListener[] = [];
   private handle: number | null = null;
   private last: number | null = null;
+  private slowScale = 1;
+  private slowMs = 0;
+  private slowLeft = 0;
 
   constructor(
     private readonly requestFrame: RequestFrame = (callback) => requestAnimationFrame(callback),
@@ -40,9 +43,34 @@ export class FrameClock {
     this.handle = null;
   }
 
+  /**
+   * A moment of slow motion (a close call, the end of a game): time runs at
+   * `scale` for the first half of `ms` (real time), then speeds back up to
+   * its normal pace. The listeners only see shorter frames.
+   */
+  slow(scale: number, ms: number): void {
+    this.slowScale = Math.min(1, Math.max(0, scale));
+    this.slowMs = ms;
+    this.slowLeft = ms;
+  }
+
+  /** True while a slow motion runs. */
+  get slowed(): boolean {
+    return this.slowLeft > 0;
+  }
+
+  private scaleFor(real: number): number {
+    if (this.slowLeft <= 0) return 1;
+    const done = 1 - this.slowLeft / this.slowMs;
+    this.slowLeft -= real;
+    if (done < 0.5) return this.slowScale;
+    return this.slowScale + (1 - this.slowScale) * ((done - 0.5) / 0.5);
+  }
+
   private readonly tick = (time: number): void => {
-    const delta = this.last === null ? 0 : Math.min(time - this.last, MAX_FRAME_MS);
+    const real = this.last === null ? 0 : Math.min(time - this.last, MAX_FRAME_MS);
     this.last = time;
+    const delta = real * this.scaleFor(real);
     for (const listener of [...this.listeners]) listener(delta);
     this.handle = this.requestFrame(this.tick);
   };

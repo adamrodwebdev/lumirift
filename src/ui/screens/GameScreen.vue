@@ -25,6 +25,7 @@ import { ScoreBoard } from '@/services/ScoreBoard';
 import AppIcon from '../components/AppIcon.vue';
 import CampaignGoal from '../components/CampaignGoal.vue';
 import CoachCard from '../components/CoachCard.vue';
+import DangerLayer from '../components/DangerLayer.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import type { GameOutcome } from '../GameOutcome';
 import type { BestLine } from '../BestLine';
@@ -35,6 +36,7 @@ import PauseDialog from '../components/PauseDialog.vue';
 import { stageFor } from '../stages';
 import { GAME_SURFACE } from '../useGameSurface';
 import { isTouchScreen } from '../useOrientation';
+import { useTension } from './useTension';
 
 const props = defineProps<{
   modeId: ModeId;
@@ -148,10 +150,22 @@ const subtitle = computed(() => {
 });
 
 const clock = new FrameClock();
-/** Music intensity: a pause or the end of a game calms it, the danger drives it. */
-const MUSIC_PLAYING = 0.42;
-const MUSIC_DANGER = 0.58;
-const MUSIC_CALM = 0.12;
+/** The danger of the game, played: music, cracks, close calls, the final seconds. */
+const tension = useTension({
+  audio,
+  haptics,
+  clock,
+  level: () => settings.current.effects,
+  root,
+});
+const {
+  amount: dangerAmount,
+  urgent: timeUrgent,
+  flash: closeCallFlash,
+  relief: reliefCount,
+  broken: wellBroken,
+  well: wellCanvas,
+} = tension;
 /** One per game: the stage is rebuilt for each new session. */
 const round = ref(0);
 /** The game-over dialog waits for the stack to finish collapsing. */
@@ -216,12 +230,10 @@ clock.subscribe((delta) => {
   if (!current) return;
   if (current.state === 'running') tracker?.tick(delta);
   current.update(delta);
-  // The music follows the danger: steady while playing, tense near the top.
-  audio.setIntensity(
-    current.state === 'running' ? MUSIC_PLAYING + MUSIC_DANGER * current.pressure() : MUSIC_CALM,
-  );
   const next = current.indicators();
   if (!sameIndicators(next, indicators.value)) indicators.value = next;
+  // The danger, played: the music follows it, the well cracks, the clock counts down.
+  tension.update(current, delta, next);
   if (chase && current.state === 'running') {
     const score = current.result().value;
     if (chase.update(score)) celebrateRecord();
@@ -277,6 +289,7 @@ const listen = (current: GameSession) => {
         ),
       ),
     ),
+    events.on('closeCall', () => tension.closeCall()),
     events.on('over', ({ reason }) => finish(reason)),
   ];
 };
@@ -309,6 +322,7 @@ const TEASER_MS = 2600;
 const finish = (reason: string, decided: CampaignOutcome | null = null, teased = false) => {
   const current = session.value;
   if (!current || phase.value === 'over') return;
+  tension.end(reason);
   const result = current.result();
   const key = recordKey();
   const verdict = run ? (decided ?? run.end(reason, liveState(current))) : null;
@@ -365,6 +379,7 @@ const finish = (reason: string, decided: CampaignOutcome | null = null, teased =
 
 const start = async () => {
   dispose();
+  tension.reset();
   phase.value = 'loading';
   platform.loadingStart();
   const created = await catalog.create(props.modeId, sessionOptions());
@@ -504,7 +519,6 @@ onBeforeUnmount(() => {
   clearTimeout(outcomeTimer);
   clearTimeout(recordTimer);
   clearTimeout(coachTimer);
-  audio.setIntensity(MUSIC_CALM);
   clock.stop();
   offPortalPause();
   platform.gameplayStop();
@@ -513,7 +527,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" class="game" :data-family="descriptor.family" :data-layout="layout">
+  <div
+    ref="root"
+    class="game"
+    :data-family="descriptor.family"
+    :data-layout="layout"
+    :style="{ '--danger-amount': settings.current.effects === 'off' ? 0 : dangerAmount }"
+  >
     <h1 class="sr-only">
       {{
         level
@@ -542,7 +562,12 @@ onBeforeUnmount(() => {
     >
       <AppIcon :name="muted ? 'mute' : 'sound'" />
     </button>
-    <HudPanel class="game__stats" :indicators="indicators.slice(1)" :main-first="false" />
+    <HudPanel
+      class="game__stats"
+      :indicators="indicators.slice(1)"
+      :main-first="false"
+      :urgent="timeUrgent ? ['timeLeft'] : []"
+    />
     <div v-if="shownSubtitle || (level && goal)" class="game__goal">
       <!-- Part of the game (the shape to fill): shown at every screen size. -->
       <p v-if="shownSubtitle" class="game__subtitle">{{ shownSubtitle }}</p>
@@ -558,6 +583,15 @@ onBeforeUnmount(() => {
       :active="phase === 'playing'"
       :ghost="settings.current.ghost"
       @pause="pause"
+    />
+
+    <DangerLayer
+      :amount="dangerAmount"
+      :level="settings.current.effects"
+      :well="wellCanvas"
+      :flash="closeCallFlash"
+      :relief="reliefCount"
+      :broken="wellBroken"
     />
 
     <div class="game__overlay">
@@ -694,6 +728,8 @@ onBeforeUnmount(() => {
   position: absolute;
   z-index: -1;
   pointer-events: none;
+  /* In danger, the world behind the well loses its colours. */
+  filter: saturate(calc(1 - var(--danger-amount, 0) * 0.85));
 }
 
 .game::before {

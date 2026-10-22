@@ -57,6 +57,7 @@ export class DuelSession implements GameSession<FallingCommand> {
       events.on('clear', (event) => this.events.emit('clear', event)),
       events.on('levelUp', (event) => this.events.emit('levelUp', event)),
       events.on('notice', (event) => this.events.emit('notice', event)),
+      events.on('closeCall', (event) => this.events.emit('closeCall', event)),
       events.on('over', () => this.end('defeat')),
       this.opponent.events.on('over', () => this.end('victory')),
     ];

@@ -22,6 +22,8 @@ export interface SandView {
   dropDistance(): number;
   /** Grains the falling fire would burn, or the lightning strike, where it would land; or null. */
   elementTarget(): readonly number[] | null;
+  /** The next piece where it would appear, when it has no room to enter; or null. */
+  spawnWarning(): SandPiece | null;
   /** The Guardian of a boss level, or the one passing by in a teaser; or null. */
   readonly worm: DuneWorm | null;
   /** The next chapter's Guardian is passing under the sand (the level is won). */
@@ -98,8 +100,7 @@ export class SandSession implements GameSession<FallingCommand> {
   }
 
   pressure(): number {
-    const { grid } = this.view;
-    return Math.min(1, grid.sandHeight() / grid.height);
+    return this.game.pressure();
   }
 
   indicators(): readonly Indicator[] {
@@ -158,6 +159,7 @@ export class SandSession implements GameSession<FallingCommand> {
     events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));
+    events.on('closeCall', (event) => this.events.emit('closeCall', event));
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));
     // The Guardian speaks through notices: each of its moves is named the first time.
     const told = new Set<string>();

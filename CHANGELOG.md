@@ -3,6 +3,34 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.19.0] — 22/10/2026
+
+La tension de l'échec : le danger se voit, s'entend et se joue ; s'en sortir est
+récompensé, perdre marque.
+
+### Ajouté
+
+- **Musique de danger et de délivrance** : dès 70 % du puits, le tempo passe de 84 à 96
+  puis 108 BPM (au changement de mesure), un battement de cœur grave monte sous la musique
+  et la nappe s'étouffe derrière un filtre. Quand la pile redescend, le filtre s'ouvre et un
+  accord majeur résout la tension, sur un souffle.
+- **Le puits qui se fend** : des fissures dorées gagnent le verre du puits à mesure que la
+  pile monte, une vignette violet-rouge se resserre depuis les bords et le fond se désature.
+  Quand la prochaine pièce n'a plus la place d'entrer, elle s'allume en rouge là où elle
+  apparaîtrait. Avec les effets calmes, rien ne bouge ; sans effets, un cadre rouge immobile.
+- **« Close call! »** : une ligne effacée en zone de danger (une zone de sable, une ligne de
+  Mosaïque) rapporte deux fois ses points, avec un éclair doré, un bref ralenti et son
+  propre son.
+- **Une défaite qui marque** : quand la pile déborde, une demi-seconde de ralenti, la faille
+  fend le puits de haut en bas, puis la fenêtre de fin.
+- **Les dix dernières secondes** d'une partie chronométrée : un appel, un tic par seconde
+  (plus aigu les trois dernières), le temps en rouge qui bat ; la musique presse.
+
+### Modifié
+
+- Le liseré rouge des puits disparaît, remplacé par ce langage du danger ; il reste sur le
+  puits de l'adversaire en Duel.
+
 ## [1.18.0] — 22/10/2026
 
 Accrocher dès les premières secondes : ce que les autres jeux de blocs n'ont pas, montré

@@ -1,5 +1,6 @@
 import { Board, type ClearedRow, type RemovedCell } from '../board/Board';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
+import { inDanger } from '@/session/Tension';
 import { Emitter } from '@/core/Emitter';
 import type { RandomSource } from '@/core/Random';
 import type { GameMode } from '../modes/GameMode';
@@ -377,6 +378,28 @@ export class Game {
     this.events.emit('notice', value === undefined ? { id } : { id, value });
   }
 
+  /**
+   * Where the next piece would appear, when the well leaves it no room to
+   * enter the visible rows: the last warning, drawn on the well. Null while
+   * there is room.
+   */
+  spawnWarning(): readonly Cell[] | null {
+    if (this._state !== 'running') return null;
+    this.fillQueue(1);
+    const spec = this.upcoming[0]!;
+    let piece = Piece.spawn(spec.type, spec.tone, this.board.width);
+    if (this.spawnCentre !== null) {
+      const above = Piece.spawn(spec.type, spec.tone, this.board.width, this.spawnCentre);
+      if (this.board.fits(above)) piece = above;
+    }
+    return this.board.fits(piece, 0, 1) ? null : piece.cells();
+  }
+
+  /** How full the well is: the stack over the visible height (0 to 1). */
+  pressure(): number {
+    return Math.min(1, this.board.stackHeight() / (this.board.height - this.board.hiddenRows));
+  }
+
   // --- Internals ------------------------------------------------------------
 
   private canAct(): boolean {
@@ -451,9 +474,12 @@ export class Game {
     if (this.board.wraps) this.spawnCentre = this.board.column(Math.floor(piece.centre)) + 0.5;
     this._active = null;
     this.events.emit('lock', { piece });
+    // Measured before the clear: lines cleared with the stack this high are a close call.
+    const tense = inDanger(this.pressure());
     const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
     this.pauseAfterLock = cleared.length > 0;
-    this.scoreClear(cleared, false);
+    const points = this.scoreClear(cleared, false);
+    if (tense && points > 0) this.closeCall(points);
     this.detonate(cleared);
     this.mode.afterLock(this);
     if (this._state === 'over') return;
@@ -466,10 +492,17 @@ export class Game {
     else this.spawnNext();
   }
 
-  private scoreClear(cleared: readonly ClearedRow[], cascade: boolean): void {
+  /** Lines cleared at the edge of defeat count double: the rescue is a feat. */
+  private closeCall(points: number): void {
+    this.awardPoints(points, 'closeCall');
+    this.events.emit('closeCall', { points });
+  }
+
+  /** Scores the rows cleared at once; returns their points. */
+  private scoreClear(cleared: readonly ClearedRow[], cascade: boolean): number {
     if (cleared.length === 0) {
       if (!cascade) this._combo = -1;
-      return;
+      return 0;
     }
     this._combo++;
     const lines = cleared.length;
@@ -488,6 +521,7 @@ export class Game {
       this._level = level;
       this.events.emit('levelUp', { level });
     }
+    return points;
   }
 
   /**

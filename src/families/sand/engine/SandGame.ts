@@ -1,5 +1,6 @@
 import { Emitter } from '@/core/Emitter';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
+import { inDanger } from '@/session/Tension';
 import type { RandomSource } from '@/core/Random';
 import { Tone } from '@/core/Tone';
 import { Bag } from '@/families/falling/pieces/Bag';
@@ -71,6 +72,8 @@ export interface SandEventMap {
     readonly points: number;
     readonly samples: readonly GrainSample[];
   };
+  /** Cleared in danger: these points again, as a bonus (see `Tension`). */
+  closeCall: { readonly points: number };
   /** Fire burnt a region of sand. */
   burn: {
     readonly grains: number;
@@ -267,6 +270,23 @@ export class SandGame {
   get timeLeftMs(): number | null {
     return this.timeLimitMs === null ? null : Math.max(0, this.timeLimitMs - this._elapsedMs);
   }
+  /**
+   * The next piece where it would appear, when the sand leaves it no room to
+   * fall a cell: the last warning, drawn on the well. Null while there is room.
+   */
+  spawnWarning(): SandPiece | null {
+    if (this._state !== 'running' || this.teasing) return null;
+    this.fillQueue(1);
+    const spec = this.upcoming[0]!;
+    const piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
+    return this.fits(piece, 0, GRAINS_PER_CELL) ? null : piece;
+  }
+
+  /** How high the sand stands in the well (0 to 1). */
+  pressure(): number {
+    return Math.min(1, this.grid.sandHeight() / this.grid.height);
+  }
+
   /** Milliseconds before the next gust, 0 while it blows; null in a game without wind. */
   get windInMs(): number | null {
     if (!this.windy) return null;
@@ -782,17 +802,27 @@ export class SandGame {
     return best ? { kind: 'sand', region: best.slice(0, FIRE_MAX_GRAINS) } : null;
   }
 
+  /** Regions cleared at the edge of defeat count double: the rescue is a feat. */
+  private closeCall(points: number): void {
+    this._score += points;
+    this.events.emit('closeCall', { points });
+    this.events.emit('notice', { id: 'closeCall', value: points });
+  }
+
   private clearSpanning(): void {
     const regions = this.grid.spanningRegions();
     if (regions.length === 0) return;
     const all = regions.flat();
     const samples = this.sample(all);
     if (this._worm?.touchesAny(all, 1)) this.hurtBoss(this._worm, 'link');
+    // Measured before the clear: regions cleared with the sand this high are a close call.
+    const tense = inDanger(this.pressure()) && !this.teasing;
     this.grid.remove(all);
     const points = Math.round(all.length * regions.length * (1 + this.boosts.scoreBonus));
     this._score += points;
     this._clears += regions.length;
     this.events.emit('clear', { regions: regions.length, grains: all.length, points, samples });
+    if (tense) this.closeCall(points);
     const level = 1 + Math.floor(this._clears / CLEARS_PER_LEVEL);
     if (level > this._level) {
       this._level = level;

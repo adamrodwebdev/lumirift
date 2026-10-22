@@ -778,6 +778,24 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   générative** dans cette tonalité (nappe i – VI – III – VII, puis basse, arpège et battement
   quand l'intensité monte), dont l'intensité suit le danger (`pressure()` de chaque famille) ;
   volumes séparés, une même réverbération.
+- **Tension de l'échec** (1.19) : la pression de la partie (0 à 1 : hauteur de la pile ou du
+  sable, remplissage de la Mosaïque) fixe trois états, calme, **danger** dès 70 % et
+  **critique** dès 85 %, avec une marge au retour (critique jusqu'à 80 %, danger jusqu'à
+  55 %).
+  - Musique : 84, 96 puis 108 BPM, changés à la mesure ; battement de cœur grave à chaque
+    temps, de plus en plus fort ; nappe étouffée par un filtre. **Délivrance** quand la
+    partie repasse sous 55 % après plus d'1,2 s de danger : le filtre s'ouvre, accord de ré
+    majeur sur la tonalité mineure, souffle.
+  - Image : fissures dorées dans le verre du puits, du bord vers le centre, une de plus à
+    chaque palier ; vignette violet-rouge, large puis serrée ; fond désaturé ; la prochaine
+    pièce en rouge là où elle apparaîtrait quand elle ne peut plus entrer (Chute, Tour,
+    Sable). Effets calmes : sans mouvement ; aucun effet : un cadre rouge immobile.
+  - Règle : une ligne effacée en danger (mesuré avant l'effacement) compte **double**
+    (« Close call! », annoncé dans la langue du joueur) ; éclair doré, ralenti de 0,4 s.
+  - Défaite par débordement : ralenti d'une demi-seconde, la faille fend le puits de haut en
+    bas, puis la fenêtre de fin.
+  - Partie chronométrée : à 10 s, un appel ; un tic par seconde, plus aigu les trois
+    dernières ; le temps en rouge qui bat ; la musique au plus vite.
 - **Ambiance** : derrière le jeu, la lumière de la famille dérive lentement, une faille
   lointaine respire.
 
@@ -1082,6 +1100,14 @@ src/
   code de rendu des gemmes, chargé après le premier affichage ; la scène ne tourne que
   visible. `RiftWipe` couvre le changement d'écran, précharge (`ModeCatalog.preload`,
   `preloadStage`) puis se retire une fois le nouvel écran peint.
+- **Tension** (1.19) : `Tension` (session) lit la pression chaque image et publie ses états
+  et la délivrance ; `FinalSeconds` compte les dernières secondes ; les moteurs appliquent
+  eux-mêmes le « Close call! » (`inDanger`, avant l'effacement) et publient `closeCall`.
+  `useTension` (écran de jeu) joue le tout : la musique (`setTempo`, `setDanger`,
+  `relief` du moteur audio), le ralenti (`FrameClock.slow`, qui raccourcit les images vues
+  par tous les abonnés), et ce que dessine `DangerLayer` (fissures en SVG calées sur le
+  canvas du puits, vignettes en opacité seule). Les avertissements d'apparition sont
+  dessinés par chaque moteur de rendu (`spawnWarning()` de la vue).
 - **Boucle de l'accueil** (1.18, `HomeReel`) : chaque moment est une `Scene`
   (`src/showcase/`) : une vraie partie réglée par des **options publiques** des moteurs
   (`bossDelayMs` des Gardiens, `opening` de la Mosaïque, `Board.fromRows` en couleurs avec
@@ -1461,3 +1487,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.16    | 21/10/2026 | L'Œil de la Tour au niveau 4-7 : regard tournant, charge annoncée, pierres, aveuglé par les bombes, récompense Éclats d'iris (§ 3.2).                             |
 | 1.17    | 21/10/2026 | Le Cœur de la faille au niveau 5-7 : battements annoncés, gravats porteurs d'éclats, miroir en dernière phase, récompense La Faille (§ 3.2).                      |
 | 1.18    | 22/10/2026 | Accrocher dès les premières secondes : boucle des moments forts sur l'accueil, promesse du Ver des dunes, 1-2 de pratique, guide plus discret (§ 3.2 ter, § 5.6). |
+| 1.19    | 22/10/2026 | La tension de l'échec : musique de danger et de délivrance, puits qui se fend, « Close call! », défaite mise en scène, dernières secondes (§ 3.8, § 5.6).         |

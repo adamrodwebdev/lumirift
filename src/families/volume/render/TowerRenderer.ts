@@ -17,7 +17,6 @@ import { GlassSprites } from './GlassSprites';
 
 const { TRAIL_MS, FLASH_MS, POPUP_MS, WAVE_MS } = EFFECT_TIMINGS;
 /** Share of the visible height above which the tower glows with danger. */
-const DANGER_HEIGHT = 0.7;
 /** Opacity of the back of the tower, seen through the glass. */
 const BACK_ALPHA = 0.2;
 
@@ -113,6 +112,7 @@ export class TowerRenderer {
     this.drawTrails(palette);
     this.drawWaves(palette);
 
+    this.drawSpawnWarning(palette);
     const active = this.view.active;
     if (active) {
       const distance = this.view.dropDistance();
@@ -130,11 +130,30 @@ export class TowerRenderer {
     this.drawPopups(palette);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (eye) this.drawEyeMarker(eye, palette);
-    this.drawDanger(palette);
     if (effects.wellFlash > 0) {
       ctx.fillStyle = `rgb(255 255 255 / ${effects.wellFlash})`;
       ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
+  }
+
+  /** The next piece in red where it would appear, when the tower leaves it no room to enter. */
+  private drawSpawnWarning(palette: TonePalette): void {
+    if (this.effects.stackHidden) return;
+    const cells = this.view.spawnWarning();
+    if (!cells) return;
+    const { ctx } = this;
+    let top = Number.POSITIVE_INFINITY;
+    for (const at of cells) top = Math.min(top, at.y);
+    const pulse = this.effects.motion ? 0.5 + 0.5 * Math.sin(performance.now() / 120) : 0.5;
+    ctx.fillStyle = palette.danger;
+    for (const at of cells) {
+      const x = this.view.board.column(at.x);
+      this.face(x, at.y - top);
+      ctx.globalAlpha = (this.isFront(x) ? 1 : BACK_ALPHA) * (0.4 + 0.35 * pulse);
+      ctx.fillRect(0, 0, 1, 1);
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
   }
 
   // --- The Eye of the Tower ---------------------------------------------------
@@ -698,21 +717,6 @@ export class TowerRenderer {
       ctx.strokeText(popup.text, projection.centreX, y);
       ctx.fillText(popup.text, projection.centreX, y);
     }
-    ctx.globalAlpha = 1;
-  }
-
-  /** A pulsing glow on the sides when the stack nears the top. */
-  private drawDanger(palette: TonePalette): void {
-    if (this.effects.stackHidden) return;
-    if (this.view.board.stackHeight() < this.rows * DANGER_HEIGHT) return;
-    const { ctx, canvas } = this;
-    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 260);
-    const side = this.projection.rowHeight * 0.4;
-    ctx.globalAlpha = 0.18 + 0.17 * pulse;
-    ctx.fillStyle = palette.danger;
-    ctx.fillRect(0, 0, side, canvas.height);
-    ctx.fillRect(canvas.width - side, 0, side, canvas.height);
-    ctx.fillRect(0, 0, canvas.width, side * 0.7);
     ctx.globalAlpha = 1;
   }
 
