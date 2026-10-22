@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut               |
-| ------- | ---------- | -------------------- |
-| 1.23    | 22/10/2026 | Le défi des Gardiens |
+| Version | Date       | Statut                   |
+| ------- | ---------- | ------------------------ |
+| 1.24    | 22/10/2026 | Le russe, langues relues |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -24,7 +24,8 @@ Objectifs :
 3. **Viralité** : le résultat du défi du jour se partage en un geste (texte court + lien).
 4. **Qualité web exemplaire** : Lighthouse sur mobile, Performance ≥ 98 (depuis 1.19.1), les
    trois autres catégories ≥ 95.
-5. **International dès le lancement** : français, anglais et indonésien.
+5. **International dès le lancement** : français, anglais et indonésien ; le russe depuis la
+   1.24, pour les portails russophones.
 
 ## 2. Positionnement marketing
 
@@ -35,10 +36,15 @@ Objectifs :
 | Joueurs occasionnels (25+)  | Partie courte, gratuite, sans inscription       | Un clic pour jouer, parties de 2 à 5 min |
 | Habitués du genre           | Contrôles précis, nouveauté                     | Rotation standard, modes inédits         |
 | Joueurs mobiles (Indonésie) | Jouer sur un téléphone modeste, réseau variable | Mobile d'abord, < 100 Ko compressés      |
+| Joueurs russophones         | Le jeu dans leur langue, sur leurs portails     | Russe complet, polices cyrilliques       |
 
 **Pourquoi l'indonésien** : l'Indonésie est l'un des plus grands marchés du jeu mobile, très
 majoritairement joué sur téléphone Android d'entrée de gamme. Ce choix impose une exigence
 forte de **légèreté** et de **jouabilité tactile**, qui profite à tous les marchés.
+
+**Pourquoi le russe (1.24)** : les portails russophones (Yandex Games, VK Play, et les
+partenaires de Playgama) sont un grand marché du jeu par navigateur, où le russe est exigé.
+L'intégration de ces portails est une étape à part ; le jeu, lui, est prêt.
 
 ### 2.2 Proposition de valeur
 
@@ -954,8 +960,25 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 
 ### 4.4 Internationalisation
 
-- Trois langues complètes : **français** (référence), **anglais**, **indonésien**. Mêmes clés
-  dans les trois fichiers, vérifié par un test automatisé.
+- Quatre langues complètes : **français** (référence), **anglais**, **indonésien** et
+  **russe** (1.24). Mêmes clés et mêmes paramètres dans les quatre fichiers, vérifiés par un
+  test automatisé ; chaque langue est un module à part, téléchargé seul.
+- **Registre** : « vous » en français, « вы » en russe, « kamu » en indonésien ; glossaire
+  constant d'une langue à l'autre (Sable / Песок, Faille / Разлом, Gardiens / Стражи…).
+- **Pluriels** : règles propres au français (0 et 1 au singulier) et au russe (une, quelques,
+  beaucoup : 1 звезда, 3 звезды, 5 звёзд), testées ; le mot s'accorde au nombre que la phrase
+  compte (la taille d'un objectif, pas son nombre de fois).
+- **Pas de nom à accorder dans une phrase** : un Gardien à vaincre a sa phrase entière par
+  langue (« Vaincre l'Œil de la Tour », « Победите Песчаного червя ») ; ailleurs, un nom
+  inséré suit un deux-points ou des guillemets, où il garde sa forme de base.
+- **Typographie testée** : espaces insécables du français, apostrophes typographiques du
+  français et de l'anglais, ponctuation et guillemets « ёлочки » du russe.
+- **Polices** : Unbounded a son cyrillique ; Sora n'en a pas, le russe prend celui de
+  Montserrat sous le nom de Sora (même plage de graisses, sans quoi le navigateur sépare les
+  deux faces). Téléchargé seulement quand du cyrillique s'affiche (`unicode-range`).
+- **Place** : le russe est la langue la plus longue ; un test de bout en bout parcourt chaque
+  page, réglage et famille de jeu en russe de 320 px au bureau, en portrait et en paysage :
+  rien ne sort de l'écran, aucun mot n'est coupé, aucun libellé du tableau de bord ne déborde.
 - Aucun texte en dur dans les composants (règle ESLint `vue/no-bare-strings-in-template`).
 - Nombres, durées et dates formatés par `Intl` dans la langue courante ; attribut `lang` du
   document synchronisé.
@@ -1207,8 +1230,10 @@ src/
   la chute douce (une touche tenue ne fait pas tomber la pièce à la reprise).
 - **Thème sans flash** : un court script dans `index.html` pose `data-theme` avant le premier
   affichage, à partir du réglage enregistré ou du système.
-- **Langue** : détectée au premier lancement (l'ancien code `in` vaut indonésien), changée à
-  chaud ; `lang`, titre et description de la page suivent.
+- **Langue** : détectée au premier lancement (l'ancien code `in` vaut indonésien ; `ru` donne
+  le russe), changée à chaud ; `lang`, titre et description de la page suivent. Le module de
+  la langue du joueur est reconnu au build par son titre de page (`bootPlugin`), quelle que
+  soit son écriture.
 - **Records** arrondis (points ou millisecondes entiers), clés `mode` ou `daily:AAAAMMJJ`.
 
 ### 5.7 Mesures
@@ -1238,6 +1263,11 @@ navigateur intégré : **12,1 ms** par image en moyenne, **12,4 ms** au pire.
     compressés), le module d'entrée tombe de 37 à 15 Ko.
   - Les images des menus (gemmes, scène vivante, boucle de l'accueil) attendent que la
     page soit chargée et le navigateur libre (`afterLoad`).
+- **Le russe (1.24)** : mobile, **100** dans les quatre catégories sur trois passes, page en
+  anglais (le profil par défaut de Lighthouse) comme avec Chrome réglé en russe (module russe
+  de 10 Ko compressés, polices cyrilliques) : TBT 10 à 80 ms, LCP 1,1 à 1,4 s, CLS 0,006 au
+  plus. Sous une forte charge du poste (d'autres travaux en cours), le TBT grimpe dans
+  toutes les langues et la Performance tombe sous 98 : mesurer machine au repos.
 - Lighthouse 13 ajoute une catégorie expérimentale, « Agentic Browsing » (50) : hors des
   quatre catégories exigées, elle est affichée à titre indicatif par `npm run lighthouse`.
 - Sur ce poste, le Chromium de Playwright ne peut pas être lancé par Node (`spawn UNKNOWN`) ;
@@ -1583,3 +1613,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.21    | 22/10/2026 | Des gestes qui jouent la musique : notes de l'accord en cours, basse à la pose, accent sur le temps ; le Rythme mène la musique (§ 3.8, § 5.6).                   |
 | 1.22    | 22/10/2026 | Commandes réglables : deux touches par action, échange, touches refusées, répétition DAS et ARR (§ 3.3, § 5.6).                                                   |
 | 1.23    | 22/10/2026 | Le défi des Gardiens : un Gardien par semaine pour tous, points × bonus de victoire, record de la semaine, XP au premier essai du jour (§ 3.2, § 5.6).            |
+| 1.24    | 22/10/2026 | Le russe, quatrième langue : traductions relues, pluriels et typographie testés, polices cyrilliques (§ 1, § 2.1, § 4.4, § 5.6, § 5.7).                           |

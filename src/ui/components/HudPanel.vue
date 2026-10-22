@@ -53,19 +53,23 @@ const format = useFormat();
 </template>
 
 <style scoped>
-/* Portrait: a compact row in the band above the well. */
+/*
+ * Portrait: a compact row in the band above the well. The gap narrows with
+ * the screen, so that six labels (or longer words, in Russian) fit at 320 px.
+ */
 .hud {
   display: flex;
   justify-content: center;
-  gap: 0.15rem var(--space-4);
+  gap: 0.15rem clamp(var(--space-2), 5.5vw - 0.5rem, var(--space-4));
   margin: 0;
 }
 
+/* A column never narrower than its longest word: a label never spills on the next one. */
 .hud__item {
   display: grid;
   align-content: end;
   justify-items: center;
-  min-width: 2.75rem;
+  min-width: max(2.75rem, min-content);
   max-width: 6.5rem;
 }
 
@@ -76,6 +80,13 @@ const format = useFormat();
   text-transform: uppercase;
   letter-spacing: 0.1em;
   text-align: center;
+}
+
+/* The narrowest phones: tighter letters, so that five labels still fit side by side. */
+@media (max-width: 22.4rem) {
+  .hud__label {
+    letter-spacing: 0.04em;
+  }
 }
 
 .hud__value {

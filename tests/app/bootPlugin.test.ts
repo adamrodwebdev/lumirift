@@ -2,13 +2,17 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { bootPlugin } from '../../scripts/bootPlugin';
 
-/** The daily challenge's rules in a language, read raw (the i18n plugin compiles imports). */
-const rules = (locale: string) =>
+/** A language's page title, read raw (the i18n plugin compiles imports). */
+const title = (locale: string) =>
   (
     JSON.parse(readFileSync(`src/i18n/locales/${locale}.json`, 'utf8')) as {
-      daily: { rules: string };
+      meta: { title: string };
     }
-  ).daily.rules;
+  ).meta.title;
+
+/** Every character outside ASCII as `\uXXXX`, as a minifier may write it. */
+const escaped = (text: string) =>
+  text.replace(/[^\x20-\x7e]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
 
 type Handler = (html: string, context: { bundle: Record<string, unknown> }) => string;
 
@@ -33,9 +37,11 @@ const bundle = {
     fileName: 'assets/index-3.css',
     source: '@font-face{src:url(./sora-4.woff2)}body{margin:0}',
   },
-  'assets/a.js': chunk('assets/a.js', `export default {r:"${rules('en')}"}`),
-  'assets/b.js': chunk('assets/b.js', `export default {r:"${rules('fr')}"}`),
-  'assets/c.js': chunk('assets/c.js', `export default {r:"${rules('id')}"}`),
+  'assets/a.js': chunk('assets/a.js', `export default {s:\`${title('en')}\`}`),
+  'assets/b.js': chunk('assets/b.js', `export default {s:\`${title('fr')}\`}`),
+  'assets/c.js': chunk('assets/c.js', `export default {s:\`${title('id')}\`}`),
+  // Cyrillic as the minifier may escape it.
+  'assets/d.js': chunk('assets/d.js', `export default {s:"${escaped(title('ru'))}"}`),
 };
 
 describe('bootPlugin', () => {
@@ -55,6 +61,7 @@ describe('bootPlugin', () => {
     expect(page).toContain('"en":"./assets/a.js"');
     expect(page).toContain('"fr":"./assets/b.js"');
     expect(page).toContain('"id":"./assets/c.js"');
+    expect(page).toContain('"ru":"./assets/d.js"');
     expect(page).toContain('["./assets/vendor-2.js"]');
     expect(page).toMatch(
       /requestAnimationFrame\(\(\)=>setTimeout\(.*import\('\.\/assets\/index-1\.js'\)/,

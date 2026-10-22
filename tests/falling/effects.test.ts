@@ -20,6 +20,7 @@ function setup(level: EffectsLevel = 'full') {
     () => effectsProfile(level, true),
     () => PALETTE,
     (points) => String(points),
+    (combo) => `COMBO ×${combo}`,
   );
   const detach = effects.attach(session);
   session.start();
@@ -174,11 +175,13 @@ describe('FallingSoundscape', () => {
 });
 
 describe('clearLabel', () => {
-  it('names the moment the same way in every language', () => {
-    expect(clearLabel(1, 0)).toBeNull();
-    expect(clearLabel(2, 0)).toBe('×2');
-    expect(clearLabel(3, 1)).toBe('×3');
-    expect(clearLabel(1, 3)).toBe('COMBO ×3');
-    expect(clearLabel(4, 5)).toBe('RIFT!');
+  const russian = (combo: number) => `КОМБО ×${combo}`;
+
+  it('names the moment: the combo in the player’s language, RIFT! in every language', () => {
+    expect(clearLabel(1, 0, russian)).toBeNull();
+    expect(clearLabel(2, 0, russian)).toBe('×2');
+    expect(clearLabel(3, 1, russian)).toBe('×3');
+    expect(clearLabel(1, 3, russian)).toBe('КОМБО ×3');
+    expect(clearLabel(4, 5, russian)).toBe('RIFT!');
   });
 });

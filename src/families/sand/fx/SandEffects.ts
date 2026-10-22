@@ -318,8 +318,9 @@ export class SandEffects {
       case 'hurt': {
         this.wormHurt = 260;
         const critical = event.hit === 'boltHead';
+        // A number, the same in every language: no space before the "!".
         this.popups.push({
-          text: `-${event.damage}${critical ? ' !' : ''}`,
+          text: `−${this.formatPoints(event.damage)}${critical ? '!' : ''}`,
           x: worm.headX,
           y: worm.headY - 8,
           age: 0,

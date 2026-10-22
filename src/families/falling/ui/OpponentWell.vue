@@ -61,6 +61,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .opponent {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -69,8 +70,9 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
+/* The opponent's name fits its thumbnail, however narrow (IA DÉBUTANTE, ОБЫЧНЫЙ ИИ). */
 .opponent__label {
-  font-size: 0.7rem;
+  font-size: clamp(0.5rem, 13cqi, 0.7rem);
   color: var(--text-muted);
   text-align: center;
   text-transform: uppercase;

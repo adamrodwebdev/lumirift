@@ -99,4 +99,15 @@ const xpText = computed(() =>
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
 }
+
+/* The narrowest phones: the ring alone (level and progress), the bar keeps its buttons on screen. */
+@media (max-width: 22.4rem) {
+  .chip {
+    padding-right: 0.2rem;
+  }
+
+  .chip__text {
+    display: none;
+  }
+}
 </style>

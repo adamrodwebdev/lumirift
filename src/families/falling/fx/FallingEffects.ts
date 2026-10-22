@@ -87,10 +87,17 @@ export interface Popup {
   age: number;
 }
 
-/** Four lines are the rift itself; a chain of clears is a combo. */
-export function clearLabel(lines: number, combo: number): string | null {
+/**
+ * Four lines are the rift itself: RIFT!, the game's own word in every
+ * language. A chain of clears is a combo, in the player's language.
+ */
+export function clearLabel(
+  lines: number,
+  combo: number,
+  comboWord: (combo: number) => string,
+): string | null {
   if (lines >= 4) return 'RIFT!';
-  if (combo >= 2) return `COMBO ×${combo}`;
+  if (combo >= 2) return comboWord(combo);
   if (lines >= 2) return `×${lines}`;
   return null;
 }
@@ -156,6 +163,8 @@ export class FallingEffects {
     private readonly profile: () => EffectsProfile,
     private readonly palette: () => TonePalette | null,
     private readonly formatPoints: (points: number) => string,
+    /** The combo's word, translated ("COMBO ×3"). */
+    private readonly comboWord: (combo: number) => string,
   ) {
     const { board } = view;
     this.rowOffset = new Float32Array(board.height);
@@ -385,8 +394,8 @@ export class FallingEffects {
       y: middle,
       age: -wait,
     });
-    // The word of the moment, above the points: the same in every language.
-    const label = clearLabel(event.lines, event.combo);
+    // The word of the moment, above the points.
+    const label = clearLabel(event.lines, event.combo, this.comboWord);
     if (label) {
       this.popups.push({
         text: label,

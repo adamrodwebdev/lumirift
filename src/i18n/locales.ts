@@ -1,4 +1,4 @@
-export const LOCALES = ['fr', 'en', 'id'] as const;
+export const LOCALES = ['fr', 'en', 'id', 'ru'] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export const isLocale = (value: unknown): value is Locale =>

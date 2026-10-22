@@ -112,7 +112,7 @@ const prompt = computed(() => {
 const pieceLabel = (entry: HandSlot, index: number) => {
   if (!entry.piece) return t('mosaic.empty');
   const name = entry.slot === 'bonus' ? t('mosaic.bonus') : t('mosaic.piece', { n: index + 1 });
-  const cells = t('mosaic.cells', { n: entry.piece.shape.size });
+  const cells = t('mosaic.cells', { n: entry.piece.shape.size }, entry.piece.shape.size);
   return entry.fits ? `${name}, ${cells}` : `${name}, ${cells}, ${t('mosaic.stuck')}`;
 };
 
