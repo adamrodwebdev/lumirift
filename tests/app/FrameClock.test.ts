@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { FrameCap } from '@/app/FrameCap';
 import { FrameClock, MAX_FRAME_MS } from '@/app/FrameClock';
 
 /** A requestAnimationFrame driven by hand. */
@@ -42,6 +43,17 @@ describe('FrameClock', () => {
     frames.frame(0);
     frames.frame(5000);
     expect(deltas).toEqual([0, MAX_FRAME_MS]);
+  });
+
+  it('holds a touch screen to 60 frames a second, each with the time it covers', () => {
+    const frames = new ManualFrames();
+    const clock = new FrameClock(frames.request, frames.cancel, new FrameCap(60));
+    const deltas: number[] = [];
+    clock.subscribe((delta) => deltas.push(Math.round(delta)));
+    clock.start();
+    // A 120-Hz screen: one frame in two drawn, with the time of two.
+    for (let i = 0; i <= 8; i++) frames.frame(i * (1000 / 120));
+    expect(deltas).toEqual([0, 17, 17, 17, 17]);
   });
 
   it('stops, and lets listeners unsubscribe', () => {

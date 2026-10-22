@@ -61,7 +61,6 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .opponent {
-  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -70,13 +69,17 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
-/* The opponent's name fits its thumbnail, however narrow (IA DÉBUTANTE, ОБЫЧНЫЙ ИИ). */
+/*
+ * A HUD label: 14 px at least (`em`, the HUD's size); a long name takes two
+ * lines (IA DÉBUTANTE, ИИ-НОВИЧОК: the duel's column is wide enough for its words).
+ */
 .opponent__label {
-  font-size: clamp(0.5rem, 13cqi, 0.7rem);
+  font-size: 0.875em;
+  line-height: 1.15;
   color: var(--text-muted);
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 /* The box sets the size; a canvas is 300 px wide by default and must not push it. */

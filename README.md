@@ -155,6 +155,9 @@ Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAME
   modes, une partie complète, défi du jour, réglages retenus, menu (onglets, glissement,
   carte, Atelier), clavier seul ; en russe, la langue la plus longue, chaque page et chaque
   famille de jeu de 320 px au bureau, en portrait et en paysage, sans rien de coupé.
+- Garde responsive : aucun défilement horizontal de 320 à 2560 px (tous les 20 px), et
+  quatre tailles clés : petit téléphone et téléphone en paysage au toucher, zooms 200 % et
+  400 % (cibles tactiles, textes du HUD, part du puits).
 - Traductions : mêmes clés et mêmes paramètres dans les quatre langues, pluriels du français
   et du russe, typographie de chaque langue, vérifiés par des tests.
 - Lighthouse : 100 dans les quatre catégories, mobile et bureau (seuils exigés : 98 en

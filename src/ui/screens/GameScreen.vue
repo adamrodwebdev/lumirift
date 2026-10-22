@@ -162,7 +162,12 @@ const subtitle = computed(() => {
   return key ? t(key) : null;
 });
 
-const clock = new FrameClock();
+/*
+ * The game loop. Touch screens draw 60 frames a second at most (a 120-Hz phone
+ * would double the work and the heat); it stops while nothing moves: the
+ * pause, and the end's window over a still well.
+ */
+const clock = FrameClock.capped(touch ? 60 : null);
 /** The danger of the game, played: music, cracks, close calls, the final seconds. */
 const tension = useTension({
   audio,
@@ -420,7 +425,10 @@ const finish = (reason: string, decided: CampaignOutcome | null = null, teased =
   phase.value = 'over';
   const { gameOverDelayMs } = effectsProfile(settings.current.effects, settings.current.shake);
   outcomeTimer = setTimeout(
-    () => (showOutcome.value = true),
+    () => {
+      showOutcome.value = true;
+      clock.stop();
+    },
     teased ? Math.max(gameOverDelayMs, TEASER_MS) : gameOverDelayMs,
   );
 };
@@ -519,6 +527,7 @@ const pauseGame = (byPlayer: boolean) => {
   if (phase.value !== 'playing') return;
   session.value?.pause();
   phase.value = 'paused';
+  clock.stop();
   if (byPlayer) {
     platform.gameplayStop();
     stopReported = true;
@@ -531,6 +540,7 @@ const resume = () => {
   if (phase.value !== 'paused') return;
   session.value?.resume();
   phase.value = 'playing';
+  clock.start();
   if (stopReported) platform.gameplayStart();
   stopReported = false;
 };
@@ -739,10 +749,16 @@ onBeforeUnmount(() => {
     'pada pada pada';
   gap: 0.375rem var(--space-2);
   height: 100dvh;
-  padding: calc(var(--space-2) + env(safe-area-inset-top))
-    calc(var(--space-2) + env(safe-area-inset-right))
-    calc(var(--space-2) + env(safe-area-inset-bottom))
-    calc(var(--space-2) + env(safe-area-inset-left));
+  /*
+   * The HUD's size (its parts are sized in `em`): 16 px on phones and laptops,
+   * growing with the screen's short side up to 24 px (1080p ×1.17, 1440p ×1.4).
+   */
+  --hud-size: clamp(1rem, 0.5rem + 1vmin, 1.5rem);
+  /* The notch and the home indicator take their room, never less than the screen's own margin. */
+  padding: max(var(--space-2), env(safe-area-inset-top, 0px))
+    max(var(--space-2), env(safe-area-inset-right, 0px))
+    max(var(--space-2), env(safe-area-inset-bottom, 0px))
+    max(var(--space-2), env(safe-area-inset-left, 0px));
   overflow: hidden;
   /* A touch screen plays here: no page panning, zoom, selection or callout. */
   touch-action: none;
@@ -751,8 +767,9 @@ onBeforeUnmount(() => {
   -webkit-touch-callout: none;
 }
 
+/* The opponent's column: room for its name in 14-px capitals (« IA débutante »). */
 .game[data-layout='duel'] {
-  grid-template-columns: auto minmax(0, 1fr) auto clamp(3.5rem, 18vw, 6rem);
+  grid-template-columns: auto minmax(0, 1fr) auto clamp(5.5rem, 22vw, 6rem);
   grid-template-areas:
     'pause score sound sound'
     'hold goal next next'
@@ -853,15 +870,27 @@ onBeforeUnmount(() => {
   background: var(--glass);
 }
 
+/* The HUD's parts are sized in `em`: they follow its size, the windows keep theirs. */
+.game__score,
+.game__stats,
+.game__goal,
+.game__help,
+.game :deep(.stage__hold),
+.game :deep(.stage__next),
+.game :deep(.stage__side) {
+  font-size: var(--hud-size);
+}
+
 .game__score {
   grid-area: score;
   justify-self: center;
   align-self: center;
 }
 
+/* The counters take the band's width: the panel adapts to it (HudPanel's container queries). */
 .game__stats {
+  container: hud / inline-size;
   grid-area: stats;
-  justify-self: center;
   align-self: center;
 }
 
@@ -883,7 +912,7 @@ onBeforeUnmount(() => {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--accent-strong);
   font-family: var(--font-display);
-  font-size: 0.9rem;
+  font-size: 0.9em;
   font-weight: 800;
 }
 
@@ -966,9 +995,14 @@ onBeforeUnmount(() => {
   grid-area: pada;
 }
 
+/*
+ * Landscape: the well in the middle, the dashboard on its left, the coming
+ * pieces on its right. The side columns give way below 9rem only in a tiny
+ * window (a 400 % zoom), so that the well always keeps a place.
+ */
 @media (orientation: landscape) {
   .game {
-    grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.3fr) minmax(9rem, 1fr);
+    grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.3fr) minmax(min(9rem, 26%), 1fr);
     grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
     grid-template-areas:
       'pause well sound'
@@ -980,15 +1014,18 @@ onBeforeUnmount(() => {
       'padm well pada';
     column-gap: var(--space-4);
     row-gap: var(--space-2);
-    padding: calc(var(--space-3) + env(safe-area-inset-top))
-      calc(var(--space-4) + env(safe-area-inset-right))
-      calc(var(--space-3) + env(safe-area-inset-bottom))
-      calc(var(--space-4) + env(safe-area-inset-left));
+    padding: max(var(--space-3), env(safe-area-inset-top, 0px))
+      max(var(--space-4), env(safe-area-inset-right, 0px))
+      max(var(--space-3), env(safe-area-inset-bottom, 0px))
+      max(var(--space-4), env(safe-area-inset-left, 0px));
   }
 
   /* The opponent's well stands beside the coming pieces, not under them. */
   .game[data-layout='duel'] {
-    grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.3fr) auto minmax(4.5rem, 0.6fr);
+    grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.3fr) auto minmax(
+        min(4.5rem, 16%),
+        0.6fr
+      );
     grid-template-areas:
       'pause well sound sound'
       'score well next side'
@@ -999,15 +1036,21 @@ onBeforeUnmount(() => {
       'padm well pada pada';
   }
 
+  /*
+   * The keys of the first games have their own place under the jokers: an
+   * area missing from the grid would open an extra column, at the board's
+   * expense.
+   */
   .game[data-layout='mosaic'] {
-    grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.6fr) minmax(9rem, 1fr);
-    grid-template-rows: repeat(4, minmax(0, auto)) minmax(0, 1fr) minmax(0, auto);
+    grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.6fr) minmax(min(9rem, 26%), 1fr);
+    grid-template-rows: repeat(5, minmax(0, auto)) minmax(0, 1fr) minmax(0, auto);
     grid-template-areas:
       'pause well sound'
       'score well hand'
       'stats well hand'
       'goal well hand'
       'jokers well hand'
+      'help well hand'
       'prompt well hand';
   }
 
@@ -1030,11 +1073,17 @@ onBeforeUnmount(() => {
   .game__help,
   .game :deep(.stage__hold) {
     justify-self: end;
-    width: min(100%, 15rem);
+    /* In `em`: the column grows with the HUD on a large screen. */
+    width: min(100%, 15em);
   }
 
   .game__goal {
     justify-content: flex-start;
+  }
+
+  /* The dashboard adapts to its column (HudPanel's container queries). */
+  .game__score {
+    container: hud / inline-size;
   }
 
   .game :deep(.stage__next) {
@@ -1048,7 +1097,10 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Short landscape screens (821 × 462 on CrazyGames): smaller keys, the essential ones only. */
+/*
+ * Short landscape screens (821 × 462 on CrazyGames): flatter keys (their
+ * letters keep their size), the essential ones only.
+ */
 @media (orientation: landscape) and (max-height: 32rem) {
   .game__help :deep(.legend) {
     gap: 0.2rem;
@@ -1059,15 +1111,14 @@ onBeforeUnmount(() => {
   }
 
   .game__help :deep(.legend__key) {
-    min-width: 1.3rem;
-    height: 1.3rem;
+    min-width: 2em;
+    height: 2em;
     border-bottom-width: 2px;
-    font-size: 0.6rem;
   }
 
   .game :deep(.stage__side) {
     justify-self: end;
-    width: min(100%, 10rem);
+    width: min(100%, 10em);
   }
 
   .game__score,
@@ -1085,6 +1136,21 @@ onBeforeUnmount(() => {
 
   .game :deep(.controls__act) {
     justify-self: end;
+  }
+}
+
+/*
+ * A tiny window (a 400 % zoom): the keys' help and the counters would cover
+ * the dashboard; the score, the hold and the well stay (the pause keeps the rest).
+ */
+@media (orientation: landscape) and (height < 20rem) {
+  .game {
+    column-gap: var(--space-2);
+  }
+
+  .game__help,
+  .game__stats {
+    display: none;
   }
 }
 </style>

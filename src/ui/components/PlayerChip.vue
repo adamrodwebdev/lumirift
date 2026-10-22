@@ -100,10 +100,13 @@ const xpText = computed(() =>
   font-variant-numeric: tabular-nums;
 }
 
-/* The narrowest phones: the ring alone (level and progress), the bar keeps its buttons on screen. */
-@media (max-width: 22.4rem) {
+/*
+ * A narrow top bar (a phone under 360 px, a 400 % zoom): the ring alone tells
+ * the level and its share of XP, and the bar keeps its buttons on screen.
+ */
+@container top (inline-size < 21rem) {
   .chip {
-    padding-right: 0.2rem;
+    padding: 0.2rem;
   }
 
   .chip__text {

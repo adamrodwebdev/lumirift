@@ -1,3 +1,5 @@
+import { FrameCap } from './FrameCap';
+
 /** `deltaMs`: the game's time (slowed down in slow motion); `realMs`: the wall clock's. */
 export type FrameListener = (deltaMs: number, realMs: number) => void;
 
@@ -15,6 +17,7 @@ const PACE_EASE_MS = 220;
  * rendering). Time can run slower than the wall clock: a moment of slow
  * motion (`slow`), or a lasting pace (`setPace`, the rift surge); the
  * listeners get both times, so that the player's input keeps the real one.
+ * A `FrameCap` may hold the frames drawn to 60 a second (touch screens).
  */
 export class FrameClock {
   private readonly listeners: FrameListener[] = [];
@@ -29,7 +32,13 @@ export class FrameClock {
   constructor(
     private readonly requestFrame: RequestFrame = (callback) => requestAnimationFrame(callback),
     private readonly cancelFrame: CancelFrame = (handle) => cancelAnimationFrame(handle),
+    private readonly cap = new FrameCap(),
   ) {}
+
+  /** The game's clock on this screen: 60 frames a second at most where `maxFps` says so. */
+  static capped(maxFps: number | null): FrameClock {
+    return new FrameClock(undefined, undefined, new FrameCap(maxFps));
+  }
 
   subscribe(listener: FrameListener): () => void {
     this.listeners.push(listener);
@@ -42,6 +51,7 @@ export class FrameClock {
   start(): void {
     if (this.handle !== null) return;
     this.last = null;
+    this.cap.reset();
     this.handle = this.requestFrame(this.tick);
   }
 
@@ -80,6 +90,10 @@ export class FrameClock {
   }
 
   private readonly tick = (time: number): void => {
+    if (!this.cap.admits(time)) {
+      this.handle = this.requestFrame(this.tick);
+      return;
+    }
     const real = this.last === null ? 0 : Math.min(time - this.last, MAX_FRAME_MS);
     this.last = time;
     this.pace += (this.paceTarget - this.pace) * (1 - Math.exp(-real / PACE_EASE_MS));
