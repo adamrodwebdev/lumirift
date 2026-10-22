@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import { bootPlugin } from '../../scripts/bootPlugin';
 
@@ -55,7 +56,7 @@ describe('bootPlugin', () => {
     );
   });
 
-  it('fetches the code and the language after the first paint, then runs it', () => {
+  it('fetches the code and the language once the first paint is reported, then runs it', () => {
     expect(page).not.toContain('<link rel="modulepreload"');
     expect(page).not.toContain('src="./assets/index-1.js"');
     expect(page).toContain('"en":"./assets/a.js"');
@@ -63,9 +64,51 @@ describe('bootPlugin', () => {
     expect(page).toContain('"id":"./assets/c.js"');
     expect(page).toContain('"ru":"./assets/d.js"');
     expect(page).toContain('["./assets/vendor-2.js"]');
+    expect(page).toContain("import('./assets/index-1.js')");
+    // The browser's report of the first paint, not a frame: requests ending
+    // before it would count as needed to paint.
     expect(page).toMatch(
-      /requestAnimationFrame\(\(\)=>setTimeout\(.*import\('\.\/assets\/index-1\.js'\)/,
+      /PerformanceObserver\(.*'first-contentful-paint'.*type:'paint',buffered:true/,
     );
+    // A background tab starts at once; a browser without paint timing waits a frame.
+    expect(page).toContain("document.visibilityState==='hidden'");
+    expect(page).toContain('requestAnimationFrame(()=>setTimeout(go))');
+  });
+
+  it('starts the game once, whichever comes first: the report, the timer or the frame', () => {
+    const script = /<script type="module">(.*?)<\/script>/s.exec(page)?.[1] ?? '';
+    const imports: string[] = [];
+    const observers: ((list: unknown, observer: unknown) => void)[] = [];
+    const timers: (() => void)[] = [];
+    class Observer {
+      static supportedEntryTypes = ['paint'];
+      constructor(callback: (list: unknown, observer: unknown) => void) {
+        observers.push(callback);
+      }
+      observe() {}
+      disconnect() {}
+    }
+    // The page's script, run in a sandbox (its dynamic import becomes `load`).
+    runInNewContext(script.replace(/\bimport\(/g, 'load('), {
+      document: {
+        visibilityState: 'visible',
+        createElement: () => ({}),
+        head: { append: () => {} },
+      },
+      localStorage: { getItem: () => null },
+      navigator: { languages: ['fr-FR'] },
+      PerformanceObserver: Observer,
+      setTimeout: (callback: () => void) => timers.push(callback),
+      requestAnimationFrame: () => {},
+      load: (url: string) => imports.push(url),
+    });
+    expect(imports).toEqual([]);
+    const paint = {
+      getEntriesByName: (name: string) => (name === 'first-contentful-paint' ? [{}] : []),
+    };
+    observers[0]!(paint, { disconnect: () => {} });
+    timers.forEach((timer) => timer());
+    expect(imports).toEqual(['./assets/index-1.js']);
   });
 
   it('refuses a build whose languages it cannot tell apart', () => {

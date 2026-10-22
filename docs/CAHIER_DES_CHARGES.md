@@ -2,7 +2,7 @@
 
 | Version | Date       | Statut                     |
 | ------- | ---------- | -------------------------- |
-| 1.26    | 22/10/2026 | Responsive de bout en bout |
+| 1.26.1  | 22/10/2026 | Responsive de bout en bout |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1301,9 +1301,12 @@ navigateur intégré : **12,1 ms** par image en moyenne, **12,4 ms** au pire.
     peint par la page seule, puis le jeu le dissout une fois monté (0,28 s, sans prendre
     de toucher).
   - Les feuilles de style du premier écran sont dans `index.html` (`bootPlugin`).
-  - Le code et les messages de la langue du joueur ne sont demandés qu'après la première
-    image de l'écran-titre, ensemble ; chaque langue est un module à part (7,5 à 8,5 Ko
-    compressés), le module d'entrée tombe de 37 à 15 Ko.
+  - Le code et les messages de la langue du joueur ne sont demandés qu'une fois le premier
+    affichage de l'écran-titre signalé par le navigateur (`PerformanceObserver`, 1.26.1 ;
+    une image ne suffisait pas : les requêtes finissaient avant le signal et comptaient pour
+    l'affichage), ensemble ; chaque langue est un module à part (7,5 à 8,5 Ko compressés),
+    le module d'entrée tombe de 37 à 15 Ko. Un onglet en arrière-plan démarre aussitôt, un
+    navigateur sans mesure de l'affichage attend une image, un signal absent une seconde.
   - Les images des menus (gemmes, scène vivante, boucle de l'accueil) attendent que la
     page soit chargée et le navigateur libre (`afterLoad`).
 - **Le russe (1.24)** : mobile, **100** dans les quatre catégories sur trois passes, page en
