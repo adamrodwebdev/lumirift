@@ -328,7 +328,7 @@ test('in the Atelier, a first tap tries a look on the stage, a second wears it',
   await expect(atelier).toContainText(/(Touchez|Cliquez) encore pour porter/);
   await neon.click();
   await expect(neon).toHaveAttribute('aria-pressed', 'true');
-  await expect(atelier.getByText(/Vous portez : Néon/)).toBeVisible();
+  await expect(atelier.getByText(/Vous portez\s:\sNéon/)).toBeVisible();
   const saved = await page.evaluate(() => localStorage.getItem('stackrift:profile') ?? '');
   expect(saved).toContain('"material":"neon"');
 });
@@ -427,7 +427,7 @@ test('the menu pages follow a swipe, and the tabs follow the pages', async ({ pa
 
 test('the campaign: map, a level, its goal, then back to the map', async ({ page }) => {
   // The stars lead to the map.
-  await page.getByRole('button', { name: /étoiles sur 102/ }).click();
+  await page.getByRole('button', { name: /sur 102. Ouvrir la carte/ }).click();
   const map = panel(page, 'Carte');
   await expect(map.getByRole('heading', { name: 'Premiers blocs' })).toBeVisible();
   // Only the first level is open; a closed one says what opens it.

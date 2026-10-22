@@ -88,6 +88,7 @@ const effects = new FallingEffects(
   () => profile.value,
   () => palette.value,
   (points) => format.number(points),
+  (combo) => t('wellWords.combo', { n: combo }),
 );
 const detachEffects = effects.attach(session);
 watch(

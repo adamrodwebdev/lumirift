@@ -52,24 +52,26 @@ const format = useFormat();
 
 <style scoped>
 /*
- * Portrait: a compact row in the band above the well; the counters of a busy
- * mode (the Duel's five) take a second row rather than run off the screen.
- * Sizes in `em`: the game screen sets the HUD's size (larger on large
+ * Portrait: a compact row in the band above the well. Its gap narrows with
+ * the screen (longer words, in Russian, fit at 320 px), and the counters of a
+ * busy mode (the Duel's five) take a second row rather than run off the
+ * screen. Sizes in `em`: the game screen sets the HUD's size (larger on large
  * screens). Labels never under 14 px, numbers never under 16 px.
  */
 .hud {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.35em 1em;
+  gap: 0.35em clamp(0.5em, 5.5vw - 0.5rem, 1em);
   margin: 0;
 }
 
+/* A column never narrower than its longest word: a label never spills on the next one. */
 .hud__item {
   display: grid;
   align-content: end;
   justify-items: center;
-  min-width: 2.75em;
+  min-width: max(2.75em, min-content);
   max-width: 7em;
 }
 
@@ -80,6 +82,13 @@ const format = useFormat();
   text-transform: uppercase;
   letter-spacing: 0.06em;
   text-align: center;
+}
+
+/* The narrowest phones: tighter letters, so that five labels still fit side by side. */
+@media (max-width: 22.4rem) {
+  .hud__label {
+    letter-spacing: 0.04em;
+  }
 }
 
 .hud__value {

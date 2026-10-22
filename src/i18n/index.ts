@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n';
 import type frMessages from './locales/fr.json';
 import type { Locale } from './locales';
+import { frenchPlural, russianPlural } from './plurals';
 
 export { LOCALES, detectLocale, isLocale, type Locale } from './locales';
 
@@ -16,6 +17,7 @@ const MESSAGES: Readonly<Record<Locale, () => Promise<{ default: MessageSchema }
   fr: () => import('./locales/fr.json'),
   en: () => import('./locales/en.json'),
   id: () => import('./locales/id.json'),
+  ru: () => import('./locales/ru.json'),
 };
 
 export async function loadMessages(locale: Locale): Promise<MessageSchema> {
@@ -30,5 +32,7 @@ export async function createAppI18n(locale: Locale) {
     locale,
     fallbackLocale: locale,
     messages,
+    // English and Indonesian count with vue-i18n's own rule.
+    pluralRules: { fr: frenchPlural, ru: russianPlural },
   });
 }

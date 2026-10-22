@@ -2,7 +2,7 @@
 
 Le jeu de blocs qui tombent, réinventé : les règles que vous connaissez, **13 modes** que
 vous n'avez jamais joués, en quatre familles. Dans le navigateur, mobile d'abord, en
-**français, anglais et indonésien**, avec son identité « Rift » (indigo, faille dorée,
+**français, anglais, indonésien et russe**, avec son identité « Rift » (indigo, faille dorée,
 blocs gemmes) et sa musique générative. Gratuit, sans inscription,
 aucune donnée ne quitte l'appareil.
 
@@ -153,10 +153,13 @@ Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAME
   des traductions.
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 13
   modes, une partie complète, défi du jour, réglages retenus, menu (onglets, glissement,
-  carte, Atelier), clavier seul.
+  carte, Atelier), clavier seul ; en russe, la langue la plus longue, chaque page et chaque
+  famille de jeu de 320 px au bureau, en portrait et en paysage, sans rien de coupé.
 - Garde responsive : aucun défilement horizontal de 320 à 2560 px (tous les 20 px), et
   quatre tailles clés : petit téléphone et téléphone en paysage au toucher, zooms 200 % et
   400 % (cibles tactiles, textes du HUD, part du puits).
+- Traductions : mêmes clés et mêmes paramètres dans les quatre langues, pluriels du français
+  et du russe, typographie de chaque langue, vérifiés par des tests.
 - Lighthouse : 100 dans les quatre catégories, mobile et bureau (seuils exigés : 98 en
   Performance, 95 dans les trois autres).
 - Intégration continue : `.github/workflows/ci.yml` rejoue tout cela à chaque envoi.

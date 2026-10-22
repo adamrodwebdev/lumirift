@@ -233,8 +233,11 @@ const onVariant = (variant: string) => {
   background: color-mix(in srgb, var(--bg) 82%, transparent);
 }
 
+/* A long name (Renversement, Переворот) breaks rather than spills on the Play button. */
 .detail__name {
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 0.7rem + 1.2vw, 1.05rem);
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .detail__pitch {

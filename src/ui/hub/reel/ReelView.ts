@@ -10,6 +10,8 @@ export interface ReelContext {
   readonly palette: () => TonePalette;
   readonly dark: () => boolean;
   readonly formatPoints: (points: number) => string;
+  /** The combo's word, translated ("COMBO ×3"). */
+  readonly comboWord: (combo: number) => string;
 }
 
 /**

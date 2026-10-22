@@ -4,11 +4,9 @@
     "description": "Game balok jatuh yang diciptakan ulang: mode baru, tantangan harian, kristal yang pecah berkeping-keping. Gratis, tanpa daftar, di ponsel dan komputer."
   },
   "app": {
-    "name": "Lumirift Blocks",
-    "tagline": "Aturan yang sudah kamu kenal. Permainan yang belum pernah kamu mainkan.",
     "privacy": "Tanpa akun, tanpa pelacak: rekormu tetap di perangkatmu.",
     "version": "Versi {version}",
-    "privacyPortal": "Tanpa akun, tanpa pelacakan: platform tempat kamu bermain menyimpan progresmu."
+    "privacyPortal": "Tanpa akun, tanpa pelacak: platform tempat kamu bermain menyimpan progresmu."
   },
   "nav": {
     "skip": "Langsung ke konten",
@@ -21,7 +19,6 @@
     "play": "Main",
     "best": "Rekor: {value}",
     "noBest": "Belum ada rekor",
-    "quick": "Satu permainan Klasik, sekarang",
     "reel": {
       "elements": "Petir, api, benih: pasirnya bereaksi",
       "flip": "Balikkan sumur: lubangnya menghilang",
@@ -29,21 +26,17 @@
       "tilt": "Dinding menjadi lantai",
       "ceramicGolem": "Ia melempar batu ke mozaikmu",
       "mirror": "Sumur menjadi bayangannya sendiri",
-      "towerEye": "Butakan ia di menara kacanya",
+      "towerEye": "Butakan dia di menara kacanya",
       "riftHeart": "Serang jantungnya dengan barismu"
     }
   },
   "daily": {
-    "title": "Tantangan Harian",
-    "mode": "Mode hari ini: {mode}",
-    "rules": "Dua menit, kepingan yang sama untuk semua orang.",
-    "start": "Terima tantangan",
-    "best": "Rekormu hari ini: {value}"
+    "title": "Tantangan harian"
   },
   "modes": {
     "classic": {
       "name": "Klasik",
-      "pitch": "Acuannya: sedikit lebih cepat setiap 10 baris."
+      "pitch": "Aturan dasar, sedikit lebih cepat setiap 10 baris."
     },
     "tide": {
       "name": "Pasang",
@@ -67,7 +60,7 @@
     },
     "tilt": {
       "name": "Miring",
-      "pitch": "Setiap 10 baris sumur berputar: dinding kiri menjadi lantai."
+      "pitch": "Setiap 10 baris, sumur berputar: dinding kiri menjadi lantai."
     },
     "silhouette": {
       "name": "Siluet",
@@ -94,10 +87,6 @@
       "pitch": "Sumur menggulung menjadi silinder kaca: satu baris mengelilingi seluruhnya."
     }
   },
-  "result": {
-    "score": "Peringkat berdasarkan poin",
-    "time": "Peringkat berdasarkan waktu"
-  },
   "hud": {
     "score": "Skor",
     "lines": "Baris",
@@ -107,16 +96,16 @@
     "nextRise": "Pasang berikutnya",
     "rowsRisen": "Baris naik",
     "charges": "Pembalikan",
-    "nextCharge": "Baris menuju muatan",
+    "nextCharge": "Baris sebelum pembalikan",
     "pureLines": "Baris murni",
-    "nextMirror": "Baris menuju cermin",
+    "nextMirror": "Baris sebelum cermin",
     "mirrorIn": "Cermin dalam",
     "reflex": "Bonus refleks",
     "hold": "Simpan",
     "next": "Berikutnya",
     "fused": "Balok menyatu",
     "bestChain": "Rantai terbaik",
-    "nextTilt": "Baris menuju miring",
+    "nextTilt": "Baris sebelum miring",
     "tiltIn": "Miring dalam",
     "piecesLeft": "Sisa kepingan",
     "filled": "Bentuk terisi",
@@ -138,26 +127,26 @@
     "closeCall": "Nyaris! +{value}",
     "lines": "{n} baris dihapus",
     "regions": "Satu area terhapus | {n} area terhapus",
-    "combo": "Kombo × {n}",
+    "combo": "Kombo ×{n}",
     "levelUp": "Level {level}",
     "chargeGained": "Muatan pembalikan baru",
     "pureLine": "Baris murni",
     "mirrorSoon": "Sumur akan segera dicerminkan",
     "mirror": "Dicerminkan",
-    "reflexBonus": "Bonus refleks: + {value}",
+    "reflexBonus": "Bonus refleks: +{value}",
     "flip": "Dibalik",
-    "chain": "Rantai × {value}",
+    "chain": "Rantai ×{value}",
     "tiltSoon": "Sumur akan segera miring",
     "tilt": "Miring",
     "grooveMax": "Groove maksimum",
-    "perfect": "Siluet sempurna: + {value}",
+    "perfect": "Siluet sempurna: +{value}",
     "sent": "Baris terkirim: {value}",
-    "perfectGrid": "Papan bersih: + {value}",
+    "perfectGrid": "Papan bersih: +{value}",
     "jokerGained": {
       "rotate": "Joker didapat: Putar",
       "reroll": "Joker didapat: Kocok ulang",
       "bomb": "Joker didapat: Bom",
-      "undo": "Joker didapat: Batal",
+      "undo": "Joker didapat: Urungkan",
       "cube": "Joker didapat: Kubus"
     },
     "windSoonLeft": "Angin bertiup ke kiri",
@@ -202,7 +191,7 @@
       "defeated": "Cacing Pasir dikalahkan!",
       "golem": {
         "aim": "Golem membidik petak yang menyala: batu akan jatuh di sana!",
-        "throw": "Batu! Satu garis meretakkannya, garis kedua menghancurkannya.",
+        "throw": "Batu! Satu baris meretakkannya, baris kedua menghancurkannya.",
         "parry": "Tangkis: mengisi petak yang dibidik menahan batunya!",
         "shatter": "Batunya sendiri yang hancur melukainya!",
         "phase2": "Golem retak: ia melempar lebih banyak batu!",
@@ -231,8 +220,10 @@
     },
     "surge": "Lonjakan: +{value}"
   },
+  "wellWords": {
+    "combo": "KOMBO ×{n}"
+  },
   "controls": {
-    "label": "Kontrol sentuh",
     "left": "Kiri",
     "right": "Kanan",
     "softDrop": "Turunkan",
@@ -244,7 +235,7 @@
     "ability": {
       "flip": "Balikkan sumur"
     },
-    "touch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung.",
+    "touch": "Sentuh: geser untuk memindahkan, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung.",
     "move": "Geser",
     "groupMove": "Geser dan turunkan",
     "groupAct": "Putar dan jatuhkan"
@@ -286,7 +277,7 @@
     "noAd": "Belum ada iklan saat ini. Coba lagi setelah permainan berikutnya."
   },
   "share": {
-    "daily": "Lumirift · Tantangan {date} ({mode}): {value}. Giliranmu: {url}",
+    "daily": "Lumirift · Tantangan harian {date} ({mode}): {value}. Giliranmu: {url}",
     "mode": "Lumirift · {mode}: {value}. Giliranmu: {url}"
   },
   "settings": {
@@ -317,7 +308,8 @@
   "languages": {
     "fr": "Français",
     "en": "English",
-    "id": "Bahasa Indonesia"
+    "id": "Bahasa Indonesia",
+    "ru": "Русский"
   },
   "silhouettes": {
     "heart": "Hati",
@@ -372,7 +364,7 @@
     "rotate": "Putar",
     "reroll": "Kocok ulang",
     "bomb": "Bom",
-    "undo": "Batal",
+    "undo": "Urungkan",
     "cube": "Kubus"
   },
   "mosaic": {
@@ -388,15 +380,15 @@
     "pickPiece": "Ketuk kepingan yang akan diputar",
     "pickCell": "Ketuk kotak untuk dibom",
     "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak.",
-    "jokerCount": "× {n}"
+    "jokerCount": "×{n}"
   },
   "sand": {
     "well": "Sumur pasir",
-    "helpTouch": "Sentuh: geser untuk memindah, ketuk untuk memutar, geser cepat ke bawah untuk menjatuhkan. Hubungkan satu warna dari dinding ke dinding. Elemen bereaksi: minyak memberi makan api, api melelehkan es menjadi uap, petir lewat air menghancurkan semua yang disentuhnya, benih yang disiram tumbuh jadi jembatan."
+    "helpTouch": "Sentuh: geser untuk memindahkan, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung. Hubungkan satu warna dari dinding ke dinding. Elemen bereaksi: minyak memberi makan api, api melelehkan es menjadi uap, petir lewat air menghancurkan semua yang disentuhnya, benih yang disiram tumbuh jadi jembatan."
   },
   "tower": {
     "well": "Menara kaca",
-    "helpTouch": "Sentuh: geser untuk bergerak, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung, geser dengan dua jari untuk memutar menara. Kamera mengikuti kepingan.",
+    "helpTouch": "Sentuh: geser untuk memindahkan, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung, geser dengan dua jari untuk memutar menara. Kamera mengikuti kepingan.",
     "turn": "Putar menara"
   },
   "profile": {
@@ -404,7 +396,6 @@
     "xp": "{into} / {needed} XP",
     "xpLabel": "Kemajuan ke level berikutnya",
     "maxLevel": "Level tertinggi tercapai",
-    "streak": "Beruntun: {n} hari",
     "objectives": "Tujuan hari ini",
     "done": "Selesai",
     "reward": "+{n} XP",
@@ -481,8 +472,7 @@
       "default": "Gratis",
       "level": "Level {n}",
       "streak": "Beruntun {n} hari di tantangan",
-      "objectives": "{n} tujuan selesai",
-      "boss": "Kalahkan {name}"
+      "objectives": "{n} tujuan selesai"
     },
     "tapToWear": "Ketuk lagi untuk memakai",
     "clickToWear": "Klik lagi untuk memakai",
@@ -502,7 +492,6 @@
       "5": "Retakan"
     },
     "chapterStars": "{n} / {max} bintang",
-    "continue": "Lanjutkan · {level} {mode}",
     "spare": "{n} bintang untuk dibelanjakan",
     "starsWon": "Tanpa bintang | {n} bintang | {n} bintang",
     "levelTitle": "Level {level} · {mode}",
@@ -520,18 +509,17 @@
       "survive": "Bertahan {time}",
       "win": "Kalahkan {ai}",
       "shape": "Lengkapi siluet",
-      "regions": "Hapus {n} area",
-      "boss": "Kalahkan {name}"
+      "regions": "Hapus {n} area"
     },
     "starRule": {
-      "timeLeft": "1 bintang jika berhasil, 2 dengan sisa waktu 15 %, 3 dengan 40 %.",
+      "timeLeft": "1 bintang jika berhasil, 2 dengan sisa waktu 15%, 3 dengan 40%.",
       "lines": "1 bintang jika bertahan, 2 mulai {two} baris, 3 mulai {three}.",
       "fast": "1 bintang jika menang, 2 di bawah {two}, 3 di bawah {three}."
     },
     "won": "Level selesai!",
     "lost": "Level gagal",
     "gained": "+{n} bintang",
-    "noBetter": "Tidak lebih baik dari hasil terbaik Anda.",
+    "noBetter": "Tidak lebih baik dari hasil terbaikmu.",
     "nextLevel": "Level {level}",
     "retry": "Coba lagi",
     "map": "Peta kampanye",
@@ -548,7 +536,7 @@
     "rank": "Tingkat {n} dari {max}",
     "max": "Maksimal",
     "buy": "Tingkatkan · {n}",
-    "refund": "Ambil semua kembali",
+    "refund": "Kembalikan semua",
     "scope": {
       "all": "Semua mode",
       "falling": "Jatuh, Menara dan Pasir",
@@ -563,7 +551,7 @@
     },
     "feather": {
       "name": "Bulu",
-      "effect": "Kepingan jatuh {value} % lebih lambat"
+      "effect": "Kepingan jatuh {value}% lebih lambat"
     },
     "spyglass": {
       "name": "Teropong",
@@ -575,7 +563,7 @@
     },
     "prism": {
       "name": "Prisma",
-      "effect": "+{value} % poin penghapusan"
+      "effect": "+{value}% poin penghapusan"
     },
     "phoenix": {
       "name": "Feniks",
@@ -587,7 +575,7 @@
     },
     "ember": {
       "name": "Bara",
-      "effect": "+{value} % kepingan api di Pasir"
+      "effect": "+{value}% kepingan api di Pasir"
     },
     "metronome": {
       "name": "Metronom",
@@ -597,13 +585,12 @@
       "name": "Benteng",
       "effect": "Baris lawan tertunda {value} dtk"
     },
-    "note": "Hanya di kampanye. Setiap bintang bisa diambil kembali."
+    "note": "Hanya di kampanye. Setiap bintang bisa dikembalikan."
   },
   "demo": {
     "title": "Demo.",
     "banner": "Lima mode permainan bebas (Klasik, Pasir, Mozaik, Menara, Duel) dan bab pertama kampanye. Game lengkap punya tiga belas mode dan tiga puluh level.",
-    "fullGame": "Game lengkap",
-    "campaignDone": "Demo selesai: kelanjutannya ada di game lengkap."
+    "fullGame": "Game lengkap"
   },
   "title": {
     "tagline": "13 cara memecahkan balok.",
@@ -675,16 +662,20 @@
   },
   "bosses": {
     "duneWorm": {
-      "name": "Cacing Pasir"
+      "name": "Cacing Pasir",
+      "defeat": "Kalahkan Cacing Pasir"
     },
     "ceramicGolem": {
-      "name": "Golem Keramik"
+      "name": "Golem Keramik",
+      "defeat": "Kalahkan Golem Keramik"
     },
     "towerEye": {
-      "name": "Mata Menara"
+      "name": "Mata Menara",
+      "defeat": "Kalahkan Mata Menara"
     },
     "riftHeart": {
-      "name": "Jantung Retakan"
+      "name": "Jantung Retakan",
+      "defeat": "Kalahkan Jantung Retakan"
     }
   },
   "keymap": {

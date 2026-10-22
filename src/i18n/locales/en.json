@@ -1,11 +1,9 @@
 {
   "meta": {
     "title": "Lumirift Blocks — the falling-blocks game, reinvented",
-    "description": "The falling-blocks game reinvented: brand-new modes, a daily challenge, shattering crystal. Free, no sign-up, on mobile and desktop."
+    "description": "The falling-blocks game, reinvented: brand-new modes, a daily challenge and crystal blocks that shatter. Free, no sign-up, on mobile and desktop."
   },
   "app": {
-    "name": "Lumirift Blocks",
-    "tagline": "The rules you know. Games you have never played.",
     "privacy": "No account, no tracking: your records stay on your device.",
     "version": "Version {version}",
     "privacyPortal": "No account, no tracking: the platform you play on keeps your progress."
@@ -21,7 +19,6 @@
     "play": "Play",
     "best": "Best: {value}",
     "noBest": "No record yet",
-    "quick": "A game of Classic, right now",
     "reel": {
       "elements": "Lightning, fire, seeds: the sand reacts",
       "flip": "Turn the well over: the holes vanish",
@@ -34,16 +31,12 @@
     }
   },
   "daily": {
-    "title": "Daily Challenge",
-    "mode": "Today's mode: {mode}",
-    "rules": "Two minutes, the same pieces for everyone.",
-    "start": "Take the challenge",
-    "best": "Your best today: {value}"
+    "title": "Daily challenge"
   },
   "modes": {
     "classic": {
       "name": "Classic",
-      "pitch": "The reference: a little faster every 10 lines."
+      "pitch": "The game you know, a little faster every 10 lines."
     },
     "tide": {
       "name": "Tide",
@@ -67,7 +60,7 @@
     },
     "tilt": {
       "name": "Tilt",
-      "pitch": "Every 10 lines the well turns: the left wall becomes the floor."
+      "pitch": "Every 10 lines, the well turns: the left wall becomes the floor."
     },
     "silhouette": {
       "name": "Silhouette",
@@ -93,10 +86,6 @@
       "name": "Tower",
       "pitch": "The well rolls into a glass cylinder: a line goes all the way round."
     }
-  },
-  "result": {
-    "score": "Ranked on points",
-    "time": "Ranked on time"
   },
   "hud": {
     "score": "Score",
@@ -138,21 +127,21 @@
     "closeCall": "Close call! +{value}",
     "lines": "One line cleared | {n} lines cleared",
     "regions": "One region cleared | {n} regions cleared",
-    "combo": "Combo × {n}",
+    "combo": "Combo ×{n}",
     "levelUp": "Level {level}",
     "chargeGained": "New flip charge",
     "pureLine": "Pure line",
     "mirrorSoon": "The well is about to be mirrored",
     "mirror": "Mirrored",
-    "reflexBonus": "Reflex bonus: + {value}",
+    "reflexBonus": "Reflex bonus: +{value}",
     "flip": "Flipped",
-    "chain": "Chain × {value}",
+    "chain": "Chain ×{value}",
     "tiltSoon": "The well is about to tilt",
     "tilt": "Tilted",
     "grooveMax": "Maximum groove",
-    "perfect": "Perfect silhouette: + {value}",
+    "perfect": "Perfect silhouette: +{value}",
     "sent": "Rows sent: {value}",
-    "perfectGrid": "Clean board: + {value}",
+    "perfectGrid": "Clean board: +{value}",
     "jokerGained": {
       "rotate": "Joker earned: Rotate",
       "reroll": "Joker earned: Reroll",
@@ -191,20 +180,20 @@
     "blast": "Boom! {value} block blown away | Boom! {value} blocks blown away",
     "blastChain": "Chain reaction: {value} bombs!",
     "boss": {
-      "warn": "Red cracks: the Dune Wyrm is coming up there!",
+      "warn": "Red cracks: the Dune Wyrm is about to burst out there!",
       "exposed": "Its head is out: strike it!",
       "swallow": "It swallows the sand at the surface!",
       "storm": "A sandstorm rises!",
       "phase2": "The Wyrm is enraged!",
       "phase3": "Its last breath: watch out!",
-      "stunned": "Shocked through the water: it is stunned!",
+      "stunned": "Shocked through the water: it’s stunned!",
       "critical": "Lightning on its head: critical hit!",
       "defeated": "The Dune Wyrm is defeated!",
       "golem": {
         "aim": "The Golem aims at the glowing cells: stones will land there!",
         "throw": "Stones! One line cracks them, a second breaks them.",
         "parry": "Parry: filling an aimed cell blocks its stone!",
-        "shatter": "Its own stones broken hurt it!",
+        "shatter": "Breaking its own stones hurts it!",
         "phase2": "The Golem cracks: it throws more stones!",
         "phase3": "Last stand: it throws faster!",
         "defeated": "The Ceramic Golem is defeated!"
@@ -231,8 +220,10 @@
     },
     "surge": "Rift surge: +{value}"
   },
+  "wellWords": {
+    "combo": "COMBO ×{n}"
+  },
   "controls": {
-    "label": "Touch controls",
     "left": "Left",
     "right": "Right",
     "softDrop": "Soft drop",
@@ -263,7 +254,7 @@
       "blockOut": "The well is full.",
       "lockOut": "The well is full.",
       "topOut": "The stack overflowed.",
-      "timeUp": "Time's up.",
+      "timeUp": "Time’s up.",
       "outOfPieces": "No pieces left.",
       "shapeComplete": "Silhouette complete.",
       "victory": "Victory: the AI’s stack overflowed.",
@@ -286,7 +277,7 @@
     "noAd": "No ad available right now. Try again after another game."
   },
   "share": {
-    "daily": "Lumirift · Challenge of {date} ({mode}): {value}. Your turn: {url}",
+    "daily": "Lumirift · Daily challenge, {date} ({mode}): {value}. Your turn: {url}",
     "mode": "Lumirift · {mode}: {value}. Your turn: {url}"
   },
   "settings": {
@@ -305,7 +296,7 @@
     "controls": "Controls",
     "controlsGestures": "Gestures",
     "controlsButtons": "Buttons",
-    "controlsHint": "On a touch screen, the buttons come back under the well."
+    "controlsHint": "On touch screens, the buttons show under the well."
   },
   "game": {
     "loading": "Loading the game…",
@@ -317,7 +308,8 @@
   "languages": {
     "fr": "Français",
     "en": "English",
-    "id": "Bahasa Indonesia"
+    "id": "Bahasa Indonesia",
+    "ru": "Русский"
   },
   "silhouettes": {
     "heart": "Heart",
@@ -364,8 +356,8 @@
       "rookie": "Slow, still learning the game, often wrong.",
       "easy": "It hesitates and makes mistakes.",
       "normal": "Solid: it holds pieces and builds up its attacks.",
-      "hard": "Fast, it plans for the next piece and rarely errs.",
-      "expert": "As good as the best players: it never errs."
+      "hard": "Fast, it plans for the next piece and rarely makes a mistake.",
+      "expert": "As good as the best players: it never makes a mistake."
     }
   },
   "jokers": {
@@ -382,13 +374,13 @@
     "noJoker": "Clear several lines at once to earn jokers.",
     "piece": "Piece {n}",
     "bonus": "Bonus cube",
-    "cells": "{n} cells",
+    "cells": "{n} cell | {n} cells",
     "stuck": "fits nowhere",
     "empty": "Empty slot",
     "pickPiece": "Tap the piece to rotate",
     "pickCell": "Tap the cell to bomb",
     "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell.",
-    "jokerCount": "× {n}"
+    "jokerCount": "×{n}"
   },
   "sand": {
     "well": "Sand well",
@@ -404,7 +396,6 @@
     "xp": "{into} / {needed} XP",
     "xpLabel": "Progress to the next level",
     "maxLevel": "Top level reached",
-    "streak": "Streak: {n} day | Streak: {n} days",
     "objectives": "Today’s objectives",
     "done": "Done",
     "reward": "+{n} XP",
@@ -416,7 +407,7 @@
     "lines": "Clear {n} line | Clear {n} lines",
     "bigClear": "Clear {size} lines at once",
     "combo": "Chain {size} clears",
-    "survive": "Last {size} minutes in one game",
+    "survive": "Survive {size} minutes in one game",
     "daily": "Finish the daily challenge",
     "duel": "Beat the normal AI or a stronger one"
   },
@@ -481,8 +472,7 @@
       "default": "Free",
       "level": "Level {n}",
       "streak": "{n}-day daily streak",
-      "objectives": "{n} objectives done",
-      "boss": "Defeat the {name}"
+      "objectives": "{n} objectives done"
     },
     "tapToWear": "Tap again to wear",
     "clickToWear": "Click again to wear",
@@ -502,9 +492,8 @@
       "5": "The Rift"
     },
     "chapterStars": "{n} / {max} stars",
-    "continue": "Continue · {level} {mode}",
     "spare": "{n} star to spend | {n} stars to spend",
-    "starsWon": "No star | {n} star | {n} stars",
+    "starsWon": "No stars | {n} star | {n} stars",
     "levelTitle": "Level {level} · {mode}",
     "levelShort": "Level {level}",
     "goalLabel": "Goal",
@@ -517,15 +506,14 @@
       "lines": "Clear {n} line | Clear {n} lines",
       "score": "Score {n} points",
       "bigClear": "Clear {n} lines at once",
-      "survive": "Last {time}",
+      "survive": "Survive {time}",
       "win": "Beat the {ai}",
       "shape": "Complete the silhouette",
-      "regions": "Clear {n} region | Clear {n} regions",
-      "boss": "Defeat the {name}"
+      "regions": "Clear {n} region | Clear {n} regions"
     },
     "starRule": {
-      "timeLeft": "1 star for winning, 2 with 15 % of the time left, 3 with 40 %.",
-      "lines": "1 star for lasting, 2 from {two} lines cleared, 3 from {three}.",
+      "timeLeft": "1 star for winning, 2 with 15% of the time left, 3 with 40%.",
+      "lines": "1 star for surviving, 2 for {two} lines cleared, 3 for {three}.",
       "fast": "1 star for winning, 2 in under {two}, 3 in under {three}."
     },
     "won": "Level complete!",
@@ -548,7 +536,7 @@
     "rank": "Rank {n} of {max}",
     "max": "Maxed out",
     "buy": "Upgrade · {n}",
-    "refund": "Take all back",
+    "refund": "Refund all",
     "scope": {
       "all": "Every mode",
       "falling": "Falling, Tower and Sand",
@@ -563,7 +551,7 @@
     },
     "feather": {
       "name": "Feather",
-      "effect": "Pieces fall {value} % slower"
+      "effect": "Pieces fall {value}% slower"
     },
     "spyglass": {
       "name": "Spyglass",
@@ -575,7 +563,7 @@
     },
     "prism": {
       "name": "Prism",
-      "effect": "+{value} % points on clears"
+      "effect": "+{value}% points on clears"
     },
     "phoenix": {
       "name": "Phoenix",
@@ -583,11 +571,11 @@
     },
     "satchel": {
       "name": "Satchel",
-      "effect": "+{value} jokers at the start of the Mosaic"
+      "effect": "+{value} joker at the start of the Mosaic | +{value} jokers at the start of the Mosaic"
     },
     "ember": {
       "name": "Ember",
-      "effect": "+{value} % fire pieces in the Sand"
+      "effect": "+{value}% fire pieces in the Sand"
     },
     "metronome": {
       "name": "Metronome",
@@ -597,13 +585,12 @@
       "name": "Rampart",
       "effect": "Opponent rows delayed by {value} s"
     },
-    "note": "Only in the campaign. Every star can be taken back."
+    "note": "Campaign only. Every star can be refunded."
   },
   "demo": {
     "title": "Demo.",
     "banner": "Five modes in free play (Classic, Sand, Mosaic, Tower, Duel) and the first chapter of the campaign. The full game has thirteen modes and thirty levels.",
-    "fullGame": "Full game",
-    "campaignDone": "Demo complete: the rest is in the full game."
+    "fullGame": "Full game"
   },
   "title": {
     "tagline": "13 ways to break a block.",
@@ -675,16 +662,20 @@
   },
   "bosses": {
     "duneWorm": {
-      "name": "Dune Wyrm"
+      "name": "Dune Wyrm",
+      "defeat": "Defeat the Dune Wyrm"
     },
     "ceramicGolem": {
-      "name": "Ceramic Golem"
+      "name": "Ceramic Golem",
+      "defeat": "Defeat the Ceramic Golem"
     },
     "towerEye": {
-      "name": "Eye of the Tower"
+      "name": "Eye of the Tower",
+      "defeat": "Defeat the Eye of the Tower"
     },
     "riftHeart": {
-      "name": "Heart of the Rift"
+      "name": "Heart of the Rift",
+      "defeat": "Defeat the Heart of the Rift"
     }
   },
   "keymap": {

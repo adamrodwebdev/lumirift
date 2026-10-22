@@ -1,9 +1,10 @@
 /*
  * The two typefaces of the identity, shipped with the game (portals forbid
  * external requests): Unbounded for the logo and display numbers, Sora for
- * the interface. Variable fonts, Latin and Latin Extended only (French,
- * English, Indonesian); the browser downloads a file only for the
- * characters a page uses. SIL Open Font License.
+ * the interface. Variable fonts in Latin and Latin Extended (French,
+ * English, Indonesian) and Cyrillic (Russian). The browser downloads a file
+ * only for the characters a page uses: the Cyrillic ones only in Russian.
+ * SIL Open Font License.
  */
 @font-face {
   font-family: 'Unbounded Variable';
@@ -53,4 +54,31 @@
     U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
     U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
     U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Unbounded Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('@fontsource-variable/unbounded/files/unbounded-cyrillic-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+/*
+ * Sora has no Cyrillic: Russian takes Montserrat's, the closest in width and
+ * weight, under Sora's name. Its weight range must be Sora's own (100 800):
+ * a browser joins the faces of a family only when they describe the same
+ * weights, and would otherwise draw the Latin letters of a Russian page in a
+ * fallback font.
+ */
+@font-face {
+  font-family: 'Sora Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('@fontsource-variable/montserrat/files/montserrat-cyrillic-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }

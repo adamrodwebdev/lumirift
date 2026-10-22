@@ -104,7 +104,11 @@ const itemLabel = (item: ShelfItem): string =>
 
 /** The same, shorter, under an item on the shelf (the stage says the rest). */
 const shortNote = (item: ShelfItem): string =>
-  item.shown && item.unlocked && !item.worn ? t('cosmetics.trying') : note(item);
+  !item.unlocked
+    ? text.unlockHint(item.cosmetic)
+    : item.shown && !item.worn
+      ? t('cosmetics.trying')
+      : note(item);
 
 const setKind = (next: CosmeticKind) => {
   if (next !== kind.value && props.active) seeKind(kind.value);
@@ -407,12 +411,15 @@ watch([material, shatter, ambiance], async () => {
   line-height: 1.2;
 }
 
+/* How to earn a look takes two lines when it needs them (a Guardian's name). */
 .item small {
+  display: -webkit-box;
   overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   color: var(--text-muted);
   font-size: 0.68rem;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .item[aria-pressed='true'] {
@@ -483,6 +490,24 @@ watch([material, shatter, ambiance], async () => {
   border-radius: 0.5rem;
   background: color-mix(in srgb, var(--bg) 85%, transparent);
   color: var(--text-muted);
+}
+
+/*
+ * A card too short for its art (a short screen on its side) is its name
+ * alone: a locked one dims it rather than hiding its end under the lock.
+ */
+.item {
+  container-type: size;
+}
+
+@container (max-height: 3rem) {
+  .item__lock {
+    display: none;
+  }
+
+  .item--locked b {
+    color: var(--text-muted);
+  }
 }
 
 .status {

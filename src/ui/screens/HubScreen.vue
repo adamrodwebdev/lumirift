@@ -298,14 +298,7 @@ onMounted(() => {
   flex: 1;
 }
 
-/* A narrow bar (a 320-px phone): the stars keep their count, without the total. */
-@container top (inline-size < 20rem) {
-  .stars small {
-    display: none;
-  }
-}
-
-/* A tiny bar (a 400 % zoom): nothing pushed apart, the stars' chip tighter. */
+/* A tiny bar (a 400 % zoom): nothing pushed apart, the stars' count without the total. */
 @container top (inline-size < 16rem) {
   .hub__grow {
     display: none;
@@ -313,6 +306,10 @@ onMounted(() => {
 
   .stars {
     padding-inline: var(--space-2);
+  }
+
+  .stars small {
+    display: none;
   }
 }
 

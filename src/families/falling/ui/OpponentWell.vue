@@ -69,7 +69,10 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
-/* A HUD label: 14 px at least (`em`, the HUD's size); it may take two lines. */
+/*
+ * A HUD label: 14 px at least (`em`, the HUD's size); a long name takes two
+ * lines (IA DÉBUTANTE, ИИ-НОВИЧОК: the duel's column is wide enough for its words).
+ */
 .opponent__label {
   font-size: 0.875em;
   line-height: 1.15;

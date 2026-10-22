@@ -85,6 +85,59 @@ Lot C, cinquième point : la surcharge de la faille, pour sauver une partie.
   touches la lisent), et la surcharge calcule elle-même son bonus de sortie : l'interface ne
   fait plus que le remettre à la partie.
 
+## [1.24.0] — 22/10/2026
+
+Le russe, quatrième langue, prêt pour les portails russophones ; les trois autres langues
+relues.
+
+### Ajouté
+
+- **Le jeu en russe** : toutes les phrases, en « вы », avec un glossaire constant (Песок,
+  Мозаика, Башня, Разлом, Стражи…). Un navigateur réglé en russe l'obtient d'emblée, et on
+  le choisit dans les réglages. Le portail d'intégration (Yandex Games, VK Play) reste une
+  étape à part.
+- **Les pluriels du russe** (1 звезда, 3 звезды, 5 звёзд) et du français (0 et 1 au
+  singulier : « 0 étoile disponible »), testés.
+- **Polices cyrilliques** : Unbounded pour les titres, Montserrat sous le nom de Sora pour le
+  texte, téléchargées seulement quand du russe s'affiche.
+- **Tests** : mêmes paramètres dans chaque langue, pluriels russes complets, typographie
+  française, anglaise et russe ; un parcours de bout en bout en russe de 320 px au bureau
+  vérifie que rien ne sort de l'écran ni n'est coupé.
+
+### Modifié
+
+- **Traductions relues** (anglais, français, indonésien) : tournures plus naturelles,
+  « Refund all », « Survive », « Urungkan », « kamu » partout en indonésien, espaces
+  insécables et apostrophes typographiques en français, « 15% » sans espace en anglais et
+  en indonésien.
+- **« COMBO ×3 » se traduit** dans le puits (КОМБО, KOMBO) ; « RIFT! » reste le mot du jeu
+  dans toutes les langues.
+- **Les notes de l'Atelier tiennent sur deux lignes** au lieu d'être coupées ; un look de
+  Gardien affiche le nom du Gardien, et une carte trop basse (petit paysage) atténue son nom
+  au lieu de le cacher sous le cadenas.
+- **Le tableau de bord tient à 320 px** : écart fluide, colonnes jamais plus étroites que
+  leur plus long mot ; à 320 px la pastille du joueur ne garde que son anneau de niveau.
+- Le bouton Jouer et le nom de l'adversaire du Duel se règlent sur la place disponible ;
+  le nom d'un mode se coupe plutôt que de déborder.
+- Le module de chaque langue est reconnu au build par son titre de page, quelle que soit son
+  écriture.
+
+### Corrigé
+
+- **L'accueil d'un téléphone en paysage** (640 × 360) : les objectifs du jour sortaient de
+  l'écran et la pastille du défi des Gardiens couvrait son titre. Rangées plus serrées,
+  cartes sans icône, objectifs réduits à leurs points et à leur compte (lus en entier par un
+  lecteur d'écran), pastille épinglée au bas de la carte ; le nom d'un Gardien passe sur
+  deux lignes plutôt que d'être coupé.
+- « Vaincre le Œil de la Tour » : chaque Gardien a sa phrase entière par langue.
+- Les objectifs s'accordent à ce qu'ils comptent (« 3 minutes », « 3 lignes d'un coup »).
+- « +1 jokers » et « 1 cases » ont leur singulier.
+- Le chapitre 5 s'appelle « La Faille » en français, comme son Gardien et son ambiance.
+
+### Retiré
+
+- Treize textes que plus aucun écran n'affichait.
+
 ## [1.23.0] — 22/10/2026
 
 Lot C, quatrième point : le défi des Gardiens, pour revenir chaque jour.

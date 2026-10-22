@@ -1,14 +1,12 @@
 {
   "meta": {
     "title": "Lumirift Blocks — le jeu de blocs réinventé",
-    "description": "Jeu de blocs qui tombent réinventé : modes inédits, défi du jour, destructions de cristal. Gratuit, sans inscription, sur mobile et ordinateur."
+    "description": "Le jeu de blocs qui tombent, réinventé : des modes inédits, un défi du jour, du cristal qui vole en éclats. Gratuit, sans inscription, sur mobile et ordinateur."
   },
   "app": {
-    "name": "Lumirift Blocks",
-    "tagline": "Les règles que vous connaissez. Des parties que vous n'avez jamais jouées.",
-    "privacy": "Aucun compte, aucun traceur : vos records restent sur votre appareil.",
+    "privacy": "Aucun compte, aucun traceur : vos records restent sur votre appareil.",
     "version": "Version {version}",
-    "privacyPortal": "Aucun compte, aucun pistage : la plateforme où vous jouez garde votre progression."
+    "privacyPortal": "Aucun compte, aucun traceur : la plateforme où vous jouez garde votre progression."
   },
   "nav": {
     "skip": "Aller au contenu",
@@ -19,12 +17,11 @@
   },
   "home": {
     "play": "Jouer",
-    "best": "Record : {value}",
+    "best": "Record : {value}",
     "noBest": "Pas encore de record",
-    "quick": "Une partie de Classique, tout de suite",
     "reel": {
-      "elements": "Foudre, feu, graines : le sable réagit",
-      "flip": "Retournez le puits : les trous disparaissent",
+      "elements": "Foudre, feu, graines : le sable réagit",
+      "flip": "Retournez le puits : les trous disparaissent",
       "duneWorm": "Il jaillit du sable",
       "tilt": "Le mur devient le sol",
       "ceramicGolem": "Il lance des pierres sur votre mosaïque",
@@ -34,16 +31,12 @@
     }
   },
   "daily": {
-    "title": "Défi du jour",
-    "mode": "Mode du jour : {mode}",
-    "rules": "Deux minutes, les mêmes pièces pour tout le monde.",
-    "start": "Relever le défi",
-    "best": "Votre record du jour : {value}"
+    "title": "Défi du jour"
   },
   "modes": {
     "classic": {
       "name": "Classique",
-      "pitch": "La référence : un peu plus vite toutes les 10 lignes."
+      "pitch": "La référence : un peu plus vite toutes les 10 lignes."
     },
     "tide": {
       "name": "Marée",
@@ -51,11 +44,11 @@
     },
     "flip": {
       "name": "Renversement",
-      "pitch": "Retournez le puits : la pile retombe et les trous disparaissent."
+      "pitch": "Retournez le puits : la pile retombe et les trous disparaissent."
     },
     "chroma": {
       "name": "Chroma",
-      "pitch": "Une ligne d'une seule couleur vaut quatre fois plus."
+      "pitch": "Une ligne d’une seule couleur vaut quatre fois plus."
     },
     "mirror": {
       "name": "Miroir",
@@ -63,15 +56,15 @@
     },
     "fusion": {
       "name": "Fusion",
-      "pitch": "Six blocs de même couleur fusionnent : déclenchez des réactions en chaîne."
+      "pitch": "Six blocs de même couleur fusionnent : déclenchez des réactions en chaîne."
     },
     "tilt": {
       "name": "Bascule",
-      "pitch": "Toutes les 10 lignes, le puits pivote : le mur gauche devient le sol."
+      "pitch": "Toutes les 10 lignes, le puits pivote : le mur gauche devient le sol."
     },
     "silhouette": {
       "name": "Silhouette",
-      "pitch": "Une énigme par jour : remplissez la forme avec un nombre limité de pièces."
+      "pitch": "Une énigme par jour : remplissez la forme avec un nombre limité de pièces."
     },
     "rhythm": {
       "name": "Rythme",
@@ -79,7 +72,7 @@
     },
     "duel": {
       "name": "Duel",
-      "pitch": "Affrontez une IA : chaque ligne effacée envoie des rangées chez l’adversaire."
+      "pitch": "Affrontez une IA : chaque ligne effacée envoie des rangées chez l’adversaire."
     },
     "mosaic": {
       "name": "Mosaïque",
@@ -87,16 +80,12 @@
     },
     "sand": {
       "name": "Sable",
-      "pitch": "Les pièces se désagrègent en grains : reliez les deux murs d’une même couleur."
+      "pitch": "Les pièces se désagrègent en grains : reliez les deux murs d’une même couleur."
     },
     "tower": {
       "name": "Tour",
-      "pitch": "Le puits s’enroule en cylindre de verre : une ligne fait le tour complet."
+      "pitch": "Le puits s’enroule en cylindre de verre : une ligne fait le tour complet."
     }
-  },
-  "result": {
-    "score": "Classé aux points",
-    "time": "Classé au temps"
   },
   "hud": {
     "score": "Score",
@@ -131,34 +120,34 @@
     "regions": "Zones effacées",
     "windIn": "Prochain coup de vent",
     "best": "Record",
-    "newBest": "Nouveau record !",
+    "newBest": "Nouveau record !",
     "nextBeat": "Prochain battement"
   },
   "notice": {
-    "closeCall": "De justesse ! +{value}",
+    "closeCall": "De justesse ! +{value}",
     "lines": "Une ligne effacée | {n} lignes effacées",
     "regions": "Une zone effacée | {n} zones effacées",
-    "combo": "Combo × {n}",
+    "combo": "Combo ×{n}",
     "levelUp": "Niveau {level}",
     "chargeGained": "Nouvelle charge de renversement",
     "pureLine": "Ligne pure",
     "mirrorSoon": "Le puits va se refléter",
     "mirror": "Reflet",
-    "reflexBonus": "Bonus réflexe : + {value}",
+    "reflexBonus": "Bonus réflexe : +{value}",
     "flip": "Renversement",
-    "chain": "Chaîne × {value}",
+    "chain": "Chaîne ×{value}",
     "tiltSoon": "Le puits va basculer",
     "tilt": "Bascule",
     "grooveMax": "Groove maximal",
-    "perfect": "Silhouette parfaite : + {value}",
-    "sent": "Rangées envoyées : {value}",
-    "perfectGrid": "Grille nette : + {value}",
+    "perfect": "Silhouette parfaite : +{value}",
+    "sent": "Rangées envoyées : {value}",
+    "perfectGrid": "Grille nette : +{value}",
     "jokerGained": {
-      "rotate": "Joker gagné : Rotation",
-      "reroll": "Joker gagné : Relance",
-      "bomb": "Joker gagné : Bombe",
-      "undo": "Joker gagné : Retour",
-      "cube": "Joker gagné : Cube"
+      "rotate": "Joker gagné : Rotation",
+      "reroll": "Joker gagné : Relance",
+      "bomb": "Joker gagné : Bombe",
+      "undo": "Joker gagné : Retour",
+      "cube": "Joker gagné : Cube"
     },
     "windSoonLeft": "Coup de vent vers la gauche",
     "windSoonRight": "Coup de vent vers la droite",
@@ -166,85 +155,87 @@
     "elementFire": "Pièce de feu",
     "burn": "Le feu a consumé {value} grain | Le feu a consumé {value} grains",
     "quench": "L’eau éteint le feu",
-    "rescue": "Seconde chance !",
-    "elementOil": "Pièce d’huile : elle flotte, et le feu l’embrase",
-    "elementIce": "Pièce de glace : elle tient, gèle l’eau, fond au feu",
-    "elementLightning": "Foudre : visez l’eau pour électrocuter",
-    "elementSeed": "Graine : arrosez-la, elle pousse en pont de sa couleur",
-    "elementAcid": "Acide : il ronge le sable sous lui",
+    "rescue": "Seconde chance !",
+    "elementOil": "Pièce d’huile : elle flotte, et le feu l’embrase",
+    "elementIce": "Pièce de glace : elle tient, gèle l’eau, fond au feu",
+    "elementLightning": "Foudre : visez l’eau pour électrocuter",
+    "elementSeed": "Graine : arrosez-la, elle pousse en pont de sa couleur",
+    "elementAcid": "Acide : il ronge le sable sous lui",
     "react": {
-      "blaze": "Brasier ! L’huile nourrit le feu",
-      "melt": "La glace fond : eau et vapeur",
+      "blaze": "Brasier ! L’huile nourrit le feu",
+      "melt": "La glace fond : eau et vapeur",
       "freeze": "L’eau gèle sur la glace",
       "fuse": "Le feu remonte la liane",
       "dilute": "L’eau dilue l’acide",
       "sprout": "La graine pousse en liane"
     },
     "strike": {
-      "shock": "Électrocution ! {value} grain brisé par l’eau | Électrocution ! {value} grains brisés par l’eau",
-      "shatter": "Foudre : {value} grain éclaté | Foudre : {value} grains éclatés",
+      "shock": "Électrocution ! {value} grain brisé par l’eau | Électrocution ! {value} grains brisés par l’eau",
+      "shatter": "Foudre : {value} grain éclaté | Foudre : {value} grains éclatés",
       "spark": "La foudre embrase l’huile",
       "thaw": "La foudre brise la glace",
       "fuse": "La foudre enflamme la liane"
     },
-    "bombPiece": "Gemme-bombe : effacez son anneau pour faire sauter la tour autour",
-    "blast": "Boum ! {value} bloc pulvérisé | Boum ! {value} blocs pulvérisés",
-    "blastChain": "Réaction en chaîne : {value} bombes !",
+    "bombPiece": "Gemme-bombe : effacez son anneau pour faire sauter la tour autour",
+    "blast": "Boum ! {value} bloc pulvérisé | Boum ! {value} blocs pulvérisés",
+    "blastChain": "Réaction en chaîne : {value} bombes !",
     "boss": {
-      "warn": "Fissures rouges : le Ver va surgir là !",
-      "exposed": "Sa tête est exposée : frappez !",
-      "swallow": "Il dévore le sable en surface !",
-      "storm": "Une tempête de sable se lève !",
-      "phase2": "Le Ver enrage !",
-      "phase3": "Dernier souffle : attention !",
-      "stunned": "Électrocuté par l’eau : il est étourdi !",
-      "critical": "Foudre sur sa tête : coup critique !",
-      "defeated": "Le Ver des dunes est vaincu !",
+      "warn": "Fissures rouges : le Ver va surgir là !",
+      "exposed": "Sa tête est exposée : frappez !",
+      "swallow": "Il dévore le sable en surface !",
+      "storm": "Une tempête de sable se lève !",
+      "phase2": "Le Ver enrage !",
+      "phase3": "Dernier souffle : attention !",
+      "stunned": "Électrocuté par l’eau : il est étourdi !",
+      "critical": "Foudre sur sa tête : coup critique !",
+      "defeated": "Le Ver des dunes est vaincu !",
       "golem": {
-        "aim": "Le Golem vise les cases qui luisent : il y lancera des pierres !",
-        "throw": "Des pierres ! Une ligne les fissure, une deuxième les brise.",
-        "parry": "Parade : remplir une case visée bloque sa pierre !",
-        "shatter": "Ses propres pierres brisées le blessent !",
-        "phase2": "Le Golem se fissure : il lance plus de pierres !",
-        "phase3": "Dernier souffle : il lance plus vite !",
-        "defeated": "Le Golem de céramique est vaincu !"
+        "aim": "Le Golem vise les cases qui luisent : il y lancera des pierres !",
+        "throw": "Des pierres ! Une ligne les fissure, une deuxième les brise.",
+        "parry": "Parade : remplir une case visée bloque sa pierre !",
+        "shatter": "Ses propres pierres brisées le blessent !",
+        "phase2": "Le Golem se fissure : il lance plus de pierres !",
+        "phase3": "Dernier souffle : il lance plus vite !",
+        "defeated": "Le Golem de céramique est vaincu !"
       },
       "eye": {
-        "charge": "L’Œil s’arrête et rougit : il va frapper sous son regard !",
-        "strike": "Des pierres tombent là où il regardait !",
-        "blinded": "Une bombe dans son regard : l’Œil est aveuglé !",
-        "rubble": "Il fait monter un anneau de gravats !",
-        "phase2": "L’Œil s’irrite : son regard s’élargit !",
-        "phase3": "Dernier souffle : il frappe plus vite !",
-        "defeated": "L’Œil de la Tour est vaincu !"
+        "charge": "L’Œil s’arrête et rougit : il va frapper sous son regard !",
+        "strike": "Des pierres tombent là où il regardait !",
+        "blinded": "Une bombe dans son regard : l’Œil est aveuglé !",
+        "rubble": "Il fait monter un anneau de gravats !",
+        "phase2": "L’Œil s’irrite : son regard s’élargit !",
+        "phase3": "Dernier souffle : il frappe plus vite !",
+        "defeated": "L’Œil de la Tour est vaincu !"
       },
       "heart": {
-        "swell": "Le Cœur enfle : des gravats vont monter, leurs trous luisent au sol !",
-        "shard": "Chaque rangée de gravats porte un éclat de la faille : effacez-la !",
-        "wounded": "Éclat effacé : le Cœur est touché en profondeur !",
-        "mirror": "La faille plie les règles : le puits se retourne à chaque battement !",
-        "phase2": "Le Cœur s'emballe : il bat plus vite !",
-        "phase3": "Dernier souffle : la faille se déchire !",
-        "defeated": "Le Cœur de la faille est vaincu !"
+        "swell": "Le Cœur enfle : des gravats vont monter, leurs trous luisent au sol !",
+        "shard": "Chaque rangée de gravats porte un éclat de la faille : effacez-la !",
+        "wounded": "Éclat effacé : le Cœur est touché en profondeur !",
+        "mirror": "La faille plie les règles : le puits se retourne à chaque battement !",
+        "phase2": "Le Cœur s’emballe : il bat plus vite !",
+        "phase3": "Dernier souffle : la faille se déchire !",
+        "defeated": "Le Cœur de la faille est vaincu !"
       },
       "tease": "Quelque chose bouge sous le sable…"
     },
     "surge": "Surcharge : +{value}"
   },
+  "wellWords": {
+    "combo": "COMBO ×{n}"
+  },
   "controls": {
-    "label": "Commandes tactiles",
     "left": "Gauche",
     "right": "Droite",
     "softDrop": "Descendre",
     "hardDrop": "Chute instantanée",
     "rotateCw": "Tourner",
-    "rotateCcw": "Tourner dans l'autre sens",
+    "rotateCcw": "Tourner dans l’autre sens",
     "hold": "Réserve",
     "pause": "Pause",
     "ability": {
       "flip": "Renverser le puits"
     },
-    "touch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée.",
+    "touch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée.",
     "move": "Déplacer",
     "groupMove": "Déplacer et descendre",
     "groupAct": "Tourner et faire tomber"
@@ -266,28 +257,28 @@
       "timeUp": "Temps écoulé.",
       "outOfPieces": "Plus de pièces.",
       "shapeComplete": "Silhouette complète.",
-      "victory": "Victoire : la pile de l’IA a débordé.",
-      "defeat": "Défaite : votre pile a débordé.",
+      "victory": "Victoire : la pile de l’IA a débordé.",
+      "defeat": "Défaite : votre pile a débordé.",
       "noMoves": "Plus aucune pièce ne rentre.",
-      "goal": "Objectif atteint !",
-      "guardian": "Victoire : le Gardien est vaincu !"
+      "goal": "Objectif atteint !",
+      "guardian": "Victoire : le Gardien est vaincu !"
     },
     "result": "Résultat",
     "newBest": "Nouveau record",
-    "best": "Record : {value}",
+    "best": "Record : {value}",
     "again": "Rejouer",
     "home": "Accueil",
     "share": "Partager",
     "copied": "Résultat copié dans le presse-papiers",
     "adBadge": "PUB",
-    "doubleXp": "Doubler l’XP : +{n}",
+    "doubleXp": "Doubler l’XP : +{n}",
     "doubleXpLabel": "Regarder une pub pour doubler l’expérience de cette partie (+{n} XP)",
-    "doubled": "Expérience doublée : +{n} XP !",
+    "doubled": "Expérience doublée : +{n} XP !",
     "noAd": "Aucune pub disponible pour le moment. Réessayez après une autre partie."
   },
   "share": {
-    "daily": "Lumirift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",
-    "mode": "Lumirift · {mode} : {value}. À vous de jouer : {url}"
+    "daily": "Lumirift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",
+    "mode": "Lumirift · {mode} : {value}. À vous de jouer : {url}"
   },
   "settings": {
     "title": "Réglages",
@@ -297,7 +288,7 @@
     "effectsFull": "Complets",
     "effectsReduced": "Sobres",
     "effectsOff": "Aucun",
-    "shake": "Secousses de l'écran",
+    "shake": "Secousses de l’écran",
     "haptics": "Vibrations",
     "volume": "Effets sonores",
     "close": "Fermer",
@@ -317,7 +308,8 @@
   "languages": {
     "fr": "Français",
     "en": "English",
-    "id": "Bahasa Indonesia"
+    "id": "Bahasa Indonesia",
+    "ru": "Русский"
   },
   "silhouettes": {
     "heart": "Cœur",
@@ -363,9 +355,9 @@
     "duelHint": {
       "rookie": "Lente, elle découvre le jeu et se trompe souvent.",
       "easy": "Elle hésite et fait des erreurs.",
-      "normal": "Solide : elle garde une pièce en réserve et prépare ses attaques.",
+      "normal": "Solide : elle garde une pièce en réserve et prépare ses attaques.",
       "hard": "Rapide, elle prévoit la pièce suivante et se trompe rarement.",
-      "expert": "Au niveau des meilleurs joueurs : elle ne se trompe jamais."
+      "expert": "Au niveau des meilleurs joueurs : elle ne se trompe jamais."
     }
   },
   "jokers": {
@@ -382,21 +374,21 @@
     "noJoker": "Effacez plusieurs lignes d’un coup pour gagner des jokers.",
     "piece": "Pièce {n}",
     "bonus": "Cube bonus",
-    "cells": "{n} cases",
+    "cells": "{n} case | {n} cases",
     "stuck": "ne rentre nulle part",
     "empty": "Emplacement vide",
     "pickPiece": "Touchez la pièce à tourner",
     "pickCell": "Touchez la case où lancer la bombe",
-    "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case.",
-    "jokerCount": "× {n}"
+    "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case.",
+    "jokerCount": "×{n}"
   },
   "sand": {
     "well": "Puits de sable",
-    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour faire tomber. Reliez une couleur d’un mur à l’autre. Les éléments réagissent : l’huile nourrit le feu, le feu fait fondre la glace en vapeur, la foudre dans l’eau brise tout ce qu’elle touche, une graine arrosée pousse en pont."
+    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée. Reliez une couleur d’un mur à l’autre. Les éléments réagissent : l’huile nourrit le feu, le feu fait fondre la glace en vapeur, la foudre dans l’eau brise tout ce qu’elle touche, une graine arrosée pousse en pont."
   },
   "tower": {
     "well": "Tour de verre",
-    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée, glissez à deux doigts pour faire pivoter la tour. La caméra suit la pièce.",
+    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée, glissez à deux doigts pour faire pivoter la tour. La caméra suit la pièce.",
     "turn": "Faire pivoter la tour"
   },
   "profile": {
@@ -404,7 +396,6 @@
     "xp": "{into} / {needed} XP",
     "xpLabel": "Progression vers le niveau suivant",
     "maxLevel": "Niveau maximal atteint",
-    "streak": "Série : {n} jour | Série : {n} jours",
     "objectives": "Objectifs du jour",
     "done": "Fait",
     "reward": "+{n} XP",
@@ -423,9 +414,9 @@
   "progress": {
     "title": "Progression",
     "gained": "+{n} XP",
-    "levelUp": "Niveau {n} atteint !",
-    "objectiveDone": "Objectif accompli : {text}",
-    "unlocked": "Débloqué : {name} ({kind})",
+    "levelUp": "Niveau {n} atteint !",
+    "objectiveDone": "Objectif accompli : {text}",
+    "unlocked": "Débloqué : {name} ({kind})",
     "source": {
       "game": "Partie jouée",
       "time": "Temps de jeu",
@@ -481,14 +472,13 @@
       "default": "Offert",
       "level": "Niveau {n}",
       "streak": "Série de {n} jours au défi",
-      "objectives": "{n} objectifs accomplis",
-      "boss": "Vaincre le {name}"
+      "objectives": "{n} objectifs accomplis"
     },
     "tapToWear": "Touchez encore pour porter",
     "clickToWear": "Cliquez encore pour porter",
-    "nowWorn": "Vous portez : {name}.",
-    "nowWornGame": "Vous portez : {name}. Lancez une partie pour voir l’effet.",
-    "unlocksWith": "Pour débloquer {name} : {rule}.",
+    "nowWorn": "Vous portez : {name}.",
+    "nowWornGame": "Vous portez : {name}. Lancez une partie pour voir l’effet.",
+    "unlocksWith": "Pour débloquer {name} : {rule}.",
     "trying": "Aperçu",
     "new": "Nouveau"
   },
@@ -499,10 +489,9 @@
       "2": "Courants",
       "3": "Mosaïques",
       "4": "Vertiges",
-      "5": "Le Rift"
+      "5": "La Faille"
     },
     "chapterStars": "{n} / {max} étoiles",
-    "continue": "Continuer · {level} {mode}",
     "spare": "{n} étoile à dépenser | {n} étoiles à dépenser",
     "starsWon": "Aucune étoile | {n} étoile | {n} étoiles",
     "levelTitle": "Niveau {level} · {mode}",
@@ -520,15 +509,14 @@
       "survive": "Tenir {time}",
       "win": "Battre l’{ai}",
       "shape": "Compléter la silhouette",
-      "regions": "Effacer {n} zone | Effacer {n} zones",
-      "boss": "Vaincre le {name}"
+      "regions": "Effacer {n} zone | Effacer {n} zones"
     },
     "starRule": {
-      "timeLeft": "1 étoile en réussissant, 2 avec 15 % du temps restant, 3 avec 40 %.",
+      "timeLeft": "1 étoile en réussissant, 2 avec 15 % du temps restant, 3 avec 40 %.",
       "lines": "1 étoile en tenant, 2 dès {two} lignes effacées, 3 dès {three}.",
       "fast": "1 étoile en gagnant, 2 en moins de {two}, 3 en moins de {three}."
     },
-    "won": "Niveau réussi !",
+    "won": "Niveau réussi !",
     "lost": "Niveau échoué",
     "gained": "+{n} étoile | +{n} étoiles",
     "noBetter": "Pas mieux que votre meilleur résultat.",
@@ -537,14 +525,14 @@
     "map": "Carte de campagne",
     "lockedNote": "Gagnez le niveau {level} pour ouvrir celui-ci.",
     "guardian": "Gardien",
-    "teaser": "Le {name} s’éveille : il vous attend au niveau {level}.",
-    "chapterGuardian": "Gardien : {name}",
-    "nextGuardian": "Prochain Gardien : {name}, chapitre {n}"
+    "teaser": "Un Gardien s’éveille : {name}. Il vous attend au niveau {level}.",
+    "chapterGuardian": "Gardien : {name}",
+    "nextGuardian": "Prochain Gardien : {name}, chapitre {n}"
   },
   "upgrades": {
     "title": "Améliorations",
     "available": "{n} étoile disponible | {n} étoiles disponibles",
-    "next": "Rang suivant : {effect}",
+    "next": "Rang suivant : {effect}",
     "rank": "Rang {n} sur {max}",
     "max": "Au maximum",
     "buy": "Améliorer · {n}",
@@ -559,11 +547,11 @@
     },
     "hourglass": {
       "name": "Sablier",
-      "effect": "+{value} s au chrono des niveaux minutés"
+      "effect": "+{value} s au chrono des niveaux minutés"
     },
     "feather": {
       "name": "Plume",
-      "effect": "Chute ralentie de {value} %"
+      "effect": "Chute ralentie de {value} %"
     },
     "spyglass": {
       "name": "Longue-vue",
@@ -571,39 +559,38 @@
     },
     "anchor": {
       "name": "Ancre",
-      "effect": "+{value} ms avant la pose d’une pièce"
+      "effect": "+{value} ms avant la pose d’une pièce"
     },
     "prism": {
       "name": "Prisme",
-      "effect": "+{value} % de points sur les effacements"
+      "effect": "+{value} % de points sur les effacements"
     },
     "phoenix": {
       "name": "Phénix",
-      "effect": "Seconde chance : {value} rangées du bas effacées, une fois par niveau"
+      "effect": "Seconde chance : {value} rangées du bas effacées, une fois par niveau"
     },
     "satchel": {
       "name": "Besace",
-      "effect": "+{value} jokers au départ de la Mosaïque"
+      "effect": "+{value} joker au départ de la Mosaïque | +{value} jokers au départ de la Mosaïque"
     },
     "ember": {
       "name": "Braise",
-      "effect": "+{value} % de pièces de feu dans le Sable"
+      "effect": "+{value} % de pièces de feu dans le Sable"
     },
     "metronome": {
       "name": "Métronome",
-      "effect": "Fenêtre du temps élargie de {value} ms"
+      "effect": "Fenêtre du temps élargie de {value} ms"
     },
     "rampart": {
       "name": "Rempart",
-      "effect": "Rangées adverses retardées de {value} s"
+      "effect": "Rangées adverses retardées de {value} s"
     },
     "note": "Seulement en campagne. Chaque étoile se reprend."
   },
   "demo": {
     "title": "Démo.",
-    "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet en compte treize et trente niveaux.",
-    "fullGame": "Jeu complet",
-    "campaignDone": "Démo terminée : la suite est dans le jeu complet."
+    "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet compte treize modes et trente niveaux.",
+    "fullGame": "Jeu complet"
   },
   "title": {
     "tagline": "13 façons de briser un bloc.",
@@ -617,12 +604,12 @@
     "move": "Déplacez la pièce",
     "rotate": "Tournez-la",
     "drop": "Faites-la tomber",
-    "goalSand": "Reliez les deux murs avec une seule couleur : la zone s’efface.",
-    "goalLines": "Remplissez une ligne : elle se brise.",
+    "goalSand": "Reliez les deux murs avec une seule couleur : la zone s’efface.",
+    "goalLines": "Remplissez une ligne : elle se brise.",
     "skip": "Passer le guide",
     "moveTouch": "Glissez",
     "rotateTouch": "Touchez",
-    "dropTouch": "Lancez vers le bas"
+    "dropTouch": "Glissez vite vers le bas"
   },
   "gestures": {
     "label": "Gestes",
@@ -642,9 +629,9 @@
       "map": "Carte",
       "atelier": "Atelier"
     },
-    "timeLeft": "encore {h} h {m} min",
+    "timeLeft": "encore {h} h {m} min",
     "objectivesDone": "{n} / {total}",
-    "stars": "{n} étoiles sur {max}. Ouvrir la carte",
+    "stars": "Étoiles : {n} sur {max}. Ouvrir la carte",
     "prevChapter": "Chapitre précédent",
     "nextChapter": "Chapitre suivant",
     "locked": "verrouillé",
@@ -675,16 +662,20 @@
   },
   "bosses": {
     "duneWorm": {
-      "name": "Ver des dunes"
+      "name": "Ver des dunes",
+      "defeat": "Vaincre le Ver des dunes"
     },
     "ceramicGolem": {
-      "name": "Golem de céramique"
+      "name": "Golem de céramique",
+      "defeat": "Vaincre le Golem de céramique"
     },
     "towerEye": {
-      "name": "Œil de la Tour"
+      "name": "Œil de la Tour",
+      "defeat": "Vaincre l’Œil de la Tour"
     },
     "riftHeart": {
-      "name": "Cœur de la faille"
+      "name": "Cœur de la faille",
+      "defeat": "Vaincre le Cœur de la faille"
     }
   },
   "keymap": {

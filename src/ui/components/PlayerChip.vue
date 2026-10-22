@@ -100,8 +100,11 @@ const xpText = computed(() =>
   font-variant-numeric: tabular-nums;
 }
 
-/* A tiny top bar (a 400 % zoom): the ring alone tells the level and its share of XP. */
-@container top (inline-size < 16rem) {
+/*
+ * A narrow top bar (a phone under 360 px, a 400 % zoom): the ring alone tells
+ * the level and its share of XP, and the bar keeps its buttons on screen.
+ */
+@container top (inline-size < 21rem) {
   .chip {
     padding: 0.2rem;
   }
