@@ -7,6 +7,8 @@ import type { TrainingStage } from '@/session/GameSession';
 
 const G = GRAINS_PER_CELL;
 const STEP = 16;
+/** Minutes of play simulated frame by frame: a slower machine (the CI) needs more than 5 s. */
+const SIMULATION_TIMEOUT_MS = 30_000;
 
 /** A training step's session, started. */
 function training(stage: TrainingStage, seed = 1): SandSession {
@@ -45,43 +47,51 @@ describe('The portals’ training in the Sand (1.29)', () => {
     expect(ids).not.toContain('level');
   });
 
-  it('shows a beginner the shock, the blaze and the vine in twenty seconds, then two zones linked', () => {
-    for (const seed of [1, 2, 3, 4]) {
-      const session = training('elements', seed);
-      const seen = new Set<string>();
-      session.onGame('strike', ({ kind }) => seen.add(kind));
-      session.onGame('react', ({ kind }) => seen.add(kind));
-      let regions = 0;
-      session.onGame('clear', (event) => (regions += event.regions));
-      const play = beginner(session);
-      play(20_000);
-      expect([...seen]).toEqual(expect.arrayContaining(['shock', 'blaze', 'sprout']));
-      for (let t = 20_000; t < 90_000 && regions < 2; t += 1000) play(1000);
-      expect(regions).toBeGreaterThanOrEqual(2);
-    }
-  });
+  it(
+    'shows a beginner the shock, the blaze and the vine in twenty seconds, then two zones linked',
+    () => {
+      for (const seed of [1, 2, 3, 4]) {
+        const session = training('elements', seed);
+        const seen = new Set<string>();
+        session.onGame('strike', ({ kind }) => seen.add(kind));
+        session.onGame('react', ({ kind }) => seen.add(kind));
+        let regions = 0;
+        session.onGame('clear', (event) => (regions += event.regions));
+        const play = beginner(session);
+        play(20_000);
+        expect([...seen]).toEqual(expect.arrayContaining(['shock', 'blaze', 'sprout']));
+        for (let t = 20_000; t < 90_000 && regions < 2; t += 1000) play(1000);
+        expect(regions).toBeGreaterThanOrEqual(2);
+      }
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
 
-  it('is never lost: whenever a piece cannot come in, the bottom of the sand empties', () => {
-    const session = training('elements');
-    let rescues = 0;
-    let warned = false;
-    let pressure = 0;
-    let highest = 0;
-    session.onGame('rescue', () => rescues++);
-    for (let t = 0; t < 120_000; t += STEP) {
-      if (session.view.active) session.execute({ type: 'hardDrop' });
-      session.update(STEP);
-      warned ||= session.view.spawnWarning() !== null;
-      pressure = Math.max(pressure, session.pressure());
-      highest = Math.max(highest, session.view.grid.sandHeight());
-    }
-    expect(session.state).toBe('running');
-    expect(rescues).toBeGreaterThan(0);
-    // No alarm in a game that cannot be lost: no red vignette, no heartbeat, no red piece.
-    expect(highest).toBeGreaterThan(0.7 * session.view.grid.height);
-    expect(pressure).toBe(0);
-    expect(warned).toBe(false);
-  });
+  it(
+    'is never lost: whenever a piece cannot come in, the bottom of the sand empties',
+    () => {
+      const session = training('elements');
+      let rescues = 0;
+      let warned = false;
+      let pressure = 0;
+      let highest = 0;
+      session.onGame('rescue', () => rescues++);
+      for (let t = 0; t < 120_000; t += STEP) {
+        if (session.view.active) session.execute({ type: 'hardDrop' });
+        session.update(STEP);
+        warned ||= session.view.spawnWarning() !== null;
+        pressure = Math.max(pressure, session.pressure());
+        highest = Math.max(highest, session.view.grid.sandHeight());
+      }
+      expect(session.state).toBe('running');
+      expect(rescues).toBeGreaterThan(0);
+      // No alarm in a game that cannot be lost: no red vignette, no heartbeat, no red piece.
+      expect(highest).toBeGreaterThan(0.7 * session.view.grid.height);
+      expect(pressure).toBe(0);
+      expect(warned).toBe(false);
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
 
   it('lets the Dune Wyrm be struck only once it has come out, soon, even by a player who does not aim', () => {
     for (const seed of [1, 2, 3, 4, 5]) {
