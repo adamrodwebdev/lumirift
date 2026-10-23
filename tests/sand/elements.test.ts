@@ -66,11 +66,7 @@ describe('Sand elements', () => {
 
   it(`deals at least ${ELEMENT_GAP} sand pieces between two elements`, () => {
     const game = started(9);
-    const tones = Array.from({ length: 600 }, () => {
-      const spec = game.preview(1)[0]!;
-      (game as unknown as { upcoming: unknown[] }).upcoming.shift();
-      return spec.tone;
-    });
+    const tones = game.preview(600).map(({ tone }) => tone);
     const elements = tones
       .map((tone, i) => (tone === Tone.Water || tone === Tone.Fire ? i : -1))
       .filter((i) => i >= 0);
@@ -114,7 +110,7 @@ describe('Sand grid elements', () => {
       grid.put(x, 1, Tone.ChromaA, 0);
       grid.put(x, 2, Tone.ChromaB, 0);
     }
-    grid.wind = 1;
+    grid.blow(1);
     grid.resetDrift();
     const rng = new SeededRandom(2);
     for (let i = 0; i < 400; i++) grid.simulate(rng);

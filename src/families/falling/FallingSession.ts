@@ -8,7 +8,7 @@ import type {
   SessionState,
 } from '@/session/GameSession';
 import type { EngineModeId, FamilyId } from '@/session/ModeId';
-import type { Board, RemovedCell } from './board/Board';
+import type { ReadonlyBoard, RemovedCell } from './board/Board';
 import type { Game, PieceSpec } from './game/Game';
 import type { GameEventMap } from './game/GameEvents';
 import type { AbilityId, GameMode } from './modes/GameMode';
@@ -33,7 +33,7 @@ type CommandHandlers = {
 
 /** Read-only view of a game, for the renderer: it can look, never act. */
 export interface FallingView {
-  readonly board: Board;
+  readonly board: ReadonlyBoard;
   /** The mode, for scenery that depends on its state (the silhouette to fill). */
   readonly mode: GameMode;
   readonly active: Piece | null;

@@ -30,8 +30,9 @@ import SurgeButton from '@/ui/components/SurgeButton.vue';
 import { SURGE } from '@/ui/surgeControl';
 import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { TowerCamera, TURN_STEP } from '../camera/TowerCamera';
-import * as sounds from '@/fx/sounds';
 import { EyeEffects } from '../fx/EyeEffects';
+import { TowerTurn } from '../input/TowerTurn';
+import { EyeSounds } from '../fx/EyeSounds';
 import { TowerRenderer } from '../render/TowerRenderer';
 import { TowerMode } from '../TowerMode';
 
@@ -104,24 +105,7 @@ const mode = session.view.mode;
 const eyeEffects = mode instanceof TowerMode && mode.eye ? new EyeEffects(format.number) : null;
 const detachEye =
   mode instanceof TowerMode && eyeEffects
-    ? [
-        eyeEffects.attach(session, mode),
-        mode.eyeEvents.on('boss', ({ event }) => {
-          if (event.type === 'charge') audio.play(sounds.rumble);
-          else if (event.type === 'strike') {
-            audio.play(sounds.stoneThud);
-            haptics.pulse([30, 20, 50]);
-          } else if (event.type === 'blinded') {
-            audio.play(sounds.roar);
-            haptics.pulse([40, 30, 90]);
-          } else if (event.type === 'hurt') audio.play(sounds.bossHit(event.hit === 'blind'));
-          else if (event.type === 'phase') audio.play(sounds.roar);
-          else if (event.type === 'defeated') {
-            audio.play(sounds.newRecord);
-            haptics.pulse([40, 30, 40, 30, 160]);
-          }
-        }),
-      ]
+    ? [eyeEffects.attach(session, mode), new EyeSounds(audio, haptics).attach(mode)]
     : [];
 
 const camera = new TowerCamera(session.view.board.width);
@@ -225,38 +209,27 @@ const onKeyUp = (event: KeyboardEvent) => onKey(event, false);
 
 // --- Touch: one finger plays, two fingers turn the tower (or rotate on a tap) --
 
-const pointers = new Map<number, number>();
-let turning = false;
-
-const middle = () => [...pointers.values()].reduce((sum, x) => sum + x, 0) / pointers.size;
+const turn = new TowerTurn(
+  (columns) => props.active && camera.turn(columns),
+  () => columnSize.value,
+);
 
 useGameSurface({
   down: (event) => {
-    pointers.set(event.pointerId, event.clientX);
-    if (pointers.size >= 2) turning = true;
+    turn.down(event.pointerId, event.clientX);
     gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp);
   },
   move: (event) => {
-    if (!pointers.has(event.pointerId)) return;
-    if (turning) {
-      const before = middle();
-      pointers.set(event.pointerId, event.clientX);
-      // The surface follows the fingers: dragging right brings the left columns forward.
-      if (props.active) camera.turn(-(middle() - before) / columnSize.value);
-    } else {
-      pointers.set(event.pointerId, event.clientX);
-    }
-    gestures.move(event.pointerId, event.clientX, event.clientY);
+    if (turn.move(event.pointerId, event.clientX))
+      gestures.move(event.pointerId, event.clientX, event.clientY);
   },
   up: (event) => {
-    pointers.delete(event.pointerId);
+    turn.up(event.pointerId);
     gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp);
-    if (pointers.size === 0) turning = false;
   },
   cancel: (event) => {
-    pointers.delete(event.pointerId);
+    turn.up(event.pointerId);
     gestures.cancel();
-    if (pointers.size === 0) turning = false;
   },
 });
 

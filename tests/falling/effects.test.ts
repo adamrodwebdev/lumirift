@@ -98,7 +98,7 @@ describe('FallingEffects', () => {
 
   it('shows a hard drop falling, then landing: dust and trail wait for it', () => {
     const { session, effects } = setup();
-    effects.animateDrops = true;
+    effects.showDropsFalling();
     const distance = session.view.dropDistance();
     session.execute({ type: 'hardDrop' });
     const wait = fallMs(distance);
@@ -118,11 +118,11 @@ describe('FallingEffects', () => {
     expect(fallMs(1)).toBe(88);
     expect(fallMs(20)).toBe(230);
     const { effects } = setup('reduced');
-    effects.animateDrops = true;
+    effects.showDropsFalling();
     expect(effects.dropWait(10)).toBe(0);
     const full = setup();
     expect(full.effects.dropWait(10)).toBe(0);
-    full.effects.animateDrops = true;
+    full.effects.showDropsFalling();
     expect(full.effects.dropWait(10)).toBe(160);
   });
 

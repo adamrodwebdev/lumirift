@@ -39,8 +39,8 @@ export class SandGrid {
   readonly life: Uint16Array;
   /** 1 for a grain of sand that holds still (a vine). */
   readonly fixed: Uint8Array;
-  /** Direction of the wind blowing now (−1 left, 1 right) or 0. */
-  wind: -1 | 0 | 1 = 0;
+  /** Direction of the wind blowing now (−1 left, 1 right) or 0: it changes by `blow` and `calm`. */
+  private blowing: -1 | 0 | 1 = 0;
   /** Seeds that wore out this step without water: they sprout anyway (read by the game). */
   readonly sprouts: number[] = [];
   /** Grains each grain has been blown during the current gust. */
@@ -64,6 +64,21 @@ export class SandGrid {
     this.movedAt = new Uint32Array(size);
     this.visited = new Uint8Array(size);
     this.queue = new Int32Array(size);
+  }
+
+  /** The wind blowing now (−1 left, 1 right), or 0. */
+  get wind(): -1 | 0 | 1 {
+    return this.blowing;
+  }
+
+  /** A gust starts, toward one side: loose grains may be pushed that way. */
+  blow(direction: -1 | 1): void {
+    this.blowing = direction;
+  }
+
+  /** The gust dies down. */
+  calm(): void {
+    this.blowing = 0;
   }
 
   get(x: number, y: number): Tone {
@@ -142,14 +157,14 @@ export class SandGrid {
         }
         // Wind only lifts loose grains: those with nothing on top, not yet blown a cell away.
         if (
-          this.wind !== 0 &&
+          this.blowing !== 0 &&
           (y === 0 || tones[i - W] === 0 || tones[i - W] === Tone.Steam) &&
           this.drift[i]! < WIND_MAX_DRIFT &&
           random.next() < WIND_PUSH &&
-          this.isOpen(x + this.wind, y)
+          this.isOpen(x + this.blowing, y)
         ) {
-          this.swap(i, i + this.wind);
-          this.drift[i + this.wind]!++;
+          this.swap(i, i + this.blowing);
+          this.drift[i + this.blowing]!++;
           moved++;
         }
       }
@@ -356,7 +371,7 @@ export class SandGrid {
         return true;
       }
     }
-    const side = this.wind || (random.next() < 0.5 ? -1 : 1);
+    const side = this.blowing || (random.next() < 0.5 ? -1 : 1);
     const nx = x + side;
     if (nx >= 0 && nx < W && this.tones[i + side] === 0 && random.next() < 0.7) {
       this.swap(i, i + side);

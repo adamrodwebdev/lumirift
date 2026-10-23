@@ -4,12 +4,19 @@ import { ComboGauge, type ComboView } from '@/session/ComboGauge';
 import { inDanger } from '@/session/Tension';
 import type { RandomSource } from '@/core/Random';
 import { Tone } from '@/core/Tone';
-import { Bag } from '@/families/falling/pieces/Bag';
-import type { PieceType, RotationDirection } from '@/families/falling/pieces/PieceType';
+import type { RotationDirection } from '@/families/falling/pieces/PieceType';
 import { GravityCurve } from '@/families/falling/rules/GravityCurve';
-import { elementsAt, isElement, NOTICE_OF, WEIGHT, type ElementTone } from './Elements';
+import { isElement, NOTICE_OF, type ElementTone } from './Elements';
 import { DuneWorm, type WormEvent } from './DuneWorm';
-import { GRAINS_PER_CELL, SAND_TONES, SandGrid } from './SandGrid';
+import { GrainSampler, type GrainSample } from './GrainSampler';
+import {
+  ELEMENT_GAP,
+  SandDealer,
+  type ElementPace,
+  type PieceSpec,
+  type ScriptedPiece,
+} from './SandDealer';
+import { GRAINS_PER_CELL, SandGrid } from './SandGrid';
 import { SandPiece } from './SandPiece';
 import {
   FIRE_MAX_GRAINS,
@@ -18,6 +25,7 @@ import {
   type ReactionKind,
   type StrikeKind,
 } from './SandReactions';
+import { SandWind, WIND_EVERY_MS, WIND_GUST_MS, type WindChange } from './SandWind';
 
 export type SandState = 'ready' | 'running' | 'paused' | 'over';
 export type SandOverReason = 'blockOut' | 'timeUp' | 'victory';
@@ -29,40 +37,20 @@ export const MAX_LOCK_RESETS = 10;
 export const PREVIEW_COUNT = 3;
 /** Elements start after a few ordinary pieces. */
 export const ELEMENTS_AFTER = 5;
-/** Chance that a piece is an element (once the gap below is respected). */
+/** Chance that a piece is an element (once `ELEMENT_GAP` is respected). */
 export const ELEMENT_CHANCE = 0.2;
-/** At least this many sand pieces between two elements: never a streak of hazards. */
-export const ELEMENT_GAP = 3;
 /** A bolt landing this close to the Guardian's bare head (in grains) strikes it. */
 export const BOLT_REACH = 8;
 /** A landing flame sets alight oil this many grains away (a cell), below or aside. */
 export const OIL_REACH = 6;
-export { FIRE_MAX_GRAINS };
-/** Wind holds off while the sand is this close to the top (in grains). */
-export const WIND_SAFE_GRAINS = 3 * GRAINS_PER_CELL;
-/** Wind: first gust after this long, then every this long (ms, ± a third), announced ahead. */
-export const WIND_EVERY_MS = 30_000;
-export const WIND_WARNING_MS = 3_000;
-export const WIND_GUST_MS = 2_500;
+export { ELEMENT_GAP, FIRE_MAX_GRAINS, WIND_EVERY_MS, WIND_GUST_MS };
+export type { ElementPace, GrainSample, PieceSpec, ScriptedPiece };
 export const CLEARS_PER_LEVEL = 5;
 /**
  * The reactions that feed a running combo: the great moments of the elements.
  * A blaze's scorching, acid and steam come too often to count.
  */
 const FEEDING: ReadonlySet<string> = new Set(['blaze', 'sprout', 'melt', 'freeze', 'fuse']);
-/** Grains reported per clear for the effects (a sample is enough to show it). */
-const SAMPLE = 160;
-
-export interface PieceSpec {
-  readonly type: PieceType;
-  readonly tone: Tone;
-}
-
-export interface GrainSample {
-  readonly x: number;
-  readonly y: number;
-  readonly tone: Tone;
-}
 
 export interface SandEventMap {
   state: { readonly state: SandState };
@@ -111,7 +99,7 @@ export interface SandEventMap {
     readonly points: number;
     readonly samples: readonly GrainSample[];
   };
-  wind: { readonly phase: 'soon' | 'start' | 'end'; readonly direction: -1 | 1 };
+  wind: WindChange;
   levelUp: { readonly level: number };
   notice: { readonly id: string; readonly value?: number };
   /** A second chance: the bottom of the sand vanished instead of the game ending. */
@@ -145,27 +133,12 @@ export interface SandOptions {
   readonly bossDelayMs?: number;
 }
 
-/** When the elements start coming, and the chance of each new piece being one. */
-export interface ElementPace {
-  /** Pieces dealt before the first element. */
-  readonly after: number;
-  readonly chance: number;
-}
-
-/** A piece the game deals at a given rank (1 = the first piece). */
-export interface ScriptedPiece {
-  readonly at: number;
-  readonly tone: Tone;
-  readonly type?: PieceType;
-  /** Appears right above where the previous piece landed (so that the two meet). */
-  readonly above?: boolean;
-}
-
 /**
  * A game of Sand: pieces fall like in the falling family, then crumble into
  * grains on landing. A region of one colour reaching from wall to wall
  * vanishes. Elements (water, fire, oil, ice, lightning, seeds, acid) and wind
- * shake things up, and react with each other (`SandReactions`).
+ * shake things up, and react with each other (`SandReactions`). Its pieces
+ * come from a `SandDealer`, its gusts from `SandWind`.
  */
 export class SandGame {
   readonly grid: SandGrid;
@@ -179,9 +152,10 @@ export class SandGame {
   private readonly reactions: SandReactions;
   /** A sandstorm the Guardian raised: the wind blows until then (ms of play). */
   private stormUntil = 0;
-  private readonly bag: Bag;
+  private readonly dealer: SandDealer;
+  private readonly wind: SandWind;
+  private readonly sampler: GrainSampler;
   private readonly gravity = new GravityCurve();
-  private readonly upcoming: PieceSpec[] = [];
   private readonly timeLimitMs: number | null;
   private _state: SandState = 'ready';
   private _overReason: SandOverReason | null = null;
@@ -192,12 +166,8 @@ export class SandGame {
   private readonly combo = new ComboGauge();
   private _level = 1;
   private _elapsedMs = 0;
-  private dealt = 0;
   private readonly boosts: Boosts;
-  private readonly hazards: boolean;
   private readonly windy: boolean;
-  private readonly elementPace: ElementPace;
-  private readonly elements: readonly ElementTone[] | null;
   private readonly script: ReadonlyMap<number, ScriptedPiece>;
   /** Pieces dealt so far and the centre (in grains) of the last one that landed. */
   private spawned = 0;
@@ -206,8 +176,6 @@ export class SandGame {
   private readonly announced = new Set<string>();
   /** The second chance has not been used yet. */
   private rescueReady: boolean;
-  /** Sand pieces dealt since the last element. */
-  private sinceElement = 0;
   /** What the falling element would hit, cached for one grid step and one position. */
   private targetCache: { key: string; region: readonly number[] | null } = {
     key: '',
@@ -219,30 +187,42 @@ export class SandGame {
   private lockTimer = 0;
   private lockResets = 0;
   private lowestY = 0;
-  private wind: { direction: -1 | 1; at: number; phase: 'waiting' | 'warned' | 'blowing' };
 
   constructor(options: SandOptions) {
     this.random = options.random;
     this.grid = options.grid ?? new SandGrid();
-    this.bag = new Bag(this.random);
     this.timeLimitMs = options.timeLimitMs ?? null;
     this.boosts = options.boosts ?? NO_BOOSTS;
-    this.hazards = options.hazards ?? true;
-    this.windy = this.hazards && (options.wind ?? true);
-    this.elementPace = options.elementPace ?? { after: ELEMENTS_AFTER, chance: ELEMENT_CHANCE };
-    this.elements = options.elements ?? null;
+    const hazards = options.hazards ?? true;
+    this.windy = hazards && (options.wind ?? true);
     this.script = new Map((options.script ?? []).map((piece) => [piece.at, piece]));
+    this.dealer = new SandDealer(
+      this.random,
+      {
+        hazards,
+        pace: options.elementPace ?? { after: ELEMENTS_AFTER, chance: ELEMENT_CHANCE },
+        elements: options.elements ?? null,
+        script: this.script,
+        fireBonus: this.boosts.fireBonus,
+      },
+      () => this._level,
+    );
+    this.sampler = new GrainSampler(this.grid, this.random);
     this.reactions = new SandReactions(this.grid, this.random);
     this._worm =
       options.boss === 'duneWorm'
         ? new DuneWorm(this.grid, this.random, options.bossDelayMs)
         : null;
     this.rescueReady = this.boosts.rescueRows > 0;
-    this.wind = {
-      direction: this.random.next() < 0.5 ? -1 : 1,
-      at: this.nextGustDelay(),
-      phase: 'waiting',
-    };
+    // Drawn even in a calm game, so that a seed always deals the same pieces.
+    this.wind = new SandWind(this.grid, this.random, (change) => {
+      this.events.emit('wind', change);
+      if (change.phase === 'soon') {
+        this.events.emit('notice', {
+          id: change.direction < 0 ? 'windSoonLeft' : 'windSoonRight',
+        });
+      }
+    });
   }
 
   // --- Read model -----------------------------------------------------------
@@ -293,8 +273,7 @@ export class SandGame {
    */
   spawnWarning(): SandPiece | null {
     if (this._state !== 'running' || this.teasing) return null;
-    this.fillQueue(1);
-    const spec = this.upcoming[0]!;
+    const spec = this.dealer.peek();
     const piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
     return this.fits(piece, 0, GRAINS_PER_CELL) ? null : piece;
   }
@@ -306,13 +285,11 @@ export class SandGame {
 
   /** Milliseconds before the next gust, 0 while it blows; null in a game without wind. */
   get windInMs(): number | null {
-    if (!this.windy) return null;
-    return this.wind.phase === 'blowing' ? 0 : Math.max(0, this.wind.at - this._elapsedMs);
+    return this.windy ? this.wind.inMs(this._elapsedMs) : null;
   }
 
   preview(count = PREVIEW_COUNT + this.boosts.extraPreview): readonly PieceSpec[] {
-    this.fillQueue(count);
-    return this.upcoming.slice(0, count);
+    return this.dealer.preview(count);
   }
 
   fits(piece: SandPiece, dx = 0, dy = 0): boolean {
@@ -402,7 +379,7 @@ export class SandGame {
     if (this._state !== 'running' || this._worm || this.teasing) return false;
     this.teasing = true;
     this._active = null;
-    this.grid.wind = 0;
+    this.grid.calm();
     const worm = new DuneWorm(this.grid, this.random, Number.POSITIVE_INFINITY);
     // Across the well, inside the sand (its shadow shows only where there is sand).
     const { height, width } = this.grid;
@@ -430,7 +407,7 @@ export class SandGame {
     }
     const reached = this.combo.update(deltaMs);
     if (reached >= 2) this.events.emit('comboEnd', { multiplier: reached });
-    this.updateWind();
+    if (this.windy) this.wind.update(this._elapsedMs);
     this.stepAccumulator += deltaMs;
     // Burning or a block out may end the game during a step.
     while (this.stepAccumulator >= STEP_MS && this.isRunning()) {
@@ -446,7 +423,7 @@ export class SandGame {
     if (this._state === 'over') return;
     this._overReason = reason;
     this._active = null;
-    this.grid.wind = 0;
+    this.grid.calm();
     this.setState('over');
     this.events.emit('over', { reason });
   }
@@ -614,7 +591,7 @@ export class SandGame {
     for (const event of worm.update(STEP_MS)) this.onBoss(event);
     if (this.stormUntil > 0 && this._elapsedMs >= this.stormUntil) {
       this.stormUntil = 0;
-      this.grid.wind = 0;
+      this.grid.calm();
       this.events.emit('wind', { phase: 'end', direction: 1 });
     }
     if (!worm.out || !this.isRunning()) return;
@@ -658,7 +635,7 @@ export class SandGame {
       case 'storm':
         // The sandstorm of the last phase: a gust, as the wind blows.
         this.grid.resetDrift();
-        this.grid.wind = event.direction;
+        this.grid.blow(event.direction);
         this.stormUntil = this._elapsedMs + WIND_GUST_MS;
         this.events.emit('wind', { phase: 'start', direction: event.direction });
         break;
@@ -677,9 +654,9 @@ export class SandGame {
 
   private onReaction(reaction: Reaction): void {
     const { kind, at, removed, tones } = reaction;
-    const samples = this.sampleOf(removed, tones);
+    const samples = this.sampler.removed(removed, tones);
     if (kind === 'quench') {
-      this.events.emit('quench', { samples: this.sampleAround(at) });
+      this.events.emit('quench', { samples: this.sampler.around(at) });
       return;
     }
     if (kind === 'burn') {
@@ -744,7 +721,7 @@ export class SandGame {
       toY: strike.toY,
       grains: strike.removed.length,
       points,
-      samples: this.sampleOf(strike.removed, strike.tones),
+      samples: this.sampler.removed(strike.removed, strike.tones),
     });
     if (strike.kind !== 'ground') {
       this.events.emit('notice', { id: `strike.${strike.kind}`, value: strike.removed.length });
@@ -754,7 +731,7 @@ export class SandGame {
   /** Burning scores half a clear: fire helps, it never beats linking the walls. */
   private burnRegion(region: readonly number[]): void {
     if (region.length === 0) return;
-    const samples = this.sample(region);
+    const samples = this.sampler.standing(region);
     this.grid.remove(region);
     const points = Math.round((region.length / 2) * (1 + this.boosts.scoreBonus));
     this._score += points;
@@ -843,7 +820,7 @@ export class SandGame {
     const regions = this.grid.spanningRegions();
     if (regions.length === 0) return;
     const all = regions.flat();
-    const samples = this.sample(all);
+    const samples = this.sampler.standing(all);
     if (this._worm?.touchesAny(all, 1)) this.hurtBoss(this._worm, 'link');
     // Measured before the clear: regions cleared with the sand this high are a close call.
     const tense = inDanger(this.pressure()) && !this.teasing;
@@ -869,82 +846,8 @@ export class SandGame {
     }
   }
 
-  /** A sample of grains already removed, with the tones they had. */
-  private sampleOf(indices: readonly number[], tones: readonly Tone[]): GrainSample[] {
-    const step = Math.max(1, Math.floor(indices.length / SAMPLE));
-    const samples: GrainSample[] = [];
-    for (let k = 0; k < indices.length; k += step) {
-      const i = indices[k]!;
-      samples.push({ x: i % this.grid.width, y: Math.floor(i / this.grid.width), tone: tones[k]! });
-    }
-    return samples;
-  }
-
-  /** Grains around a place, for a puff of effects where something happened. */
-  private sampleAround(at: number): GrainSample[] {
-    const W = this.grid.width;
-    const samples: GrainSample[] = [];
-    for (let k = 0; k < 24; k++) {
-      samples.push({
-        x: (at % W) + this.random.nextInt(9) - 4,
-        y: Math.floor(at / W) + this.random.nextInt(9) - 4,
-        tone: Tone.Steam,
-      });
-    }
-    return samples;
-  }
-
-  private sample(indices: readonly number[]): GrainSample[] {
-    const step = Math.max(1, Math.floor(indices.length / SAMPLE));
-    const samples: GrainSample[] = [];
-    for (let k = 0; k < indices.length; k += step) {
-      const i = indices[k]!;
-      samples.push({
-        x: i % this.grid.width,
-        y: Math.floor(i / this.grid.width),
-        tone: this.grid.tones[i] as Tone,
-      });
-    }
-    return samples;
-  }
-
-  private updateWind(): void {
-    if (!this.windy) return;
-    const wind = this.wind;
-    const now = this._elapsedMs;
-    if (wind.phase === 'waiting' && now >= wind.at - WIND_WARNING_MS) {
-      // Never a gust when the sand nears the top: the wind must not decide a game.
-      if (this.grid.sandHeight() > this.grid.height - WIND_SAFE_GRAINS) {
-        wind.at = now + WIND_WARNING_MS + WIND_GUST_MS;
-        return;
-      }
-      wind.phase = 'warned';
-      this.events.emit('wind', { phase: 'soon', direction: wind.direction });
-      this.events.emit('notice', { id: wind.direction < 0 ? 'windSoonLeft' : 'windSoonRight' });
-    } else if (wind.phase === 'warned' && now >= wind.at) {
-      wind.phase = 'blowing';
-      this.grid.resetDrift();
-      this.grid.wind = wind.direction;
-      this.events.emit('wind', { phase: 'start', direction: wind.direction });
-    } else if (wind.phase === 'blowing' && now >= wind.at + WIND_GUST_MS) {
-      this.grid.wind = 0;
-      this.events.emit('wind', { phase: 'end', direction: wind.direction });
-      // Gusts alternate: the sand is never pushed the same way twice in a row.
-      this.wind = {
-        direction: wind.direction === 1 ? -1 : 1,
-        at: now + this.nextGustDelay(),
-        phase: 'waiting',
-      };
-    }
-  }
-
-  private nextGustDelay(): number {
-    return WIND_EVERY_MS * (2 / 3 + this.random.next() * (2 / 3));
-  }
-
   private spawnNext(): void {
-    this.fillQueue(1);
-    const spec = this.upcoming.shift()!;
+    const spec = this.dealer.next();
     this.spawned++;
     let piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
     if (this.script.get(this.spawned)?.above && this.landedAt !== null) {
@@ -960,7 +863,7 @@ export class SandGame {
         this.rescueReady = false;
         this.grid.dropBottomRows(this.boosts.rescueRows * GRAINS_PER_CELL);
         this.events.emit('rescue', { rows: this.boosts.rescueRows });
-        this.upcoming.unshift(spec);
+        this.dealer.giveBack(spec);
         this.spawnNext();
         return;
       }
@@ -974,48 +877,6 @@ export class SandGame {
     this.fallAccumulator = 0;
     this.events.emit('spawn', { piece });
     if (isElement(spec.tone)) this.events.emit('notice', { id: NOTICE_OF[spec.tone] });
-  }
-
-  /** Colour of each new piece: sand, now and then an element, or what the script says. */
-  private fillQueue(count: number): void {
-    while (this.upcoming.length < count) {
-      let type = this.bag.next();
-      this.dealt++;
-      let tone: Tone = SAND_TONES[this.random.nextInt(SAND_TONES.length)]!;
-      const scripted = this.script.get(this.dealt);
-      if (scripted) {
-        tone = scripted.tone;
-        type = scripted.type ?? type;
-      } else if (
-        this.hazards &&
-        this.dealt > this.elementPace.after &&
-        this.sinceElement >= ELEMENT_GAP
-      ) {
-        const element = this.drawElement();
-        if (element !== null) tone = element;
-      }
-      this.sinceElement = isElement(tone) ? 0 : this.sinceElement + 1;
-      this.upcoming.push({ type, tone });
-    }
-  }
-
-  /** An element now and then, weighted, among those of this level; fire boosted by upgrades. */
-  private drawElement(): ElementTone | null {
-    const roster = this.elements ?? elementsAt(this._level);
-    if (
-      roster.length === 0 ||
-      this.random.next() >= this.elementPace.chance + this.boosts.fireBonus
-    ) {
-      return null;
-    }
-    const weight = (tone: ElementTone) =>
-      WEIGHT[tone] * (tone === Tone.Fire ? 1 + this.boosts.fireBonus * 10 : 1);
-    let roll = this.random.next() * roster.reduce((sum, tone) => sum + weight(tone), 0);
-    for (const tone of roster) {
-      roll -= weight(tone);
-      if (roll < 0) return tone;
-    }
-    return roster[roster.length - 1]!;
   }
 
   private isRunning(): boolean {

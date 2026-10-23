@@ -28,6 +28,26 @@ export interface RemovedCell extends Cell {
   readonly tone: Tone;
 }
 
+/** What a view may read of a board: its size, its cells and its queries, never a change. */
+export type ReadonlyBoard = Pick<
+  Board,
+  | 'width'
+  | 'height'
+  | 'hiddenRows'
+  | 'wraps'
+  | 'get'
+  | 'hasBomb'
+  | 'bombCount'
+  | 'isInside'
+  | 'isFree'
+  | 'column'
+  | 'fits'
+  | 'findGroups'
+  | 'clone'
+  | 'stackHeight'
+  | 'blockCount'
+>;
+
 /**
  * The well: a grid of tones, row 0 at the top. The first `hiddenRows` rows sit
  * above the visible area, where pieces spawn.

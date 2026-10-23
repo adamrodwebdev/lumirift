@@ -25,7 +25,8 @@ describe('SettingsService', () => {
     const storage = new MemoryStorage();
     const settings = new SettingsService(storage, DEFAULTS);
     expect(settings.current.musicVolume).toBe(0.5);
-    settings.update({ musicVolume: 0.2, ghost: false });
+    settings.setMusicVolume(0.2);
+    settings.showGhost(false);
     expect(settings.current.musicVolume).toBe(0.2);
     expect(JSON.parse(storage.get(SETTINGS_KEY)!)).toEqual({
       ...DEFAULTS,
@@ -53,14 +54,16 @@ describe('SettingsService', () => {
 
   it('remembers the touch controls chosen: gestures or buttons', () => {
     const storage = new MemoryStorage();
-    new SettingsService(storage, DEFAULTS).update({ controls: 'buttons' });
+    new SettingsService(storage, DEFAULTS).chooseControls('buttons');
     expect(new SettingsService(storage, DEFAULTS).current.controls).toBe('buttons');
   });
 
   it('remembers the keys and the repeat timing, within their bounds', () => {
     const storage = new MemoryStorage();
     const keys = KeyBindings.DEFAULT.with('rotateCw', 0, 'KeyK').toJSON();
-    new SettingsService(storage, DEFAULTS).update({ keys, das: 120, arr: 0 });
+    const settings = new SettingsService(storage, DEFAULTS);
+    settings.bindKeys(keys);
+    settings.setRepeat({ das: 120, arr: 0 });
     const saved = new SettingsService(storage, DEFAULTS).current;
     expect(saved.keys).toEqual(keys);
     expect([saved.das, saved.arr]).toEqual([120, 0]);
@@ -69,6 +72,23 @@ describe('SettingsService', () => {
     const fixed = new SettingsService(storage, DEFAULTS).current;
     expect([fixed.das, fixed.arr]).toEqual([DEFAULT_REPEAT.das, DEFAULT_REPEAT.arr]);
     expect(KeyBindings.parse(fixed.keys).codes('left')).toEqual([]);
+  });
+
+  it('keeps every change valid: volumes, repeat, keys; a volume moved unmutes', () => {
+    const settings = new SettingsService(new MemoryStorage(), DEFAULTS);
+    settings.toggleMute();
+    expect(settings.current.muted).toBe(true);
+    settings.setVolume(1.7);
+    expect([settings.current.volume, settings.current.muted]).toEqual([1, false]);
+    settings.setMusicVolume(-3);
+    expect(settings.current.musicVolume).toBe(0);
+    settings.setRepeat({ das: 9999, arr: -10 });
+    expect([settings.current.das, settings.current.arr]).toEqual([300, 0]);
+    // A reserved key never sticks.
+    settings.bindKeys({ ...DEFAULTS.keys, pause: ['Escape', null] });
+    expect(KeyBindings.parse(settings.current.keys).codes('pause')).toEqual([]);
+    settings.resetKeys();
+    expect(settings.current.keys).toEqual(DEFAULTS.keys);
   });
 
   it('survives corrupt storage', () => {

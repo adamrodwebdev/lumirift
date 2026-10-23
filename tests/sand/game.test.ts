@@ -83,11 +83,7 @@ describe('SandGame', () => {
 
   it('deals water and fire now and then, never among the first pieces', () => {
     const game = started(9);
-    const tones = Array.from({ length: 300 }, () => {
-      const spec = game.preview(1)[0]!;
-      (game as unknown as { upcoming: unknown[] }).upcoming.shift();
-      return spec.tone;
-    });
+    const tones = game.preview(300).map(({ tone }) => tone);
     expect(tones.slice(0, ELEMENTS_AFTER)).not.toContain(Tone.Water);
     expect(tones.slice(0, ELEMENTS_AFTER)).not.toContain(Tone.Fire);
     expect(tones).toContain(Tone.Water);
@@ -114,11 +110,7 @@ describe('SandGame', () => {
     game.start();
     const phases: string[] = [];
     game.events.on('wind', ({ phase }) => phases.push(phase));
-    const tones = Array.from({ length: 300 }, () => {
-      const spec = game.preview(1)[0]!;
-      (game as unknown as { upcoming: unknown[] }).upcoming.shift();
-      return spec.tone;
-    });
+    const tones = game.preview(300).map(({ tone }) => tone);
     expect(tones).not.toContain(Tone.Water);
     expect(tones).not.toContain(Tone.Fire);
     for (let t = 0; t < WIND_EVERY_MS * 2 && game.state === 'running'; t += 100) {
@@ -144,11 +136,7 @@ describe('SandGame', () => {
     });
     game.start();
     expect(game.windInMs).toBeNull();
-    const tones = Array.from({ length: 12 }, () => {
-      const spec = game.preview(1)[0]!;
-      (game as unknown as { upcoming: unknown[] }).upcoming.shift();
-      return spec.tone;
-    });
+    const tones = game.preview(12).map(({ tone }) => tone);
     // The active piece was the first: elements from the third piece on.
     expect(tones.slice(0, 1).some((tone) => tone === Tone.Water || tone === Tone.Lightning)).toBe(
       false,

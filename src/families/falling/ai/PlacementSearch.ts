@@ -1,4 +1,4 @@
-import type { Board } from '../board/Board';
+import type { Board, ReadonlyBoard } from '../board/Board';
 import type { Piece } from '../pieces/Piece';
 import type { Rotation } from '../pieces/PieceType';
 import { measure, type BoardFeatures } from './BoardFeatures';
@@ -20,7 +20,7 @@ export interface Placement {
  * well, sliding it sideways and dropping it: exactly the moves the AI will
  * then play, so every plan it picks can be carried out.
  */
-export function searchPlacements(board: Board, piece: Piece): Placement[] {
+export function searchPlacements(board: ReadonlyBoard, piece: Piece): Placement[] {
   const placements: Placement[] = [];
   const seen = new Set<string>();
   let turned = piece;
@@ -57,7 +57,7 @@ export function searchPlacements(board: Board, piece: Piece): Placement[] {
 }
 
 /** True when the piece can slide `dx` columns one step at a time. */
-function slides(board: Board, piece: Piece, dx: number): boolean {
+function slides(board: ReadonlyBoard, piece: Piece, dx: number): boolean {
   if (dx === 0) return true;
   const step = Math.sign(dx);
   for (let moved = step; Math.abs(moved) <= Math.abs(dx); moved += step) {

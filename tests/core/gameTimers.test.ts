@@ -29,6 +29,23 @@ describe('GameTimers', () => {
     expect(frames).toBe(25);
   });
 
+  it('runs a call soon (the next frame), and lets a plan be cancelled', () => {
+    const timers = new GameTimers();
+    const seen: string[] = [];
+    timers.soon(() => seen.push('soon'));
+    const cancel = timers.soon(() => seen.push('cancelled'));
+    expect(seen).toEqual([]);
+    cancel();
+    // A frame of no time (a pause) runs nothing.
+    timers.update(0);
+    expect(seen).toEqual([]);
+    timers.update(16);
+    expect(seen).toEqual(['soon']);
+    timers.after(50, () => seen.push('late'))();
+    timers.update(100);
+    expect(seen).toEqual(['soon']);
+  });
+
   it('runs the calls of a long frame in their order, and forgets them when cleared', () => {
     const timers = new GameTimers();
     const seen: number[] = [];

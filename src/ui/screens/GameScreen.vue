@@ -30,6 +30,7 @@ import RecordBurst from '../components/RecordBurst.vue';
 import SurgeLayer from '../components/SurgeLayer.vue';
 import KeyLegend from '../components/KeyLegend.vue';
 import PauseDialog from '../components/PauseDialog.vue';
+import { presentationFor } from '../presentation';
 import { stageFor } from '../stages';
 import { SURGE } from '../surgeControl';
 import { GAME_SURFACE } from '../useGameSurface';
@@ -118,21 +119,14 @@ const stage = stageFor(descriptor);
 const root = ref<HTMLElement | null>(null);
 provide(GAME_SURFACE, root);
 const touch = isTouchScreen();
-/** Where the parts go: one well, a duel (the opponent beside it), or the Mosaic's board and hand. */
-const layout =
-  descriptor.family === 'placement' ? 'mosaic' : props.modeId === 'duel' ? 'duel' : 'well';
+/** How the family shows itself: its layout, its touch help, a first game's guide, its clears. */
+const presentation = presentationFor(descriptor);
+const { layout } = presentation;
 /** A duel names its opponent over the opponent's well already. */
 const shownSubtitle = computed(() => (layout === 'duel' ? null : subtitle.value));
 const muted = computed(() => settings.current.muted);
-const toggleMute = () => settings.update({ muted: !muted.value });
-/** Touch help in words, shown in the pause where no drawing says it (by family). */
-const HELP: Readonly<Partial<Record<string, readonly string[]>>> = {
-  falling: ['controls.touch'],
-  sand: ['sand.helpTouch'],
-  placement: ['mosaic.helpTouch'],
-  volume: ['tower.helpTouch'],
-};
-const help = HELP[descriptor.family] ?? [];
+const toggleMute = () => settings.toggleMute();
+const help = presentation.touchHelp;
 /** The keys stay drawn beside the game for the first games. */
 const FIRST_GAMES = 5;
 const showHelp = profile.current.games < FIRST_GAMES;
@@ -141,11 +135,9 @@ const showHelp = profile.current.games < FIRST_GAMES;
  * The very first game is guided (modes played with the falling controls):
  * move, rotate, drop, then the goal, each step done by doing it.
  */
-const GUIDED: readonly string[] = ['falling', 'sand', 'volume'];
-const coach =
-  profile.current.games === 0 && GUIDED.includes(descriptor.family) ? new Coach() : null;
+const coach = profile.current.games === 0 && presentation.coachGoal ? new Coach() : null;
 const coachStep = ref<CoachStep | null>(coach?.step ?? null);
-const coachGoal = descriptor.family === 'sand' ? 'sand' : 'lines';
+const coachGoal = presentation.coachGoal ?? 'lines';
 /** The goal step stays a few seconds when no line comes. */
 const COACH_GOAL_MS = 9000;
 let coachTimer: ReturnType<typeof setTimeout> | undefined;
@@ -260,7 +252,7 @@ const listen = (current: GameSession) => {
     events.on('clear', ({ lines, combo }) => {
       if (coach?.cleared()) coachUpdate();
       // The Sand clears regions (linking the walls), the other families lines.
-      const text = t(descriptor.family === 'sand' ? 'notice.regions' : 'notice.lines', lines);
+      const text = t(presentation.clearNotice, lines);
       announce(
         combo > 0 ? `${text} · ${t('notice.combo', { n: combo + 1 })}` : text,
         lines >= 2 || combo > 0,

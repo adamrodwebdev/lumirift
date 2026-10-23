@@ -37,8 +37,9 @@ export class ProfileService {
     return this.profile.level;
   }
 
-  get model(): Profile {
-    return this.profile;
+  /** Whether a cosmetic is the player's (worn, or there to wear). */
+  isUnlocked(cosmetic: Cosmetic): boolean {
+    return this.profile.isUnlocked(cosmetic);
   }
 
   objectivesFor(day: string): readonly ObjectiveProgress[] {

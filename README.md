@@ -149,8 +149,8 @@ Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAME
 ## Qualité
 
 - TypeScript strict, ESLint `strictTypeChecked`, Prettier.
-- Plus de 280 tests unitaires : moteurs, modes, IA, effets, services, progression, parité
-  des traductions.
+- Plus de 500 tests unitaires : moteurs, modes, IA, effets et sons, services, progression,
+  parité des traductions.
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 13
   modes, une partie complète, défi du jour, réglages retenus, menu (onglets, glissement,
   carte, Atelier), clavier seul ; en russe, la langue la plus longue, chaque page et chaque
@@ -183,7 +183,8 @@ src/
   progression/   Expérience, objectifs, cosmétiques, profil
   fx/, render/   Particules, secousses, sons ; palette et motifs partagés
   services/      Réglages, records, profil, thème, ambiance, audio, partage
-  ui/            Écrans (menu, jeu), pages du menu (hub/) et composants
+  ui/            Écrans (menu, jeu), pages du menu (hub/), composants ; la présentation et
+                 la scène de chaque famille (presentation.ts, stages.ts)
 ```
 
 ## Confidentialité
