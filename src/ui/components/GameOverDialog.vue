@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { I18nT, useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
 import type { CampaignLevel } from '@/campaign/Levels';

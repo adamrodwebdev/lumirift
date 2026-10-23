@@ -297,22 +297,22 @@ Règles détaillées :
     plus par grain libre ; il pousse aussi la vapeur et se tait près du haut.
 - **Réactions** (1.12, `SandReactions`) : la chaîne compte plus que les éléments seuls.
 
-  | Rencontre               | Réaction                                                                                                        |
-  | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
-  | Feu + huile             | **Brasier** : toute la nappe s'embrase et ronge le sable autour, de plus en plus faiblement (½ point par grain) |
-  | Feu + eau               | **Vapeur** : un nuage qui monte et **masque** le puits (jamais le contour de la pièce)                          |
-  | Feu + glace             | **Fonte** : la glace devient de l'eau, la flamme de la vapeur                                                   |
-  | Vapeur en haut du puits | **Pluie** : une fois sur deux, elle retombe en eau                                                              |
-  | Eau + glace             | **Gel** : l'eau gèle peu à peu au contact                                                                       |
-  | Foudre + eau            | **Électrocution** : toute zone de sable qui touche la nappe se brise (3 000 grains au plus), **points entiers** |
-  | Foudre + sable          | La zone frappée éclate (½ point par grain)                                                                      |
-  | Foudre + huile / liane  | Brasier                                                                                                         |
-  | Foudre + glace          | La glace éclate en eau                                                                                          |
-  | Eau + graine            | **Liane** (pleine longueur)                                                                                     |
-  | Feu + liane ou graine   | **Mèche** : le feu remonte la liane et l'embrase                                                                |
-  | Acide + sable / glace   | L'acide les ronge                                                                                               |
-  | Eau + acide             | **Dilution** : l'acide redevient de l'eau                                                                       |
-  | Vent + vapeur / brasier | Le vent dégage le brouillard et pousse les flammes                                                              |
+  | Rencontre               | Réaction                                                                                                                                                           |
+  | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+  | Feu + huile             | **Brasier** : toute la nappe s'embrase et ronge le sable autour, de plus en plus faiblement (½ point par grain)                                                    |
+  | Feu + eau               | **Vapeur** : un nuage qui monte et **masque** le puits (jamais le contour de la pièce)                                                                             |
+  | Feu + glace             | **Fonte** : la glace devient de l'eau, la flamme de la vapeur                                                                                                      |
+  | Vapeur en haut du puits | **Pluie** : grain par grain, une fois sur deux, elle retombe en eau ; en l'air, elle ne bloque ni pièce ni foudre et ne compte pas dans la hauteur du tas (1.28.1) |
+  | Eau + glace             | **Gel** : l'eau gèle peu à peu au contact                                                                                                                          |
+  | Foudre + eau            | **Électrocution** : toute zone de sable qui touche la nappe se brise (3 000 grains au plus), **points entiers**                                                    |
+  | Foudre + sable          | La zone frappée éclate (½ point par grain)                                                                                                                         |
+  | Foudre + huile / liane  | Brasier                                                                                                                                                            |
+  | Foudre + glace          | La glace éclate en eau                                                                                                                                             |
+  | Eau + graine            | **Liane** (pleine longueur)                                                                                                                                        |
+  | Feu + liane ou graine   | **Mèche** : le feu remonte la liane et l'embrase                                                                                                                   |
+  | Acide + sable / glace   | L'acide les ronge                                                                                                                                                  |
+  | Eau + acide             | **Dilution** : l'acide redevient de l'eau                                                                                                                          |
+  | Vent + vapeur / brasier | Le vent dégage le brouillard et pousse les flammes                                                                                                                 |
 
   Chaque réaction est **nommée la première fois** qu'elle survient dans une partie.
 
@@ -826,9 +826,11 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   montrée mènent droit au but (1.18) : le guide ne retient pas un joueur qui a compris.
   La campagne s'ouvre sur le **Sable** (1-1 : deux zones en trois minutes), en version
   **calme** (1.10) : ni vent, ni élément au hasard (`calm` du niveau, `hazards: false` du jeu).
-  Gagné, le 1-1 se termine sur une **promesse** (1.18) : l'ombre du Ver des dunes passe sous
-  le sable, yeux rouges et sable qui tremble, puis la fenêtre de fin dit qu'il attend au
-  niveau 2-7 ; la carte nomme le Gardien du chapitre, ou le prochain. Le **1-2** fait
+  Gagné, le 1-1 se termine sur une **promesse** (1.18) : le Ver des dunes arrive sous le
+  sable, yeux rouges et sable qui tremble, puis (1.28.1) fissure le sable, surgit en
+  rugissant, tête et cou dehors, et replonge, hors d'atteinte. La fenêtre de fin attend sa
+  plongée et dit qu'il attend au niveau 2-7, où le vaincre est l'objectif. La carte nomme
+  le Gardien du chapitre, ou le prochain. Le **1-2** fait
   pratiquer ces éléments (`practice` : sans vent, eau, foudre, huile, feu et graine dès la
   troisième pièce, une chance sur trois) avant le Classique du 1-3.
 - **Son** : tous les sons dans une même tonalité (ré mineur pentatonique) ; **musique

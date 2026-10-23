@@ -32,7 +32,7 @@ function until(worm: DuneWorm, state: DuneWorm['state'], limitMs = 20_000) {
 describe('The Dune Wyrm', () => {
   it('roams, warns where it will come up, bursts out throwing sand, stays out, then dives', () => {
     const grid = arena();
-    const worm = new DuneWorm(grid, new SeededRandom(3), 1000);
+    const worm = new DuneWorm(grid, new SeededRandom(3), { firstSurgeMs: 1000 });
     const grains = grid.grainCount();
     expect(until(worm, 'warn')).toContain('warn');
     expect(worm.warnAt).not.toBeNull();
@@ -72,7 +72,7 @@ describe('The Dune Wyrm', () => {
 
   it('swallows surface sand in its second phase', () => {
     const grid = arena();
-    const worm = new DuneWorm(grid, new SeededRandom(5), 500);
+    const worm = new DuneWorm(grid, new SeededRandom(5), { firstSurgeMs: 500 });
     while (worm.phase === 1) worm.hit('boltHead');
     worm.drain();
     const seen = until(worm, 'exposed');

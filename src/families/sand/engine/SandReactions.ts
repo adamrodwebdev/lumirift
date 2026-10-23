@@ -459,9 +459,9 @@ export class SandReactions {
     const W = grid.width;
     const down = (column: number) => {
       if (column < 0 || column >= W) return -1;
+      // The bolt passes through steam and rain still falling, as a piece does.
       for (let y = Math.max(0, fromY); y < grid.height; y++) {
-        const tone = grid.tones[y * W + column]!;
-        if (tone !== 0 && tone !== Tone.Steam) return y * W + column;
+        if (!grid.isOpen(column, y)) return y * W + column;
       }
       return -1;
     };

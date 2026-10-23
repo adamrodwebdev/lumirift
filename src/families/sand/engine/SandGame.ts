@@ -7,7 +7,7 @@ import { Tone } from '@/core/Tone';
 import type { RotationDirection } from '@/families/falling/pieces/PieceType';
 import { GravityCurve } from '@/families/falling/rules/GravityCurve';
 import { isElement, NOTICE_OF, type ElementTone } from './Elements';
-import { DuneWorm, type WormEvent } from './DuneWorm';
+import { DuneWorm, TEASER_MS, TEASER_PACE, type WormEvent } from './DuneWorm';
 import { GrainSampler, type GrainSample } from './GrainSampler';
 import {
   ELEMENT_GAP,
@@ -211,7 +211,11 @@ export class SandGame {
     this.reactions = new SandReactions(this.grid, this.random);
     this._worm =
       options.boss === 'duneWorm'
-        ? new DuneWorm(this.grid, this.random, options.bossDelayMs)
+        ? new DuneWorm(
+            this.grid,
+            this.random,
+            options.bossDelayMs === undefined ? {} : { firstSurgeMs: options.bossDelayMs },
+          )
         : null;
     this.rescueReady = this.boosts.rescueRows > 0;
     // Drawn even in a calm game, so that a seed always deals the same pieces.
@@ -371,23 +375,25 @@ export class SandGame {
   }
 
   /**
-   * The Dune Wyrm passes under the sand as the level ends (the campaign's
-   * teaser): no more pieces, no clock, no wind; the sand keeps settling and
-   * the worm swims, never bursting out. Only in a running game without a boss.
+   * The Dune Wyrm shows itself as the level ends (the campaign's teaser): no
+   * more pieces, no clock, no wind, no scoring; it swims in under the sand,
+   * bursts out in the middle roaring, and dives (1.28.1: it only passed under
+   * the sand before, and could go unnoticed). Only in a running game without
+   * a boss. Returns how long its show lasts (ms), 0 when nothing shows.
    */
-  tease(): boolean {
-    if (this._state !== 'running' || this._worm || this.teasing) return false;
+  tease(): number {
+    if (this._state !== 'running' || this._worm || this.teasing) return 0;
     this.teasing = true;
     this._active = null;
     this.grid.calm();
-    const worm = new DuneWorm(this.grid, this.random, Number.POSITIVE_INFINITY);
-    // Across the well, inside the sand (its shadow shows only where there is sand).
+    const worm = new DuneWorm(this.grid, this.random, TEASER_PACE);
+    // In from the left, inside the sand (its shadow shows only where there is sand).
     const { height, width } = this.grid;
     const depth = height - Math.max(5, Math.min(18, Math.round(this.grid.sandHeight() * 0.45)));
-    worm.passTo(2, depth, width - 2, depth);
+    worm.passTo(2, depth, width / 2, depth);
     this._worm = worm;
     this.events.emit('tease', {});
-    return true;
+    return TEASER_MS;
   }
 
   update(deltaMs: number): void {
@@ -594,7 +600,8 @@ export class SandGame {
       this.grid.calm();
       this.events.emit('wind', { phase: 'end', direction: 1 });
     }
-    if (!worm.out || !this.isRunning()) return;
+    // A Guardian only showing itself (the teaser) is out of reach.
+    if (!worm.out || !this.isRunning() || this.teasing) return;
     // Only the grains around its body matter: a box around it, not the whole well.
     const { grid } = this;
     const W = grid.width;
@@ -817,13 +824,15 @@ export class SandGame {
   }
 
   private clearSpanning(): void {
+    // The level is won while a Guardian shows itself: the sand it throws scores nothing.
+    if (this.teasing) return;
     const regions = this.grid.spanningRegions();
     if (regions.length === 0) return;
     const all = regions.flat();
     const samples = this.sampler.standing(all);
     if (this._worm?.touchesAny(all, 1)) this.hurtBoss(this._worm, 'link');
     // Measured before the clear: regions cleared with the sand this high are a close call.
-    const tense = inDanger(this.pressure()) && !this.teasing;
+    const tense = inDanger(this.pressure());
     this.grid.remove(all);
     const multiplier = this.combo.clear();
     const points = Math.round(

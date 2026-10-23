@@ -146,8 +146,8 @@ export class SandSession implements GameSession<FallingCommand> {
   }
 
   /** Only the Dune Wyrm lives in sand. */
-  tease(boss: BossId): boolean {
-    return boss === 'duneWorm' && this.game.tease();
+  tease(boss: BossId): number {
+    return boss === 'duneWorm' ? this.game.tease() : 0;
   }
 
   dispose(): void {
@@ -177,6 +177,8 @@ export class SandSession implements GameSession<FallingCommand> {
     };
     events.on('tease', () => this.events.emit('notice', { id: 'boss.tease' }));
     events.on('boss', ({ event }) => {
+      // A Guardian showing itself in a teaser is no fight: none of the fight's words.
+      if (this.game.isTeasing) return;
       if (event.type === 'warn') tell('warn');
       else if (event.type === 'surge') tell('exposed');
       else if (event.type === 'swallow') tell('swallow');

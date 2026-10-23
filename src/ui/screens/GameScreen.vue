@@ -224,7 +224,7 @@ run.events.on('indicators', ({ indicators: next }) => (indicators.value = next))
 run.events.on('best', ({ best: line }) => (best.value = line));
 run.events.on('record', celebrateRecord);
 run.events.on('goal', ({ goal: progress }) => (goal.value = progress));
-run.events.on('over', ({ ending, reason, teased }) => showEnding(ending, reason, teased));
+run.events.on('over', ({ ending, reason, teaserMs }) => showEnding(ending, reason, teaserMs));
 
 clock.subscribe((delta, real) => {
   const current = run.session;
@@ -273,11 +273,8 @@ const listen = (current: GameSession) => {
   ];
 };
 
-/** How long a teased Guardian passes before the level's end window. */
-const TEASER_MS = 2600;
-
 /** The game's end, settled by the run: the effects end, the end window waits for the collapse. */
-const showEnding = (ending: Ending, reason: string, teased: boolean) => {
+const showEnding = (ending: Ending, reason: string, teaserMs: number) => {
   tension.end(reason);
   surge.end();
   outcome.value = {
@@ -306,7 +303,8 @@ const showEnding = (ending: Ending, reason: string, teased: boolean) => {
       showOutcome.value = true;
       clock.stop();
     },
-    teased ? Math.max(gameOverDelayMs, TEASER_MS) : gameOverDelayMs,
+    // A Guardian showing itself (the teaser) is seen to the end of its dive.
+    Math.max(gameOverDelayMs, teaserMs),
   );
 };
 
