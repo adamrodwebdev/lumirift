@@ -137,10 +137,10 @@ export class FallingEffects {
   beatGlow = 0;
   stackHidden = false;
   /**
-   * Hard drops are shown falling. The renderer that can draw them turns this
-   * on; Rhythm keeps them instant, since its landings must sound on the beat.
+   * Hard drops are shown falling, when the stage's renderer can draw them
+   * (`showDropsFalling`); Rhythm keeps them instant, its landings on the beat.
    */
-  animateDrops = false;
+  private dropsFalling = false;
 
   private readonly rowVelocity: Float32Array;
   private readonly rowHold: Float32Array;
@@ -227,7 +227,7 @@ export class FallingEffects {
 
   /** How long the picture of a hard drop of this distance takes to land (0: at once). */
   dropWait(distance: number): number {
-    return this.animateDrops && this.profile().motion ? fallMs(distance) : 0;
+    return this.dropsFalling && this.profile().motion ? fallMs(distance) : 0;
   }
 
   /** Board cells (row × width + column) of pieces still falling: not drawn yet. */
@@ -274,6 +274,11 @@ export class FallingEffects {
     age(this.flashes, deltaMs, FLASH_MS);
     age(this.popups, deltaMs, POPUP_MS);
     age(this.waves, deltaMs, WAVE_MS);
+  }
+
+  /** The stage draws hard drops falling (its renderer can). */
+  showDropsFalling(): void {
+    this.dropsFalling = true;
   }
 
   color(css: string): number {

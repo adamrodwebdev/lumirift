@@ -24,6 +24,7 @@ import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
 import { FallingSession, type FallingCommand } from '../FallingSession';
 import { FallingEffects } from '../fx/FallingEffects';
 import { FallingSoundscape } from '../fx/FallingSoundscape';
+import { HeartSounds } from '../fx/HeartSounds';
 import type { PieceSpec } from '../game/Game';
 import { FallingInput } from '../input/FallingInput';
 import { isFallingAction } from '../input/KeyBindings';
@@ -31,7 +32,6 @@ import { WellGestures } from '../input/WellGestures';
 import type { AbilityId } from '../modes/GameMode';
 import { FallingRenderer } from '../render/FallingRenderer';
 import { TonePalette } from '@/render/TonePalette';
-import * as sounds from '@/fx/sounds';
 import { RiftHeartMode } from '../modes/RiftHeartMode';
 import { RiftHeartDecor } from '../render/RiftHeartDecor';
 import { decorFor, type WellDecor } from '../render/WellDecor';
@@ -97,7 +97,7 @@ const effects = new FallingEffects(
   (combo) => t('wellWords.combo', { n: combo }),
 );
 // Hard drops are shown falling; Rhythm keeps them instant, its landings sound on the beat.
-effects.animateDrops = session.modeId !== 'rhythm';
+if (session.modeId !== 'rhythm') effects.showDropsFalling();
 const detachEffects = effects.attach(session);
 watch(
   () => equipment.value.shatter,
@@ -113,21 +113,7 @@ const heartDecor = mode instanceof RiftHeartMode ? new RiftHeartDecor(mode, form
 const decor: WellDecor | null = heartDecor ?? decorFor(session.modeId);
 const detachHeart =
   mode instanceof RiftHeartMode && heartDecor
-    ? [
-        heartDecor.attach(),
-        mode.heartEvents.on('boss', ({ event }) => {
-          if (event.type === 'swell') audio.play(sounds.rumble);
-          else if (event.type === 'beat') {
-            audio.play(sounds.stoneThud);
-            haptics.pulse([50, 30, 50]);
-          } else if (event.type === 'hurt') audio.play(sounds.bossHit(event.hit === 'shard'));
-          else if (event.type === 'phase') audio.play(sounds.roar);
-          else {
-            audio.play(sounds.newRecord);
-            haptics.pulse([40, 30, 40, 30, 160]);
-          }
-        }),
-      ]
+    ? [heartDecor.attach(), new HeartSounds(audio, haptics).attach(mode)]
     : [];
 
 /** Whole-well moments (flip, mirror) are CSS animations of the canvas. */

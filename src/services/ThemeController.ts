@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue';
+import { readonly, ref, type Ref } from 'vue';
 
 export type Theme = 'light' | 'dark';
 
@@ -7,7 +7,9 @@ export type Theme = 'light' | 'dark';
  * stages still read `resolved` so that a future theme only changes here.
  */
 export class ThemeController {
-  readonly resolved: Ref<Theme> = ref<Theme>('dark');
+  private readonly shown = ref<Theme>('dark');
+  /** Read-only: only the controller changes the theme. */
+  readonly resolved: Readonly<Ref<Theme>> = readonly(this.shown);
 
   constructor(root: HTMLElement) {
     root.dataset.theme = this.resolved.value;

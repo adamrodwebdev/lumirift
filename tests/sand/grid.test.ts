@@ -48,7 +48,7 @@ describe('SandGrid physics', () => {
   it('pushes grains with the wind', () => {
     const grid = new SandGrid(20, 2);
     for (let x = 0; x < 5; x++) grid.put(x, 1, Tone.ChromaA, 0);
-    grid.wind = 1;
+    grid.blow(1);
     const rng = random();
     for (let i = 0; i < 60; i++) grid.simulate(rng);
     const xs = [...grid.tones].map((tone, i) => (tone ? i % 20 : -1)).filter((x) => x >= 0);

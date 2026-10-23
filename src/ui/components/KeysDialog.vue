@@ -4,14 +4,13 @@ import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
 import {
-  DEFAULT_KEYS,
   isBindable,
   KEY_SLOTS,
   type KeyAction,
   type KeyBindings,
   type KeySlot,
 } from '@/families/falling/input/KeyBindings';
-import { ARR_RANGE, DAS_RANGE, DEFAULT_REPEAT } from '@/families/falling/input/RepeatTiming';
+import { ARR_RANGE, DAS_RANGE } from '@/families/falling/input/RepeatTiming';
 import { useKeyBindings } from '../useKeyBindings';
 import { useKeyLabels } from '../useKeyLabels';
 import ModalDialog from './ModalDialog.vue';
@@ -94,7 +93,7 @@ const slotLabel = (action: KeyAction, slot: number) => {
     : t('keymap.slotEmpty', { action: name(action), n: slot + 1 });
 };
 
-const save = (next: KeyBindings) => settings.update({ keys: next.toJSON() });
+const save = (next: KeyBindings) => settings.bindKeys(next.toJSON());
 
 const listen = (action: KeyAction, slot: number) => {
   if (isListening(action, slot)) {
@@ -169,13 +168,13 @@ const arrText = () =>
   settings.current.arr === 0 ? t('keymap.instant') : format.milliseconds(settings.current.arr);
 
 const onDas = (event: Event) =>
-  settings.update({ das: Number((event.target as HTMLInputElement).value) });
+  settings.setRepeat({ das: Number((event.target as HTMLInputElement).value) });
 const onArr = (event: Event) =>
-  settings.update({ arr: Number((event.target as HTMLInputElement).value) });
+  settings.setRepeat({ arr: Number((event.target as HTMLInputElement).value) });
 
 const reset = () => {
   stop();
-  settings.update({ keys: DEFAULT_KEYS, ...DEFAULT_REPEAT });
+  settings.resetKeys();
   status.value = t('keymap.restored');
 };
 

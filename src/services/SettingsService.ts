@@ -1,6 +1,11 @@
 import { reactive, readonly } from 'vue';
-import { ARR_RANGE, DAS_RANGE, type RepeatTiming } from '@/families/falling/input/RepeatTiming';
-import { KeyBindings, type KeyMap } from '@/families/falling/input/KeyBindings';
+import {
+  ARR_RANGE,
+  DAS_RANGE,
+  DEFAULT_REPEAT,
+  type RepeatTiming,
+} from '@/families/falling/input/RepeatTiming';
+import { DEFAULT_KEYS, KeyBindings, type KeyMap } from '@/families/falling/input/KeyBindings';
 import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, type Locale } from '@/i18n/locales';
 import { readJson, type KeyValueStorage } from './KeyValueStorage';
@@ -40,9 +45,14 @@ const isEffectsLevel = (value: unknown): value is EffectsLevel =>
 const within = (value: unknown, range: { readonly min: number; readonly max: number }) =>
   typeof value === 'number' && value >= range.min && value <= range.max;
 
+const clamp = (value: number, min: number, max: number) =>
+  Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : min;
+
 /**
  * The player's preferences: validated when read, saved on every change, and
- * exposed read-only so that only `update` can change them.
+ * exposed read-only. They change only through intentions (1.28), each one
+ * keeping its value valid: a volume within 0–1, a repeat within its range,
+ * keys a player may bind.
  */
 export class SettingsService {
   private readonly state: Settings;
@@ -59,7 +69,65 @@ export class SettingsService {
     this.current = readonly(this.state);
   }
 
-  update(patch: Partial<Settings>): void {
+  /** The interface's language (a portal's wins over the saved one at each launch). */
+  chooseLocale(locale: Locale): void {
+    this.save({ locale });
+  }
+
+  /** A touch screen plays with gestures, or with the on-screen buttons. */
+  chooseControls(controls: ControlScheme): void {
+    this.save({ controls });
+  }
+
+  chooseEffects(effects: EffectsLevel): void {
+    this.save({ effects });
+  }
+
+  showGhost(ghost: boolean): void {
+    this.save({ ghost });
+  }
+
+  allowShake(shake: boolean): void {
+    this.save({ shake });
+  }
+
+  allowHaptics(haptics: boolean): void {
+    this.save({ haptics });
+  }
+
+  /** The sound effects' volume (0 to 1): moving it means the player wants to hear, so it unmutes. */
+  setVolume(volume: number): void {
+    this.save({ volume: clamp(volume, 0, 1), muted: false });
+  }
+
+  /** The music's volume (0 to 1), unmuting as the sound effects' does. */
+  setMusicVolume(volume: number): void {
+    this.save({ musicVolume: clamp(volume, 0, 1), muted: false });
+  }
+
+  toggleMute(): void {
+    this.save({ muted: !this.state.muted });
+  }
+
+  /** The keys of each action, kept only where a player may bind them (KeyBindings). */
+  bindKeys(keys: KeyMap): void {
+    this.save({ keys: KeyBindings.parse(keys).toJSON() });
+  }
+
+  /** A held move's repeat: its delay (DAS) and its rate (ARR), each kept within its range. */
+  setRepeat(timing: Partial<RepeatTiming>): void {
+    this.save({
+      ...(timing.das === undefined ? {} : { das: clamp(timing.das, DAS_RANGE.min, DAS_RANGE.max) }),
+      ...(timing.arr === undefined ? {} : { arr: clamp(timing.arr, ARR_RANGE.min, ARR_RANGE.max) }),
+    });
+  }
+
+  /** The keys and their repeat as they came. */
+  resetKeys(): void {
+    this.save({ keys: DEFAULT_KEYS, ...DEFAULT_REPEAT });
+  }
+
+  private save(patch: Partial<Settings>): void {
     Object.assign(this.state, patch);
     this.storage.set(SETTINGS_KEY, JSON.stringify(this.state));
   }

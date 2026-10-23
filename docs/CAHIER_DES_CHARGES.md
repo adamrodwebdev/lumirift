@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                    |
-| ------- | ---------- | ------------------------- |
-| 1.27    | 22/10/2026 | La partie hors de l'écran |
+| Version | Date       | Statut              |
+| ------- | ---------- | ------------------- |
+| 1.28    | 23/10/2026 | Les familles à part |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1506,6 +1506,30 @@ src/families/volume/
   `useCampaignText`), `nextPlay` (`Edition`), `DailyChallenge.endsAt` et `timeLeft`
   (`core/Day`), `guardianBonusOpen` (`Profile`).
 
+- **Les familles à part** (1.28) : l'écran de jeu ne teste plus la famille, et les gros
+  fichiers d'une famille se découpent par raison de changer.
+
+  ```
+  src/ui/presentation.ts  Ce que chaque famille montre à l'écran de jeu : disposition,
+                          aide tactile, guide de la première partie, annonce d'un
+                          effacement (le duel change la disposition)
+  src/families/falling/fx/HeartSounds   Sons et vibrations du Cœur de la faille
+  src/families/volume/fx/EyeSounds      Sons et vibrations de l'Œil de la Tour
+  src/families/volume/input/TowerTurn   Rotation de la Tour à deux doigts
+  src/families/sand/engine/
+    SandDealer    Les pièces : sac de formes, couleurs, éléments (pondérés, espacés),
+                  script par rang ; aperçu, pièce suivante, pièce rendue (seconde chance)
+    SandWind      Les rafales : annoncées, alternées, retenues près du haut
+    GrainSampler  Les grains montrés par les effets (effacement, brûlure, réaction)
+  ```
+
+  Le Sable tire tout d'une seule source à graine : les pièces, les éléments, les rafales et
+  les grains de vapeur gardent l'ordre de leurs tirages, pour qu'une graine distribue
+  toujours la même partie (défis du jour et des Gardiens). Le combat du Ver des dunes reste
+  dans `SandGame`, trop lié à la physique. Les réglages changent par des méthodes
+  d'intention qui gardent chaque valeur valide ; le thème affiché, le profil et le plateau
+  vu par l'IA sont en lecture seule.
+
 ### 5.15 Progression (livrée au lot 10)
 
 ```
@@ -1687,3 +1711,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.25    | 22/10/2026 | La surcharge de la faille : jauge remplie par les lignes, huit secondes de temps ralenti au choix du joueur, bonus de sortie (§ 3.3, § 3.8, § 5.6).                  |
 | 1.26    | 22/10/2026 | Responsive de bout en bout : HUD lisible (14/16 px) et à l'échelle des grands écrans, container queries, zooms 200 et 400 %, 60 images/s sur tactile (§ 4.1, § 4.2). |
 | 1.27    | 22/10/2026 | La partie hors de l'écran : `RunKind`, `GameRun`, `GameEnding` ; règles sorties de l'interface, registres plutôt que `switch` (§ 5.14).                              |
+| 1.28    | 23/10/2026 | Les familles à part : présentation par famille, sons des Gardiens, Sable découpé, réglages par intentions, état protégé (§ 5.14).                                    |

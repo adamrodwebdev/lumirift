@@ -34,25 +34,21 @@ const CONTROL_LABELS: Readonly<Record<ControlScheme, string>> = {
 };
 /** The choice of controls only means something on a touch screen. */
 const touch = isTouchScreen();
-const onControls = (value: ControlScheme) => settings.update({ controls: value });
+const onControls = (value: ControlScheme) => settings.chooseControls(value);
 const keysOpen = ref(false);
 
 const onLocale = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
-  if (isLocale(value)) settings.update({ locale: value });
+  if (isLocale(value)) settings.chooseLocale(value);
 };
 const checked = (event: Event) => (event.target as HTMLInputElement).checked;
-const onGhost = (event: Event) => settings.update({ ghost: checked(event) });
-const onEffects = (value: EffectsLevel) => settings.update({ effects: value });
-const onShake = (event: Event) => settings.update({ shake: checked(event) });
-const onHaptics = (event: Event) => settings.update({ haptics: checked(event) });
-const onVolume = (event: Event) =>
-  settings.update({ volume: Number((event.target as HTMLInputElement).value) / 100, muted: false });
-const onMusic = (event: Event) =>
-  settings.update({
-    musicVolume: Number((event.target as HTMLInputElement).value) / 100,
-    muted: false,
-  });
+const percent = (event: Event) => Number((event.target as HTMLInputElement).value) / 100;
+const onGhost = (event: Event) => settings.showGhost(checked(event));
+const onEffects = (value: EffectsLevel) => settings.chooseEffects(value);
+const onShake = (event: Event) => settings.allowShake(checked(event));
+const onHaptics = (event: Event) => settings.allowHaptics(checked(event));
+const onVolume = (event: Event) => settings.setVolume(percent(event));
+const onMusic = (event: Event) => settings.setMusicVolume(percent(event));
 </script>
 
 <template>

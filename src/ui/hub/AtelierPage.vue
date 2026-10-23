@@ -78,7 +78,7 @@ interface ShelfItem {
 const items = computed<ShelfItem[]>(() =>
   COSMETICS.filter((cosmetic) => cosmetic.kind === kind.value).map((cosmetic) => ({
     cosmetic,
-    unlocked: profile.model.isUnlocked(cosmetic),
+    unlocked: profile.isUnlocked(cosmetic),
     worn: worn.value[kind.value] === cosmetic.id,
     shown: shownId.value === cosmetic.id,
     isNew: isNew(cosmetic),

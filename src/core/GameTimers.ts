@@ -7,14 +7,21 @@ interface Planned {
  * Calls planned in game time: they wait with the game, through its pauses,
  * its slow motions and the rift surge, so a sound stays in step with the
  * picture it goes with (a timer of the browser runs on the wall clock).
+ * Each plan returns its cancellation.
  */
 export class GameTimers {
   private readonly planned: Planned[] = [];
 
   /** Runs `run` now, or once `delayMs` of game time has gone by. */
-  after(delayMs: number, run: () => void): void {
-    if (delayMs <= 0) run();
-    else this.planned.push({ left: delayMs, run });
+  after(delayMs: number, run: () => void): () => void {
+    if (delayMs > 0) return this.plan(delayMs, run);
+    run();
+    return () => {};
+  }
+
+  /** Runs `run` at the next frame of game time: after the events of this one. */
+  soon(run: () => void): () => void {
+    return this.plan(0, run);
   }
 
   /** Game time goes by: the calls due run, the earliest first. */
@@ -31,5 +38,14 @@ export class GameTimers {
   /** Forgets every call still waiting. */
   clear(): void {
     this.planned.length = 0;
+  }
+
+  private plan(delayMs: number, run: () => void): () => void {
+    const call: Planned = { left: delayMs, run };
+    this.planned.push(call);
+    return () => {
+      const index = this.planned.indexOf(call);
+      if (index >= 0) this.planned.splice(index, 1);
+    };
   }
 }

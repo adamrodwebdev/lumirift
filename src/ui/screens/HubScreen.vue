@@ -175,7 +175,7 @@ onMounted(() => {
         class="btn btn--square"
         :aria-label="muted ? t('nav.unmute') : t('nav.mute')"
         :aria-pressed="muted"
-        @click="settings.update({ muted: !muted })"
+        @click="settings.toggleMute()"
       >
         <AppIcon :name="muted ? 'mute' : 'sound'" />
       </button>

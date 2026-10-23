@@ -61,7 +61,8 @@ const effects = new MosaicEffects(
   (points) => format.number(points),
 );
 const detachEffects = effects.attach(session);
-const detachSounds = new MosaicSoundscape(audio, haptics).attach(session);
+const soundscape = new MosaicSoundscape(audio, haptics);
+const detachSounds = soundscape.attach(session);
 
 // --- Reactive mirror of the hand and the jokers --------------------------------
 
@@ -166,7 +167,11 @@ const overlay = () => {
 };
 
 const offFrame = props.clock.subscribe((delta) => {
-  if (props.active || session.state === 'over') effects.update(delta);
+  // Effects, and the sounds waiting for them, freeze with the pause.
+  if (props.active || session.state === 'over') {
+    effects.update(delta);
+    soundscape.update(delta);
+  }
   renderer?.render(overlay());
 });
 

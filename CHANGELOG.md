@@ -3,6 +3,42 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.28.0] — 23/10/2026
+
+Les familles à part : la fin du plan d'architecture de l'audit du 22/10. Rien ne change à
+l'écran, sauf un son de la Mosaïque qui ne joue plus pendant la pause.
+
+### Modifié
+
+- **Chaque famille déclare sa présentation** (`src/ui/presentation.ts`) : disposition, aide
+  tactile, guide de la première partie, annonce d'un effacement. L'écran de jeu ne teste
+  plus la famille ; le duel garde sa disposition à deux puits.
+- **Les Gardiens à part** : les sons et vibrations du Cœur de la faille et de l'Œil de la
+  Tour quittent les scènes (`HeartSounds`, `EyeSounds`), une table par événement au lieu
+  d'un `switch`. La rotation à deux doigts de la Tour devient une classe testée
+  (`TowerTurn`).
+- **Le Sable découpé** : `SandGame` (1 029 lignes) confie les pièces à `SandDealer`, le vent
+  à `SandWind` et les grains montrés par les effets à `GrainSampler` (890 lignes). Les
+  tirages gardent leur ordre : une graine distribue toujours les mêmes pièces (défis du
+  jour et des Gardiens). Le combat du Ver des dunes reste dans la partie : trop lié à la
+  physique pour ce lot.
+- **Les réglages par intentions** : `SettingsService` n'offre plus de mise à jour libre
+  mais des méthodes (`chooseLocale`, `setVolume`, `toggleMute`, `bindKeys`, `setRepeat`…)
+  qui gardent chaque valeur valide : volumes de 0 à 1, répétition des touches dans ses
+  plages, touches relues.
+- **L'état protégé** : thème affiché en lecture seule, profil sans accès à son modèle
+  (`isUnlocked`), plateau en lecture seule pour l'IA et les vues (`ReadonlyBoard`), vent du
+  sable et chute animée des pièces lâchées derrière des méthodes.
+- Nouveaux tests : sons des Gardiens et de la Mosaïque, rotation de la Tour, distributeur
+  et vent du Sable (le vent se retient quand le sable approche du haut), réglages toujours
+  valides. Cinq tests lisaient la file privée des pièces : ils passent par l'aperçu public.
+
+### Corrigé
+
+- **Les sons de la Mosaïque suivent le temps du jeu** (`GameTimers`), comme ses effets : une
+  pause juste après une ligne laissait le bruit de la casse jouer dans le menu de pause,
+  tuiles figées. Il attend désormais la reprise.
+
 ## [1.27.0] — 22/10/2026
 
 La partie hors de l'écran : l'architecture suit les règles de séparation (règles, logique,

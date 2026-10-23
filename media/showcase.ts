@@ -34,7 +34,8 @@ window.addEventListener('error', (event) => {
 });
 
 const services = createBrowserServices(new WebPlatform(), new MemoryStorage());
-services.settings.update({ effects: 'full', locale: 'en' });
+services.settings.chooseEffects('full');
+services.settings.chooseLocale('en');
 
 const app = createApp(ShowcaseView, { clock })
   .provide(APP_SERVICES, services)

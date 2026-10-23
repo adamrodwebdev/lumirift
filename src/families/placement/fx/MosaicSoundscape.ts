@@ -1,3 +1,4 @@
+import { GameTimers } from '@/core/GameTimers';
 import { PlayerVoice } from '@/fx/PlayerVoice';
 import * as sounds from '@/fx/sounds';
 import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
@@ -14,11 +15,15 @@ const JOKER_SOUNDS: Readonly<Record<JokerId, (voice: PlayerVoice) => SoundRecipe
   cube: () => sounds.tick(0),
 };
 
-/** Sounds and vibrations of the Mosaic, in step with its visuals and with the music. */
+/**
+ * Sounds and vibrations of the Mosaic, in step with its visuals and with the
+ * music. The stage gives it the game's time (`update`), as to the effects.
+ */
 export class MosaicSoundscape {
-  private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+  private readonly timers = new GameTimers();
   private readonly voice = new PlayerVoice();
-  private dealSound: ReturnType<typeof setTimeout> | undefined;
+  /** Cancels the sound of a new hand, when a joker that redeals has its own. */
+  private cancelDeal: () => void = () => {};
 
   constructor(
     private readonly audio: AudioEngine,
@@ -40,11 +45,11 @@ export class MosaicSoundscape {
       // A new hand lands piece after piece; a joker that redeals (reroll,
       // undo) has its own sound, which wins.
       session.onGame('deal', () => {
-        this.dealSound = this.later(() => audio.play(sounds.deal), 0);
+        this.cancelDeal = this.timers.soon(() => audio.play(sounds.deal));
       }),
       session.onGame('jokerGained', () => audio.play(sounds.bonus)),
       session.onGame('jokerUsed', ({ joker }) => {
-        this.cancel(this.dealSound);
+        this.cancelDeal();
         audio.play(JOKER_SOUNDS[joker](this.voice));
         if (joker === 'bomb') haptics.pulse([40, 30, 80]);
       }),
@@ -71,24 +76,17 @@ export class MosaicSoundscape {
     ];
     return () => {
       offs.forEach((off) => off());
-      this.timers.forEach((timer) => clearTimeout(timer));
       this.timers.clear();
     };
   }
 
-  /** The break is heard when the tiles break, after their little jump. */
-  private later(play: () => void, delayMs = BREAK_MS): ReturnType<typeof setTimeout> {
-    const timer = setTimeout(() => {
-      this.timers.delete(timer);
-      play();
-    }, delayMs);
-    this.timers.add(timer);
-    return timer;
+  /** Game time goes by, as for the visual effects: the sounds waiting for them follow. */
+  update(deltaMs: number): void {
+    this.timers.update(deltaMs);
   }
 
-  private cancel(timer: ReturnType<typeof setTimeout> | undefined): void {
-    if (timer === undefined) return;
-    clearTimeout(timer);
-    this.timers.delete(timer);
+  /** The break is heard when the tiles break, after their little jump (game time). */
+  private later(play: () => void, delayMs = BREAK_MS): void {
+    this.timers.after(delayMs, play);
   }
 }

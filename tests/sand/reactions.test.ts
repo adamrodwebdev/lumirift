@@ -219,11 +219,7 @@ describe('Dealing elements', () => {
 
   it('deals the first level its show, even in a calm game', () => {
     const game = started({ script: SHOWCASE });
-    const tones = Array.from({ length: 12 }, () => {
-      const spec = game.preview(1)[0]!;
-      (game as unknown as { upcoming: unknown[] }).upcoming.shift();
-      return spec.tone;
-    });
+    const tones = game.preview(12).map(({ tone }) => tone);
     // The first piece is already the active one: the preview starts at rank 2.
     for (const { at, tone } of SHOWCASE) expect(tones[at - 2]).toBe(tone);
     expect(tones.filter((tone) => tone >= Tone.Water).length).toBe(SHOWCASE.length);
