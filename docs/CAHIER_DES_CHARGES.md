@@ -910,7 +910,8 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
     qu'un coup le touche, et seulement une fois sorti du sable ; il replonge (le spectacle de
     la fin du 1-1) et donne rendez-vous au 2-7.
   - **Règles** : ni chrono ni défaite (le fond du puits se vide dès qu'une pièce ne peut plus
-    entrer, six rangées), ni pub, ni étoiles, ni record, ni surcharge ; l'expérience compte.
+    entrer, six rangées), ni pub, ni étoiles, ni record, ni surcharge, ni alarme de danger
+    (`pressure()` nulle) ; l'expérience compte.
   - **Le guide** dit quoi faire à chaque pièce et à chaque mouvement du Ver, avec les touches
     ou le geste ; il remplace les compteurs du tableau de bord (en haut sur téléphone, sous
     l'objectif à côté du puits en paysage), garde la hauteur de sa plus longue phrase et se

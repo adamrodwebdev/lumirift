@@ -288,14 +288,18 @@ export class SandGame {
    * fall a cell: the last warning, drawn on the well. Null while there is room.
    */
   spawnWarning(): SandPiece | null {
-    if (this._state !== 'running' || this.teasing) return null;
+    if (this._state !== 'running' || this.teasing || this.forgiving) return null;
     const spec = this.dealer.peek();
     const piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
     return this.fits(piece, 0, GRAINS_PER_CELL) ? null : piece;
   }
 
-  /** How high the sand stands in the well (0 to 1). */
+  /**
+   * How high the sand stands in the well (0 to 1). A game that cannot be lost
+   * is never in danger: no alarm where the bottom empties instead.
+   */
   pressure(): number {
+    if (this.forgiving) return 0;
     return Math.min(1, this.grid.sandHeight() / this.grid.height);
   }
 

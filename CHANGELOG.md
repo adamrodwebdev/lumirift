@@ -26,7 +26,10 @@ directement dans le jeu, sans écran-titre ni menu. Notre site et la démo ne ch
     ni le Ver. Il garde la hauteur de sa plus longue phrase, pour que le puits ne bouge pas
     quand il parle. Une croix le masque.
   - **Ni défaite ni chrono** : si le sable monte trop, le fond du puits se vide. Ni pub, ni
-    étoiles, ni record ; l'expérience gagnée compte.
+    étoiles, ni record ; l'expérience gagnée compte. Et donc **aucune alarme** : ni
+    vignette rouge qui bat, ni fissures, ni battements de cœur, ni pièce en rouge. Le puits
+    préparé laissait peu de place : un joueur qui lâchait ses pièces voyait le danger dès
+    15 à 28 s, et pendant 30 à 70 % de l'étape.
   - **La pause propose « Reprendre » et « Passer l'entraînement »**, sans autre menu.
   - **À la fin**, « Niveau 1-1 » en premier, « Menu » en second. Le jeu retient que
     l'entraînement est fait ou passé ; un joueur qui a déjà joué une partie ne le voit pas.
