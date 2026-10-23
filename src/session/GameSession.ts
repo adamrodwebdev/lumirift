@@ -110,9 +110,10 @@ export interface GameSession<C extends Command = Command> {
   /**
    * A Guardian of a later chapter shows itself as this level ends (the
    * campaign's teaser): the game stops taking pieces and its clock, its world
-   * keeps moving. False when this game cannot show that Guardian.
+   * keeps moving. Returns how long the show lasts (ms): the end window waits
+   * for it. 0 when this game cannot show that Guardian.
    */
-  tease?(boss: BossId): boolean;
+  tease?(boss: BossId): number;
   /** Releases listeners; the session cannot be used afterwards. */
   dispose(): void;
 }

@@ -231,6 +231,21 @@ for (const size of KEY_SIZES)
     }
 
     await tab(page, 'Accueil').click();
+    // The Guardian's bonus sticks out of its card: the page, which clips, never cuts it (1.28.1).
+    const bonus = panel(page, 'Accueil').locator('.challenge__bonus');
+    if ((await bonus.count()) > 0) {
+      const inside = await bonus.evaluate((el) => {
+        const edge = el.closest('.page')!.getBoundingClientRect();
+        const box = el.getBoundingClientRect();
+        return (
+          box.top >= edge.top &&
+          box.bottom <= edge.bottom &&
+          box.left >= edge.left &&
+          box.right <= edge.right
+        );
+      });
+      expect(inside, `${size.name}: the Guardian's bonus inside the page`).toBe(true);
+    }
     if (tiny) {
       // The page scrolls to Play, and no challenge loses the end of its words.
       const play = panel(page, 'Accueil').getByRole('button', { name: /^Jouer/ });

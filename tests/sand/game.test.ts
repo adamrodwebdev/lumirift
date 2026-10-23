@@ -9,6 +9,7 @@ import {
   WIND_EVERY_MS,
   WIND_GUST_MS,
 } from '@/families/sand/engine/SandGame';
+import { TEASER_MS, WORM_HEALTH } from '@/families/sand/engine/DuneWorm';
 import { GRAINS_PER_CELL, SAND_TONES } from '@/families/sand/engine/SandGrid';
 
 const G = GRAINS_PER_CELL;
@@ -146,30 +147,50 @@ describe('SandGame', () => {
     ).toBeGreaterThanOrEqual(3);
   });
 
-  it('lets the Dune Wyrm pass under the sand once the level is won (the teaser)', () => {
+  it('lets the Dune Wyrm show itself once the level is won (the teaser)', () => {
     const game = started();
     for (let t = 0; t < 600; t += STEP_MS) game.update(STEP_MS);
     const elapsed = game.elapsedMs;
+    const score = game.score;
     const teased = vi.fn();
+    const moves: string[] = [];
     game.events.on('tease', teased);
+    let surface = 0;
+    game.events.on('boss', ({ event }) => {
+      moves.push(event.type);
+      if (event.type === 'warn') surface = game.worm!.surfaceAt(event.x);
+    });
     expect(game.worm).toBeNull();
-    expect(game.tease()).toBe(true);
-    expect(game.tease()).toBe(false);
+    expect(game.tease()).toBe(TEASER_MS);
+    expect(game.tease()).toBe(0);
     expect(teased).toHaveBeenCalledOnce();
     expect(game.isTeasing).toBe(true);
     expect(game.active).toBeNull();
     const worm = game.worm!;
     const from = worm.headX;
-    for (let t = 0; t < 1500; t += STEP_MS) game.update(STEP_MS);
-    // It swims across, never bursts out; no piece comes, the clock stands still.
+    for (let t = 0; t < 1000; t += STEP_MS) game.update(STEP_MS);
+    // It swims in under the sand, towards the middle...
     expect(worm.headX).toBeGreaterThan(from + 20);
     expect(worm.out).toBe(false);
+    // ...bursts out roaring and dives before the end window, out of reach all along.
+    let highest = Number.POSITIVE_INFINITY;
+    for (let t = 1000; t < TEASER_MS; t += STEP_MS) {
+      game.update(STEP_MS);
+      if (worm.exposed) highest = Math.min(highest, worm.headY);
+    }
+    // Its head and neck out of the sand: a silhouette, not a bump.
+    expect(surface - highest).toBeGreaterThanOrEqual(20);
+    expect(moves).toEqual(['warn', 'surge', 'dive']);
+    expect(worm.out).toBe(false);
+    expect(worm.health).toBe(WORM_HEALTH);
+    // No piece comes, the clock stands still, the sand it throws scores nothing.
     expect(game.active).toBeNull();
     expect(game.elapsedMs).toBe(elapsed);
+    expect(game.score).toBe(score);
     // The Guardian's own level has no teaser.
     const boss = new SandGame({ random: new SeededRandom(4), boss: 'duneWorm' });
     boss.start();
-    expect(boss.tease()).toBe(false);
+    expect(boss.tease()).toBe(0);
   });
 
   it('warns where the next piece would appear once the sand leaves it no room', () => {
@@ -218,5 +239,24 @@ describe('SandSession', () => {
     expect(() =>
       createSandSession('classic', { random: new SeededRandom(2), timeLimitMs: null }),
     ).toThrow();
+  });
+});
+
+describe('Rain over the well (1.28.1)', () => {
+  it('never blocks a new piece nor counts as danger, and pieces fall through it', () => {
+    const game = new SandGame({ random: new SeededRandom(3), hazards: false });
+    const { grid } = game;
+    // A shower over the rows where pieces enter: once, it held a piece in the
+    // air there and ended level 1-1 in its first minute; it also lit the danger.
+    for (let i = 0; i < 2 * G * grid.width; i++) grid.rainDrop(i);
+    game.start();
+    expect(game.state).toBe('running');
+    expect(game.spawnWarning()).toBeNull();
+    expect(game.pressure()).toBe(0);
+    const piece = game.active!;
+    game.hardDrop();
+    const bottom = grid.width * (grid.height - 1);
+    const landed = [...grid.tones.subarray(bottom)].filter((tone) => tone === piece.tone);
+    expect(landed.length).toBeGreaterThanOrEqual(G);
   });
 });

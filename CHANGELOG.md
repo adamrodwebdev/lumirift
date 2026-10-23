@@ -3,6 +3,42 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.28.1] — 23/10/2026
+
+Corrections après un essai sur téléphone (Samsung S25+).
+
+### Corrigé
+
+- **Le puits ne vire plus au rouge sans raison** : la vapeur refroidie en haut du puits
+  retombe en pluie, et ces gouttes encore en l'air comptaient comme le haut du tas. Pendant
+  une seconde, le danger montait à 100 % alors que le tas était bas : vignette rouge qui
+  bat, fissures, battements de cœur, musique pressée. Le spectacle du 1-1 y menait à chaque
+  partie, vers la quarantième seconde. La pluie encore en l'air ne compte plus ; elle
+  redevient de l'eau en touchant le tas.
+- **La pluie ne termine plus une partie** : une pièce se posait sur les gouttes, en l'air,
+  et s'émiettait là où la suivante doit entrer. Sur 12 parties simulées du 1-1, deux
+  finissaient ainsi à 14 s, puits presque vide. Les pièces, les éclairs et le Ver
+  traversent maintenant la pluie comme la vapeur.
+- **La promesse du 1-1 s'affiche** : « Le Ver des dunes s'éveille : il vous attend au
+  niveau 2-7 » restait vide dans la fenêtre de fin, comme l'aide « Espace pour jouer » de
+  l'accueil sur ordinateur. Le composant `<i18n-t>` n'était pas installé (build allégé) ;
+  il est importé là où il sert, et un test le vérifie pour chaque composant.
+- **Le bonus « +30 XP » du défi des Gardiens n'est plus coupé** en haut de l'accueil sur
+  téléphone : l'étiquette dépassait de sa carte, et la page la rognait. Le test responsive
+  la vérifie à chaque taille clé.
+
+### Modifié
+
+- **La pluie tombe goutte à goutte** : un nuage né d'un coup (le feu sur l'eau) se
+  dissipait d'un coup, et sa pluie tombait en une seule ligne horizontale, comme un défaut
+  d'affichage. Chaque grain de vapeur refroidit désormais à son heure : le nuage
+  s'éclaircit et la pluie s'égrène sur une demi-seconde environ.
+- **Le Ver des dunes se montre vraiment à la fin du 1-1** : il arrivait sous le sable et
+  la fenêtre le couvrait au bout de 2,6 s. Désormais, il nage jusqu'au milieu du puits,
+  fissure le sable, surgit en rugissant (tête et cou hors du sable, secousse), regarde,
+  puis replonge. La fenêtre attend la fin de sa plongée, environ 4 s. Il reste hors
+  d'atteinte et le sable qu'il projette ne rapporte rien : le combat, lui, reste au 2-7.
+
 ## [1.28.0] — 23/10/2026
 
 Les familles à part : la fin du plan d'architecture de l'audit du 22/10. Rien ne change à

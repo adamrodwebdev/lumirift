@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { I18nT, useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
 import { dayKey, timeLeft } from '@/core/Day';
@@ -353,6 +353,14 @@ onBeforeUnmount(() => {
   display: flex;
   gap: var(--space-2);
   width: min(100%, 27rem);
+}
+
+/*
+ * The Guardian's bonus sticks out above its card: where the challenges open
+ * the page (portrait, a tiny window), room for it under the page's edge, which clips.
+ */
+.challenges:has(.challenge__bonus) {
+  margin-top: 0.6rem;
 }
 
 .challenge {
@@ -844,6 +852,11 @@ onBeforeUnmount(() => {
     width: min(100%, 17rem);
   }
 
+  /* In the middle of the screen, the bonus has room: every line counts here. */
+  .challenges:has(.challenge__bonus) {
+    margin-top: 0;
+  }
+
   /*
    * A narrow column (a small phone on its side): the play button's word and
    * icon scale down to it, so that a longer word (ИГРАТЬ) stays inside.
@@ -957,6 +970,10 @@ onBeforeUnmount(() => {
   .challenges {
     flex-direction: column;
     width: 100%;
+  }
+
+  .challenges:has(.challenge__bonus) {
+    margin-top: 0.6rem;
   }
 
   .challenge__text strong,

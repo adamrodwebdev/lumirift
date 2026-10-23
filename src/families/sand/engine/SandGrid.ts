@@ -1,6 +1,14 @@
 import type { RandomSource } from '@/core/Random';
 import { CHROMA_TONES, Tone } from '@/core/Tone';
-import { DENSITY, LIFE_STEPS, matterOf, RAIN_CHANCE, RAIN_ZONE, type Matter } from './Elements';
+import {
+  DENSITY,
+  LIFE_STEPS,
+  matterOf,
+  RAIN_CHANCE,
+  RAIN_ZONE,
+  STEAM_FADE,
+  type Matter,
+} from './Elements';
 
 /** Each cell of the well is made of this many grains, side by side. */
 export const GRAINS_PER_CELL = 6;
@@ -29,7 +37,9 @@ const DENSITY_OF: readonly number[] = Array.from(
  * The sand well: one cell per grain. Powders fall and slide, liquids spread
  * and settle by density, steam rises, solids hold still; wind pushes the loose
  * surface. Grains that wear out change (water sets, fire dies, ice melts,
- * steam rains). Typed arrays only: the physics allocates nothing while it runs.
+ * steam rains). Rain still in the air is no obstacle: pieces fall through it,
+ * the pile's height ignores it; it is water once it lands (1.28.1). Typed
+ * arrays only: the physics allocates nothing while it runs.
  */
 export class SandGrid {
   readonly tones: Uint8Array;
@@ -39,6 +49,8 @@ export class SandGrid {
   readonly life: Uint16Array;
   /** 1 for a grain of sand that holds still (a vine). */
   readonly fixed: Uint8Array;
+  /** 1 for a drop of rain still falling (see `rainDrop`). */
+  private readonly rain: Uint8Array;
   /** Direction of the wind blowing now (−1 left, 1 right) or 0: it changes by `blow` and `calm`. */
   private blowing: -1 | 0 | 1 = 0;
   /** Seeds that wore out this step without water: they sprout anyway (read by the game). */
@@ -60,6 +72,7 @@ export class SandGrid {
     this.grain = new Uint8Array(size);
     this.life = new Uint16Array(size);
     this.fixed = new Uint8Array(size);
+    this.rain = new Uint8Array(size);
     this.drift = new Uint8Array(size);
     this.movedAt = new Uint32Array(size);
     this.visited = new Uint8Array(size);
@@ -92,11 +105,10 @@ export class SandGrid {
     );
   }
 
-  /** A falling piece may pass: nothing, or only steam (a cloud never blocks a piece). */
+  /** A falling piece may pass: nothing, steam or rain (a cloud, a shower never block a piece). */
   isOpen(x: number, y: number): boolean {
     if (x < 0 || y < 0 || x >= this.width || y >= this.height) return false;
-    const tone = this.tones[y * this.width + x]!;
-    return tone === 0 || tone === Tone.Steam;
+    return this.passable(y * this.width + x);
   }
 
   /** Physics steps run so far (a grain moved since a given step is not where it was). */
@@ -121,11 +133,22 @@ export class SandGrid {
     this.life[i] = life;
     this.fixed[i] = 0;
     this.drift[i] = 0;
+    this.rain[i] = 0;
   }
 
   /** Makes a grain of sand hold still (a vine). */
   fix(i: number): void {
     this.fixed[i] = 1;
+  }
+
+  /**
+   * A drop of rain (steam cooled at the top of the well): water falling
+   * through the air, which a piece passes through and the pile's height
+   * ignores, until it lands and is water like any other.
+   */
+  rainDrop(i: number): void {
+    this.set(i, Tone.Water, this.grain[i]);
+    this.rain[i] = 1;
   }
 
   simulate(random: RandomSource): number {
@@ -151,6 +174,8 @@ export class SandGrid {
           moved++;
           continue;
         }
+        // A drop of rain that can fall no further has landed: it is water now.
+        this.rain[i] = 0;
         if (matter === 'liquid' && this.spread(i, x, random)) {
           moved++;
           continue;
@@ -158,7 +183,7 @@ export class SandGrid {
         // Wind only lifts loose grains: those with nothing on top, not yet blown a cell away.
         if (
           this.blowing !== 0 &&
-          (y === 0 || tones[i - W] === 0 || tones[i - W] === Tone.Steam) &&
+          (y === 0 || this.passable(i - W)) &&
           this.drift[i]! < WIND_MAX_DRIFT &&
           random.next() < WIND_PUSH &&
           this.isOpen(x + this.blowing, y)
@@ -247,7 +272,7 @@ export class SandGrid {
   dropBottomRows(count: number): void {
     const n = Math.min(count, this.height) * this.width;
     const keep = this.tones.length - n;
-    for (const array of [this.tones, this.grain, this.life, this.drift, this.fixed]) {
+    for (const array of [this.tones, this.grain, this.life, this.drift, this.fixed, this.rain]) {
       array.copyWithin(n, 0, keep);
       array.fill(0, 0, n);
     }
@@ -263,17 +288,16 @@ export class SandGrid {
     this.life[i] = 0;
     this.drift[i] = 0;
     this.fixed[i] = 0;
+    this.rain[i] = 0;
   }
 
-  /** Height of the pile, in grains from the floor (steam floats above it and does not count). */
+  /**
+   * Height of the pile, in grains from the floor: steam floating above it and
+   * rain still falling do not count (the danger of a game is read from it).
+   */
   sandHeight(): number {
-    const { width: W, height: H, tones } = this;
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        const tone = tones[y * W + x]!;
-        if (tone !== 0 && tone !== Tone.Steam) return H - y;
-      }
-    }
+    const { width: W, height: H } = this;
+    for (let i = 0; i < W * H; i++) if (!this.passable(i)) return H - Math.floor(i / W);
     return 0;
   }
 
@@ -380,23 +404,32 @@ export class SandGrid {
     return false;
   }
 
+  /** Nothing a piece or the pile's height would meet: no grain, steam, or rain still falling. */
+  private passable(i: number): boolean {
+    const tone = this.tones[i]!;
+    return tone === 0 || tone === Tone.Steam || this.rain[i] === 1;
+  }
+
   private swap(from: number, to: number): void {
-    const { tones, grain, life, drift, fixed } = this;
+    const { tones, grain, life, drift, fixed, rain } = this;
     const tone = tones[to]!;
     const shade = grain[to]!;
     const left = life[to]!;
     const blown = drift[to]!;
     const still = fixed[to]!;
+    const drop = rain[to]!;
     tones[to] = tones[from]!;
     grain[to] = grain[from]!;
     life[to] = life[from]!;
     drift[to] = drift[from]!;
     fixed[to] = fixed[from]!;
+    rain[to] = rain[from]!;
     tones[from] = tone;
     grain[from] = shade;
     life[from] = left;
     drift[from] = blown;
     fixed[from] = still;
+    rain[from] = drop;
     this.movedAt[to] = this.steps;
     if (tone !== 0) this.movedAt[from] = this.steps;
   }
@@ -416,9 +449,14 @@ export class SandGrid {
           this.set(i, Tone.Water, this.grain[i]);
           break;
         case Tone.Steam:
+          // A cloud thins out grain by grain, never all at once.
+          if (random.next() >= STEAM_FADE) {
+            life[i] = 1;
+            break;
+          }
           // Cooled at the top of the well, steam falls back as rain.
           if (((i / W) | 0) < H * RAIN_ZONE && random.next() < RAIN_CHANCE) {
-            this.set(i, Tone.Water, this.grain[i]);
+            this.rainDrop(i);
           } else this.clear(i);
           break;
         case Tone.Seed:

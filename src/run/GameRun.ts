@@ -23,8 +23,8 @@ export interface GameRunEventMap {
   record: Readonly<Record<string, never>>;
   /** Where a campaign level's goal stands. */
   goal: { readonly goal: GoalProgress | null };
-  /** The game is over, its end settled; a teased Guardian passes before the end window. */
-  over: { readonly ending: Ending; readonly reason: string; readonly teased: boolean };
+  /** The game is over, its end settled; a teased Guardian shows itself this long (ms) first. */
+  over: { readonly ending: Ending; readonly reason: string; readonly teaserMs: number };
 }
 
 /** The doors a run goes through: its ending's, the modes, the portal's, a seed. */
@@ -153,9 +153,9 @@ export class GameRun {
       const won = this.judge.check(state);
       if (won) {
         const teaser = this.kind.level?.teaser;
-        const teased = won.won && teaser !== undefined && (game.tease?.(teaser) ?? false);
-        if (!teased) game.pause();
-        this.finish('goal', won, teased);
+        const teaserMs = won.won && teaser !== undefined ? (game.tease?.(teaser) ?? 0) : 0;
+        if (teaserMs === 0) game.pause();
+        this.finish('goal', won, teaserMs);
       }
     }
   }
@@ -184,7 +184,7 @@ export class GameRun {
   }
 
   /** The game ends (by itself, or a level's goal met): its end settled and told. */
-  finish(reason: string, decided: CampaignOutcome | null = null, teased = false): void {
+  finish(reason: string, decided: CampaignOutcome | null = null, teaserMs = 0): void {
     const game = this.game;
     if (!game || this.state === 'over') return;
     const tracker = this.tracker;
@@ -198,7 +198,7 @@ export class GameRun {
       reason,
       timeLeftMs: game.indicators().find((item) => item.id === 'timeLeft')?.value ?? 0,
       verdict,
-      teased,
+      teased: teaserMs > 0,
       report: (base) =>
         tracker
           ? tracker.report(base)
@@ -207,7 +207,7 @@ export class GameRun {
     this.ended = ending;
     this.rewardWatched = false;
     this.setPhase('over');
-    this.events.emit('over', { ending, reason, teased });
+    this.events.emit('over', { ending, reason, teaserMs });
   }
 
   /**

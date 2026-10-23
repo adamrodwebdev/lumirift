@@ -121,6 +121,12 @@ export const ACID_BITE_COST = 60;
 /** Steam high in the well falls back as rain (chance), else it vanishes. */
 export const RAIN_CHANCE = 0.5;
 export const RAIN_ZONE = 0.3;
+/**
+ * Each step past its life, the chance that a grain of steam cools (rain or
+ * nothing): a cloud born at once thins out over half a second or so, its
+ * rain falls drop by drop, never as one line (1.28.1).
+ */
+export const STEAM_FADE = 0.08;
 /** A vine grows this many grains long (half that without water), one grain every few steps. */
 export const VINE_LENGTH = 72;
 export const VINE_STEP_EVERY = 2;

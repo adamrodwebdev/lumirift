@@ -95,3 +95,43 @@ describe('SandGrid regions', () => {
     expect(grid.grainCount()).toBe(1);
   });
 });
+
+describe('Rain (1.28.1)', () => {
+  it('falls as no obstacle and leaves the pile alone, then lands as water', () => {
+    const grid = new SandGrid(6, 20);
+    for (let x = 0; x < 6; x++) grid.put(x, 19, Tone.ChromaA, 0);
+    // Steam cooled at the top of the well: a drop of rain.
+    grid.rainDrop(1 * 6 + 2);
+    const rng = random();
+    grid.simulate(rng);
+    expect(grid.get(2, 2)).toBe(Tone.Water);
+    expect(grid.isOpen(2, 2)).toBe(true);
+    expect(grid.sandHeight()).toBe(1);
+    settle(grid, rng, 60);
+    const landed = [...grid.tones.keys()].filter((i) => grid.tones[i] === Tone.Water);
+    expect(landed).toHaveLength(1);
+    const at = landed[0]!;
+    expect(Math.floor(at / 6)).toBe(18);
+    expect(grid.isOpen(at % 6, 18)).toBe(false);
+    expect(grid.sandHeight()).toBe(2);
+  });
+});
+
+describe('A cloud cooling (1.28.1)', () => {
+  it('thins out grain by grain: its rain falls over time, never as one line', () => {
+    const grid = new SandGrid(30, 40);
+    // A cloud born at once, at the end of its life, high in the well.
+    for (let x = 0; x < 30; x++) grid.set(2 * 30 + x, Tone.Steam, 0, 1);
+    const rng = random();
+    const cooling = new Set<number>();
+    let left = 30;
+    for (let step = 1; step <= 200 && left > 0; step++) {
+      grid.simulate(rng);
+      const steam = grid.tones.filter((tone) => tone === Tone.Steam).length;
+      if (steam < left) cooling.add(step);
+      left = steam;
+    }
+    expect(left).toBe(0);
+    expect(cooling.size).toBeGreaterThanOrEqual(8);
+  });
+});

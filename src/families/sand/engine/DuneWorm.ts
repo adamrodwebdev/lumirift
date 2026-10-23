@@ -19,6 +19,8 @@ export const WORM_RADIUS = 3.2;
 const ROAM_MS = [0, 7000, 5200, 5200] as const;
 const WARN_MS = [0, 2000, 1500, 1500] as const;
 const SURGE_MS = 700;
+/** How far above the sand its head rises when it bursts out, in grains. */
+const SURGE_RISE = 10;
 const EXPOSED_MS = 3000;
 const DIVE_MS = 900;
 /** Grains per physics step it swims at, by phase. */
@@ -56,6 +58,29 @@ export const HIT_DAMAGE: Readonly<Record<WormHit, number>> = {
 /** A shock leaves it stunned this long (ms). */
 const STUN_MS = 1500;
 
+/** How the worm paces its cycle: a fight's by default. */
+export interface WormPace {
+  /** Its first burst comes after this long (ms): the player sees the arena first. */
+  readonly firstSurgeMs?: number;
+  /**
+   * A show, not a fight (the campaign's teaser): it bursts out once where it
+   * swam to, after a short warning, rising `rise` grains out of the sand,
+   * stays out a moment and dives for good.
+   */
+  readonly show?: { readonly warnMs: number; readonly exposedMs: number; readonly rise: number };
+}
+
+/**
+ * The teaser after level 1-1 (1.28.1): the Wyrm swims in under the sand to
+ * the middle of the well, warns, bursts out roaring, looks, and dives.
+ */
+const TEASER_SWIM_MS = 1100;
+const TEASER_SHOW = { warnMs: 600, exposedMs: 1000, rise: 24 } as const;
+export const TEASER_PACE: WormPace = { firstSurgeMs: TEASER_SWIM_MS, show: TEASER_SHOW };
+/** The teaser's show at its longest, from its first stroke to the end of its dive (ms). */
+export const TEASER_MS =
+  TEASER_SWIM_MS + TEASER_SHOW.warnMs + SURGE_MS + TEASER_SHOW.exposedMs + DIVE_MS;
+
 export type WormEvent =
   | { readonly type: 'warn'; readonly x: number }
   | { readonly type: 'surge'; readonly x: number; readonly y: number }
@@ -90,10 +115,9 @@ export class DuneWorm {
   constructor(
     private readonly grid: SandGrid,
     private readonly random: RandomSource,
-    /** First burst after this long, so that the player sees the arena first. */
-    firstSurgeMs = 4000,
+    private readonly pace: WormPace = {},
   ) {
-    this.timer = firstSurgeMs;
+    this.timer = pace.firstSurgeMs ?? 4000;
     for (let k = 0; k < SEGMENTS; k++) {
       this.xs[k] = grid.width / 3 + k * 1.2;
       this.ys[k] = grid.height - 12;
@@ -215,7 +239,10 @@ export class DuneWorm {
       }
       case 'surge': {
         const x = this._warnAt!;
-        const top = this.surfaceAt(x) - 10;
+        // A show rises higher (its head and neck out), never past the top of the well.
+        const top = this.pace.show
+          ? Math.max(WORM_RADIUS + 2, this.surfaceAt(x) - this.pace.show.rise)
+          : this.surfaceAt(x) - SURGE_RISE;
         this.heading = -Math.PI / 2;
         this.swim(x, top, 1.4, 1);
         if (this.timer <= 0 || this.headY <= top + 1) this.burst();
@@ -240,9 +267,12 @@ export class DuneWorm {
 
   private warn(): void {
     const margin = 6;
-    this._warnAt = margin + this.random.nextInt(this.grid.width - margin * 2);
+    // A show bursts out where it swam to; a fight anywhere, by chance.
+    this._warnAt = this.pace.show
+      ? Math.round(Math.max(margin, Math.min(this.grid.width - margin, this.headX)))
+      : margin + this.random.nextInt(this.grid.width - margin * 2);
     this._state = 'warn';
-    this.timer = WARN_MS[this.phase];
+    this.timer = this.pace.show?.warnMs ?? WARN_MS[this.phase];
     this.events.push({ type: 'warn', x: this._warnAt });
   }
 
@@ -257,11 +287,18 @@ export class DuneWorm {
       if (grains > 0) this.events.push({ type: 'swallow', x, grains });
     }
     this._state = 'exposed';
-    this.timer = EXPOSED_MS;
+    this.timer = this.pace.show?.exposedMs ?? EXPOSED_MS;
     this.surges++;
   }
 
   private afterDive(): void {
+    if (this.pace.show) {
+      // The show is over: it stays under the sand.
+      this._state = 'roam';
+      this._warnAt = null;
+      this.timer = Number.POSITIVE_INFINITY;
+      return;
+    }
     // Last phase: it comes back up at once, every other time, and raises a storm.
     const again = this.phase === 3 && this.surges % 2 === 1;
     if (this.phase === 3) {
@@ -329,11 +366,11 @@ export class DuneWorm {
     return Math.hypot(tx - nx, ty - ny);
   }
 
-  /** The row of the first grain in column x (the height of the pile there). */
+  /** The row of the first grain in column x (the height of the pile there; steam and rain aside). */
   surfaceAt(x: number): number {
     const { grid } = this;
     const column = Math.max(0, Math.min(grid.width - 1, Math.round(x)));
-    for (let y = 0; y < grid.height; y++) if (!grid.isFree(column, y)) return y;
+    for (let y = 0; y < grid.height; y++) if (!grid.isOpen(column, y)) return y;
     return grid.height;
   }
 }
