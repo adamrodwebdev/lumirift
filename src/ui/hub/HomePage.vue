@@ -3,12 +3,13 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
-import { dayKey } from '@/core/Day';
+import { dayKey, timeLeft } from '@/core/Day';
 import { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import { guardianLevel, type CampaignLevel } from '@/campaign/Levels';
-import { allowsLevel, allowsMode } from '@/platform/Edition';
+import { allowsLevel, allowsMode, nextPlay } from '@/platform/Edition';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { GUARDIAN_XP } from '@/progression/Experience';
+import { guardianBonusOpen } from '@/progression/Profile';
 import { TonePalette } from '@/render/TonePalette';
 import { DailyChallenge } from '@/session/DailyChallenge';
 import { BOSS_IDS } from '@/session/GameSession';
@@ -55,10 +56,8 @@ const daily = new DailyChallenge(
 );
 /** Time left before the next daily challenge (local midnight). */
 const dailyLeft = (() => {
-  const midnight = new Date(today);
-  midnight.setHours(24, 0, 0, 0);
-  const minutes = Math.max(0, Math.floor((midnight.getTime() - today.getTime()) / 60_000));
-  return { h: Math.floor(minutes / 60), m: minutes % 60 };
+  const left = timeLeft(daily.endsAt, today);
+  return { h: left.hours, m: left.minutes };
 })();
 
 /** The week's Guardian, open to every player (but not past what an edition offers: the demo). */
@@ -70,20 +69,18 @@ const guardianOpen =
   allowsMode(edition, guardian.modeId);
 /** Days and hours before the next Guardian. */
 const guardianLeft = (() => {
-  const hours = Math.max(0, Math.floor((guardian.endsAt.getTime() - today.getTime()) / 3_600_000));
-  return { d: Math.floor(hours / 24), h: hours % 24 };
+  const left = timeLeft(guardian.endsAt, today);
+  return { d: left.days, h: left.hours };
 })();
 /** The day's first attempt is still to play: it earns its bonus. */
-const guardianBonus = computed(() => profile.current.guardianDay !== dayKey(today));
+const guardianBonus = computed(() => guardianBonusOpen(profile.current, dayKey(today)));
 
-/** Play goes on with the campaign; past the demo's levels, a game of Sand. */
-const next = computed(() => {
-  const level = campaign.model.nextLevel;
-  return allowsLevel(edition, level) ? level : null;
-});
+/** Play goes on with the campaign; past the levels this edition opens, a free game. */
+const next = computed(() => nextPlay(edition, campaign.model.nextLevel));
 const play = (origin: Element) => {
-  if (next.value) emit('level', next.value, origin);
-  else emit('play', 'sand', origin);
+  const coming = next.value;
+  if (coming.kind === 'level') emit('level', coming.level, origin);
+  else emit('play', coming.modeId, origin);
 };
 
 // A new day brings new objectives.
@@ -291,9 +288,12 @@ onBeforeUnmount(() => {
             <span class="play__label">{{ t('title.play') }}</span>
             <span class="play__next">
               {{
-                next
-                  ? t('title.level', { level: next.id, mode: t(`modes.${next.modeId}.name`) })
-                  : t('modes.sand.name')
+                next.kind === 'level'
+                  ? t('title.level', {
+                      level: next.level.id,
+                      mode: t(`modes.${next.level.modeId}.name`),
+                    })
+                  : t(`modes.${next.modeId}.name`)
               }}
             </span>
           </span>

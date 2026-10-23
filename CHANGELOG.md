@@ -3,6 +3,31 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.27.0] — 22/10/2026
+
+La partie hors de l'écran : l'architecture suit les règles de séparation (règles, logique,
+interface), sans rien changer à l'écran.
+
+### Modifié
+
+- **Le déroulé d'une partie quitte l'écran de jeu** (`src/run/`) :
+  - `RunKind` : une stratégie par sorte de partie (libre, défi du jour, défi des Gardiens,
+    niveau de campagne) garde ce qui change avec elle : le record compté, la partie mise en
+    place, la course au record, le décompte du résultat, ce qu'entend la progression ;
+  - `GameRun` : la partie à l'écran, du chargement à la fin (phases, valeurs du HUD, record
+    poursuivi, objectif d'un niveau, pause et portail, publicités de fin) ; elle publie ce
+    qui change, l'écran le dessine ;
+  - `GameEnding` : la fin réglée (record, expérience, étoiles et niveau suivant, célébrations
+    du portail), par des portes étroites.
+- Le score du défi des Gardiens n'est plus calculé deux fois : celui de `GuardianChallenge`,
+  testé, est celui qui compte.
+- Les règles restées dans l'interface rejoignent leur domaine : la durée d'un niveau
+  (sablier compris, une seule fois pour le jeu et la fiche du niveau), les améliorations
+  utiles à un mode, la partie suivante de Jouer, la fin du défi du jour et les comptes à
+  rebours, le bonus quotidien du défi des Gardiens.
+- Des registres plutôt que des `switch` : règles et textes des étoiles, niveaux d'effets,
+  portée des améliorations.
+
 ## [1.26.1] — 22/10/2026
 
 Lighthouse mobile stable à **100** : il variait de 98 à 100 d'un passage à l'autre.

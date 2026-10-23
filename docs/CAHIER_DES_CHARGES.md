@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                     |
-| ------- | ---------- | -------------------------- |
-| 1.26.1  | 22/10/2026 | Responsive de bout en bout |
+| Version | Date       | Statut                    |
+| ------- | ---------- | ------------------------- |
+| 1.27    | 22/10/2026 | La partie hors de l'écran |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1486,6 +1486,25 @@ src/families/volume/
 - Retoucher l'esthétique se fait donc à trois endroits, sans toucher aux règles : les
   jetons, les sprites d'une famille (`CrystalSprites`, `CeramicSprites`, `GlassSprites`,
   textures du Sable) et ses effets (`*Effects`, `*Soundscape`).
+- **La partie hors de l'écran** (1.27) : l'écran de jeu dessine et joue ce que la partie
+  publie, il ne décide plus de règles.
+
+  ```
+  src/run/
+    RunKind     Une stratégie par sorte de partie (FreeRun, DailyRun, GuardianRun, LevelRun) :
+                record compté, options de la partie, course au record, décompte du
+                résultat, ce qu'entend la progression, l'arbitre d'un niveau
+    GameRun     La partie à l'écran : phases (chargement, jeu, pause, fin), une image
+                (HUD, record poursuivi, objectif d'un niveau), pause et portail, publicités
+                de fin ; publie phase, indicators, best, record, goal, over
+    GameEnding  La fin réglée par des portes étroites (records, profil, campagne,
+                portail) : record battu, expérience, étoiles et niveau suivant
+  ```
+
+  Les règles sorties de l'interface vivent dans leur domaine : `levelTimeMs` et
+  `upgradeHelps` (`Upgrades`), `STAR_RULES` (`CampaignRun`, ses textes dans
+  `useCampaignText`), `nextPlay` (`Edition`), `DailyChallenge.endsAt` et `timeLeft`
+  (`core/Day`), `guardianBonusOpen` (`Profile`).
 
 ### 5.15 Progression (livrée au lot 10)
 
@@ -1667,3 +1686,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.24    | 22/10/2026 | Le russe, quatrième langue : traductions relues, pluriels et typographie testés, polices cyrilliques (§ 1, § 2.1, § 4.4, § 5.6, § 5.7).                              |
 | 1.25    | 22/10/2026 | La surcharge de la faille : jauge remplie par les lignes, huit secondes de temps ralenti au choix du joueur, bonus de sortie (§ 3.3, § 3.8, § 5.6).                  |
 | 1.26    | 22/10/2026 | Responsive de bout en bout : HUD lisible (14/16 px) et à l'échelle des grands écrans, container queries, zooms 200 et 400 %, 60 images/s sur tactile (§ 4.1, § 4.2). |
+| 1.27    | 22/10/2026 | La partie hors de l'écran : `RunKind`, `GameRun`, `GameEnding` ; règles sorties de l'interface, registres plutôt que `switch` (§ 5.14).                              |

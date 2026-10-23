@@ -1,4 +1,6 @@
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
+import type { FamilyId, ModeId } from '@/session/ModeId';
+import type { CampaignLevel } from './Levels';
 
 export const UPGRADE_IDS = [
   'hourglass',
@@ -20,6 +22,16 @@ export const RANK_COSTS: readonly number[] = [2, 3, 5];
 
 /** Which families an upgrade helps, for the shop's labels. */
 export type UpgradeScope = 'all' | 'falling' | 'sand' | 'mosaic' | 'rhythm' | 'duel';
+
+/** Where each scope helps: every mode, the families with a fall, or one mode. */
+const SCOPE_HELPS: Readonly<Record<UpgradeScope, (modeId: ModeId, family: FamilyId) => boolean>> = {
+  all: () => true,
+  falling: (_, family) => family === 'falling' || family === 'volume' || family === 'sand',
+  sand: (modeId) => modeId === 'sand',
+  mosaic: (modeId) => modeId === 'mosaic',
+  rhythm: (modeId) => modeId === 'rhythm',
+  duel: (modeId) => modeId === 'duel',
+};
 
 export interface Upgrade {
   readonly id: UpgradeId;
@@ -74,6 +86,16 @@ export function boostsFor(ranks: UpgradeRanks): Boosts {
 /** Seconds the hourglass adds to a timed level. */
 export function timeBonusMs(ranks: UpgradeRanks): number {
   return upgradeById('hourglass').value(ranks.hourglass ?? 0) * 1000;
+}
+
+/** The clock of a campaign level, hourglass included (null: untimed). */
+export function levelTimeMs(level: CampaignLevel, ranks: UpgradeRanks): number | null {
+  return level.timeLimitMs === null ? null : level.timeLimitMs + timeBonusMs(ranks);
+}
+
+/** Whether an upgrade helps in a mode (the level's shop shows the ones that do). */
+export function upgradeHelps(upgrade: Upgrade, modeId: ModeId, family: FamilyId): boolean {
+  return SCOPE_HELPS[upgrade.scope](modeId, family);
 }
 
 /** Stars the next rank costs, or null at the top. */

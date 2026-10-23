@@ -6,30 +6,25 @@ import { FrameClock } from '@/app/FrameClock';
 import { useFormat } from '@/app/useFormat';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { newRecord } from '@/fx/sounds';
-import { dayKey } from '@/core/Day';
-import { SeededRandom } from '@/core/Random';
-import { CampaignRun, type CampaignOutcome } from '@/campaign/CampaignRun';
-import type { LiveState } from '@/campaign/Goals';
+import type { GoalProgress } from '@/campaign/CampaignRun';
 import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
-import { type CampaignLevel, guardianLevel, LEVELS } from '@/campaign/Levels';
-import { boostsFor, timeBonusMs } from '@/campaign/Upgrades';
-import { allowsLevel } from '@/platform/Edition';
+import type { CampaignLevel } from '@/campaign/Levels';
 import type { BreakMoment } from '@/platform/Platform';
-import { GameTracker } from '@/progression/GameReport';
-import { RecordChase } from '@/progression/RecordChase';
+import type { BestLine } from '@/progression/BestLine';
+import type { Ending } from '@/run/GameEnding';
+import { GameRun, type RunPhase } from '@/run/GameRun';
+import { runKindFor, type RunKindId } from '@/run/RunKind';
 import { Coach, type CoachStep } from '@/session/Coach';
 import type { DailyChallenge } from '@/session/DailyChallenge';
-import type { GameSession, Indicator, SessionOptions } from '@/session/GameSession';
+import type { GameSession, Indicator } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import { observeCommands } from '@/session/observeCommands';
-import { ScoreBoard } from '@/services/ScoreBoard';
 import AppIcon from '../components/AppIcon.vue';
 import CampaignGoal from '../components/CampaignGoal.vue';
 import CoachCard from '../components/CoachCard.vue';
 import DangerLayer from '../components/DangerLayer.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import type { GameOutcome } from '../GameOutcome';
-import type { BestLine } from '../BestLine';
 import HudPanel from '../components/HudPanel.vue';
 import RecordBurst from '../components/RecordBurst.vue';
 import SurgeLayer from '../components/SurgeLayer.vue';
@@ -78,29 +73,37 @@ const {
 } = useServices();
 const descriptor = catalog.get(props.modeId);
 
-type Phase = 'loading' | 'playing' | 'paused' | 'over';
-const phase = ref<Phase>('loading');
+/*
+ * The games of this screen (1.27): the kind chosen (a free game, the day's
+ * challenge, the week's Guardian, a campaign level) and the run that plays
+ * each game and settles its end. The screen draws and plays what it publishes.
+ */
+const run = new GameRun(runKindFor(props, campaign.current.ranks), descriptor.showsBest === true, {
+  catalog,
+  scores,
+  profile,
+  platform,
+  today,
+  campaign: {
+    record: (outcome) => campaign.record(outcome),
+    starsOf: (levelId) => campaign.model.starsOf(levelId),
+  },
+  seed: () => Math.floor(Math.random() * 2 ** 32),
+});
+
+const phase = ref<RunPhase>('loading');
 const session = shallowRef<GameSession | null>(null);
 const indicators = shallowRef<readonly Indicator[]>([]);
 const outcome = ref<GameOutcome | null>(null);
 const status = ref('');
 /** The rewarded ad of this game's end: offered, playing, or not (used, refused, unsupported). */
 const reward = ref<'offer' | 'busy' | 'none'>('none');
-/** A rewarded ad was just watched: no interstitial on top of it at this break. */
-let rewardWatched = false;
 const announcement = ref('');
-/** Modes that show the record beside the score; the chase of this game. */
-let chase: RecordChase | null = null;
+/** The record beside the score (modes that show it). */
 const best = shallowRef<BestLine | null>(null);
 /** Counts the records beaten: each one plays the burst again. */
 const recordBurst = ref(0);
 let recordTimer: ReturnType<typeof setTimeout> | undefined;
-const recordKey = () =>
-  props.guardian
-    ? ScoreBoard.guardianKey(props.guardian.key)
-    : props.daily
-      ? ScoreBoard.dailyKey(props.daily.key)
-      : props.modeId;
 const celebrateRecord = () => {
   audio.play(newRecord);
   haptics.pulse([20, 40, 20, 40, 90]);
@@ -161,6 +164,15 @@ const subtitle = computed(() => {
   const key = session.value?.subtitleKey();
   return key ? t(key) : null;
 });
+const bossName = () => t(`bosses.${run.kind.boss}.name`);
+/** The screen's title, read first by screen readers: the kind of game, then its mode. */
+const TITLE: Readonly<Record<RunKindId, () => string>> = {
+  level: () => t('campaign.levelTitle', { level: run.kind.level?.id, mode: modeName.value }),
+  guardian: () => `${t('guardianChallenge.title')} · ${bossName()}`,
+  daily: () => `${t('daily.title')} · ${modeName.value}`,
+  free: () => modeName.value,
+};
+const title = computed(() => TITLE[run.kind.id]());
 
 /*
  * The game loop. Touch screens draw 60 frames a second at most (a 120-Hz phone
@@ -206,93 +218,30 @@ const round = ref(0);
 const showOutcome = ref(false);
 let outcomeTimer: ReturnType<typeof setTimeout> | undefined;
 let unsubscribe: (() => void)[] = [];
-/** Follows the game for the progression (time played, clears). */
-let tracker: GameTracker | null = null;
-/** Judges a campaign level: its goal, its end, its stars. */
-let run: CampaignRun | null = null;
-const goal = shallowRef<{ readonly value: number; readonly target: number } | null>(null);
+const goal = shallowRef<GoalProgress | null>(null);
 let toastKey = 0;
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
-/** The clock of a campaign level, hourglass included. */
-const levelTime = (level: CampaignLevel): number | null =>
-  level.timeLimitMs === null ? null : level.timeLimitMs + timeBonusMs(campaign.current.ranks);
-
-const sessionOptions = (): SessionOptions => {
-  const random = new SeededRandom(Math.floor(Math.random() * 2 ** 32));
-  const level = props.level;
-  if (level) {
-    // Campaign: the level's clock and opponent, and the upgrades bought.
-    return {
-      random,
-      timeLimitMs: levelTime(level),
-      today: today(),
-      boosts: boostsFor(campaign.current.ranks),
-      ...(level.variant ? { variant: level.variant } : {}),
-      ...(level.calm ? { calm: true } : {}),
-      ...(level.showcase ? { showcase: true } : {}),
-      ...(level.practice ? { practice: true } : {}),
-      ...(level.boss ? { boss: level.boss } : {}),
-    };
-  }
-  // The Guardian challenge: the week's Guardian, its clock, everybody's pieces, no upgrades.
-  if (props.guardian) return { ...props.guardian.sessionOptions(), today: today() };
-  return {
-    ...(props.daily?.sessionOptions() ?? { random, timeLimitMs: null }),
-    today: today(),
-    ...(props.variant ? { variant: props.variant } : {}),
-  };
-};
-
-/** Where the game stands, for the campaign goal. */
-const liveState = (current: GameSession): LiveState => {
-  const boss = current.boss?.() ?? null;
-  return {
-    ...(tracker?.live ?? { durationMs: 0, clears: 0, lines: 0, bestAtOnce: 0 }),
-    score: current.result().value,
-    bossDamage: boss ? boss.maxHealth - boss.health : 0,
-  };
-};
-
-const sameIndicators = (a: readonly Indicator[], b: readonly Indicator[]) =>
-  a.length === b.length &&
-  a.every((item, i) => {
-    const other = b.at(i);
-    return other?.id === item.id && other.value === item.value;
-  });
+// What the run publishes, drawn and played.
+run.events.on('phase', ({ phase: next }) => {
+  phase.value = next;
+  if (next === 'paused') clock.stop();
+  else if (next === 'playing') clock.start();
+});
+run.events.on('indicators', ({ indicators: next }) => (indicators.value = next));
+run.events.on('best', ({ best: line }) => (best.value = line));
+run.events.on('record', celebrateRecord);
+run.events.on('goal', ({ goal: progress }) => (goal.value = progress));
+run.events.on('over', ({ ending, reason, teased }) => showEnding(ending, reason, teased));
 
 clock.subscribe((delta, real) => {
-  const current = session.value;
+  const current = run.session;
   if (!current) return;
-  if (current.state === 'running') tracker?.tick(delta);
-  current.update(delta);
+  run.update(delta);
   // The surge counts real time: eight seconds of it, however slow the game runs.
   surge.update(real, current.state === 'running');
-  const next = current.indicators();
-  if (!sameIndicators(next, indicators.value)) indicators.value = next;
   // The danger, played: the music follows it, the well cracks, the clock counts down.
-  tension.update(current, delta, next);
-  if (chase && current.state === 'running') {
-    const score = current.result().value;
-    if (chase.update(score)) celebrateRecord();
-    const shown = chase.shown(score);
-    if (best.value?.value !== shown || best.value.beaten !== chase.beaten)
-      best.value = { value: shown, beaten: chase.beaten };
-  }
-  if (run && phase.value === 'playing' && current.state === 'running') {
-    const state = liveState(current);
-    const progress = run.progress(state);
-    if (progress.value !== goal.value?.value) goal.value = progress;
-    // A goal met during play ends the level at once; a level that teases a
-    // Guardian lets it pass first, its world still moving, before its window.
-    const won = run.check(state);
-    if (won) {
-      const teaser = props.level?.teaser;
-      const teased = won.won && teaser !== undefined && (current.tease?.(teaser) ?? false);
-      if (!teased) current.pause();
-      finish('goal', won, teased);
-    }
-  }
+  tension.update(current, delta, run.indicators);
 });
 
 /** Announced to screen readers, and shown over the well. */
@@ -304,8 +253,8 @@ const announce = (text: string, show = true) => {
   toastTimer = setTimeout(() => (toast.value = null), 1400);
 };
 
+/** The game's moments, told: clears, levels, notices; a close call played. */
 const listen = (current: GameSession) => {
-  tracker = new GameTracker(current);
   const { events } = current;
   unsubscribe = [
     events.on('clear', ({ lines, combo }) => {
@@ -329,100 +278,36 @@ const listen = (current: GameSession) => {
       ),
     ),
     events.on('closeCall', () => tension.closeCall()),
-    events.on('over', ({ reason }) => finish(reason)),
   ];
-};
-
-/** The level after this one, if this edition opens it. */
-const nextLevel = (index: number): CampaignLevel | null => {
-  const next = LEVELS[index + 1];
-  return next && allowsLevel(platform.edition, next) ? next : null;
-};
-
-/** The campaign's verdict on this game, recorded; the next level once won. */
-const judge = (decided: CampaignOutcome, teased: boolean) => {
-  const gained = campaign.record(decided);
-  const index = LEVELS.findIndex((level) => level.id === decided.levelId);
-  const teaser = teased ? props.level?.teaser : undefined;
-  const lair = teaser ? guardianLevel(teaser) : undefined;
-  return {
-    levelId: decided.levelId,
-    won: decided.won,
-    stars: decided.stars,
-    gained,
-    next: decided.won ? nextLevel(index) : null,
-    ...(teaser && lair ? { teaser: { boss: teaser, levelId: lair.id } } : {}),
-  };
 };
 
 /** How long a teased Guardian passes before the level's end window. */
 const TEASER_MS = 2600;
 
-const finish = (reason: string, decided: CampaignOutcome | null = null, teased = false) => {
-  const current = session.value;
-  if (!current || phase.value === 'over') return;
+/** The game's end, settled by the run: the effects end, the end window waits for the collapse. */
+const showEnding = (ending: Ending, reason: string, teased: boolean) => {
   tension.end(reason);
   surge.end();
-  const result = current.result();
-  // The Guardian challenge counts a victory's time left: points × (1 + share of the clock left).
-  const timeLeft = current.indicators().find((item) => item.id === 'timeLeft')?.value ?? 0;
-  const factor = props.guardian?.factor(reason === 'victory', timeLeft) ?? 1;
-  const amount = Math.round(Math.round(result.value) * factor);
-  const key = recordKey();
-  const verdict = run ? (decided ?? run.end(reason, liveState(current))) : null;
-  // The goal bar shows the last blow (a Guardian's last hit ends the game in the same frame).
-  if (run) goal.value = run.progress(liveState(current));
-  // Read before this game is recorded: the record it may beat.
-  const previousBest = run ? null : scores.best(key);
-  // Whole points or milliseconds: no float noise in the saved records. Campaign
-  // games bring upgrades along: they never count as records.
-  const record = run
-    ? { best: scores.best(key) ?? Math.round(result.value), isNewBest: false }
-    : scores.record(key, amount);
-  const report = tracker?.report({
-    modeId: props.modeId,
-    daily: props.daily !== null,
-    guardian: props.guardian !== null,
-    variant: props.variant,
-    reason,
-    // A Guardian defeated is remembered (it earns its cosmetic).
-    ...(verdict?.won && props.level?.boss ? { boss: props.level.boss } : {}),
-  });
-  platform.gameOver(verdict ? verdict.won : reason === 'victory');
-  // Only a real feat is worth the portal's celebration (it asks for it sparingly,
-  // never for every level): a record beaten, a Guardian defeated for the first
-  // time. Read before the verdict is recorded.
-  const recordBeaten = record.isNewBest && previousBest !== null;
-  const guardianDown =
-    verdict?.won === true &&
-    props.level?.boss !== undefined &&
-    campaign.model.starsOf(verdict.levelId) === 0;
-  if (recordBeaten || guardianDown) platform.happyTime();
   outcome.value = {
-    // A Guardian's fall is told as such, not as a duel's victory.
-    reason: reason === 'victory' && (props.level?.boss ?? props.guardian) ? 'guardian' : reason,
-    amount,
-    kind: result.kind,
-    value: format.result(result.kind, amount),
-    best: format.result(result.kind, record.best),
-    isNewBest: record.isNewBest,
-    progress: report
-      ? profile.recordGame(report, dayKey(today()))
-      : { xp: [], total: 0, levelBefore: 1, levelAfter: 1, completed: [], unlocked: [], streak: 0 },
-    ...(verdict ? { campaign: judge(verdict, teased) } : {}),
-    ...(props.guardian
+    reason: ending.reason,
+    amount: ending.amount,
+    kind: ending.kind,
+    value: format.result(ending.kind, ending.amount),
+    best: format.result(ending.kind, ending.best),
+    isNewBest: ending.isNewBest,
+    progress: ending.progress,
+    ...(ending.campaign ? { campaign: ending.campaign } : {}),
+    ...(ending.guardian
       ? {
           guardian: {
-            points: format.number(result.value),
-            factor: factor > 1 ? format.factor(factor) : null,
+            points: format.number(ending.guardian.points),
+            factor: ending.guardian.factor > 1 ? format.factor(ending.guardian.factor) : null,
           },
         }
       : {}),
   };
   status.value = '';
-  rewardWatched = false;
-  reward.value = platform.supportsRewarded && outcome.value.progress.total > 0 ? 'offer' : 'none';
-  phase.value = 'over';
+  reward.value = ending.rewardOffered ? 'offer' : 'none';
   const { gameOverDelayMs } = effectsProfile(settings.current.effects, settings.current.shake);
   outcomeTimer = setTimeout(
     () => {
@@ -436,33 +321,17 @@ const finish = (reason: string, decided: CampaignOutcome | null = null, teased =
 const start = async () => {
   dispose();
   tension.reset();
-  phase.value = 'loading';
-  platform.loadingStart();
-  const created = await catalog.create(props.modeId, sessionOptions());
-  platform.loadingStop();
-  run = props.level ? new CampaignRun(props.level, levelTime(props.level)) : null;
-  goal.value = run ? { value: 0, target: run.level.goal.target } : null;
-  // Campaign games never count as records: no record to chase there. The
-  // Guardian challenge's record counts the victory's factor: not to chase in points.
-  chase =
-    descriptor.showsBest && !run && !props.guardian
-      ? new RecordChase(scores.best(recordKey()))
-      : null;
-  best.value = chase ? { value: chase.shown(0), beaten: false } : null;
   recordBurst.value = 0;
-  listen(created);
-  surge.attach(created, descriptor.family, props.modeId);
+  session.value = await run.start((created) => {
+    listen(created);
+    surge.attach(created, descriptor.family, props.modeId);
+    // The guide hears every command that took effect, whatever the input.
+    return coach?.step
+      ? observeCommands(created, (type) => coach.command(type) && coachUpdate())
+      : created;
+  });
   showOutcome.value = false;
   round.value++;
-  // The guide hears every command that took effect, whatever the input.
-  session.value = coach?.step
-    ? observeCommands(created, (type) => coach.command(type) && coachUpdate())
-    : created;
-  indicators.value = created.indicators();
-  created.start();
-  phase.value = 'playing';
-  platform.gameplayStart();
-  clock.start();
 };
 
 /**
@@ -476,7 +345,7 @@ const afterBreak = async (moment: BreakMoment, next: () => void) => {
   // The interface stays blocked until the ad ends (or does not come).
   showOutcome.value = false;
   adBreak.value = true;
-  if (!rewardWatched) await platform.midgameAd(adHooks, moment);
+  await run.adBreak(adHooks, moment);
   adBreak.value = false;
   next();
 };
@@ -490,17 +359,12 @@ const doubleExperience = async () => {
   if (!ended || reward.value !== 'offer') return;
   reward.value = 'busy';
   status.value = '';
-  const watched = await platform.rewardedAd(adHooks);
+  const progress = await run.doubleExperience(adHooks);
   reward.value = 'none';
-  if (!watched || outcome.value !== ended) {
-    status.value = watched ? '' : t('over.noAd');
-    return;
-  }
-  rewardWatched = true;
-  const progress = profile.doubleExperience(ended.progress);
+  if (progress === 'refused') status.value = t('over.noAd');
+  if (progress === 'refused' || progress === null || outcome.value !== ended) return;
   outcome.value = { ...ended, progress };
   status.value = t('over.doubled', { n: progress.total - ended.progress.total });
-  platform.happyTime();
 };
 
 const dispose = () => {
@@ -508,62 +372,27 @@ const dispose = () => {
   clearTimeout(recordTimer);
   unsubscribe.forEach((off) => off());
   unsubscribe = [];
-  tracker?.dispose();
-  tracker = null;
   surge.detach();
-  session.value?.dispose();
+  run.dispose();
   session.value = null;
 };
 
-/** A `gameplayStop` was sent for this pause: its resume sends `gameplayStart`. */
-let stopReported = false;
+const pause = () => run.pause(true);
+const pauseForFocus = () => run.pause(false);
+const resume = () => run.resume();
 
-/**
- * Pauses the game. The portal hears of it only when the player asked for it:
- * focus lost, a hidden tab or the portal's own pause are the portal's to
- * track (CrazyGames: no gameplayStop on focus loss).
- */
-const pauseGame = (byPlayer: boolean) => {
-  if (phase.value !== 'playing') return;
-  session.value?.pause();
-  phase.value = 'paused';
-  clock.stop();
-  if (byPlayer) {
-    platform.gameplayStop();
-    stopReported = true;
-  }
+/** The words shared, by kind of game: the result and the page's address in each. */
+const SHARE: Readonly<Record<RunKindId, (value: string, url: string) => string>> = {
+  guardian: (value, url) => t('guardianChallenge.share', { boss: bossName(), value, url }),
+  daily: (value, url) =>
+    t('share.daily', { date: format.date(today()), mode: modeName.value, value, url }),
+  free: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
+  level: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
 };
-const pause = () => pauseGame(true);
-const pauseForFocus = () => pauseGame(false);
-
-const resume = () => {
-  if (phase.value !== 'paused') return;
-  session.value?.resume();
-  phase.value = 'playing';
-  clock.start();
-  if (stopReported) platform.gameplayStart();
-  stopReported = false;
-};
-
 const onShare = async () => {
-  const current = session.value;
-  if (!current || !outcome.value) return;
+  if (!run.session || !outcome.value) return;
   const url = `${location.origin}${location.pathname}`;
-  const text = props.guardian
-    ? t('guardianChallenge.share', {
-        boss: t(`bosses.${props.guardian.boss}.name`),
-        value: outcome.value.value,
-        url,
-      })
-    : props.daily
-      ? t('share.daily', {
-          date: format.date(today()),
-          mode: modeName.value,
-          value: outcome.value.value,
-          url,
-        })
-      : t('share.mode', { mode: modeName.value, value: outcome.value.value, url });
-  const result = await share.share(text);
+  const result = await share.share(SHARE[run.kind.id](outcome.value.value, url));
   status.value = result === 'copied' ? t('over.copied') : '';
 };
 
@@ -604,17 +433,7 @@ onBeforeUnmount(() => {
     :data-layout="layout"
     :style="{ '--danger-amount': settings.current.effects === 'off' ? 0 : dangerAmount }"
   >
-    <h1 class="sr-only">
-      {{
-        level
-          ? t('campaign.levelTitle', { level: level.id, mode: modeName })
-          : guardian
-            ? `${t('guardianChallenge.title')} · ${t(`bosses.${guardian.boss}.name`)}`
-            : daily
-              ? `${t('daily.title')} · ${modeName}`
-              : modeName
-      }}
-    </h1>
+    <h1 class="sr-only">{{ title }}</h1>
 
     <button
       type="button"
