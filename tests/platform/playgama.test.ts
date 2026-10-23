@@ -107,6 +107,16 @@ describe('PlaygamaPlatform', () => {
     ]);
   });
 
+  it('keeps a first run’s level messages until game_ready (a portal’s training plays at once)', async () => {
+    const fake = fakeBridge();
+    const platform = await PlaygamaPlatform.create(fake.bridge);
+    platform.gameplayStart();
+    expect(fake.messages).toEqual([]);
+    platform.ready();
+    platform.gameplayStop();
+    expect(fake.messages).toEqual(['game_ready', 'level_started', 'level_paused']);
+  });
+
   it('follows the platform sound and pause', async () => {
     const fake = fakeBridge();
     const platform = await PlaygamaPlatform.create(fake.bridge);

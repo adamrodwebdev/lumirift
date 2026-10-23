@@ -32,7 +32,8 @@ directement dans le jeu, sans écran-titre ni menu. Notre site et la démo ne ch
     l'entraînement est fait ou passé ; un joueur qui a déjà joué une partie ne le voit pas.
 - **Le premier affichage reste rapide** : le Sable se précharge derrière l'écran de
   chargement, et `gameplayStart` part dès l'étape 1 (l'outil QA de CrazyGames mesure le
-  chargement jusque-là).
+  chargement jusque-là). Sur Playgama, `game_ready` passe toujours avant `level_started`,
+  même quand la partie commence aussitôt.
 
 ### Modifié
 
