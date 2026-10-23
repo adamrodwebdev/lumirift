@@ -71,15 +71,20 @@ export function useTension(options: TensionOptions) {
   final.events.on('hurry', () => audio.play(hurry));
   final.events.on('tick', ({ second }) => audio.play(countdown(second <= 3)));
 
-  /** Every frame, after the game's own update. */
+  /**
+   * Every frame, after the game's own update. `playing` while the game is
+   * played: not paused, not decided (a Guardian's show after the goal keeps
+   * the world moving, not the danger).
+   */
   const update = (
     current: GameSession | null,
     deltaMs: number,
     indicators: readonly Indicator[],
+    playing: boolean,
   ) => {
     elapsed += deltaMs;
     well.value ??= options.root.value?.querySelector<HTMLElement>('.stage__well canvas') ?? null;
-    const running = current?.state === 'running';
+    const running = playing && current?.state === 'running';
     // A pause freezes the danger (no relief for a game merely paused).
     if (running) tension.update(current.pressure(), deltaMs);
     final.update(
@@ -103,6 +108,19 @@ export function useTension(options: TensionOptions) {
               ? TEMPO.danger
               : TEMPO.calm,
     );
+  };
+
+  /**
+   * The game is paused: its clock stops, so no frame will calm what shows the
+   * danger; it rests at once (no vignette, no heartbeat, the calm tempo) and
+   * comes back with the game. The danger itself is kept: no relief for a game
+   * merely paused.
+   */
+  const rest = () => {
+    if (!broken.value) amount.value = 0;
+    audio.setIntensity(MUSIC_CALM);
+    audio.setDanger(0);
+    audio.setTempo(TEMPO.calm);
   };
 
   /** A clear made in danger: a golden rush, and with every effect on, time slows down. */
@@ -143,5 +161,5 @@ export function useTension(options: TensionOptions) {
     audio.setTempo(TEMPO.calm);
   });
 
-  return { amount, urgent, flash, relief, broken, well, update, closeCall, end, reset };
+  return { amount, urgent, flash, relief, broken, well, update, rest, closeCall, end, reset };
 }

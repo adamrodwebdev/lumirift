@@ -254,8 +254,10 @@ let toastTimer: ReturnType<typeof setTimeout> | undefined;
 // What the run publishes, drawn and played.
 run.events.on('phase', ({ phase: next }) => {
   phase.value = next;
-  if (next === 'paused') clock.stop();
-  else if (next === 'playing') clock.start();
+  if (next === 'paused') {
+    clock.stop();
+    tension.rest();
+  } else if (next === 'playing') clock.start();
 });
 run.events.on('indicators', ({ indicators: next }) => (indicators.value = next));
 run.events.on('best', ({ best: line }) => (best.value = line));
@@ -272,7 +274,7 @@ clock.subscribe((delta, real) => {
   // The surge counts real time: eight seconds of it, however slow the game runs.
   surge.update(real, current.state === 'running');
   // The danger, played: the music follows it, the well cracks, the clock counts down.
-  tension.update(current, delta, run.indicators);
+  tension.update(current, delta, run.indicators, phase.value === 'playing');
 });
 
 /** Announced to screen readers, and shown over the well. */

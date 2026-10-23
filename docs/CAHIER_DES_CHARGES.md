@@ -863,7 +863,10 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   - Règle : une ligne effacée en danger (mesuré avant l'effacement) compte **double**
     (« Close call! », annoncé dans la langue du joueur) ; éclair doré, ralenti de 0,4 s.
   - Défaite par débordement : ralenti d'une demi-seconde, la faille fend le puits de haut en
-    bas, puis la fenêtre de fin.
+    bas, puis la fenêtre de fin. Le puits brisé y reste, immobile (1.29).
+  - Pause et fin de partie (1.29) : la pause calme l'écran et la musique à l'instant, le
+    danger revient avec la partie (sans fausse délivrance) ; une partie décidée n'a plus de
+    danger, même quand son monde bouge encore (le Ver qui se montre à la fin du 1-1).
   - Partie chronométrée : à 10 s, un appel ; un tic par seconde, plus aigu les trois
     dernières ; le temps en rouge qui bat ; la musique au plus vite.
 - **Surcharge de la faille** (1.25, `RiftSurge`) : dans la Chute, le Sable et la Tour (pas en

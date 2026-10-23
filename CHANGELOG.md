@@ -46,6 +46,16 @@ directement dans le jeu, sans écran-titre ni menu. Notre site et la démo ne ch
 - L'indication du geste (le doigt qui glisse, touche ou tombe) devient un composant partagé
   par le guide de la première partie du site et celui de l'entraînement.
 
+### Corrigé
+
+- **Le rouge du danger ne se fige plus entre deux parties.** Pendant une pause en danger,
+  et sur la fenêtre de victoire du 1-1 (le Ver se montre, le monde bouge encore), la
+  vignette rouge battait toujours, avec les battements de cœur et le tempo pressé,
+  jusqu'à la partie suivante : l'écran ne se calmait qu'à l'image suivante, et l'horloge
+  s'arrêtait avant. La pause calme tout à l'instant (le danger revient avec la partie, sans
+  fausse délivrance), et une partie décidée n'a plus de danger. Après une défaite, le puits
+  brisé reste, immobile : il ne bat plus.
+
 ## [1.28.1] — 23/10/2026
 
 Corrections après un essai sur téléphone (Samsung S25+).

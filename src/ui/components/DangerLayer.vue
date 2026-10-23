@@ -144,8 +144,8 @@ const healing = moment(() => props.relief, 800);
   );
 }
 
-/* With every effect on, the close vignette throbs like a pulse. */
-.danger--full .danger__vignette--close {
+/* With every effect on, the close vignette throbs like a pulse; it stops with the game. */
+.danger--full:not(.danger--broken) .danger__vignette--close {
   animation: danger-throb 620ms ease-in-out infinite alternate;
 }
 
