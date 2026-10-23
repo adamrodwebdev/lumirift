@@ -4,6 +4,12 @@ import { DEMO_EDITION, FULL_EDITION, type Edition } from './Edition';
 export type PlatformId = 'web' | 'crazygames' | 'playgama' | 'demo';
 
 /**
+ * How a new player starts: on the title screen and its menus (our site, the
+ * demo), or straight into the training, the menus coming after (portals).
+ */
+export type FirstRun = 'title' | 'training';
+
+/**
  * Where a break between two games leads: another game (play again, next
  * level) or a menu (home, campaign map). Some portals forbid an ad on the way
  * to a menu (CrazyGames: never on a navigation button).
@@ -25,6 +31,8 @@ export interface Platform {
   readonly id: PlatformId;
   /** The whole game, or the demo. */
   readonly edition: Edition;
+  /** How a new player starts. */
+  readonly firstRun: FirstRun;
   /** Links out of the game (sharing a URL) are allowed. Portals forbid them. */
   readonly allowsExternalLinks: boolean;
   /**
@@ -66,6 +74,7 @@ export interface Platform {
 export class WebPlatform implements Platform {
   readonly id: PlatformId = 'web';
   readonly edition: Edition = FULL_EDITION;
+  readonly firstRun: FirstRun = 'title';
   readonly allowsExternalLinks = true;
   /** On our own site, Escape closes a window, as everywhere on the web. */
   readonly reservesEscape = false;

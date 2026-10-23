@@ -152,8 +152,8 @@ export class GameRun {
       // Guardian lets it pass first, its world still moving, before its window.
       const won = this.judge.check(state);
       if (won) {
-        const teaser = this.kind.level?.teaser;
-        const teaserMs = won.won && teaser !== undefined ? (game.tease?.(teaser) ?? 0) : 0;
+        const teaser = this.kind.teaser;
+        const teaserMs = won.won && teaser !== null ? (game.tease?.(teaser) ?? 0) : 0;
         if (teaserMs === 0) game.pause();
         this.finish('goal', won, teaserMs);
       }
@@ -230,7 +230,8 @@ export class GameRun {
 
   /** Leaving a game's end: the portal may show an ad (never right after a rewarded one). */
   async adBreak(hooks: AdHooks, moment: BreakMoment): Promise<void> {
-    if (!this.rewardWatched) await this.ports.platform.midgameAd(hooks, moment);
+    if (this.kind.adBreaks && !this.rewardWatched)
+      await this.ports.platform.midgameAd(hooks, moment);
   }
 
   /** The game is left: its session and its followers let go. */

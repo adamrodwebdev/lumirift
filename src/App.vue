@@ -14,6 +14,7 @@ import { useServices } from '@/app/AppServices';
 import { loadMessages } from '@/i18n';
 import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import type { CampaignLevel } from '@/campaign/Levels';
+import { TRAINING, type TrainingStep } from '@/campaign/Training';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { ModeId } from '@/session/ModeId';
 import SettingsDialog from '@/ui/components/SettingsDialog.vue';
@@ -34,6 +35,8 @@ interface Game {
   readonly variant: string | null;
   /** Set for a campaign level. */
   readonly level: CampaignLevel | null;
+  /** Set for a step of the portals' training. */
+  readonly training: TrainingStep | null;
 }
 /** The rift's light between two screens (`RiftWipe`). */
 interface ScreenChange {
@@ -45,15 +48,26 @@ type Screen =
 
 const i18n = useI18n();
 const { t, locale } = i18n;
-const { settings, audio, platform, catalog } = useServices();
+const { settings, audio, platform, catalog, profile } = useServices();
 
-const screen = shallowRef<Screen>({ kind: 'hub', returning: false });
+const NONE = { daily: null, guardian: null, variant: null, level: null, training: null } as const;
+let gameId = 0;
+/**
+ * A new player on a portal starts straight in the training: no title screen,
+ * no menu until it is over (1.29; its game was downloaded behind the title
+ * card, see main.ts). Everywhere else, the title screen and its menus.
+ */
+const firstStep = platform.firstRun === 'training' && profile.needsTraining ? TRAINING[0] : null;
+const screen = shallowRef<Screen>(
+  firstStep
+    ? { kind: 'game', id: ++gameId, ...NONE, modeId: firstStep.modeId, training: firstStep }
+    : { kind: 'hub', returning: false },
+);
 /** The menu's page, kept while a game runs: the player comes back where they left. */
 const hubPage = ref<HubPage>('home');
 const settingsOpen = ref(false);
 const main = ref<HTMLElement | null>(null);
 const wipe = ref<ScreenChange | null>(null);
-let gameId = 0;
 let changing = false;
 
 /**
@@ -89,7 +103,6 @@ const play = (game: Game, origin: Element | null) =>
     ]);
     return { kind: 'game', id: ++gameId, ...game };
   });
-const NONE = { daily: null, guardian: null, variant: null, level: null } as const;
 const playMode = (modeId: ModeId, variant: string | null, origin: Element | null) =>
   play({ ...NONE, modeId, variant }, origin);
 const playDaily = (challenge: DailyChallenge, origin: Element | null) =>
@@ -98,6 +111,8 @@ const playGuardian = (challenge: GuardianChallenge, origin: Element | null) =>
   play({ ...NONE, modeId: challenge.modeId, guardian: challenge }, origin);
 const playLevel = (level: CampaignLevel, origin: Element | null = null) =>
   play({ ...NONE, modeId: level.modeId, level }, origin);
+const playTraining = (step: TrainingStep) =>
+  play({ ...NONE, modeId: step.modeId, training: step }, null);
 const backToHub = (page?: HubPage) => {
   if (page) hubPage.value = page;
   void change(null, () => ({ kind: 'hub', returning: true }));
@@ -188,9 +203,11 @@ onBeforeUnmount(() => {
       :guardian="screen.guardian"
       :variant="screen.variant"
       :level="screen.level"
+      :training="screen.training"
       @home="backToHub()"
       @campaign="backToHub('map')"
       @next="playLevel"
+      @step="playTraining"
       @settings="settingsOpen = true"
     />
   </main>

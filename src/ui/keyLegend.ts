@@ -87,11 +87,13 @@ export function keyLegendFor(
   family: FamilyId,
   modeId: ModeId,
   bindings: KeyBindings = KeyBindings.DEFAULT,
+  /** False where the game has no surge after all (the training). */
+  surge = true,
 ): readonly LegendRow[] {
   const specs = BY_FAMILY[family];
   const extras = [
     ...(EXTRA[modeId] ? [EXTRA[modeId]] : []),
-    ...(surgeTuningFor(family, modeId) ? [SURGE] : []),
+    ...(surge && surgeTuningFor(family, modeId) ? [SURGE] : []),
   ];
   const rows = [...specs.slice(0, -1), ...extras, ...specs.slice(-1)];
   return rows.map(({ action, keys, minor: isMinor }) => ({

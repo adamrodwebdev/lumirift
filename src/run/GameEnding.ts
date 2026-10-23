@@ -1,5 +1,6 @@
 import type { CampaignOutcome } from '@/campaign/CampaignRun';
 import { guardianLevel, LEVELS, type CampaignLevel } from '@/campaign/Levels';
+import { nextTrainingStep, type TrainingStep, type TrainingStepId } from '@/campaign/Training';
 import { dayKey } from '@/core/Day';
 import { allowsLevel } from '@/platform/Edition';
 import type { Platform } from '@/platform/Platform';
@@ -23,6 +24,14 @@ export interface CampaignResult {
   readonly teaser?: { readonly boss: BossId; readonly levelId: string };
 }
 
+/** A training step's ending: won or not, and the way on (the next step, or the campaign). */
+export interface TrainingResult {
+  readonly step: TrainingStepId;
+  readonly won: boolean;
+  /** The step after this one; null once the training is over. */
+  readonly next: TrainingStep | null;
+}
+
 /** How a game ended, every count settled; the end window formats it. */
 export interface Ending {
   /** Why it ended: `guardian` for a Guardian's fall, the family's reason otherwise. */
@@ -37,6 +46,8 @@ export interface Ending {
   readonly progress: GameProgress;
   /** Set for a campaign level. */
   readonly campaign?: CampaignResult;
+  /** Set for a step of the portals' training. */
+  readonly training?: TrainingResult;
   /** Set for the Guardian challenge: the game's points and their factor. */
   readonly guardian?: { readonly points: number; readonly factor: number };
   /** The portal's rewarded ad may double the experience (a portal that has one, XP to double). */
@@ -46,7 +57,7 @@ export interface Ending {
 /** The narrow doors an ending goes through: records, progression, campaign, portal, clock. */
 export interface EndingPorts {
   readonly scores: Pick<ScoreBoard, 'best' | 'record'>;
-  readonly profile: Pick<ProfileService, 'recordGame' | 'doubleExperience'>;
+  readonly profile: Pick<ProfileService, 'recordGame' | 'doubleExperience' | 'finishTraining'>;
   readonly campaign: {
     /** Records a level's verdict; returns the stars it added. */
     record(outcome: CampaignOutcome): number;
@@ -116,9 +127,13 @@ export class GameEnding {
       best: record.best,
       isNewBest: record.isNewBest,
       progress,
-      ...(verdict ? { campaign: this.judge(verdict, game.teased, kind.level) } : {}),
+      ...(verdict && kind.training ? { training: this.train(verdict, kind.training) } : {}),
+      ...(verdict && !kind.training
+        ? { campaign: this.judge(verdict, game.teased, kind.level) }
+        : {}),
       ...(score.breakdown ? { guardian: score.breakdown } : {}),
-      rewardOffered: platform.supportsRewarded && progress.total > 0,
+      // No ad in the training.
+      rewardOffered: platform.supportsRewarded && progress.total > 0 && !kind.training,
     };
   }
 
@@ -140,6 +155,13 @@ export class GameEnding {
       next: decided.won ? this.nextLevel(index) : null,
       ...(teaser && lair ? { teaser: { boss: teaser, levelId: lair.id } } : {}),
     };
+  }
+
+  /** A training step's verdict: the way on, and the training over once its last step is won. */
+  private train(decided: CampaignOutcome, step: TrainingStep): TrainingResult {
+    const next = decided.won ? nextTrainingStep(step) : null;
+    if (decided.won && !next) this.ports.profile.finishTraining();
+    return { step: step.id, won: decided.won, next };
   }
 
   /** The level after this one, if the edition opens it. */

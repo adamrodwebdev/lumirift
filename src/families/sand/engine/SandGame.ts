@@ -8,6 +8,7 @@ import type { RotationDirection } from '@/families/falling/pieces/PieceType';
 import { GravityCurve } from '@/families/falling/rules/GravityCurve';
 import { isElement, NOTICE_OF, type ElementTone } from './Elements';
 import { DuneWorm, TEASER_MS, TEASER_PACE, type WormEvent } from './DuneWorm';
+import { layBed, type SandBed } from './SandBed';
 import { GrainSampler, type GrainSample } from './GrainSampler';
 import {
   ELEMENT_GAP,
@@ -46,6 +47,8 @@ export const OIL_REACH = 6;
 export { ELEMENT_GAP, FIRE_MAX_GRAINS, WIND_EVERY_MS, WIND_GUST_MS };
 export type { ElementPace, GrainSample, PieceSpec, ScriptedPiece };
 export const CLEARS_PER_LEVEL = 5;
+/** A game that cannot be lost (the training) empties this many cells of sand each time (rows). */
+export const FORGIVING_ROWS = 6;
 /**
  * The reactions that feed a running combo: the great moments of the elements.
  * A blaze's scorching, acid and steam come too often to count.
@@ -131,6 +134,12 @@ export interface SandOptions {
   readonly boss?: 'duneWorm';
   /** The Guardian's first move after this long (ms); by default the player sees the arena first. */
   readonly bossDelayMs?: number;
+  /** The Guardian cannot be hurt before it has come out once: the player sees it first (the training). */
+  readonly bossSeenFirst?: boolean;
+  /** A prepared well: bands of sand to work on (the home's reel, the portals' training). */
+  readonly bed?: SandBed;
+  /** Never lost (the portals' training): each time a piece cannot come in, the bottom empties. */
+  readonly forgiving?: boolean;
 }
 
 /**
@@ -176,6 +185,8 @@ export class SandGame {
   private readonly announced = new Set<string>();
   /** The second chance has not been used yet. */
   private rescueReady: boolean;
+  /** Rescued every time: a game that cannot be lost. */
+  private readonly forgiving: boolean;
   /** What the falling element would hit, cached for one grid step and one position. */
   private targetCache: { key: string; region: readonly number[] | null } = {
     key: '',
@@ -191,6 +202,7 @@ export class SandGame {
   constructor(options: SandOptions) {
     this.random = options.random;
     this.grid = options.grid ?? new SandGrid();
+    if (options.bed) layBed(this.grid, options.bed);
     this.timeLimitMs = options.timeLimitMs ?? null;
     this.boosts = options.boosts ?? NO_BOOSTS;
     const hazards = options.hazards ?? true;
@@ -211,13 +223,13 @@ export class SandGame {
     this.reactions = new SandReactions(this.grid, this.random);
     this._worm =
       options.boss === 'duneWorm'
-        ? new DuneWorm(
-            this.grid,
-            this.random,
-            options.bossDelayMs === undefined ? {} : { firstSurgeMs: options.bossDelayMs },
-          )
+        ? new DuneWorm(this.grid, this.random, {
+            ...(options.bossDelayMs === undefined ? {} : { firstSurgeMs: options.bossDelayMs }),
+            ...(options.bossSeenFirst ? { seenFirst: true } : {}),
+          })
         : null;
     this.rescueReady = this.boosts.rescueRows > 0;
+    this.forgiving = options.forgiving ?? false;
     // Drawn even in a calm game, so that a seed always deals the same pieces.
     this.wind = new SandWind(this.grid, this.random, (change) => {
       this.events.emit('wind', change);
@@ -276,14 +288,18 @@ export class SandGame {
    * fall a cell: the last warning, drawn on the well. Null while there is room.
    */
   spawnWarning(): SandPiece | null {
-    if (this._state !== 'running' || this.teasing) return null;
+    if (this._state !== 'running' || this.teasing || this.forgiving) return null;
     const spec = this.dealer.peek();
     const piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
     return this.fits(piece, 0, GRAINS_PER_CELL) ? null : piece;
   }
 
-  /** How high the sand stands in the well (0 to 1). */
+  /**
+   * How high the sand stands in the well (0 to 1). A game that cannot be lost
+   * is never in danger: no alarm where the bottom empties instead.
+   */
   pressure(): number {
+    if (this.forgiving) return 0;
     return Math.min(1, this.grid.sandHeight() / this.grid.height);
   }
 
@@ -378,14 +394,16 @@ export class SandGame {
    * The Dune Wyrm shows itself as the level ends (the campaign's teaser): no
    * more pieces, no clock, no wind, no scoring; it swims in under the sand,
    * bursts out in the middle roaring, and dives (1.28.1: it only passed under
-   * the sand before, and could go unnoticed). Only in a running game without
-   * a boss. Returns how long its show lasts (ms), 0 when nothing shows.
+   * the sand before, and could go unnoticed). A Wyrm already in the well
+   * (the training's, struck once) leaves it instead (1.29). Returns how long
+   * its show lasts (ms), 0 when nothing shows.
    */
   tease(): number {
-    if (this._state !== 'running' || this._worm || this.teasing) return 0;
+    if (this._state !== 'running' || this.teasing || this._worm?.state === 'dead') return 0;
     this.teasing = true;
     this._active = null;
     this.grid.calm();
+    if (this._worm) return this._worm.retreat();
     const worm = new DuneWorm(this.grid, this.random, TEASER_PACE);
     // In from the left, inside the sand (its shadow shows only where there is sand).
     const { height, width } = this.grid;
@@ -867,11 +885,12 @@ export class SandGame {
       if (this.fits(lined)) piece = lined;
     }
     if (!this.fits(piece)) {
-      if (this.rescueReady) {
-        // The second chance: the bottom of the sand vanishes, the piece comes back.
+      if (this.rescueReady || this.forgiving) {
+        // The second chance (every time in a training): the bottom of the sand vanishes, the piece comes back.
         this.rescueReady = false;
-        this.grid.dropBottomRows(this.boosts.rescueRows * GRAINS_PER_CELL);
-        this.events.emit('rescue', { rows: this.boosts.rescueRows });
+        const rows = Math.max(this.boosts.rescueRows, this.forgiving ? FORGIVING_ROWS : 0);
+        this.grid.dropBottomRows(rows * GRAINS_PER_CELL);
+        this.events.emit('rescue', { rows });
         this.dealer.giveBack(spec);
         this.spawnNext();
         return;

@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut              |
-| ------- | ---------- | ------------------- |
-| 1.28    | 23/10/2026 | Les familles à part |
+| Version | Date       | Statut                      |
+| ------- | ---------- | --------------------------- |
+| 1.29    | 23/10/2026 | L'entraînement des portails |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -833,6 +833,8 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   le Gardien du chapitre, ou le prochain. Le **1-2** fait
   pratiquer ces éléments (`practice` : sans vent, eau, foudre, huile, feu et graine dès la
   troisième pièce, une chance sur trois) avant le Classique du 1-3.
+  Sur les portails, un nouveau joueur commence par l'**entraînement** (1.29, § 3.7) ; le
+  guide de la première partie reste celui du site.
 - **Son** : tous les sons dans une même tonalité (ré mineur pentatonique) ; **musique
   générative** dans cette tonalité (nappe i – VI – III – VII, puis basse, arpège et battement
   quand l'intensité monte), dont l'intensité suit le danger (`pressure()` de chaque famille) ;
@@ -861,7 +863,10 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   - Règle : une ligne effacée en danger (mesuré avant l'effacement) compte **double**
     (« Close call! », annoncé dans la langue du joueur) ; éclair doré, ralenti de 0,4 s.
   - Défaite par débordement : ralenti d'une demi-seconde, la faille fend le puits de haut en
-    bas, puis la fenêtre de fin.
+    bas, puis la fenêtre de fin. Le puits brisé y reste, immobile (1.29).
+  - Pause et fin de partie (1.29) : la pause calme l'écran et la musique à l'instant, le
+    danger revient avec la partie (sans fausse délivrance) ; une partie décidée n'a plus de
+    danger, même quand son monde bouge encore (le Ver qui se montre à la fin du 1-1).
   - Partie chronométrée : à 10 s, un appel ; un tic par seconde, plus aigu les trois
     dernières ; le temps en rouge qui bat ; la musique au plus vite.
 - **Surcharge de la faille** (1.25, `RiftSurge`) : dans la Chute, le Sable et la Tour (pas en
@@ -896,6 +901,27 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   niveau suivant, accueil, campagne), espacé par le portail ; une **pub récompensée
   facultative** double l'expérience de la partie (bouton étiqueté « PUB », récompense seulement
   une fois la pub confirmée vue, une fois par partie, jamais d'interstitiel juste après).
+
+- **Premier lancement sur les portails (1.29)** : un nouveau joueur (aucune partie jouée,
+  entraînement ni fait ni passé) arrive directement dans un **entraînement en deux étapes**,
+  sans logo animé, écran-titre ni menu (`Platform.firstRun`). Notre site et la démo gardent
+  leur écran-titre.
+  - **Le sable vivant** : puits préparé en couches d'une cellule, chacune coupée d'une autre
+    couleur ; les pièces viennent par paires qui réagissent (eau puis éclair, huile puis feu,
+    graine puis eau), puis du sable. But : relier 2 zones.
+  - **La première rencontre** : le Ver des dunes surgit vers 2,5 s ; des éclairs jusqu'à ce
+    qu'un coup le touche, et seulement une fois sorti du sable ; il replonge (le spectacle de
+    la fin du 1-1) et donne rendez-vous au 2-7.
+  - **Règles** : ni chrono ni défaite (le fond du puits se vide dès qu'une pièce ne peut plus
+    entrer, six rangées), ni pub, ni étoiles, ni record, ni surcharge, ni alarme de danger
+    (`pressure()` nulle) ; l'expérience compte.
+  - **Le guide** dit quoi faire à chaque pièce et à chaque mouvement du Ver, avec les touches
+    ou le geste ; il remplace les compteurs du tableau de bord (en haut sur téléphone, sous
+    l'objectif à côté du puits en paysage), garde la hauteur de sa plus longue phrase et se
+    masque d'une croix. Les annonces du combat se taisent.
+  - **Pause** : « Reprendre » et « Passer l'entraînement ». **Fin** : la leçon de l'étape,
+    « Continuer » ; après la seconde, « Niveau 1-1 » et « Menu ». Fait ou passé, il ne
+    revient plus (`Profile.trained`).
 
 - **CrazyGames (1.2)** : build dédié (`npm run package:crazygames`), médias (covers et vidéos,
   `scripts/crazygames-media.mjs`) et contrôle de chaque exigence du portail dans
@@ -1573,6 +1599,11 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
          ModeCarousel, ModeArt, PlayerBar, ObjectivesCard
 ```
 
+- **Entraînement des portails (1.29)** : `campaign/Training` (les deux étapes, hors
+  campagne), `TrainingRun` (sorte de partie : pas de record, pas de pub, l'arbitre de la
+  campagne sans étoiles), `SandGuide` (la ligne du guide, lue du jeu à chaque image),
+  `SandBed` (le puits préparé), `GuideCard` et `InputHint` (l'interface). `GameEnding` mène
+  d'une étape à l'autre et marque la fin (`Profile.finishTraining`).
 - Chaque moteur lit les `Boosts` qui le concernent (vitesse de chute, aperçu, délai de pose,
   bonus de points, seconde chance, jokers de départ, feu, fenêtre du Rythme, délai des
   rangées reçues) ; sans `Boosts`, il joue exactement comme avant.
@@ -1714,3 +1745,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.26    | 22/10/2026 | Responsive de bout en bout : HUD lisible (14/16 px) et à l'échelle des grands écrans, container queries, zooms 200 et 400 %, 60 images/s sur tactile (§ 4.1, § 4.2). |
 | 1.27    | 22/10/2026 | La partie hors de l'écran : `RunKind`, `GameRun`, `GameEnding` ; règles sorties de l'interface, registres plutôt que `switch` (§ 5.14).                              |
 | 1.28    | 23/10/2026 | Les familles à part : présentation par famille, sons des Gardiens, Sable découpé, réglages par intentions, état protégé (§ 5.14).                                    |
+| 1.29    | 23/10/2026 | L'entraînement des portails : deux étapes avant tout menu sur CrazyGames et Playgama, guide dans le tableau de bord (§ 3.7, § 3.8, § 5.16).                          |

@@ -62,6 +62,20 @@ export interface SessionOptions {
   readonly practice?: boolean;
   /** A Guardian of the rift to defeat (a boss level of the campaign). */
   readonly boss?: BossId;
+  /** A step of the portals' training: its game staged for it, never lost (1.29). */
+  readonly training?: TrainingStage;
+}
+
+/** How a step of the portals' training is staged: the elements in pairs, or the Dune Wyrm. */
+export type TrainingStage = 'elements' | 'wyrm';
+
+/** What the training's guide asks for: the gesture or keys it shows. */
+export type GuideAction = 'move' | 'rotate' | 'drop';
+
+/** A line of the training's guide: a sentence (a translation key), and the gesture it asks for. */
+export interface GuideLine {
+  readonly text: string;
+  readonly action: GuideAction | null;
 }
 
 /** The Guardians of the rift (boss levels). */
@@ -109,11 +123,19 @@ export interface GameSession<C extends Command = Command> {
   awardBonus?(points: number, reason: string): void;
   /**
    * A Guardian of a later chapter shows itself as this level ends (the
-   * campaign's teaser): the game stops taking pieces and its clock, its world
-   * keeps moving. Returns how long the show lasts (ms): the end window waits
-   * for it. 0 when this game cannot show that Guardian.
+   * campaign's teaser), or the one already in the game leaves it (a training
+   * step won): the game stops taking pieces and its clock, its world keeps
+   * moving. Returns how long the show lasts (ms): the end window waits for
+   * it. 0 when this game cannot show that Guardian.
    */
   tease?(boss: BossId): number;
+  /**
+   * What the training's guide says now (1.29), read every frame; null
+   * outside a training, or when it has nothing to say.
+   */
+  guide?(): GuideLine | null;
+  /** Every line the training's guide may say in this game: its card keeps the room of the longest. */
+  guideLines?(): readonly GuideLine[];
   /** Releases listeners; the session cannot be used afterwards. */
   dispose(): void;
 }

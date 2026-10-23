@@ -54,6 +54,8 @@ export interface ProfileData {
   readonly bosses: readonly BossId[];
   /** The last day a Guardian challenge was played (its first attempt of a day earns a bonus). */
   readonly guardianDay: string | null;
+  /** The portals' training is over (won or passed): a portal opens on its menus. */
+  readonly trained: boolean;
 }
 
 /** What a game brought, for the end-of-game dialog. */
@@ -79,6 +81,7 @@ export const EMPTY_PROFILE: ProfileData = {
   seen: COSMETICS.filter((cosmetic) => cosmetic.unlock.by === 'default').map(cosmeticKey),
   bosses: [],
   guardianDay: null,
+  trained: false,
 };
 
 const COSMETIC_KEYS = new Set(COSMETICS.map(cosmeticKey));
@@ -139,6 +142,18 @@ export class Profile {
 
   isUnlocked(cosmetic: Cosmetic): boolean {
     return isUnlocked(cosmetic, this.achievements);
+  }
+
+  /** A new player on a portal starts with the training: no game played, the training not done. */
+  get needsTraining(): boolean {
+    return !this.data.trained && this.data.games === 0;
+  }
+
+  /** The training is over (its last step won, or passed); false when it already was. */
+  finishTraining(): boolean {
+    if (this.data.trained) return false;
+    this.data = { ...this.data, trained: true };
+    return true;
   }
 
   /** The objectives of the day; a new day brings new ones. */
@@ -288,6 +303,7 @@ export class Profile {
         typeof record.guardianDay === 'string' && /^\d{8}$/.test(record.guardianDay)
           ? record.guardianDay
           : null,
+      trained: record.trained === true,
     };
     // Saved before the Atelier marked its new looks: what was earned then is not new.
     const seen = Array.isArray(record.seen)

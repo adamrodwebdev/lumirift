@@ -23,5 +23,8 @@ describe('Editions', () => {
     expect(demo.id).toBe('demo');
     expect(demo.edition).toBe(DEMO_EDITION);
     expect(demo.allowsExternalLinks).toBe(true);
+    // Our site and the demo keep their title screen: the training is the portals'.
+    expect(new WebPlatform().firstRun).toBe('title');
+    expect(demo.firstRun).toBe('title');
   });
 });

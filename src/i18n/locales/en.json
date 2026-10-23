@@ -723,5 +723,36 @@
     "readyKey": "Rift surge ready: press {key}",
     "charging": "Rift surge, gauge at {n}%",
     "running": "Rift surge: time slowed"
+  },
+  "training": {
+    "title": "Training · step {n}/{total}",
+    "step": "Step {n}/{total}",
+    "goal": {
+      "livingSand": "Link 2 regions",
+      "firstEncounter": "Drive off the Wyrm"
+    },
+    "stepDone": "Step complete!",
+    "done": "Training complete!",
+    "lesson": {
+      "livingSand": "The elements react to each other: use them to break the sand.",
+      "firstEncounter": "The Dune Wyrm has dived back into the sand. It awaits you at level 2-7: the campaign starts at 1-1."
+    },
+    "continue": "Continue",
+    "menu": "Menu",
+    "skip": "Skip the training",
+    "guide": {
+      "placeWater": "Place the water on the sand.",
+      "dropLightning": "Lightning on water shatters the sand around it: drop it!",
+      "placeOil": "Place the oil: it spreads out.",
+      "dropFire": "Fire sets the oil ablaze: drop it on top.",
+      "placeSeed": "Place the seed.",
+      "dropWater": "Water the seed: it grows into a vine.",
+      "link": "Link both walls with one colour to clear it.",
+      "roam": "The Dune Wyrm prowls under the sand…",
+      "warn": "The sand cracks: keep the lightning above them!",
+      "exposed": "Its head is bare: drop the lightning!",
+      "missed": "It dives back down… Watch for the next cracks.",
+      "hit": "Hit! The Wyrm dives back down."
+    }
   }
 }

@@ -25,6 +25,14 @@ node scripts/crazygames-media.mjs --covers-only   # covers dans release/playgama
 Le zip (`release/lumirift-playgama-<version>.zip`, 0,2 Mo environ) a `index.html` à la
 racine, des chemins relatifs et des séparateurs « / » (bsdtar).
 
+**Bac à sable** : en 1.29.0 depuis le 23/10/2026 (contrôle de Playgama `PASSED`, Bridge 2.3.1
+détecté, chargement 0,76 s, 243 Ko au premier affichage).
+
+**Premier lancement (1.29)** : comme sur CrazyGames, un nouveau joueur arrive directement
+dans l'entraînement en deux étapes (le Sable vivant, puis le Ver des dunes), sans
+écran-titre ni menu, sans pub ; les menus s'ouvrent à la fin ou quand il le passe depuis la
+pause. Le profil, gardé par `bridge.storage`, retient qu'il est fait.
+
 ## Exigences et leur contrôle
 
 | Exigence                                                                                                                 | Statut | Preuve                                                                        |
@@ -37,7 +45,7 @@ racine, des chemins relatifs et des séparateurs « / » (bsdtar).
 | Pause et son de la plateforme (`PAUSE_STATE_CHANGED`, `AUDIO_STATE_CHANGED`)                                             | ✓      | Pause de la partie, coupure du son ; état du son lu au lancement              |
 | Son coupé quand la page est cachée                                                                                       | ✓      | Contexte audio suspendu (`visibilitychange`)                                  |
 | Bouton muet                                                                                                              | ✓      | En-tête                                                                       |
-| `game_ready` une fois, au premier écran interactif                                                                       | ✓      | Après le montage et le premier rendu                                          |
+| `game_ready` une fois, au premier écran interactif                                                                       | ✓      | Après le montage et le premier rendu ; avant `level_started` (1.29)           |
 | Messages de niveau (`level_started`, `_paused`, `_resumed`, `_completed`…)                                               | ✓      | Début, pause, reprise, fin (gagné : niveau ou duel)                           |
 | Au moins un format de publicité, aux pauses naturelles                                                                   | ✓      | Interstitiel à la sortie de chaque fin de partie, jamais en jeu ; 120 s min.  |
 | Publicité jamais sous le doigt ; jeu en pause et muet pendant                                                            | ✓      | Interface bloquée pendant la pause publicitaire ; événements de la plateforme |

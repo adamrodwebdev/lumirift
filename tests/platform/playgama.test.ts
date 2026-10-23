@@ -67,6 +67,8 @@ describe('PlaygamaPlatform', () => {
     expect(platform.locale).toBe('fr');
     // Escape is the portal's: it leaves full screen.
     expect(platform.reservesEscape).toBe(true);
+    // A new player starts in the training, before any menu (1.29).
+    expect(platform.firstRun).toBe('training');
   });
 
   it('groups a burst of saves into one Bridge call', async () => {
@@ -103,6 +105,16 @@ describe('PlaygamaPlatform', () => {
       'level_started',
       'level_completed',
     ]);
+  });
+
+  it('keeps a first run’s level messages until game_ready (a portal’s training plays at once)', async () => {
+    const fake = fakeBridge();
+    const platform = await PlaygamaPlatform.create(fake.bridge);
+    platform.gameplayStart();
+    expect(fake.messages).toEqual([]);
+    platform.ready();
+    platform.gameplayStop();
+    expect(fake.messages).toEqual(['game_ready', 'level_started', 'level_paused']);
   });
 
   it('follows the platform sound and pause', async () => {

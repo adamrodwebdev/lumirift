@@ -1,52 +1,16 @@
 import { SeededRandom } from '@/core/Random';
 import { Tone } from '@/core/Tone';
-import { SandGame, type ScriptedPiece } from '@/families/sand/engine/SandGame';
-import { GRAINS_PER_CELL, SAND_TONES } from '@/families/sand/engine/SandGrid';
+import { SandGame } from '@/families/sand/engine/SandGame';
+import { GRAINS_PER_CELL } from '@/families/sand/engine/SandGrid';
+import { PAIRS_SCRIPT } from '@/families/sand/engine/Showcase';
 import { SandSession } from '@/families/sand/SandSession';
 import type { Scene } from './Scene';
 
-/** The pairs that react, in the order they play: shock, blaze, vine. */
-const PAIRS: readonly (readonly [Tone, Tone])[] = [
-  [Tone.Water, Tone.Lightning],
-  [Tone.Oil, Tone.Fire],
-  [Tone.Seed, Tone.Water],
-];
 /** Where the first piece of each pair goes, in cells from where it appears. */
 const AIMS = [-3, 3, 0, -2, 2] as const;
 /** A piece is seen for this long before it moves, then dropped a moment later (ms). */
 const LOOK_MS = 320;
 const DROP_MS = 520;
-
-/**
- * The script of the elements: a pair at once (the first lightning lands
- * within two seconds), then a piece of sand and the next pair. Each pair's
- * second piece appears right above the first.
- */
-function choreography(): ScriptedPiece[] {
-  const pieces: ScriptedPiece[] = [];
-  let at = 1;
-  for (const [first, second] of PAIRS) {
-    pieces.push({ at: at++, tone: first, type: 'I' });
-    pieces.push({ at: at++, tone: second, type: 'O', above: true });
-    at++; // a piece of sand, dealt by chance
-  }
-  return pieces;
-}
-
-/** Bands of coloured sand, each cut by another colour: the elements have something to work on. */
-function sandBed(game: SandGame, share: number, variant: number): void {
-  const { grid } = game;
-  const rows = Math.round(grid.height * share);
-  for (let y = 0; y < rows; y++) {
-    const band = Math.floor(y / 6);
-    const tone = SAND_TONES[(band + variant) % SAND_TONES.length]!;
-    const cut = (band * 17 + 6 + variant * 11) % (grid.width - 8);
-    const other = SAND_TONES[(band + variant + 2) % SAND_TONES.length]!;
-    for (let x = 0; x < grid.width; x++) {
-      grid.put(x, grid.height - 1 - y, x >= cut && x < cut + 7 ? other : tone, (x * 7 + y) & 3);
-    }
-  }
-}
 
 /** Moves the falling piece by whole cells (negative: to the left). */
 function slide(session: SandSession, cells: number): void {
@@ -57,9 +21,13 @@ function slide(session: SandSession, cells: number): void {
 
 /** The Sand's elements: lightning through water (the shock), fire on oil (the blaze), a vine. */
 export function elements(variant = 0): Scene {
-  const script = choreography();
-  const game = new SandGame({ random: new SeededRandom(17 + variant), hazards: false, script });
-  sandBed(game, 0.36, variant);
+  const script = PAIRS_SCRIPT;
+  const game = new SandGame({
+    random: new SeededRandom(17 + variant),
+    hazards: false,
+    script,
+    bed: { share: 0.36, variant },
+  });
   const session = new SandSession('sand', game);
   let since = 0;
   let aimed = false;
@@ -99,8 +67,8 @@ export function duneWorm(): Scene {
     boss: 'duneWorm',
     bossDelayMs: 0,
     script: [{ at: 3, tone: Tone.Lightning, type: 'O' }],
+    bed: { share: 0.42, variant: 1 },
   });
-  sandBed(game, 0.42, 1);
   const session = new SandSession('sand', game);
   const wyrm = game.worm!;
   // Two pieces of sand while it gathers under the cracks; the bolt waits for its head.

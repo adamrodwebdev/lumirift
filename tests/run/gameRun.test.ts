@@ -1,11 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import { levelById } from '@/campaign/Levels';
+import { TRAINING } from '@/campaign/Training';
 import { Emitter } from '@/core/Emitter';
 import { FULL_EDITION } from '@/platform/Edition';
 import type { GameProgress } from '@/progression/Profile';
 import { GameRun, type GameRunPorts } from '@/run/GameRun';
-import { DailyRun, FreeRun, GuardianRun, LevelRun, runKindFor, type RunKind } from '@/run/RunKind';
+import {
+  DailyRun,
+  FreeRun,
+  GuardianRun,
+  LevelRun,
+  runKindFor,
+  TrainingRun,
+  type RunKind,
+} from '@/run/RunKind';
 import { DailyChallenge } from '@/session/DailyChallenge';
 import type {
   GameSession,
@@ -97,6 +106,7 @@ function setUp(kind: RunKind, { showsBest = true, rewarded = false } = {}) {
   };
   const profile = {
     recordGame: vi.fn(() => PROGRESS),
+    finishTraining: vi.fn(),
     doubleExperience: vi.fn((progress: GameProgress) => ({
       ...progress,
       total: progress.total * 2,
@@ -220,6 +230,41 @@ describe('GameRun', () => {
     expect(platform.gameOver).toHaveBeenCalledWith(true);
   });
 
+  it('plays a training step: no clock, no record, no ad; once won, the next step', async () => {
+    const { run, scores, campaign, platform, profile, game } = setUp(
+      new TrainingRun(TRAINING[0]!),
+      {
+        rewarded: true,
+      },
+    );
+    await run.start();
+    expect(game().options).toMatchObject({ timeLimitMs: null, training: 'elements' });
+    const over = vi.fn();
+    run.events.on('over', over);
+    game().clear(2);
+    run.update(16);
+    const { ending } = over.mock.calls[0]![0] as { ending: NonNullable<typeof run.last> };
+    expect(ending.training).toEqual({ step: 'livingSand', won: true, next: TRAINING[1] });
+    expect(ending.campaign).toBeUndefined();
+    expect(campaign.record).not.toHaveBeenCalled();
+    expect(scores.best('sand')).toBeNull();
+    // Its experience counts; no ad to double it, none between two steps.
+    expect(profile.recordGame).toHaveBeenCalledOnce();
+    expect(ending.rewardOffered).toBe(false);
+    await run.adBreak({ onStart: () => {}, onEnd: () => {} }, 'replay');
+    expect(platform.midgameAd).not.toHaveBeenCalled();
+    expect(profile.finishTraining).not.toHaveBeenCalled();
+  });
+
+  it('ends the training with its last step won: the campaign comes next', async () => {
+    const { run, profile, game } = setUp(new TrainingRun(TRAINING[1]!));
+    await run.start();
+    expect(game().options).toMatchObject({ training: 'wyrm' });
+    game().end('victory');
+    expect(run.last?.training).toEqual({ step: 'firstEncounter', won: true, next: null });
+    expect(profile.finishTraining).toHaveBeenCalledOnce();
+  });
+
   it('tells the portal of a pause only when the player asked for it', async () => {
     const { run, platform } = setUp(new FreeRun('classic'));
     await run.start();
@@ -262,8 +307,12 @@ describe('RunKind', () => {
   const guardian = new GuardianChallenge(new Date(2026, 9, 22));
   const level = levelById('1-2')!;
 
-  it('picks the kind of game: a level first, then a Guardian, then the day', () => {
+  it('picks the kind of game: a training step first, then a level, a Guardian, the day', () => {
     const choice = { modeId: 'classic' as const, variant: null };
+    const step = TRAINING[0]!;
+    expect(runKindFor({ ...choice, daily, guardian, level, training: step }, {})).toBeInstanceOf(
+      TrainingRun,
+    );
     expect(runKindFor({ ...choice, daily, guardian, level }, {}).id).toBe('level');
     expect(runKindFor({ ...choice, daily, guardian, level: null }, {}).id).toBe('guardian');
     expect(runKindFor({ ...choice, daily, guardian: null, level: null }, {}).id).toBe('daily');

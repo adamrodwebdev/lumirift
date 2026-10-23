@@ -23,6 +23,10 @@ const SURGE_MS = 700;
 const SURGE_RISE = 10;
 const EXPOSED_MS = 3000;
 const DIVE_MS = 900;
+/** After its dive, the sand settles over a Wyrm that leaves (ms). */
+const RETREAT_SETTLE_MS = 400;
+/** A Wyrm that leaves while under the sand is seen swimming away this long (ms). */
+const RETREAT_SWIM_MS = 1200;
 /** Grains per physics step it swims at, by phase. */
 const SPEED = [0, 0.45, 0.6, 0.75] as const;
 /** Sand it throws up when it bursts out, in grains. */
@@ -68,6 +72,8 @@ export interface WormPace {
    * stays out a moment and dives for good.
    */
   readonly show?: { readonly warnMs: number; readonly exposedMs: number; readonly rise: number };
+  /** Nothing hurts it before it has come out once: the player sees it first (the training). */
+  readonly seenFirst?: boolean;
 }
 
 /**
@@ -106,6 +112,8 @@ export class DuneWorm {
   private _warnAt: number | null = null;
   private surges = 0;
   private readonly cooldowns = new Map<WormHit, number>();
+  /** It leaves the well: once under the sand, it never comes out again. */
+  private leaving = false;
   private clock = 0;
   /** Its body, head first, in grains (x, y pairs). */
   readonly xs = new Float64Array(SEGMENTS);
@@ -191,6 +199,7 @@ export class DuneWorm {
   /** Something hurts it; the damage is its own rule. Returns the damage done. */
   hit(kind: WormHit): number {
     if (this._state === 'dead') return 0;
+    if (this.pace.seenFirst && this.surges === 0) return 0;
     const last = this.cooldowns.get(kind);
     if (last !== undefined && this.clock - last < HIT_COOLDOWN_MS && kind !== 'boltHead') return 0;
     this.cooldowns.set(kind, this.clock);
@@ -203,6 +212,30 @@ export class DuneWorm {
       this.events.push({ type: 'defeated' });
     }
     return damage;
+  }
+
+  /**
+   * It leaves the well for good (the training's Wyrm, struck once): out of
+   * the sand it dives at once, under it it swims away to a wall. Returns how
+   * long that takes to see (ms).
+   */
+  retreat(): number {
+    if (this._state === 'dead') return 0;
+    this.leaving = true;
+    this.stun = 0;
+    if (this.out) {
+      if (this._state !== 'dive') {
+        this._state = 'dive';
+        this.timer = DIVE_MS;
+        this.events.push({ type: 'dive' });
+      }
+      return Math.max(0, this.timer) + RETREAT_SETTLE_MS;
+    }
+    this._state = 'roam';
+    this._warnAt = null;
+    this.timer = Number.POSITIVE_INFINITY;
+    this.target = [this.headX < this.grid.width / 2 ? 2 : this.grid.width - 3, this.headY];
+    return RETREAT_SWIM_MS;
   }
 
   /** What it did since the last call (a hit, a step), oldest first. */
@@ -292,7 +325,7 @@ export class DuneWorm {
   }
 
   private afterDive(): void {
-    if (this.pace.show) {
+    if (this.pace.show || this.leaving) {
       // The show is over: it stays under the sand.
       this._state = 'roam';
       this._warnAt = null;

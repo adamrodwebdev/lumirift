@@ -723,5 +723,36 @@
     "readyKey": "Lonjakan siap: tekan {key}",
     "charging": "Lonjakan, pengukur {n}%",
     "running": "Lonjakan: waktu melambat"
+  },
+  "training": {
+    "title": "Latihan · tahap {n}/{total}",
+    "step": "Tahap {n}/{total}",
+    "goal": {
+      "livingSand": "Hubungkan 2 area",
+      "firstEncounter": "Usir Cacing Pasir"
+    },
+    "stepDone": "Tahap selesai!",
+    "done": "Latihan selesai!",
+    "lesson": {
+      "livingSand": "Elemen saling bereaksi: gunakan untuk memecah pasir.",
+      "firstEncounter": "Cacing Pasir kembali menyelam. Ia menunggumu di level 2-7: kampanye dimulai dari level 1-1."
+    },
+    "continue": "Lanjut",
+    "menu": "Menu",
+    "skip": "Lewati latihan",
+    "guide": {
+      "placeWater": "Letakkan air di atas pasir.",
+      "dropLightning": "Petir di air memecah pasir di sekitarnya: jatuhkan!",
+      "placeOil": "Letakkan minyak: ia akan menyebar.",
+      "dropFire": "Api membakar minyak: jatuhkan di atasnya.",
+      "placeSeed": "Letakkan benih.",
+      "dropWater": "Siram benihnya: ia tumbuh jadi sulur.",
+      "link": "Hubungkan kedua dinding dengan satu warna.",
+      "roam": "Cacing Pasir berkeliaran di bawah pasir…",
+      "warn": "Pasir retak: tahan petir di atas retakan!",
+      "exposed": "Kepalanya terbuka: jatuhkan petir!",
+      "missed": "Ia menyelam lagi… Awasi retakan berikutnya.",
+      "hit": "Kena! Cacing Pasir kembali menyelam."
+    }
   }
 }

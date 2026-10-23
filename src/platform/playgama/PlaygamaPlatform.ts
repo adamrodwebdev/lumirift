@@ -125,6 +125,8 @@ export class BridgeStorage implements KeyValueStorage {
 export class PlaygamaPlatform implements Platform {
   readonly id = 'playgama';
   readonly edition = FULL_EDITION;
+  /** A new player plays the training before any menu (the user's rule for portals). */
+  readonly firstRun = 'training';
   // Playgama forbids links to other sites (and returns false for them).
   readonly allowsExternalLinks = false;
   readonly reservesEscape = true;
@@ -136,6 +138,8 @@ export class PlaygamaPlatform implements Platform {
   private rewardedListener: ((state: RewardedState) => void) | null = null;
   private level: 'none' | 'playing' | 'paused' = 'none';
   private isReady = false;
+  /** Level messages said before `game_ready` (a first run plays at once): sent right after it. */
+  private readonly early: string[] = [];
 
   private constructor(
     private readonly bridge: PlaygamaBridge | null,
@@ -201,6 +205,7 @@ export class PlaygamaPlatform implements Platform {
     if (this.isReady) return;
     this.isReady = true;
     this.send('game_ready');
+    this.early.splice(0).forEach((message) => this.send(message));
   }
 
   // Modes load in a fraction of a second: no in-game loading message.
@@ -209,20 +214,20 @@ export class PlaygamaPlatform implements Platform {
 
   gameplayStart(): void {
     if (this.level === 'playing') return;
-    this.send(this.level === 'paused' ? 'level_resumed' : 'level_started');
+    this.tell(this.level === 'paused' ? 'level_resumed' : 'level_started');
     this.level = 'playing';
   }
 
   gameplayStop(): void {
     if (this.level !== 'playing') return;
     this.level = 'paused';
-    this.send('level_paused');
+    this.tell('level_paused');
   }
 
   gameOver(won: boolean): void {
     if (this.level === 'none') return;
     this.level = 'none';
-    this.send(won ? 'level_completed' : 'level_failed');
+    this.tell(won ? 'level_completed' : 'level_failed');
   }
 
   happyTime(): void {}
@@ -308,6 +313,12 @@ export class PlaygamaPlatform implements Platform {
         done();
       }
     });
+  }
+
+  /** A level message: never before `game_ready`. */
+  private tell(message: string): void {
+    if (this.isReady) this.send(message);
+    else this.early.push(message);
   }
 
   private send(message: string): void {

@@ -1,6 +1,7 @@
 import { CampaignRun } from '@/campaign/CampaignRun';
 import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
-import type { CampaignLevel } from '@/campaign/Levels';
+import type { CampaignLevel, StarRule } from '@/campaign/Levels';
+import type { TrainingStep } from '@/campaign/Training';
 import { boostsFor, levelTimeMs, type UpgradeRanks } from '@/campaign/Upgrades';
 import { SeededRandom } from '@/core/Random';
 import type { GameReport } from '@/progression/GameReport';
@@ -17,7 +18,7 @@ export interface RunScore {
   readonly breakdown?: { readonly points: number; readonly factor: number };
 }
 
-export type RunKindId = 'free' | 'daily' | 'guardian' | 'level';
+export type RunKindId = 'free' | 'daily' | 'guardian' | 'level' | 'training';
 
 /**
  * The kind of game played (1.27): a free game, the day's challenge, the
@@ -34,8 +35,14 @@ export interface RunKind {
   readonly records: boolean;
   /** The campaign level played, or null. */
   readonly level: CampaignLevel | null;
+  /** The training step played (a portal's first run), or null. */
+  readonly training: TrainingStep | null;
   /** The Guardian fought (the week's, or a level's), or null. */
   readonly boss: BossId | null;
+  /** The Guardian that shows itself once this game is won (a teaser), or null. */
+  readonly teaser: BossId | null;
+  /** The portal may show an ad between two of its games (never in the training). */
+  readonly adBreaks: boolean;
   /** What the progression hears of the kind of game. */
   readonly progression: Pick<GameReport, 'daily' | 'guardian' | 'variant'>;
   /** A new game's options; `seed` deals the pieces when the kind deals none of its own. */
@@ -59,7 +66,10 @@ export class FreeRun implements RunKind {
   readonly id = 'free';
   readonly records = true;
   readonly level = null;
+  readonly training = null;
   readonly boss = null;
+  readonly teaser = null;
+  readonly adBreaks = true;
   readonly recordKey: string;
   readonly progression: RunKind['progression'];
 
@@ -98,7 +108,10 @@ export class DailyRun implements RunKind {
   readonly id = 'daily';
   readonly records = true;
   readonly level = null;
+  readonly training = null;
   readonly boss = null;
+  readonly teaser = null;
+  readonly adBreaks = true;
   readonly recordKey: string;
   readonly progression = { daily: true, guardian: false, variant: null };
 
@@ -135,7 +148,10 @@ export class GuardianRun implements RunKind {
   readonly id = 'guardian';
   readonly records = true;
   readonly level = null;
+  readonly training = null;
   readonly boss: BossId;
+  readonly teaser = null;
+  readonly adBreaks = true;
   readonly recordKey: string;
   readonly progression = { daily: false, guardian: true, variant: null };
 
@@ -179,7 +195,10 @@ export class GuardianRun implements RunKind {
 export class LevelRun implements RunKind {
   readonly id = 'level';
   readonly records = false;
+  readonly training = null;
   readonly boss: BossId | null;
+  readonly teaser: BossId | null;
+  readonly adBreaks = true;
   readonly recordKey: string;
   readonly progression = { daily: false, guardian: false, variant: null };
   /** The clock of this game, hourglass included (null: untimed). */
@@ -191,6 +210,7 @@ export class LevelRun implements RunKind {
     private readonly ranks: UpgradeRanks,
   ) {
     this.boss = level.boss ?? null;
+    this.teaser = level.teaser ?? null;
     this.recordKey = modeId;
     this.timeLimitMs = levelTimeMs(level, ranks);
   }
@@ -223,6 +243,55 @@ export class LevelRun implements RunKind {
   }
 }
 
+/** A training step judges its goal as a level does; it has no stars to give. */
+const NO_STARS: StarRule = { kind: 'timeLeft' };
+
+/**
+ * A step of the portals' training (1.29): its game staged for it, no clock,
+ * no record, no ad, no stars; its goal judged as a level's, and once won the
+ * way on is the next step, then the campaign.
+ */
+export class TrainingRun implements RunKind {
+  readonly id = 'training';
+  readonly records = false;
+  readonly level = null;
+  readonly boss: BossId | null;
+  readonly teaser: BossId | null;
+  readonly adBreaks = false;
+  readonly modeId: ModeId;
+  readonly recordKey: string;
+  readonly progression = { daily: false, guardian: false, variant: null };
+
+  constructor(readonly training: TrainingStep) {
+    this.modeId = training.modeId;
+    this.recordKey = training.modeId;
+    this.boss = training.stage === 'wyrm' ? 'duneWorm' : null;
+    this.teaser = training.teaser ?? null;
+  }
+
+  sessionOptions(seed: number, today: Date): SessionOptions {
+    return {
+      random: new SeededRandom(seed),
+      timeLimitMs: null,
+      today,
+      training: this.training.stage,
+    };
+  }
+
+  chasesRecord(): boolean {
+    return false;
+  }
+
+  score(result: SessionResult): RunScore {
+    return whole(result);
+  }
+
+  campaignRun(): CampaignRun {
+    const { id, goal } = this.training;
+    return new CampaignRun({ id, goal, stars: NO_STARS }, null);
+  }
+}
+
 /** What the player chose to play: a level, a Guardian, a day's challenge, or none of them. */
 export interface RunChoice {
   readonly modeId: ModeId;
@@ -230,10 +299,13 @@ export interface RunChoice {
   readonly guardian: GuardianChallenge | null;
   readonly level: CampaignLevel | null;
   readonly variant: string | null;
+  /** A step of the portals' training. */
+  readonly training?: TrainingStep | null;
 }
 
-/** The kind of game the player chose (a level first, then a Guardian, then a day's challenge). */
+/** The kind of game the player chose (a training step first, then a level, a Guardian, a day's challenge). */
 export function runKindFor(choice: RunChoice, ranks: UpgradeRanks): RunKind {
+  if (choice.training) return new TrainingRun(choice.training);
   if (choice.level) return new LevelRun(choice.modeId, choice.level, ranks);
   if (choice.guardian) return new GuardianRun(choice.modeId, choice.guardian);
   if (choice.daily) return new DailyRun(choice.modeId, choice.daily);

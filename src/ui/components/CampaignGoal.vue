@@ -2,29 +2,29 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFormat } from '@/app/useFormat';
-import type { CampaignLevel } from '@/campaign/Levels';
-import { useCampaignText } from '../useCampaignText';
+import type { Goal } from '@/campaign/Goals';
 
-/** The goal of a campaign level, over the game, and how far along it is. */
-const props = defineProps<{ level: CampaignLevel; value: number }>();
+/**
+ * The goal of a campaign level or of a training step, over the game, and how
+ * far along it is: its name (`label`, the level or the step), what to do
+ * (`text`), the gauge.
+ */
+const props = defineProps<{ label: string; text: string; goal: Goal; value: number }>();
 
 const { t } = useI18n();
 const format = useFormat();
-const text = useCampaignText();
 
-const target = computed(() => props.level.goal.target);
+const target = computed(() => props.goal.target);
 /** Win and shape goals are judged at the end: no gauge for them. */
-const measured = computed(
-  () => props.level.goal.kind !== 'win' && props.level.goal.kind !== 'shape',
-);
+const measured = computed(() => props.goal.kind !== 'win' && props.goal.kind !== 'shape');
 const shown = (n: number) =>
-  props.level.goal.kind === 'survive' ? format.duration(n) : format.number(n);
+  props.goal.kind === 'survive' ? format.duration(n) : format.number(n);
 </script>
 
 <template>
   <div class="goal" role="group" :aria-label="t('campaign.goalLabel')">
-    <p class="goal__level">{{ t('campaign.levelShort', { level: level.id }) }}</p>
-    <p class="goal__text">{{ text.goal(level) }}</p>
+    <p class="goal__level">{{ label }}</p>
+    <p class="goal__text">{{ text }}</p>
     <template v-if="measured">
       <div
         class="goal__bar"
@@ -33,7 +33,7 @@ const shown = (n: number) =>
         :aria-valuemax="target"
         :aria-valuenow="value"
         :aria-valuetext="`${shown(value)} / ${shown(target)}`"
-        :aria-label="text.goal(level)"
+        :aria-label="text"
       >
         <span class="goal__fill" :style="{ inlineSize: `${(value / target) * 100}%` }" />
       </div>
@@ -43,10 +43,18 @@ const shown = (n: number) =>
 </template>
 
 <style scoped>
-/* Sizes in `em`, like the rest of the HUD: 14 px at least. */
+/*
+ * Sizes in `em`, like the rest of the HUD: 14 px at least. The level (or the
+ * step) and the count share the first line; what to do has the card's whole
+ * width, so that no word of any language is cut.
+ */
 .goal {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'level count'
+    'text text'
+    'bar bar';
   align-items: center;
   gap: 0.15em 0.5em;
   flex: 1 1 12em;
@@ -57,6 +65,7 @@ const shown = (n: number) =>
 }
 
 .goal__level {
+  grid-area: level;
   font-size: 0.875em;
   font-weight: 800;
   color: var(--accent);
@@ -64,6 +73,7 @@ const shown = (n: number) =>
 
 /* Two lines at most, never cut in the middle of a word. */
 .goal__text {
+  grid-area: text;
   display: -webkit-box;
   overflow: hidden;
   font-size: 0.875em;
@@ -74,14 +84,16 @@ const shown = (n: number) =>
 }
 
 .goal__count {
+  grid-area: count;
   font-size: 0.875em;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
 
 .goal__bar {
-  grid-column: 1 / -1;
+  grid-area: bar;
   block-size: 0.35em;
+  margin-block-start: 0.2em;
   border-radius: 999px;
   background: var(--surface);
   overflow: hidden;
@@ -95,16 +107,11 @@ const shown = (n: number) =>
   transition: inline-size 200ms ease;
 }
 
-/* A desktop (the dashboard's column beside the well): the level above the goal. */
+/* A desktop (the dashboard's column beside the well): the card takes the column. */
 @media (width >= 64rem) {
   .goal {
     flex: none;
     inline-size: 100%;
-    grid-template-columns: 1fr auto;
-  }
-
-  .goal__level {
-    grid-column: 1 / -1;
   }
 }
 </style>
