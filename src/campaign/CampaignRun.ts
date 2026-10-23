@@ -14,6 +14,9 @@ export interface CampaignOutcome {
   readonly stars: 0 | 1 | 2 | 3;
 }
 
+/** What a judge reads of a level: a campaign level, or a training step judged the same way. */
+export type JudgedLevel = Pick<CampaignLevel, 'id' | 'goal' | 'stars'>;
+
 type StarRuleOf<K extends StarRule['kind']> = Extract<StarRule, { kind: K }>;
 type Stars = (rule: StarRule, state: LiveState, timeLimitMs: number | null) => 1 | 2 | 3;
 
@@ -45,7 +48,7 @@ const starsBy: Stars = (rule, state, timeLimitMs) =>
  */
 export class CampaignRun {
   constructor(
-    readonly level: CampaignLevel,
+    readonly level: JudgedLevel,
     /** The clock of this game, hourglass included (null: untimed). */
     readonly timeLimitMs: number | null,
   ) {}

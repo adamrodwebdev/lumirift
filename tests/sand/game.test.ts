@@ -187,10 +187,11 @@ describe('SandGame', () => {
     expect(game.active).toBeNull();
     expect(game.elapsedMs).toBe(elapsed);
     expect(game.score).toBe(score);
-    // The Guardian's own level has no teaser.
+    // A Guardian already in the well (a fight, the training's) leaves it instead (1.29).
     const boss = new SandGame({ random: new SeededRandom(4), boss: 'duneWorm' });
     boss.start();
-    expect(boss.tease()).toBe(0);
+    expect(boss.tease()).toBeGreaterThan(0);
+    expect(boss.isTeasing).toBe(true);
   });
 
   it('warns where the next piece would appear once the sand leaves it no room', () => {

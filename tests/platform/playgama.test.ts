@@ -67,6 +67,8 @@ describe('PlaygamaPlatform', () => {
     expect(platform.locale).toBe('fr');
     // Escape is the portal's: it leaves full screen.
     expect(platform.reservesEscape).toBe(true);
+    // A new player starts in the training, before any menu (1.29).
+    expect(platform.firstRun).toBe('training');
   });
 
   it('groups a burst of saves into one Bridge call', async () => {

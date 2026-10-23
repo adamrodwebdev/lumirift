@@ -93,6 +93,19 @@ describe('Objectives', () => {
 });
 
 describe('Profile', () => {
+  it('starts a new player with the training, once (1.29)', () => {
+    const profile = new Profile();
+    expect(profile.needsTraining).toBe(true);
+    expect(profile.finishTraining()).toBe(true);
+    expect(profile.finishTraining()).toBe(false);
+    expect(profile.needsTraining).toBe(false);
+    expect(Profile.parse(profile.snapshot).needsTraining).toBe(false);
+    // Saved before the training existed, with games played: the menus, as before.
+    const veteran = Profile.parse({ xp: 120, games: 4 });
+    expect(veteran.snapshot.trained).toBe(false);
+    expect(veteran.needsTraining).toBe(false);
+  });
+
   it('earns experience and completes the objectives of the day', () => {
     const profile = new Profile();
     const day = '20261012';

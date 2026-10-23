@@ -37,6 +37,16 @@ export class ProfileService {
     return this.profile.level;
   }
 
+  /** A new player on a portal starts with the training. */
+  get needsTraining(): boolean {
+    return this.profile.needsTraining;
+  }
+
+  /** The training is over: its last step won, or passed. */
+  finishTraining(): void {
+    if (this.profile.finishTraining()) this.save();
+  }
+
   /** Whether a cosmetic is the player's (worn, or there to wear). */
   isUnlocked(cosmetic: Cosmetic): boolean {
     return this.profile.isUnlocked(cosmetic);

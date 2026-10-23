@@ -10,12 +10,20 @@ import { useKeyLabels } from '../useKeyLabels';
  * The keyboard controls of a mode, drawn as keys beside what they do: read
  * at a glance, in the keyboard layout of the player, with the keys they chose.
  */
-const props = defineProps<{ family: FamilyId; modeId: ModeId }>();
+const props = withDefaults(
+  defineProps<{
+    family: FamilyId;
+    modeId: ModeId;
+    /** The game has its rift surge (none in the training). */
+    surge?: boolean;
+  }>(),
+  { surge: true },
+);
 
 const { t } = useI18n();
 const keys = useKeyLabels();
 const bindings = useKeyBindings();
-const rows = computed(() => keyLegendFor(props.family, props.modeId, bindings.value));
+const rows = computed(() => keyLegendFor(props.family, props.modeId, bindings.value, props.surge));
 </script>
 
 <template>

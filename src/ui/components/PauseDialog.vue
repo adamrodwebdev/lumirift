@@ -19,8 +19,10 @@ const props = defineProps<{
   touch: boolean;
   family: FamilyId;
   modeId: ModeId;
+  /** A step of the portals' training: no menu yet, the training may be passed. */
+  training?: boolean;
 }>();
-const emit = defineEmits<{ resume: []; restart: []; settings: []; quit: [] }>();
+const emit = defineEmits<{ resume: []; restart: []; settings: []; quit: []; skip: [] }>();
 
 const { t } = useI18n();
 
@@ -88,7 +90,15 @@ const onKey = (event: KeyboardEvent) => {
     >
       <AppIcon name="play" :size="20" />{{ t('pause.resume') }}
     </button>
-    <div class="sheet-buttons pause__more">
+    <button
+      v-if="training"
+      type="button"
+      class="btn btn--raised btn--block pause__skip"
+      @click="emit('skip')"
+    >
+      <AppIcon name="right" :size="20" />{{ t('training.skip') }}
+    </button>
+    <div v-else class="sheet-buttons pause__more">
       <button type="button" class="btn btn--raised" @click="emit('restart')">
         <AppIcon name="restart" :size="20" /><span>{{ t('pause.restart') }}</span>
       </button>
@@ -109,7 +119,7 @@ const onKey = (event: KeyboardEvent) => {
       </li>
     </ul>
     <div v-if="!touch" class="pause__legend">
-      <KeyLegend :family="family" :mode-id="modeId" />
+      <KeyLegend :family="family" :mode-id="modeId" :surge="!training" />
       <button v-if="ownKeys" type="button" class="pause__change" @click="keysOpen = true">
         {{ t('keymap.change') }}
       </button>
@@ -217,6 +227,7 @@ const onKey = (event: KeyboardEvent) => {
   }
 
   .pause--legend .pause__resume,
+  .pause--legend .pause__skip,
   .pause--legend .pause__more {
     grid-column: 1;
   }

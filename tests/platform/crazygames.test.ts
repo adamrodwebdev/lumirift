@@ -89,6 +89,8 @@ describe('CrazyGamesPlatform', () => {
     expect(platform.allowsExternalLinks).toBe(false);
     // Escape is the portal's: it leaves full screen.
     expect(platform.reservesEscape).toBe(true);
+    // A new player starts in the training, before any menu (1.29).
+    expect(platform.firstRun).toBe('training');
   });
 
   it('stops the sound only while an ad really plays, and goes on after it', async () => {

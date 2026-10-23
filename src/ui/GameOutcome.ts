@@ -1,5 +1,5 @@
 import type { GameProgress } from '@/progression/Profile';
-import type { CampaignResult } from '@/run/GameEnding';
+import type { CampaignResult, TrainingResult } from '@/run/GameEnding';
 import type { ResultKind } from '@/session/GameSession';
 
 export type { CampaignResult } from '@/run/GameEnding';
@@ -17,6 +17,8 @@ export interface GameOutcome {
   readonly progress: GameProgress;
   /** Set for a campaign level. */
   readonly campaign?: CampaignResult;
+  /** Set for a step of the portals' training. */
+  readonly training?: TrainingResult;
   /** Set for the Guardian challenge: the game's points and, on a victory, their factor. */
   readonly guardian?: { readonly points: string; readonly factor: string | null };
 }

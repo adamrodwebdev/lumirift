@@ -25,6 +25,11 @@ node scripts/crazygames-media.mjs --covers-only   # covers dans release/playgama
 Le zip (`release/lumirift-playgama-<version>.zip`, 0,2 Mo environ) a `index.html` à la
 racine, des chemins relatifs et des séparateurs « / » (bsdtar).
 
+**Premier lancement (1.29)** : comme sur CrazyGames, un nouveau joueur arrive directement
+dans l'entraînement en deux étapes (le Sable vivant, puis le Ver des dunes), sans
+écran-titre ni menu, sans pub ; les menus s'ouvrent à la fin ou quand il le passe depuis la
+pause. Le profil, gardé par `bridge.storage`, retient qu'il est fait.
+
 ## Exigences et leur contrôle
 
 | Exigence                                                                                                                 | Statut | Preuve                                                                        |

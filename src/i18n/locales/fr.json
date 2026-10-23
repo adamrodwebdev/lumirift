@@ -723,5 +723,36 @@
     "readyKey": "Surcharge prête : appuyez sur {key}",
     "charging": "Surcharge, jauge à {n} %",
     "running": "Surcharge : le temps ralentit"
+  },
+  "training": {
+    "title": "Entraînement · étape {n}/{total}",
+    "step": "Étape {n}/{total}",
+    "goal": {
+      "livingSand": "Reliez 2 zones",
+      "firstEncounter": "Repoussez le Ver"
+    },
+    "stepDone": "Étape réussie !",
+    "done": "Entraînement réussi !",
+    "lesson": {
+      "livingSand": "Les éléments réagissent entre eux : servez-vous-en pour briser le sable.",
+      "firstEncounter": "Le Ver des dunes a replongé. Il vous attend au niveau 2-7 : la campagne commence au 1-1."
+    },
+    "continue": "Continuer",
+    "menu": "Menu",
+    "skip": "Passer l’entraînement",
+    "guide": {
+      "placeWater": "Posez l’eau sur le sable.",
+      "dropLightning": "L’éclair sur l’eau brise le sable autour : lâchez-le !",
+      "placeOil": "Posez l’huile : elle s’étale.",
+      "dropFire": "Le feu embrase l’huile : lâchez-le dessus.",
+      "placeSeed": "Posez la graine.",
+      "dropWater": "Arrosez la graine : elle pousse en liane.",
+      "link": "Reliez les deux murs d’une même couleur pour l’effacer.",
+      "roam": "Le Ver des dunes rôde sous le sable…",
+      "warn": "Le sable se fend : placez l’éclair au-dessus !",
+      "exposed": "Sa tête est à découvert : lâchez l’éclair !",
+      "missed": "Il replonge… Guettez les prochaines fissures.",
+      "hit": "Touché ! Le Ver replonge."
+    }
   }
 }

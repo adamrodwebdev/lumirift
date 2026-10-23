@@ -3,6 +3,45 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.29.0] — 23/10/2026
+
+L'entraînement des portails : sur CrazyGames et Playgama, un nouveau joueur arrive
+directement dans le jeu, sans écran-titre ni menu. Notre site et la démo ne changent pas.
+
+### Ajouté
+
+- **Un entraînement en deux étapes, sur les portails seulement**, indépendant de la
+  campagne. Au premier lancement, le joueur arrive dans un puits déjà rempli de couches de
+  sable ; les menus restent cachés jusqu'à la fin.
+  - **Étape 1, le sable vivant** : les pièces arrivent par paires qui réagissent, l'eau puis
+    l'éclair (électrocution), l'huile puis le feu (embrasement), la graine puis l'eau
+    (liane). But : relier 2 zones. Un débutant simulé, qui lâche chaque pièce là où elle
+    apparaît, voit les trois réactions en moins de 20 s.
+  - **Étape 2, la première rencontre** : le Ver des dunes nage sous le sable, fissure la
+    surface et surgit ; des éclairs arrivent jusqu'à ce qu'un coup le touche. Il replonge,
+    et la fenêtre de fin donne rendez-vous au niveau 2-7.
+  - **Un guide dans le tableau de bord** : à chaque pièce et à chaque mouvement du Ver, une
+    phrase dit quoi faire, avec les touches du joueur ou le geste au doigt. Il prend la place
+    des compteurs (qui répétaient l'objectif), jamais sur le puits : rien ne cache la pièce
+    ni le Ver. Il garde la hauteur de sa plus longue phrase, pour que le puits ne bouge pas
+    quand il parle. Une croix le masque.
+  - **Ni défaite ni chrono** : si le sable monte trop, le fond du puits se vide. Ni pub, ni
+    étoiles, ni record ; l'expérience gagnée compte.
+  - **La pause propose « Reprendre » et « Passer l'entraînement »**, sans autre menu.
+  - **À la fin**, « Niveau 1-1 » en premier, « Menu » en second. Le jeu retient que
+    l'entraînement est fait ou passé ; un joueur qui a déjà joué une partie ne le voit pas.
+- **Le premier affichage reste rapide** : le Sable se précharge derrière l'écran de
+  chargement, et `gameplayStart` part dès l'étape 1 (l'outil QA de CrazyGames mesure le
+  chargement jusque-là).
+
+### Modifié
+
+- **La carte d'objectif** (campagne et entraînement) met le niveau et le compte sur la
+  première ligne, et l'objectif sur toute la largeur : « Repoussez le Ver » était coupé sur
+  téléphone.
+- L'indication du geste (le doigt qui glisse, touche ou tombe) devient un composant partagé
+  par le guide de la première partie du site et celui de l'entraînement.
+
 ## [1.28.1] — 23/10/2026
 
 Corrections après un essai sur téléphone (Samsung S25+).

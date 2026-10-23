@@ -1,6 +1,6 @@
 import { Emitter, type Listener } from '@/core/Emitter';
 import type { ComboView } from '@/session/ComboGauge';
-import type { BossId, BossStatus } from '@/session/GameSession';
+import type { BossId, BossStatus, GuideLine, TrainingStage } from '@/session/GameSession';
 import { WORM_HEALTH, type DuneWorm } from './engine/DuneWorm';
 import type { FallingCommand } from '@/families/falling/FallingSession';
 import type {
@@ -14,6 +14,7 @@ import type { ModeId } from '@/session/ModeId';
 import type { PieceSpec, SandEventMap, SandGame } from './engine/SandGame';
 import type { SandGrid } from './engine/SandGrid';
 import type { SandPiece } from './engine/SandPiece';
+import { SandGuide } from './SandGuide';
 
 /** Read-only view of a Sand game, for the renderer. */
 export interface SandView {
@@ -64,11 +65,17 @@ export class SandSession implements GameSession<FallingCommand> {
     ability: () => false,
   };
 
+  /** The training's guide, in a training step (1.29). */
+  private readonly trainingGuide: SandGuide | null;
+
   constructor(
     readonly modeId: ModeId,
     private readonly game: SandGame,
+    /** A step of the portals' training, or null. */
+    private readonly training: TrainingStage | null = null,
   ) {
     this.view = game;
+    this.trainingGuide = training ? new SandGuide(game, training) : null;
     this.forwardEvents();
   }
 
@@ -115,8 +122,9 @@ export class SandSession implements GameSession<FallingCommand> {
     const indicators: Indicator[] = [
       { id: 'score', value: game.score, format: 'count' },
       { id: 'regions', value: game.clears, format: 'count' },
-      { id: 'level', value: game.level, format: 'count' },
     ];
+    // A training has no levels to climb: the step is its level.
+    if (!this.training) indicators.push({ id: 'level', value: game.level, format: 'count' });
     const windIn = game.windInMs;
     if (windIn !== null) indicators.push({ id: 'windIn', value: windIn, format: 'duration' });
     const timeLeft = game.timeLeftMs;
@@ -150,7 +158,16 @@ export class SandSession implements GameSession<FallingCommand> {
     return boss === 'duneWorm' ? this.game.tease() : 0;
   }
 
+  guide(): GuideLine | null {
+    return this.trainingGuide?.line() ?? null;
+  }
+
+  guideLines(): readonly GuideLine[] {
+    return this.trainingGuide?.lines() ?? [];
+  }
+
   dispose(): void {
+    this.trainingGuide?.dispose();
     this.game.events.clear();
     this.events.clear();
   }
@@ -178,7 +195,8 @@ export class SandSession implements GameSession<FallingCommand> {
     events.on('tease', () => this.events.emit('notice', { id: 'boss.tease' }));
     events.on('boss', ({ event }) => {
       // A Guardian showing itself in a teaser is no fight: none of the fight's words.
-      if (this.game.isTeasing) return;
+      // In a training, the guide speaks instead.
+      if (this.game.isTeasing || this.training) return;
       if (event.type === 'warn') tell('warn');
       else if (event.type === 'surge') tell('exposed');
       else if (event.type === 'swallow') tell('swallow');

@@ -9,6 +9,7 @@ import { newRecord } from '@/fx/sounds';
 import type { GoalProgress } from '@/campaign/CampaignRun';
 import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import type { CampaignLevel } from '@/campaign/Levels';
+import { TRAINING, trainingRank, type TrainingStep } from '@/campaign/Training';
 import type { BreakMoment } from '@/platform/Platform';
 import type { BestLine } from '@/progression/BestLine';
 import type { Ending } from '@/run/GameEnding';
@@ -16,7 +17,7 @@ import { GameRun, type RunPhase } from '@/run/GameRun';
 import { runKindFor, type RunKindId } from '@/run/RunKind';
 import { Coach, type CoachStep } from '@/session/Coach';
 import type { DailyChallenge } from '@/session/DailyChallenge';
-import type { GameSession, Indicator } from '@/session/GameSession';
+import type { GameSession, GuideLine, Indicator } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import { observeCommands } from '@/session/observeCommands';
 import AppIcon from '../components/AppIcon.vue';
@@ -24,6 +25,7 @@ import CampaignGoal from '../components/CampaignGoal.vue';
 import CoachCard from '../components/CoachCard.vue';
 import DangerLayer from '../components/DangerLayer.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
+import GuideCard from '../components/GuideCard.vue';
 import type { GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
 import RecordBurst from '../components/RecordBurst.vue';
@@ -36,6 +38,7 @@ import { SURGE } from '../surgeControl';
 import { GAME_SURFACE } from '../useGameSurface';
 import { useKeyBindings } from '../useKeyBindings';
 import { useKeyLabels } from '../useKeyLabels';
+import { useCampaignText } from '../useCampaignText';
 import { isTouchScreen } from '../useOrientation';
 import { useSurge } from './useSurge';
 import { useTension } from './useTension';
@@ -49,11 +52,15 @@ const props = defineProps<{
   variant: string | null;
   /** The campaign level played, or null outside the campaign. */
   level: CampaignLevel | null;
+  /** A step of the portals' training (a new player's first games), or null. */
+  training: TrainingStep | null;
 }>();
 const emit = defineEmits<{
   home: [];
   campaign: [];
   next: [level: CampaignLevel];
+  /** The training goes on with its next step. */
+  step: [step: TrainingStep];
   /** The player opens the settings from the pause. */
   settings: [];
 }>();
@@ -135,7 +142,8 @@ const showHelp = profile.current.games < FIRST_GAMES;
  * The very first game is guided (modes played with the falling controls):
  * move, rotate, drop, then the goal, each step done by doing it.
  */
-const coach = profile.current.games === 0 && presentation.coachGoal ? new Coach() : null;
+const coach =
+  !props.training && profile.current.games === 0 && presentation.coachGoal ? new Coach() : null;
 const coachStep = ref<CoachStep | null>(coach?.step ?? null);
 const coachGoal = presentation.coachGoal ?? 'lines';
 /** The goal step stays a few seconds when no line comes. */
@@ -150,6 +158,30 @@ const skipCoach = () => {
   coach?.skip();
   coachUpdate();
 };
+/**
+ * The training's guide (1.29): the game says what to do now, the card shows
+ * it. Between two pieces it has nothing new to say: the last line stays.
+ */
+const guide = shallowRef<GuideLine | null>(null);
+const guideLines = computed(() => session.value?.guideLines?.() ?? []);
+const guideHidden = ref(false);
+const campaignText = useCampaignText();
+/** The goal over the game: a campaign level's, or a training step's. */
+const goalCard = computed(() => {
+  if (props.level)
+    return {
+      label: t('campaign.levelShort', { level: props.level.id }),
+      text: campaignText.goal(props.level),
+      goal: props.level.goal,
+    };
+  if (props.training)
+    return {
+      label: t('training.step', { n: trainingRank(props.training), total: TRAINING.length }),
+      text: t(`training.goal.${props.training.id}`),
+      goal: props.training.goal,
+    };
+  return null;
+});
 const modeName = computed(() => t(`modes.${props.modeId}.name`));
 /** The game's own subtitle, such as the name of the silhouette of the day. */
 const subtitle = computed(() => {
@@ -163,6 +195,11 @@ const TITLE: Readonly<Record<RunKindId, () => string>> = {
   guardian: () => `${t('guardianChallenge.title')} · ${bossName()}`,
   daily: () => `${t('daily.title')} · ${modeName.value}`,
   free: () => modeName.value,
+  training: () =>
+    t('training.title', {
+      n: run.kind.training ? trainingRank(run.kind.training) : 1,
+      total: TRAINING.length,
+    }),
 };
 const title = computed(() => TITLE[run.kind.id]());
 
@@ -230,6 +267,8 @@ clock.subscribe((delta, real) => {
   const current = run.session;
   if (!current) return;
   run.update(delta);
+  const line = current.guide?.() ?? null;
+  if (line && line !== guide.value) guide.value = line;
   // The surge counts real time: eight seconds of it, however slow the game runs.
   surge.update(real, current.state === 'running');
   // The danger, played: the music follows it, the well cracks, the clock counts down.
@@ -286,6 +325,7 @@ const showEnding = (ending: Ending, reason: string, teaserMs: number) => {
     isNewBest: ending.isNewBest,
     progress: ending.progress,
     ...(ending.campaign ? { campaign: ending.campaign } : {}),
+    ...(ending.training ? { training: ending.training } : {}),
     ...(ending.guardian
       ? {
           guardian: {
@@ -314,7 +354,8 @@ const start = async () => {
   recordBurst.value = 0;
   session.value = await run.start((created) => {
     listen(created);
-    surge.attach(created, descriptor.family, props.modeId);
+    // The training teaches the elements and the Wyrm: no surge yet.
+    if (!props.training) surge.attach(created, descriptor.family, props.modeId);
     // The guide hears every command that took effect, whatever the input.
     return coach?.step
       ? observeCommands(created, (type) => coach.command(type) && coachUpdate())
@@ -342,6 +383,11 @@ const afterBreak = async (moment: BreakMoment, next: () => void) => {
 const again = () => afterBreak('replay', () => void start());
 const toHome = () => afterBreak('leave', () => emit('home'));
 const toCampaign = () => afterBreak('leave', () => emit('campaign'));
+/** The player passes the training: it is over, the menus open. */
+const skipTraining = () => {
+  profile.finishTraining();
+  emit('home');
+};
 
 /** The player chose the rewarded ad: the reward comes only if the portal confirms it. */
 const doubleExperience = async () => {
@@ -378,6 +424,7 @@ const SHARE: Readonly<Record<RunKindId, (value: string, url: string) => string>>
     t('share.daily', { date: format.date(today()), mode: modeName.value, value, url }),
   free: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
   level: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
+  training: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
 };
 const onShare = async () => {
   if (!run.session || !outcome.value) return;
@@ -419,6 +466,7 @@ onBeforeUnmount(() => {
   <div
     ref="root"
     class="game"
+    :class="{ 'game--training': training }"
     :data-family="descriptor.family"
     :data-layout="layout"
     :style="{ '--danger-amount': settings.current.effects === 'off' ? 0 : dangerAmount }"
@@ -443,17 +491,32 @@ onBeforeUnmount(() => {
     >
       <AppIcon :name="muted ? 'mute' : 'sound'" />
     </button>
+    <!-- In the training, the guide takes the counters' place: they say what the goal says. -->
     <HudPanel
+      v-if="!training"
       class="game__stats"
       :indicators="indicators.slice(1)"
       :main-first="false"
       :urgent="timeUrgent ? ['timeLeft'] : []"
     />
-    <div v-if="shownSubtitle || (level && goal)" class="game__goal">
+    <div v-if="shownSubtitle || (goalCard && goal)" class="game__goal">
       <!-- Part of the game (the shape to fill): shown at every screen size. -->
       <p v-if="shownSubtitle" class="game__subtitle">{{ shownSubtitle }}</p>
-      <CampaignGoal v-if="level && goal" :level="level" :value="goal.value" />
+      <CampaignGoal
+        v-if="goalCard && goal"
+        :label="goalCard.label"
+        :text="goalCard.text"
+        :goal="goalCard.goal"
+        :value="goal.value"
+      />
     </div>
+    <GuideCard
+      v-if="training && guide && !guideHidden"
+      class="game__guide"
+      :line="guide"
+      :lines="guideLines"
+      @skip="guideHidden = true"
+    />
 
     <component
       :is="stage"
@@ -497,7 +560,7 @@ onBeforeUnmount(() => {
     </div>
 
     <aside v-if="showHelp && !touch" class="game__help" :aria-label="t('game.help')">
-      <KeyLegend :family="descriptor.family" :mode-id="modeId" />
+      <KeyLegend :family="descriptor.family" :mode-id="modeId" :surge="!training" />
     </aside>
 
     <RecordBurst v-if="recordBurst > 0" :key="recordBurst" />
@@ -512,10 +575,12 @@ onBeforeUnmount(() => {
       :touch="touch"
       :family="descriptor.family"
       :open="phase === 'paused'"
+      :training="training !== null"
       @resume="resume"
       @restart="start"
       @settings="emit('settings')"
       @quit="level ? emit('campaign') : emit('home')"
+      @skip="skipTraining"
     />
     <GameOverDialog
       :open="phase === 'over' && showOutcome"
@@ -529,6 +594,7 @@ onBeforeUnmount(() => {
       @campaign="toCampaign"
       @double="doubleExperience"
       @next="(next) => afterBreak('replay', () => emit('next', next))"
+      @step="(next) => emit('step', next)"
     />
   </div>
 </template>
@@ -682,6 +748,7 @@ onBeforeUnmount(() => {
 /* The HUD's parts are sized in `em`: they follow its size, the windows keep theirs. */
 .game__score,
 .game__stats,
+.game__guide,
 .game__goal,
 .game__help,
 .game :deep(.stage__hold),
@@ -701,6 +768,11 @@ onBeforeUnmount(() => {
   container: hud / inline-size;
   grid-area: stats;
   align-self: center;
+}
+
+/* The training's guide, in the counters' place: never over the well. */
+.game__guide {
+  grid-area: stats;
 }
 
 .game__goal {
@@ -829,6 +901,18 @@ onBeforeUnmount(() => {
       max(var(--space-4), env(safe-area-inset-left, 0px));
   }
 
+  /* The training's guide under its goal, above the keys. */
+  .game--training {
+    grid-template-areas:
+      'pause well sound'
+      'score well next'
+      'goal well next'
+      'stats well next'
+      'hold well next'
+      'help well next'
+      'padm well pada';
+  }
+
   /* The opponent's well stands beside the coming pieces, not under them. */
   .game[data-layout='duel'] {
     grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.3fr) auto minmax(
@@ -878,6 +962,7 @@ onBeforeUnmount(() => {
    */
   .game__score,
   .game__stats,
+  .game__guide,
   .game__goal,
   .game__help,
   .game :deep(.stage__hold) {
@@ -949,8 +1034,8 @@ onBeforeUnmount(() => {
 }
 
 /*
- * A tiny window (a 400 % zoom): the keys' help and the counters would cover
- * the dashboard; the score, the hold and the well stay (the pause keeps the rest).
+ * A tiny window (a 400 % zoom): the keys' help, the counters and the guide would
+ * cover the dashboard; the score, the hold and the well stay (the pause keeps the rest).
  */
 @media (orientation: landscape) and (height < 20rem) {
   .game {
@@ -958,7 +1043,8 @@ onBeforeUnmount(() => {
   }
 
   .game__help,
-  .game__stats {
+  .game__stats,
+  .game__guide {
     display: none;
   }
 }

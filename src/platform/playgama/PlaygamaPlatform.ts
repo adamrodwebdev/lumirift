@@ -125,6 +125,8 @@ export class BridgeStorage implements KeyValueStorage {
 export class PlaygamaPlatform implements Platform {
   readonly id = 'playgama';
   readonly edition = FULL_EDITION;
+  /** A new player plays the training before any menu (the user's rule for portals). */
+  readonly firstRun = 'training';
   // Playgama forbids links to other sites (and returns false for them).
   readonly allowsExternalLinks = false;
   readonly reservesEscape = true;

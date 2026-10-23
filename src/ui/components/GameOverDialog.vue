@@ -3,7 +3,8 @@ import { computed, watch } from 'vue';
 import { I18nT, useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
-import type { CampaignLevel } from '@/campaign/Levels';
+import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
+import type { TrainingStep } from '@/campaign/Training';
 import { levelProgress } from '@/progression/Experience';
 import type { GameOutcome } from '../GameOutcome';
 import { useProgressText } from '../useProgressText';
@@ -34,9 +35,14 @@ const emit = defineEmits<{
   share: [];
   campaign: [];
   next: [level: CampaignLevel];
+  /** The training goes on with its next step. */
+  step: [step: TrainingStep];
   /** The player chooses to watch an ad for the bonus. */
   double: [];
 }>();
+
+/** After the training, the campaign starts from its first level. */
+const FIRST_LEVEL = LEVELS[0]!;
 
 const { t } = useI18n();
 const format = useFormat();
@@ -45,6 +51,7 @@ const { profile } = useServices();
 
 const title = computed(() => {
   const outcome = props.outcome;
+  if (outcome?.training) return t(outcome.training.next ? 'training.stepDone' : 'training.done');
   if (outcome?.campaign) return t(outcome.campaign.won ? 'campaign.won' : 'campaign.lost');
   return outcome?.reason === 'victory' ? t('over.victory') : t('over.title');
 });
@@ -89,9 +96,20 @@ const shownScore = computed(() =>
     :title="title"
     hero
     wide
-    @dismiss="outcome?.campaign ? emit('campaign') : emit('home')"
+    @dismiss="
+      outcome?.training?.next
+        ? emit('step', outcome.training.next)
+        : outcome?.campaign
+          ? emit('campaign')
+          : emit('home')
+    "
   >
-    <template v-if="outcome">
+    <template v-if="outcome?.training">
+      <p class="results__reason results__left results__lesson">
+        {{ t(`training.lesson.${outcome.training.step}`) }}
+      </p>
+    </template>
+    <template v-if="outcome && !outcome.training">
       <p class="results__reason results__left">{{ t(`over.reason.${outcome.reason}`) }}</p>
 
       <div v-if="outcome.campaign" class="results__stars results__left">
@@ -118,8 +136,9 @@ const shownScore = computed(() =>
           </template>
         </i18n-t>
       </div>
-
-      <div class="score results__left">
+    </template>
+    <template v-if="outcome">
+      <div v-if="!outcome.training" class="score results__left">
         <span v-if="!outcome.campaign && outcome.isNewBest" class="score__badge">
           {{ t('over.newBest') }}
         </span>
@@ -200,7 +219,10 @@ const shownScore = computed(() =>
           }}
         </p>
       </section>
-      <p v-else class="sheet-note results__right">{{ t('progress.tooShort') }}</p>
+      <!-- A training step is never too short: it ends when its lesson is learnt. -->
+      <p v-else-if="!outcome.training" class="sheet-note results__right">
+        {{ t('progress.tooShort') }}
+      </p>
 
       <button
         v-if="outcome.progress.total > 0 && (reward === 'offer' || reward === 'busy')"
@@ -219,7 +241,32 @@ const shownScore = computed(() =>
 
     <p class="results__status results__right" role="status">{{ status }}</p>
 
-    <div v-if="outcome?.campaign" class="sheet-buttons sheet-buttons--lead results__right">
+    <div v-if="outcome?.training" class="sheet-buttons sheet-buttons--lead results__right">
+      <button
+        v-if="outcome.training.next"
+        type="button"
+        class="btn btn--primary btn--raised"
+        autofocus
+        @click="outcome.training.next && emit('step', outcome.training.next)"
+      >
+        <AppIcon name="play" :size="20" />{{ t('training.continue') }}
+      </button>
+      <template v-else>
+        <button
+          type="button"
+          class="btn btn--primary btn--raised"
+          autofocus
+          @click="emit('next', FIRST_LEVEL)"
+        >
+          <AppIcon name="play" :size="20" />
+          {{ t('campaign.nextLevel', { level: FIRST_LEVEL.id }) }}
+        </button>
+        <button type="button" class="btn btn--raised" @click="emit('home')">
+          <AppIcon name="home" :size="20" />{{ t('training.menu') }}
+        </button>
+      </template>
+    </div>
+    <div v-else-if="outcome?.campaign" class="sheet-buttons sheet-buttons--lead results__right">
       <button
         v-if="outcome.campaign.next"
         type="button"
@@ -267,6 +314,16 @@ const shownScore = computed(() =>
   color: var(--text-muted);
   font-size: 0.88rem;
   text-align: center;
+}
+
+/* A training step's lesson: the window's main sentence. */
+.results__lesson {
+  max-width: 26rem;
+  justify-self: center;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  text-wrap: balance;
 }
 
 .results__stars {
