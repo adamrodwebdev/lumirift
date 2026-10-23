@@ -1,8 +1,8 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                      |
-| ------- | ---------- | --------------------------- |
-| 1.29    | 23/10/2026 | L'entraînement des portails |
+| Version | Date       | Statut                  |
+| ------- | ---------- | ----------------------- |
+| 1.30    | 23/10/2026 | La version Yandex Games |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -44,7 +44,8 @@ forte de **légèreté** et de **jouabilité tactile**, qui profite à tous les 
 
 **Pourquoi le russe (1.24)** : les portails russophones (Yandex Games, VK Play, et les
 partenaires de Playgama) sont un grand marché du jeu par navigateur, où le russe est exigé.
-L'intégration de ces portails est une étape à part ; le jeu, lui, est prêt.
+L'intégration de ces portails est une étape à part ; le jeu, lui, est prêt. Yandex Games
+arrive en 1.30 (§ 3.7) ; VK attend un avis juridique (sanctions de l'Union européenne).
 
 ### 2.2 Proposition de valeur
 
@@ -891,7 +892,7 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 - **Ambiance** : derrière le jeu, la lumière de la famille dérive lentement, une faille
   lointaine respire.
 
-### 3.7 Distribution (décidé en v0.5 ; CrazyGames livré en 1.2, Playgama en 1.4)
+### 3.7 Distribution (décidé en v0.5 ; CrazyGames livré en 1.2, Playgama en 1.4, Yandex Games en 1.30)
 
 - **Playgama (1.4)** : plateforme suivante après le refus de CrazyGames (pas de nouvelle
   soumission à CrazyGames pour l'instant). Build `npm run package:playgama` (Bridge SDK v2),
@@ -901,6 +902,22 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   niveau suivant, accueil, campagne), espacé par le portail ; une **pub récompensée
   facultative** double l'expérience de la partie (bouton étiqueté « PUB », récompense seulement
   une fois la pub confirmée vue, une fois par partie, jamais d'interstitiel juste après).
+
+- **Yandex Games (1.30)** : publication directe plutôt que par la diffusion de Playgama, qui
+  exclut Yandex et Playhop (un même jeu n'y paraît qu'une fois). Build `npm run package:yandex`
+  (SDK v2, servi par Yandex à `/sdk.js`) ; exigences, revue, fiche en quatre langues et étapes
+  de publication dans [YANDEX.md](YANDEX.md).
+  - **Langue** : celle que donne Yandex (russe, anglais, français ou indonésien).
+  - **Sauvegarde** dans les données du joueur, connecté ou non : lue une fois, écrite entière,
+    une requête toutes les 4 s au plus, envoyée à la pause.
+  - **Pauses** : une pause de Yandex (onglet quitté, pub) compte comme un arrêt de jeu
+    (`stopsOnAutoPause`) ; au retour, le jeu attend le joueur sur sa fenêtre de pause.
+  - **Pubs** : celles de Playgama (interstitiel en quittant une fin de partie, récompensée
+    qui double l'expérience), sans bannière collante.
+  - **Page** : ni numéro de version, ni lien sortant, ni menu contextuel ni sélection, ni
+    défilement ; sur un écran de bureau plus large que 2:1, le cadre de jeu s'arrête à 2:1.
+  - **Compte** : un contrat (ЕЛС ou régie РСЯ) est exigé avant la modération ; un seul pour
+    tous les jeux du compte. **VK** attend un avis juridique (sanctions de l'Union européenne).
 
 - **Premier lancement sur les portails (1.29)** : un nouveau joueur (aucune partie jouée,
   entraînement ni fait ni passé) arrive directement dans un **entraînement en deux étapes**,
@@ -1021,6 +1038,9 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 
 ### 4.4 Internationalisation
 
+- **Langue au lancement** : celle du portail ; sinon celle que le joueur a choisie, ou la
+  première des préférences du navigateur que le jeu parle ; à défaut, le russe pour un joueur
+  qui lit le biélorusse, le kazakh, l'ukrainien ou l'ouzbek (1.30), l'anglais pour les autres.
 - Quatre langues complètes : **français** (référence), **anglais**, **indonésien** et
   **russe** (1.24). Mêmes clés et mêmes paramètres dans les quatre fichiers, vérifiés par un
   test automatisé ; chaque langue est un module à part, téléchargé seul.
@@ -1661,23 +1681,23 @@ gamme reste à faire sur un appareil réel.
 Tous les modes sortent ensemble en **version 1.0** (décision du 12/10/2026). Les lots sont
 ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichisse.
 
-| Lot | Contenu                                                                                                    | Statut                 |
-| --- | ---------------------------------------------------------------------------------------------------------- | ---------------------- |
-| 0   | Cadrage, outillage, cahier des charges                                                                     | Livré                  |
-| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                | Livré                  |
-| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré                  |
-| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré                  |
-| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré                  |
-| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré                  |
-| 6   | Duel contre l'IA                                                                                           | Livré                  |
-| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré                  |
-| 8   | Sable (grains) et ses éléments                                                                             | Livré                  |
-| 9   | Volume : Tour (verre courbé)                                                                               | Livré                  |
-| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | Livré                  |
-| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | Livré                  |
-| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Livré (1.3)            |
-| 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames livré (1.2) |
-| 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                  |
+| Lot | Contenu                                                                                                    | Statut                                                       |
+| --- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 0   | Cadrage, outillage, cahier des charges                                                                     | Livré                                                        |
+| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                | Livré                                                        |
+| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré                                                        |
+| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré                                                        |
+| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré                                                        |
+| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré                                                        |
+| 6   | Duel contre l'IA                                                                                           | Livré                                                        |
+| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré                                                        |
+| 8   | Sable (grains) et ses éléments                                                                             | Livré                                                        |
+| 9   | Volume : Tour (verre courbé)                                                                               | Livré                                                        |
+| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | Livré                                                        |
+| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | Livré                                                        |
+| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Livré (1.3)                                                  |
+| 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames (1.2), Playgama (1.4), Yandex Games (1.30) livrés |
+| 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                                                        |
 
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 98 en
 Performance (95 jusqu'à la 1.19.0), ni sous 95 dans les trois autres catégories.
@@ -1746,3 +1766,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.27    | 22/10/2026 | La partie hors de l'écran : `RunKind`, `GameRun`, `GameEnding` ; règles sorties de l'interface, registres plutôt que `switch` (§ 5.14).                              |
 | 1.28    | 23/10/2026 | Les familles à part : présentation par famille, sons des Gardiens, Sable découpé, réglages par intentions, état protégé (§ 5.14).                                    |
 | 1.29    | 23/10/2026 | L'entraînement des portails : deux étapes avant tout menu sur CrazyGames et Playgama, guide dans le tableau de bord (§ 3.7, § 3.8, § 5.16).                          |
+| 1.30    | 23/10/2026 | La version Yandex Games : SDK v2, sauvegarde dans les données du joueur, pauses, cadre 2:1, langues voisines vers le russe (§ 2.1, § 3.7, § 4.4).                    |

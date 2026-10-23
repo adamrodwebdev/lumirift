@@ -3,6 +3,53 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.30.0] — 23/10/2026
+
+La version Yandex Games : un build de plus, pour la plateforme de jeux de Yandex, en russe,
+anglais, français et indonésien. Les autres builds ne changent pas, sauf la langue d'un
+joueur qui lit une langue voisine du russe.
+
+### Ajouté
+
+- **Le build Yandex Games** (`npm run package:yandex`, zip dans `release/`), branché sur le
+  SDK v2 que Yandex sert à `/sdk.js` :
+  - **Chargement et repères de jeu** : `YaGames.init()` avant tout ; `LoadingAPI.ready()`
+    une fois, quand l'étape 1 de l'entraînement est jouable ; `GameplayAPI.start()` et
+    `stop()` seulement ensuite, et seulement quand l'état change.
+  - **Les pauses de Yandex** (onglet quitté, pub de la plateforme) mettent le jeu en pause,
+    coupent le son et comptent comme un arrêt de jeu ; au retour, le jeu attend le joueur
+    sur sa fenêtre de pause.
+  - **Sauvegarde dans les données du joueur**, connecté ou non : lue en une requête au
+    lancement, écrite entière, une requête toutes les 4 s au plus (Yandex en accepte 100 par
+    5 minutes), envoyée aussitôt à la pause ou quand la page se cache ; un envoi refusé est
+    retenté une fois, jamais en boucle. Sans Yandex, le navigateur prend le relais.
+  - **Pubs** : plein écran en quittant la fin d'une partie, jamais juste après une
+    récompensée ; la récompensée double l'expérience, seulement si Yandex confirme le
+    visionnage. Une pub qui ne s'ouvre pas en 12 s est abandonnée ; une erreur retire l'offre
+    pour la visite (Yandex ne signale pas les bloqueurs de pub). Pas de bannière collante.
+  - **Langue** : celle que donne Yandex, devant la langue enregistrée.
+  - **Règles de la page** : ni numéro de version, ni lien de partage, ni menu contextuel ni
+    sélection dans tout le cadre, ni défilement ou rechargement par glissement ; sur un écran
+    de bureau plus large que 2:1, le cadre de jeu s'arrête à 2:1, centré.
+  - **Le script de paquet vérifie les règles mesurables** (taille, noms de fichiers, chemins
+    relatifs, SDK dans `<head>`, aucune requête externe ni SDK d'un autre portail) et zippe
+    avec des chemins « / ».
+  - Revue modérateur, fiche en quatre langues et étapes de publication :
+    [docs/YANDEX.md](docs/YANDEX.md).
+- Tests : l'adaptateur Yandex face à un faux SDK (initialisation, repères, pauses, rythme des
+  sauvegardes, pubs et délais) ; quatre parcours Playwright sur le build Yandex (projet
+  `yandex`).
+
+### Modifié
+
+- **Les langues voisines mènent au russe**, sur tous les builds : un joueur dont le
+  navigateur demande le biélorusse, le kazakh, l'ukrainien ou l'ouzbek, et aucune des quatre
+  langues du jeu, lit le russe plutôt que l'anglais.
+- Une plateforme dit si une pause automatique compte comme un arrêt de jeu
+  (`stopsOnAutoPause` : oui sur Yandex, non sur CrazyGames et Playgama) et si le jeu montre
+  sa version (`showsVersion`). Les clés sauvegardées par les portails sont partagées
+  (`SAVED_KEYS`).
+
 ## [1.29.0] — 23/10/2026
 
 L'entraînement des portails : sur CrazyGames et Playgama, un nouveau joueur arrive

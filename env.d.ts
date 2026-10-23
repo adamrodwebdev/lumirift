@@ -4,5 +4,5 @@ declare const __APP_VERSION__: string;
 
 interface ImportMetaEnv {
   /** The platform of the build: unset for our own site, `crazygames` or `demo` (portfolio). */
-  readonly VITE_PLATFORM?: 'crazygames' | 'playgama' | 'demo';
+  readonly VITE_PLATFORM?: 'crazygames' | 'playgama' | 'yandex' | 'demo';
 }

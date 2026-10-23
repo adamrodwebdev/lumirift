@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  PlaygamaPlatform,
-  SAVED_KEYS,
-  type PlaygamaBridge,
-} from '@/platform/playgama/PlaygamaPlatform';
+import { PlaygamaPlatform, type PlaygamaBridge } from '@/platform/playgama/PlaygamaPlatform';
+import { SAVED_KEYS } from '@/platform/savedKeys';
 
 type Listener = (value: never) => void;
 

@@ -33,10 +33,17 @@ export const PLAYGAMA_CONFIG = {
   },
 };
 
+/**
+ * The Yandex Games SDK, served by Yandex next to an uploaded archive: the
+ * relative `/sdk.js` (rule 1.19.1), never the absolute S3 address (rule 1.7).
+ */
+export const YANDEX_SDK = '/sdk.js';
+
 /** The SDK each portal build loads in <head>, before the game. */
 const SDKS: Readonly<Record<string, string>> = {
   crazygames: CRAZYGAMES_SDK,
   playgama: PLAYGAMA_BRIDGE,
+  yandex: YANDEX_SDK,
 };
 
 /** Tags only our own site needs: the portal's page carries its own. */

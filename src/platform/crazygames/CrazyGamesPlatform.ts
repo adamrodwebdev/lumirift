@@ -1,6 +1,7 @@
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
 import { FULL_EDITION } from '../Edition';
 import type { AdHooks, BreakMoment, Platform } from '../Platform';
+import { SAVED_KEYS } from '../savedKeys';
 
 /** The part of the CrazyGames HTML5 SDK (v3) the game uses. */
 interface CrazyGamesSdk {
@@ -44,14 +45,6 @@ declare global {
  * (3 minutes from the start) does not apply in its QA preview.
  */
 export const FIRST_AD_AFTER_MS = 3 * 60_000;
-
-/** Every key the game saves (settings, records, progression, campaign). */
-const SAVED_KEYS = [
-  'stackrift:settings',
-  'stackrift:records',
-  'stackrift:profile',
-  'stackrift:campaign',
-];
 
 /**
  * The CrazyGames Data module as the game's storage: progress follows the
@@ -103,6 +96,9 @@ export class CrazyGamesPlatform implements Platform {
   readonly firstRun = 'training';
   readonly allowsExternalLinks = false;
   readonly reservesEscape = true;
+  /** CrazyGames tracks the focus itself, and forbids a gameplayStop for a lost focus. */
+  readonly stopsOnAutoPause = false;
+  readonly showsVersion = true;
   readonly locale: string | null;
   readonly storage: KeyValueStorage | null;
   private playing = false;

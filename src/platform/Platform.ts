@@ -1,7 +1,7 @@
 import type { KeyValueStorage } from '@/services/KeyValueStorage';
 import { DEMO_EDITION, FULL_EDITION, type Edition } from './Edition';
 
-export type PlatformId = 'web' | 'crazygames' | 'playgama' | 'demo';
+export type PlatformId = 'web' | 'crazygames' | 'playgama' | 'yandex' | 'demo';
 
 /**
  * How a new player starts: on the title screen and its menus (our site, the
@@ -40,6 +40,16 @@ export interface Platform {
    * never react to it, not even its windows closing.
    */
   readonly reservesEscape: boolean;
+  /**
+   * A pause the player did not ask for (the focus lost, the page hidden, the
+   * portal's own pause) counts as a stop for the portal: the game stays on its
+   * pause window when the player comes back, so the portal must not be told it
+   * plays again (Yandex). False where the portal tracks the focus itself and
+   * forbids that stop (CrazyGames).
+   */
+  readonly stopsOnAutoPause: boolean;
+  /** The game may show its version number (Yandex counts it as developer information). */
+  readonly showsVersion: boolean;
   /** The player's language as the portal knows it (`en-US`…), or null. */
   readonly locale: string | null;
   /** The portal's save, synced with the player's account, or null for the browser's. */
@@ -78,6 +88,8 @@ export class WebPlatform implements Platform {
   readonly allowsExternalLinks = true;
   /** On our own site, Escape closes a window, as everywhere on the web. */
   readonly reservesEscape = false;
+  readonly stopsOnAutoPause = false;
+  readonly showsVersion = true;
   readonly locale = null;
   readonly storage = null;
   readonly muted = false;

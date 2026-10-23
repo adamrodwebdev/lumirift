@@ -994,6 +994,21 @@ onBeforeUnmount(() => {
 }
 
 /*
+ * A desktop window wider than 2:1: the playing frame (the well, the dashboard
+ * and its buttons) stops at 2:1 and stays centred, the game's light and rift
+ * filling the rest (Yandex rule 1.6.2.2, Playgama's 2:1, the user's rule).
+ */
+@media (orientation: landscape) and (hover: hover) and (pointer: fine) and (min-aspect-ratio: 2/1) {
+  .game {
+    /* 1.96 rather than 2: the buttons and the well sit a little inside the frame's height. */
+    --frame-inset: calc((100% - 196dvh) / 2 + 2 * var(--space-3));
+
+    padding-left: max(var(--space-4), env(safe-area-inset-left, 0px), var(--frame-inset));
+    padding-right: max(var(--space-4), env(safe-area-inset-right, 0px), var(--frame-inset));
+  }
+}
+
+/*
  * Short landscape screens (821 × 462 on CrazyGames): flatter keys (their
  * letters keep their size), the essential ones only.
  */

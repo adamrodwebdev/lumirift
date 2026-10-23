@@ -181,10 +181,13 @@ const onMusic = (event: Event) => settings.setMusicVolume(percent(event));
       {{ t('settings.close') }}
     </button>
 
-    <!-- On a portal, the save goes through the platform (sometimes its cloud). -->
+    <!-- On a portal, the save goes through the platform (sometimes its cloud). Yandex
+         counts a version number as developer information: none there. -->
     <p class="sheet-note settings__about">
       {{ t(platform.storage ? 'app.privacyPortal' : 'app.privacy') }}
-      {{ t('app.version', { version: appVersion }) }}
+      <template v-if="platform.showsVersion">{{
+        t('app.version', { version: appVersion })
+      }}</template>
     </p>
     <KeysDialog v-if="!touch" :open="keysOpen" @close="keysOpen = false" />
   </ModalDialog>

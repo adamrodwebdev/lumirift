@@ -4,12 +4,16 @@ const PORT = 4177;
 /** The CrazyGames build, for the portals' first run (its SDK runs in its local mode). */
 const PORTAL_PORT = 4178;
 const PORTAL = /portal\.spec\.ts/;
+/** The Yandex Games build, its SDK replaced by a stand-in in the test itself. */
+const YANDEX_PORT = 4179;
+const YANDEX = /yandex\.spec\.ts/;
 
 /**
  * End-to-end journeys on the production build, at the two sizes of the
  * specification: a phone (390 × 844) and a desktop (1280 × 800). The
  * installed Chrome runs them (channel `chrome`). The portals' first run is
- * played on the CrazyGames build, built and served beside it.
+ * played on the CrazyGames build, and the Yandex integration on the Yandex
+ * build, each built and served beside it.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -26,7 +30,7 @@ export default defineConfig({
   projects: [
     {
       name: 'mobile',
-      testIgnore: PORTAL,
+      testIgnore: [PORTAL, YANDEX],
       use: {
         ...devices['Pixel 7'],
         viewport: { width: 390, height: 844 },
@@ -35,7 +39,7 @@ export default defineConfig({
     },
     {
       name: 'desktop',
-      testIgnore: PORTAL,
+      testIgnore: [PORTAL, YANDEX],
       use: { viewport: { width: 1280, height: 800 }, channel: 'chrome' },
     },
     {
@@ -43,6 +47,15 @@ export default defineConfig({
       testMatch: PORTAL,
       use: {
         baseURL: `http://localhost:${PORTAL_PORT}/`,
+        viewport: { width: 1280, height: 800 },
+        channel: 'chrome',
+      },
+    },
+    {
+      name: 'yandex',
+      testMatch: YANDEX,
+      use: {
+        baseURL: `http://localhost:${YANDEX_PORT}/`,
         viewport: { width: 1280, height: 800 },
         channel: 'chrome',
       },
@@ -57,6 +70,12 @@ export default defineConfig({
     {
       command: `npx vite build --mode crazygames --logLevel warn && npx vite preview --mode crazygames --port ${PORTAL_PORT} --strictPort`,
       port: PORTAL_PORT,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+    },
+    {
+      command: `npx vite build --mode yandex --logLevel warn && npx vite preview --mode yandex --port ${YANDEX_PORT} --strictPort`,
+      port: YANDEX_PORT,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
     },

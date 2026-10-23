@@ -1,6 +1,6 @@
 {
   "name": "lumirift",
-  "version": "1.29.0",
+  "version": "1.30.0",
   "private": true,
   "description": "Jeu de blocs qui tombent réinventé : 13 modes en quatre familles, défi du jour, duel contre l’IA, en français, anglais, indonésien et russe. Vue 3, TypeScript, mobile d’abord.",
   "type": "module",
@@ -24,7 +24,9 @@
     "package:crazygames": "node scripts/package-crazygames.mjs",
     "build:demo": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode demo",
     "build:playgama": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode playgama",
-    "package:playgama": "node scripts/package-playgama.mjs"
+    "package:playgama": "node scripts/package-playgama.mjs",
+    "build:yandex": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode yandex",
+    "package:yandex": "node scripts/package-yandex.mjs"
   },
   "dependencies": {
     "@fontsource-variable/montserrat": "^5.3.0",

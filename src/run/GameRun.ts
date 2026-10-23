@@ -33,7 +33,13 @@ export interface GameRunPorts extends EndingPorts {
   readonly platform: EndingPorts['platform'] &
     Pick<
       Platform,
-      'loadingStart' | 'loadingStop' | 'gameplayStart' | 'gameplayStop' | 'midgameAd' | 'rewardedAd'
+      | 'loadingStart'
+      | 'loadingStop'
+      | 'gameplayStart'
+      | 'gameplayStop'
+      | 'midgameAd'
+      | 'rewardedAd'
+      | 'stopsOnAutoPause'
     >;
   /** A seed for a new game's pieces. */
   readonly seed: () => number;
@@ -161,15 +167,16 @@ export class GameRun {
   }
 
   /**
-   * The game pauses. The portal hears of it only when the player asked for
-   * it: a lost focus, a hidden tab or the portal's own pause are the
-   * portal's to track (CrazyGames: no gameplayStop on focus loss).
+   * The game pauses. The portal hears of it when the player asked for it; a
+   * lost focus, a hidden tab or the portal's own pause are the portal's to
+   * track (CrazyGames: no gameplayStop on focus loss), unless it counts them
+   * as a stop (Yandex: `stopsOnAutoPause`).
    */
   pause(byPlayer: boolean): void {
     if (this.state !== 'playing') return;
     this.game?.pause();
     this.setPhase('paused');
-    if (byPlayer) {
+    if (byPlayer || this.ports.platform.stopsOnAutoPause) {
       this.ports.platform.gameplayStop();
       this.stopReported = true;
     }
