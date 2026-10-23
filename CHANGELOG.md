@@ -3,6 +3,19 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.26.1] — 22/10/2026
+
+Lighthouse mobile stable à **100** : il variait de 98 à 100 d'un passage à l'autre.
+
+### Corrigé
+
+- **Le code attend que le navigateur signale le premier affichage** de l'écran-titre, et non
+  plus une image : demandé une image plus tard, il arrivait parfois avant ce signal et comptait
+  comme nécessaire à l'affichage (FCP simulé de 1,1 à 1,6 s, LCP de 1,2 à 2,1 s). Désormais
+  FCP 1,1 s, LCP 1,2 à 1,4 s, TBT 20 ms à chaque passage. Un onglet en arrière-plan démarre
+  aussitôt ; un navigateur sans mesure de l'affichage attend une image ; un signal qui ne
+  vient pas, une seconde.
+
 ## [1.26.0] — 22/10/2026
 
 Le responsive de bout en bout, après l'audit du 22/10 (directive mise à jour) : chaque taille

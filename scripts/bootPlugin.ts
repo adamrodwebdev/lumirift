@@ -63,11 +63,19 @@ function localeFiles(bundle: OutputBundle): Record<string, string> {
   return files;
 }
 
+/** The longest wait for the browser's report of the first paint. */
+const PAINT_TIMEOUT_MS = 1000;
+
 /**
- * The game starts once the title card is painted (one frame later): its code
- * and the messages of the player's language (the language saved, else the
- * browser's, else English, as detectLocale) are fetched then, together, and
- * the code runs. What the player sees first never waits for any of it.
+ * The game starts once the title card's first paint is reported (1.26.1):
+ * its code and the messages of the player's language (the language saved,
+ * else the browser's, else English, as detectLocale) are fetched then,
+ * together, and the code runs. What the player sees first never waits for
+ * any of it. A frame and a timer are not enough: the requests would start
+ * after the frame is drawn but end before the browser reports it, and count
+ * as needed for the first paint. A hidden page (a tab in the background)
+ * starts at once; a browser without paint timing waits a frame; a report
+ * that never comes, a second.
  */
 function startAfterFirstPaint(html: string, bundle: OutputBundle): string {
   const entry = ENTRY.exec(html)?.[1];
@@ -78,10 +86,15 @@ function startAfterFirstPaint(html: string, bundle: OutputBundle): string {
     `try{l=JSON.parse(localStorage.getItem(${JSON.stringify(SETTINGS_KEY)})||'{}').locale}catch(e){}` +
     `if(!f[l]){l='en';for(const t of navigator.languages||[navigator.language]){` +
     `let c=String(t).toLowerCase().split('-')[0];if(c==='in')c='id';if(f[c]){l=c;break}}}` +
-    `const m=${JSON.stringify(modules)};` +
-    `requestAnimationFrame(()=>setTimeout(()=>{for(const h of [f[l],...m]){` +
+    `const m=${JSON.stringify(modules)};let s=0;` +
+    `const go=()=>{if(s)return;s=1;for(const h of [f[l],...m]){` +
     `const k=document.createElement('link');k.rel='modulepreload';k.crossOrigin='';k.href=h;` +
-    `document.head.append(k)}import('${entry}')}))</script>`;
+    `document.head.append(k)}import('${entry}')};` +
+    `if(document.visibilityState==='hidden')go();` +
+    `else if((PerformanceObserver.supportedEntryTypes||[]).includes('paint')){` +
+    `new PerformanceObserver((p,o)=>{if(p.getEntriesByName('first-contentful-paint').length){` +
+    `o.disconnect();go()}}).observe({type:'paint',buffered:true});setTimeout(go,${PAINT_TIMEOUT_MS})}` +
+    `else requestAnimationFrame(()=>setTimeout(go))</script>`;
   return html.replace(MODULE_PRELOAD, '').replace(ENTRY, script);
 }
 
