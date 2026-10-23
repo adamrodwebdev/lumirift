@@ -1,5 +1,7 @@
 interface VibratingNavigator {
   vibrate?: (pattern: number | number[]) => boolean;
+  /** Whether the page has had a gesture yet (absent from older browsers). */
+  userActivation?: { readonly hasBeenActive: boolean };
 }
 
 /** Short vibrations on phones that support them (not iOS Safari); silently absent elsewhere. */
@@ -15,6 +17,9 @@ export class Haptics {
 
   pulse(pattern: number | number[]): void {
     if (!this.enabled() || !this.navigator.vibrate) return;
+    // Before the player's first gesture the browser refuses it, and says so in the
+    // console: a portal's first run plays at once, before any tap.
+    if (this.navigator.userActivation?.hasBeenActive === false) return;
     try {
       this.navigator.vibrate(pattern);
     } catch {

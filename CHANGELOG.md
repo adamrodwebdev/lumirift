@@ -55,6 +55,9 @@ directement dans le jeu, sans écran-titre ni menu. Notre site et la démo ne ch
   s'arrêtait avant. La pause calme tout à l'instant (le danger revient avec la partie, sans
   fausse délivrance), et une partie décidée n'a plus de danger. Après une défaite, le puits
   brisé reste, immobile : il ne bat plus.
+- **Plus d'erreur de vibration dans la console** : l'entraînement démarre sans clic, et le
+  navigateur refusait (en le signalant) les vibrations demandées avant le premier geste du
+  joueur. Elles attendent désormais ce premier geste.
 
 ## [1.28.1] — 23/10/2026
 

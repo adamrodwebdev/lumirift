@@ -174,6 +174,17 @@ describe('FallingSoundscape', () => {
     expect(vibrate).not.toHaveBeenCalled();
     expect(new Haptics({}, () => true).supported).toBe(false);
   });
+
+  it('waits for the player’s first gesture, which the browser requires', () => {
+    const vibrate = vi.fn(() => true);
+    const activation = { hasBeenActive: false };
+    const haptics = new Haptics({ vibrate, userActivation: activation }, () => true);
+    haptics.pulse(20);
+    expect(vibrate).not.toHaveBeenCalled();
+    activation.hasBeenActive = true;
+    haptics.pulse(20);
+    expect(vibrate).toHaveBeenCalledWith(20);
+  });
 });
 
 describe('clearLabel', () => {
