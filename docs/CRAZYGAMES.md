@@ -119,6 +119,29 @@ training ». Le build CrazyGames le rejoue de bout en bout (`e2e/portal.spec.ts`
 - **Genre** : Puzzle (blocs qui tombent). **Public** : PEGI 3 de fait (aucune violence, aucun
   achat, aucun chat).
 
+## Revue modérateur du 23/10/2026 (build 1.29.0, premier lancement)
+
+**Méthode.** Le paquet `release/lumirift-crazygames-1.29.0.zip` est servi en local
+(`vite preview --mode crazygames`, SDK v3 en environnement `local`), dans un Chromium sans
+profil, avec chaque appel au SDK journalisé, à 8 tailles : 1280 × 720, 1920 × 1080,
+907 × 510, 821 × 462, 800 × 450, 915 × 412, 390 × 844 et 360 × 640 (les quatre dernières au
+toucher). Le « débutant » garde la descente rapide enfoncée : chaque pièce tombe où elle
+apparaît.
+
+| Contrôle                            | Statut     | Preuve                                                                                                                           |
+| ----------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Arrivée directe en jeu, sans menu   | ✅         | Étape 1/2 de l'entraînement dès l'ouverture, aucun onglet ; `gameplayStart` vers 0,45 à 0,6 s                                    |
+| Prise en main dans le jeu, passable | ✅         | Une phrase à la fois, touches ou geste ; croix pour masquer le guide ; « Skip the training » dans la pause                       |
+| Rien sur le puits, rien de coupé    | ✅         | Aux 8 tailles : le guide ne recouvre jamais le puits, aucun texte rogné, aucun défilement                                        |
+| Événements SDK                      | ✅         | `gameplayStart` à chaque étape ; `gameplayStop` sur P et à chaque fin d'étape ; reprise sur P                                    |
+| Aucune pub pendant l'entraînement   | ✅         | Aucun appel au module `ad` jusqu'au 1-1 compris                                                                                  |
+| Échap                               | ✅         | Sans effet pendant l'entraînement                                                                                                |
+| Parcours complet du débutant        | ✅         | Étape 1 gagnée en 12 à 23 s, étape 2 en 6 à 7 s, puis « Level 1-1 » ; au rechargement, l'accueil                                 |
+| Console, réseau                     | ✅ corrigé | Aucune erreur ; seul `sdk.crazygames.com` contacté. Les vibrations attendent le premier geste (Chrome les refusait en le disant) |
+| Alarme de danger                    | ✅ corrigé | Plus aucune pendant l'entraînement, qui ne peut pas être perdu ; le rouge ne se fige plus sur une pause ni une fenêtre de fin    |
+| Pubs, bloqueur, sauvegarde, 144 Hz  | —          | Code inchangé depuis la revue de la 1.17.2 : non refait                                                                          |
+| Safari, téléphone réel              | 🟡         | Pas de WebKit sur la machine : à faire dans l'outil QA du portail et sur appareil                                                |
+
 ## Revue modérateur du 21/10/2026 (build 1.17.2)
 
 **Méthode.** Le build CrazyGames est servi en local (`vite preview --mode crazygames`), avec le
