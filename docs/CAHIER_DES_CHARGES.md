@@ -1705,7 +1705,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Livré (1.3)                                                  |
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames (1.2), Playgama (1.4), Yandex Games (1.30) livrés |
 | 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                                                        |
-| 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, boutique                         | Prévu                                                        |
+| 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, essai                            | Prévu                                                        |
 | 16  | Accroche et courbe (1.34) : entraînement 2.0, bot de courbe, clémence                                      | Prévu                                                        |
 | 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Prévu                                                        |
 | 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Prévu                                                        |
@@ -1745,8 +1745,8 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
     fenêtre montre deux boutons égaux, « Regarder une pub » et « Non merci », avec un anneau de
     cinq secondes ; « Rejouer » marche tout de suite et bat quand l'anneau finit. Une pub qui
     échoue garde l'offre et le dit. Ni en Duel, ni dans les défis ou l'entraînement, ni sur
-    CrazyGames tant qu'il n'existe pas d'autre moyen de la gagner. Une partie reprise ne bat pas
-    de record (à confirmer, voir les décisions).
+    CrazyGames tant qu'il n'existe pas d'autre moyen de la gagner. Une partie reprise compte
+    pour les records, comme chez la plupart des succès du genre.
   - L'écran de défaite : le verre du puits se brise (`wellShatter`), des fêlures rouge vif
     partent de l'impact et les vitres proches tombent ; la pulsation rouge du danger frappe, puis
     bat de plus en plus lentement et s'éteint en trois secondes, tandis que « Rejouer » reprend le
@@ -1757,9 +1757,11 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
     particules, à 0,6 s ; sans effets : aussitôt. Seul le verre du puits se brise, jamais tout
     l'écran.
   - L'essai d'une apparence verrouillée pour une partie, contre une pub récompensée.
-  - Les achats : `Platform` gagne un port d'achats (catalogue, achat, possédés), avec son
-    adaptateur Yandex ; produits : sans pub et deux packs d'apparences. La boutique n'existe que
-    là où le port existe, jamais sur notre site ni sur Playgama.
+  - Les achats, après le contrat Yandex : sans lui, les achats ne s'activent pas sur Yandex.
+    `Platform` gagnera un port d'achats (catalogue, achat, possédés) et son adaptateur Yandex
+    dans une petite version à part, dès que les achats pourront être activés ; la 1.31 sort sans
+    eux. Produits : sans pub et deux packs d'apparences. La boutique n'existera que là où le
+    port existe, jamais sur notre site ni sur Playgama.
   - Porte : une ligne 1.31 par canal vivant dans la feuille de mesures, temps de jeu moyen et
     pubs par partie au moins égaux à la 1.30, aucune plainte sur les pubs dans les dix
     sessions.
@@ -1868,8 +1870,9 @@ changement de monde. Le module tactile est notre propre code. L'offre de reprise
 secondes avec son anneau, puis « Rejouer » bat. Une recherche du même jour (les succès du genre,
 plus de 20 000 avis de joueurs, les règles des portails) a rendu la reprise plus rare, ses
 boutons égaux et son effacement plus large (la moitié haute du plateau), et précisé les lots 23
-et 24. Question ouverte : une partie reprise peut-elle battre un record ? La plupart des succès
-la comptent et les joueurs s'y attendent.
+et 24. Le même jour : une partie reprise compte pour les records, comme chez la plupart des succès ;
+la boutique attend le contrat Yandex et forme une petite version à part, pour que la 1.31 sorte
+plus tôt.
 
 ## 10. Hors périmètre (v1)
 

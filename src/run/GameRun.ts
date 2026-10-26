@@ -98,9 +98,8 @@ export class GameRun {
   private rewardWatched = false;
   /** The continue offered, waiting for the player's choice; null otherwise. */
   private pending: ContinueOffer | null = null;
-  /** This game offered its continue (once a game) / the player took it. */
+  /** This game offered its continue (once a game). */
   private continueOffered = false;
-  private continued = false;
 
   constructor(
     readonly kind: RunKind,
@@ -162,7 +161,6 @@ export class GameRun {
     this.ended = null;
     this.pending = null;
     this.continueOffered = false;
-    this.continued = false;
     this.shown = created.indicators();
     this.events.emit('indicators', { indicators: this.shown });
     created.start();
@@ -236,8 +234,8 @@ export class GameRun {
 
   /**
    * The player takes the continue: the portal's rewarded ad, then the game
-   * goes on, the top of its board blown away. It sets no record any more.
-   * Returns false when no ad played (the offer stands).
+   * goes on, the top of its board blown away; its record still counts, as in
+   * the genre's hits. Returns false when no ad played (the offer stands).
    */
   async continueGame(hooks: AdHooks): Promise<boolean> {
     const offer = this.pending;
@@ -246,11 +244,8 @@ export class GameRun {
     const watched = await this.ports.platform.rewardedAd(hooks);
     if (!watched || this.pending !== offer || this.game !== game) return false;
     this.pending = null;
-    this.continued = true;
     this.rewardWatched = true;
     this.ports.ads.adShown();
-    this.chase = null;
-    this.setBest(null);
     game.revive?.();
     this.setPhase('playing');
     this.ports.platform.gameplayStart();
@@ -314,7 +309,6 @@ export class GameRun {
       timeLeftMs: game.indicators().find((item) => item.id === 'timeLeft')?.value ?? 0,
       verdict,
       teased: teaserMs > 0,
-      continued: this.continued,
       continueOffered: this.continueOffered,
       report: (base) =>
         tracker

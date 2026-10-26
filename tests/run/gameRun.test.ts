@@ -405,7 +405,7 @@ describe('GameRun', () => {
     expect(platform.gameOver).toHaveBeenCalledWith(false);
   });
 
-  it('continues a lost game after the rewarded ad: play goes on, with no record to set', async () => {
+  it('continues a lost game after the rewarded ad: play goes on, its record still counting', async () => {
     const { run, scores, platform, game } = setUp(new FreeRun('classic'), { rewarded: true });
     scores.record('classic', 100);
     const best = vi.fn();
@@ -425,17 +425,19 @@ describe('GameRun', () => {
     expect(run.phase).toBe('playing');
     expect(platform.gameplayStart).toHaveBeenCalledTimes(2);
     expect(continued).toHaveBeenCalledOnce();
-    // The HUD stops chasing the record: this game cannot set one any more.
-    expect(best).toHaveBeenLastCalledWith({ best: null });
+    // The HUD keeps chasing the record: a continued game counts, as in the genre's hits.
+    expect(best).not.toHaveBeenCalledWith({ best: null });
 
-    // Lost again: no second offer; a higher score is no record, and no second ad is offered.
+    // Lost again: no second offer, nor a second ad; the record counts.
     const offer = vi.fn();
     run.events.on('offer', offer);
     game().points = 400;
+    run.update(16);
+    expect(best).toHaveBeenLastCalledWith({ best: { value: 400, beaten: true } });
     game().lose();
     expect(offer).not.toHaveBeenCalled();
-    expect(run.last).toMatchObject({ amount: 400, isNewBest: false, rewardOffered: false });
-    expect(scores.best('classic')).toBe(100);
+    expect(run.last).toMatchObject({ amount: 400, isNewBest: true, rewardOffered: false });
+    expect(scores.best('classic')).toBe(400);
     // No interstitial right after it, either.
     await run.adBreak({ onStart: () => {}, onEnd: () => {} }, 'replay');
     expect(platform.midgameAd).not.toHaveBeenCalled();
