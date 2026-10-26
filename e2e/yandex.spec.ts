@@ -216,3 +216,26 @@ test('a continue let go: its ring runs out, the experience shows in its place', 
   await expect(page.getByRole('button', { name: 'Play again' })).toHaveClass(/again--beat/);
   expect(await calls(page)).not.toContain('rewarded');
 });
+
+test('a locked ambiance worn for one game after an ad, shown at once around the menus', async ({
+  page,
+}) => {
+  await page.addInitScript((data) => {
+    if (!sessionStorage.getItem('fake-yandex-data'))
+      sessionStorage.setItem('fake-yandex-data', data);
+  }, SEASONED);
+  await open(page, 'en');
+  await page.getByRole('tab', { name: 'Atelier' }).click();
+  const atelier = page.getByRole('tabpanel', { name: 'Atelier' });
+  await atelier.getByRole('button', { name: 'Ambiance', exact: true }).click();
+  await atelier.getByRole('button', { name: /^Cosmos/ }).click();
+  await atelier.getByRole('button', { name: 'Watch an ad to wear Cosmos for one game' }).click();
+  await expect(atelier.getByText('Yours for your next game: Cosmos')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-ambiance', 'cosmos');
+  expect(await calls(page)).toContain('rewarded');
+  // Still locked: the shelf only lends it.
+  await expect(atelier.getByRole('button', { name: /^Cosmos/ })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+});

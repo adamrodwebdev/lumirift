@@ -496,7 +496,12 @@
     "nowWornGame": "You now wear {name}: start a game to see it.",
     "unlocksWith": "To unlock {name}: {rule}.",
     "trying": "Preview",
-    "new": "New"
+    "new": "New",
+    "tryForGame": "Try it for one game",
+    "tryLabel": "Watch an ad to wear {name} for one game",
+    "tried": "Yours for your next game: {name}",
+    "triedShort": "Yours for the next game",
+    "noAd": "No ad available right now. Try again later."
   },
   "campaign": {
     "chapter": "Chapter {n}",

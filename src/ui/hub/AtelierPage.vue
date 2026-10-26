@@ -23,8 +23,10 @@ import { loadGemArt } from './loadArt';
 /**
  * The Atelier: a stage that shows a look before it is worn, over a shelf of
  * every cosmetic. A first tap tries a look on the stage, a second wears it;
- * a locked one says how to earn it. Nothing here changes the game. Looks
- * earned since the last visit are marked new until the player has seen them.
+ * a locked one says how to earn it, and a locked material or ambiance may be
+ * worn for one game for an ad the player chooses (1.31). Nothing here changes
+ * the game. Looks earned since the last visit are marked new until the
+ * player has seen them.
  */
 const props = defineProps<{
   /** Shown (its tab chosen): what is on the shelf then has been seen. */
@@ -32,7 +34,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { profile } = useServices();
+const { profile, look, platform, ads, audio } = useServices();
 const text = useProgressText();
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const again = t(isTouchScreen() ? 'cosmetics.tapToWear' : 'cosmetics.clickToWear');
@@ -153,6 +155,39 @@ const choose = (item: ShelfItem, element: HTMLElement) => {
   });
 };
 
+// --- A locked look for one game, for an ad (1.31) ---------------------------
+
+const watching = ref(false);
+/** A locked material or ambiance on the stage, where a rewarded ad may be offered. */
+const canTry = computed(
+  () =>
+    !shown.value.unlocked &&
+    shown.value.cosmetic.kind !== 'shatter' &&
+    platform.supportsRewarded &&
+    ads.rewardedAllowed,
+);
+/** The look on the stage is the one won for the next game. */
+const tried = computed(() => look.trying === shown.value.cosmetic);
+
+const tryOn = async () => {
+  const { cosmetic } = shown.value;
+  if (watching.value) return;
+  watching.value = true;
+  status.value = '';
+  const watched = await platform.rewardedAd({
+    onStart: () => audio.suspend(),
+    onEnd: () => audio.resume(),
+  });
+  watching.value = false;
+  if (!watched) {
+    status.value = t('cosmetics.noAd');
+    return;
+  }
+  ads.adShown();
+  look.tryOn(cosmetic);
+  status.value = t('cosmetics.tried', { name: text.cosmeticName(cosmetic) });
+};
+
 // --- The stage: a small well wearing the look -------------------------------
 
 const stage = ref<HTMLCanvasElement | null>(null);
@@ -202,6 +237,24 @@ watch([material, shatter, ambiance], async () => {
           <b>{{ text.cosmeticName(shown.cosmetic) }}</b>
           <span>{{ note(shown) }}</span>
         </p>
+        <button
+          v-if="canTry || tried"
+          type="button"
+          class="btn btn--raised showcase__try"
+          :disabled="watching || tried"
+          :aria-label="
+            tried ? undefined : t('cosmetics.tryLabel', { name: text.cosmeticName(shown.cosmetic) })
+          "
+          @click="tryOn"
+        >
+          <template v-if="tried">{{ t('cosmetics.triedShort') }}</template>
+          <template v-else>
+            <span class="showcase__ad" aria-hidden="true">
+              <AppIcon name="play" :size="12" />{{ t('over.adBadge') }}
+            </span>
+            <span aria-hidden="true">{{ t('cosmetics.tryForGame') }}</span>
+          </template>
+        </button>
       </div>
 
       <div class="shelf">
@@ -288,6 +341,35 @@ watch([material, shatter, ambiance], async () => {
     radial-gradient(70% 80% at 22% 18%, var(--glow-1), transparent 70%),
     radial-gradient(70% 80% at 82% 88%, var(--glow-2), transparent 70%),
     linear-gradient(180deg, var(--surface-2), var(--well-bg));
+}
+
+/* A locked look for one game: an option, labelled as an ad, in the stage's corner. */
+.showcase__try {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  max-width: calc(100% - 2 * var(--space-2));
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.showcase__try:disabled {
+  opacity: 0.8;
+  cursor: default;
+}
+
+.showcase__ad {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: var(--accent-fill);
+  color: var(--on-accent-fill);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
 }
 
 .showcase__canvas {

@@ -8,6 +8,7 @@ import { allowsMode } from '@/platform/Edition';
 import { WebPlatform, type Platform } from '@/platform/Platform';
 import { ModeCatalog } from '@/session/ModeCatalog';
 import { AmbianceController } from '@/services/AmbianceController';
+import { WornLook } from '@/services/WornLook';
 import { AudioEngine } from '@/services/audio/AudioEngine';
 import { CampaignService } from '@/services/CampaignService';
 import { Haptics } from '@/services/Haptics';
@@ -25,6 +26,8 @@ export interface AppServices {
   readonly scores: ScoreBoard;
   /** Experience, objectives, streak and cosmetics. */
   readonly profile: ProfileService;
+  /** What the player wears now: their equipment, or a look tried for one game (1.31). */
+  readonly look: WornLook;
   /** Campaign stars and upgrades. */
   readonly campaign: CampaignService;
   readonly share: ShareService;
@@ -71,13 +74,15 @@ export function createBrowserServices(
       .map((mode) => mode.id)
       .filter((id) => allowsMode(platform.edition, id)),
   );
-  new AmbianceController(profile, settings, document.documentElement);
+  const look = new WornLook(profile);
+  new AmbianceController(look, settings, document.documentElement);
   const clock = () => new Date();
   return {
     settings,
     theme: new ThemeController(document.documentElement),
     scores: new ScoreBoard(storage),
     profile,
+    look,
     campaign: new CampaignService(storage),
     share: new ShareService(navigator),
     catalog,

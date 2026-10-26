@@ -496,7 +496,12 @@
     "nowWornGame": "Kamu memakai {name}. Mulai permainan untuk melihatnya.",
     "unlocksWith": "Untuk membuka {name}: {rule}.",
     "trying": "Pratinjau",
-    "new": "Baru"
+    "new": "Baru",
+    "tryForGame": "Coba untuk satu permainan",
+    "tryLabel": "Tonton iklan untuk memakai {name} selama satu permainan",
+    "tried": "Milikmu untuk permainan berikutnya: {name}",
+    "triedShort": "Milikmu untuk permainan berikutnya",
+    "noAd": "Belum ada iklan saat ini. Coba lagi nanti."
   },
   "campaign": {
     "chapter": "Bab {n}",

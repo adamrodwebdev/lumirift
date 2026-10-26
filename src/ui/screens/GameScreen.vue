@@ -80,6 +80,7 @@ const {
   haptics,
   clock: today,
   ads,
+  look,
 } = useServices();
 const descriptor = catalog.get(props.modeId);
 
@@ -440,6 +441,8 @@ const start = async () => {
   dispose();
   tension.reset();
   recordBurst.value = 0;
+  // A look tried for an ad is worn by this game, or ends if the last one wore it.
+  look.gameStarted();
   session.value = await run.start((created) => {
     listen(created);
     // The training teaches the elements and the Wyrm: no surge yet.
@@ -541,6 +544,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  look.gameLeft();
   document.removeEventListener('visibilitychange', onVisibility);
   window.removeEventListener('blur', pauseForFocus);
   clearTimeout(toastTimer);
@@ -628,7 +632,7 @@ onBeforeUnmount(() => {
       :flash="closeCallFlash"
       :relief="reliefCount"
       :broken="wellBroken"
-      :ambiance="profile.current.equipment.ambiance"
+      :ambiance="look.current.value.ambiance"
     />
     <SurgeLayer
       :active="surgeActive"
