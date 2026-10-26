@@ -3,11 +3,12 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
-## [1.30.0] — 23/10/2026
+## [1.30.0] — 26/10/2026
 
 La version Yandex Games : un build de plus, pour la plateforme de jeux de Yandex, en russe,
-anglais, français et indonésien. Les autres builds ne changent pas, sauf la langue d'un
-joueur qui lit une langue voisine du russe.
+anglais, français et indonésien, avec les visuels de sa fiche. Les autres builds ne changent
+pas, sauf la langue d'un joueur qui lit une langue voisine du russe et l'objectif d'un niveau
+en portrait.
 
 ### Ajouté
 
@@ -36,9 +37,16 @@ joueur qui lit une langue voisine du russe.
     avec des chemins « / ».
   - Revue modérateur, fiche en quatre langues et étapes de publication :
     [docs/YANDEX.md](docs/YANDEX.md).
+- **Les visuels de la fiche Yandex** (`node scripts/yandex-media.mjs`, dans
+  `release/yandex-media/`) : l'icône 512 × 512 (l'Œil au-dessus de sa tour, sans texte), la
+  couverture 800 × 470, quatre captures de vraies parties dans chacune des quatre langues
+  (deux sur ordinateur, deux sur téléphone) et deux vidéos de 25,5 s, en 16:9 et en 9:16.
+  Les vidéos sont tirées image par image des scènes du jeu, puis encodées en H.264 par Chrome
+  lui-même (WebCodecs) dans un MP4 que le script assemble : ni ffmpeg, ni téléchargement.
 - Tests : l'adaptateur Yandex face à un faux SDK (initialisation, repères, pauses, rythme des
   sauvegardes, pubs et délais) ; quatre parcours Playwright sur le build Yandex (projet
-  `yandex`).
+  `yandex`) ; en russe, à 320 et 360 px, l'objectif de quatre niveaux à réserve garde toute
+  sa largeur.
 
 ### Modifié
 
@@ -49,6 +57,17 @@ joueur qui lit une langue voisine du russe.
   (`stopsOnAutoPause` : oui sur Yandex, non sur CrazyGames et Playgama) et si le jeu montre
   sa version (`showsVersion`). Les clés sauvegardées par les portails sont partagées
   (`SAVED_KEYS`).
+- Les visuels CrazyGames et Yandex enregistrent les scènes du jeu par le même module
+  (`scripts/showcase-frames.mjs`), qui attend la vraie interface de la vitrine et non la
+  balise qui porte son nom.
+
+### Corrigé
+
+- **En portrait, l'objectif d'un niveau n'est plus écrasé à côté de la réserve** : dans la
+  famille des chutes, la Tour et le Duel, il se glissait entre la réserve et les suivantes,
+  de 30 à 120 px de large sur un téléphone (au 2-2, son niveau sur trois lignes et sa phrase
+  coupée). Il prend maintenant toute la largeur de la bande, sous elles, comme dans la
+  Mosaïque.
 
 ## [1.29.0] — 23/10/2026
 

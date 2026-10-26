@@ -2,7 +2,7 @@
 
 | Version | Date       | Statut                  |
 | ------- | ---------- | ----------------------- |
-| 1.30    | 23/10/2026 | La version Yandex Games |
+| 1.30    | 26/10/2026 | La version Yandex Games |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -916,6 +916,8 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
     qui double l'expérience), sans bannière collante.
   - **Page** : ni numéro de version, ni lien sortant, ni menu contextuel ni sélection, ni
     défilement ; sur un écran de bureau plus large que 2:1, le cadre de jeu s'arrête à 2:1.
+  - **Visuels** (`node scripts/yandex-media.mjs`) : l'icône, la couverture, quatre captures de
+    vraies parties par langue, deux vidéos MP4 de 25,5 s (16:9 et 9:16) encodées par Chrome.
   - **Compte** : un contrat (ЕЛС ou régie РСЯ) est exigé avant la modération ; un seul pour
     tous les jeux du compte. **VK** attend un avis juridique (sanctions de l'Union européenne).
 
@@ -1003,7 +1005,8 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 - Le puits occupe la hauteur disponible (`dvh`) en gardant son rapport 1:2.
 - **Écran de jeu** (1.7) : aucune page ne défile ni n'a d'en-tête pendant une partie. Une
   seule grille, aux zones nommées : en **portrait**, une bande en haut (pause, score, son ;
-  réserve, objectif, suivantes ; indicateurs), puis le puits sur toute la largeur ; en
+  réserve et suivantes ; l'objectif d'un niveau sur toute la largeur, sous elles, depuis la
+  1.30 ; indicateurs), puis le puits sur toute la largeur ; en
   **paysage**, le puits au centre sur toute la hauteur, le tableau de bord et la réserve à
   gauche, les suivantes (et l'adversaire du Duel) à droite. Les scènes des familles n'ont pas
   de boîte (`display: contents`) : chaque partie nomme sa zone. Mesures : cases de 32 px en
@@ -1766,4 +1769,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.27    | 22/10/2026 | La partie hors de l'écran : `RunKind`, `GameRun`, `GameEnding` ; règles sorties de l'interface, registres plutôt que `switch` (§ 5.14).                              |
 | 1.28    | 23/10/2026 | Les familles à part : présentation par famille, sons des Gardiens, Sable découpé, réglages par intentions, état protégé (§ 5.14).                                    |
 | 1.29    | 23/10/2026 | L'entraînement des portails : deux étapes avant tout menu sur CrazyGames et Playgama, guide dans le tableau de bord (§ 3.7, § 3.8, § 5.16).                          |
-| 1.30    | 23/10/2026 | La version Yandex Games : SDK v2, sauvegarde dans les données du joueur, pauses, cadre 2:1, langues voisines vers le russe (§ 2.1, § 3.7, § 4.4).                    |
+| 1.30    | 26/10/2026 | La version Yandex Games : SDK v2, données du joueur, pauses, cadre 2:1, langues voisines vers le russe, visuels, objectif en portrait (§ 2.1, § 3.7, § 4.2, § 4.4).  |
