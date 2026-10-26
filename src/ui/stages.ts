@@ -1,6 +1,7 @@
 import { defineAsyncComponent, type AsyncComponentLoader, type Component } from 'vue';
 import type { ModeDescriptor } from '@/session/ModeCatalog';
 import type { FamilyId, ModeId } from '@/session/ModeId';
+import { isTouchScreen } from './useOrientation';
 
 /*
  * The play area of each family (well, previews, controls), loaded with the
@@ -39,7 +40,17 @@ export function stageFor(mode: ModeDescriptor): Component {
   return stage;
 }
 
-/** Downloads a mode's stage ahead of time (while the screen changes). */
+/** The families played with the phone gestures (the Mosaic is dragged). */
+const GESTURE_FAMILIES: ReadonlySet<FamilyId> = new Set(['falling', 'sand', 'volume']);
+
+/**
+ * Downloads a mode's stage ahead of time (while the screen changes), and on a
+ * touch screen its gestures, so that the first touch already plays.
+ */
 export async function preloadStage(mode: ModeDescriptor): Promise<void> {
-  await loaderFor(mode)();
+  const gestures =
+    GESTURE_FAMILIES.has(mode.family) && isTouchScreen()
+      ? import('@/families/falling/input/phone/PhoneGestures')
+      : null;
+  await Promise.all([loaderFor(mode)(), gestures]);
 }
