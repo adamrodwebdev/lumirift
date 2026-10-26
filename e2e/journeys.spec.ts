@@ -552,7 +552,7 @@ test('a game fills the screen: no page header, its own pause and sound buttons',
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
-test('touch screens play with gestures; the buttons come back from the settings', async ({
+test('touch screens play with gestures, listed in the pause; the buttons come back from the touch controls', async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'mobile', 'Touch screens only');
@@ -560,11 +560,17 @@ test('touch screens play with gestures; the buttons come back from the settings'
   await expect(page.getByRole('group', { name: 'Déplacer et descendre' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Pause' }).click();
   const pause = page.getByRole('dialog', { name: 'Pause' });
-  await expect(pause.getByText('Toucher à deux doigts')).toBeVisible();
+  await expect(pause.getByText('Toucher la moitié gauche')).toBeVisible();
   await pause.getByRole('button', { name: 'Réglages' }).click();
   const settings = page.getByRole('dialog', { name: 'Réglages' });
-  await settings.getByRole('radio', { name: 'Boutons' }).check();
+  await settings.getByRole('button', { name: 'Régler' }).click();
+  const touch = page.getByRole('dialog', { name: 'Commandes tactiles' });
+  await touch.getByRole('radio', { name: 'Boutons' }).check();
+  // Each window closes in turn (they slide away).
   await page.keyboard.press('Escape');
+  await expect(touch).toBeHidden();
+  await page.keyboard.press('Escape');
+  await expect(settings).toBeHidden();
   await pause.getByRole('button', { name: 'Reprendre' }).click();
   await expect(page.getByRole('group', { name: 'Déplacer et descendre' })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Tourner et faire tomber' })).toBeVisible();

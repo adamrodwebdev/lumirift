@@ -266,7 +266,26 @@ for (const size of KEY_SIZES)
     await page.getByRole('button', { name: 'Réglages' }).click();
     await settle(page);
     await expectFits(page, `${size.name}, settings`);
-    if (size.touch) await expectThumbSized(page, `${size.name}, settings`);
+    if (size.touch) {
+      await expectThumbSized(page, `${size.name}, settings`);
+      // The touch controls' window, and the gesture guide over it (1.32).
+      const nested = [
+        { open: 'Régler', dialog: 'Commandes tactiles', where: 'touch controls' },
+        { open: 'Voir les gestes', dialog: 'Les gestes', where: 'gesture guide' },
+      ];
+      for (const { open, dialog, where } of nested) {
+        await page.getByRole('button', { name: open }).click();
+        await expect(page.getByRole('dialog', { name: dialog })).toBeVisible();
+        await settle(page);
+        await expectFits(page, `${size.name}, ${where}`);
+        await expectThumbSized(page, `${size.name}, ${where}`);
+      }
+      for (const { dialog } of [...nested].reverse()) {
+        const window = page.getByRole('dialog', { name: dialog });
+        await window.getByRole('button', { name: 'Fermer' }).first().click();
+        await expect(window).toBeHidden();
+      }
+    }
     await page.keyboard.press('Escape');
 
     for (const name of FAMILIES) {
