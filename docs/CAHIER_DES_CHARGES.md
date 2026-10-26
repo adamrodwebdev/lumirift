@@ -1,8 +1,9 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                  |
-| ------- | ---------- | ----------------------- |
-| 1.30    | 26/10/2026 | La version Yandex Games |
+| Version | Date       | Statut                                                                                                                                                                                       |
+| ------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.30    | 26/10/2026 | La version Yandex Games                                                                                                                                                                      |
+| 1.31    | 26/10/2026 | Preuve et pubs : une politique de pubs, la reprise rare et utile, le verre du puits qui se brise selon l'ambiance, l'essai d'une apparence, le kit de preuve ; lots 23 et 24 (§ 9, § 9 bis). |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 

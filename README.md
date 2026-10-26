@@ -7,7 +7,8 @@ blocs gemmes) et sa musique générative. Gratuit, sans inscription,
 aucune donnée ne quitte l'appareil.
 
 Cahier des charges (règles détaillées, architecture, décisions) :
-[docs/CAHIER_DES_CHARGES.md](docs/CAHIER_DES_CHARGES.md) · Historique : [CHANGELOG.md](CHANGELOG.md).
+[docs/CAHIER_DES_CHARGES.md](docs/CAHIER_DES_CHARGES.md) · Historique : [CHANGELOG.md](CHANGELOG.md) ·
+Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 
 ## Le jeu
 
@@ -31,8 +32,13 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde.
 - **La tension de l'échec** : en danger, la musique presse et un cœur bat, le verre du
-  puits se fend d'or ; une ligne sauvée au bord du gouffre compte double, une défaite
-  brise le puits.
+  puits se fend d'or ; une ligne sauvée au bord du gouffre compte double. Une défaite brise
+  le verre sous la pulsation rouge, ses vitres tombent, la pile éclate dans la matière de
+  l'ambiance portée, puis « Rejouer » bat.
+- **Des pubs mesurées** (portails) : jamais après une défaite, ni en jeu, ni dans les huit
+  premières minutes d'un nouveau joueur ; une partie perdue peut reprendre contre une pub
+  choisie, rarement (dix minutes d'écart) ; une apparence verrouillée s'essaie le temps d'une
+  partie.
 - **La surcharge de la faille** : les lignes remplissent une jauge ; pleine, le joueur ralentit
   le temps au tiers pendant huit secondes pour sauver sa partie, et les points faits pendant
   sont multipliés à la sortie.
@@ -189,7 +195,8 @@ au § 5 du cahier des charges.
 ```
 src/
   core/          Briques partagées (événements, hasard à graine, tons, jours)
-  session/       Contrat GameSession, registre des modes, défi du jour, surcharge
+  session/       Contrat GameSession, registre des modes, défi du jour, surcharge, reprise
+  ads/           La politique de pubs : règles et réglages par canal, calendrier d'une visite
   run/           Une partie à l'écran : sa sorte (libre, défi, Gardien, niveau), son
                  déroulé et sa fin réglée ; l'écran ne fait que dessiner
   campaign/      Niveaux, objectifs, étoiles, améliorations, défi des Gardiens

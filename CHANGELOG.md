@@ -3,6 +3,67 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.31.0] — 26/10/2026
+
+La preuve et les leviers de pub (lot 15 du chemin vers 5) : une seule politique de pubs, la
+même sur chaque canal, plus douce pour les nouveaux joueurs et jamais après une défaite ; la
+reprise d'une partie perdue contre une pub choisie, rare et utile ; un écran de défaite où le
+verre du puits se brise sous la pulsation rouge, dans la matière de l'ambiance portée ;
+l'essai d'une apparence verrouillée le temps d'une partie ; le kit de preuve. La reprise et la
+fenêtre de fin suivent une recherche sur les succès du genre, plus de 20 000 avis de joueurs
+et les règles des portails. La boutique attendra le contrat Yandex.
+
+### Ajouté
+
+- **La reprise d'une partie perdue**, contre une pub récompensée que le joueur choisit :
+  - une fois par partie, au plus une fois toutes les dix minutes de jeu, après une partie
+    d'au moins deux minutes et à partir de cinq minutes de vie du joueur (les portails
+    interdisent l'offre à chaque défaite) ; ni en Duel, ni dans les défis ou l'entraînement,
+    ni sur CrazyGames ;
+  - la moitié haute du plateau saute (le puits, la Tour, le Sable ; les rangées les plus
+    pleines de la Mosaïque, davantage tant qu'aucune pièce n'entre), la pièce bloquée revient
+    la première, et rien ne tombe avant le premier geste du joueur ;
+  - la fenêtre de fin offre « Regarder une pub » et « Non merci », égaux, avec un anneau de
+    cinq secondes, à la place de l'expérience (rien ne bouge quand l'offre s'en va) ;
+    « Rejouer » marche tout du long ; une pub qui échoue garde l'offre et le dit ;
+  - une partie reprise compte pour les records, comme chez la plupart des succès.
+- **L'écran de défaite** : des fêlures rouge vif partent de l'endroit où la dernière pièce a
+  frappé et parcourent le verre du puits, les vitres proches éclatent et tombent en
+  tournoyant ; la pulsation rouge du danger frappe, puis bat de plus en plus lentement et
+  s'éteint en trois secondes ; la pile se brise dans la matière de l'ambiance (poussière
+  d'étoiles, rubans de lumière, bulles, braises, vide, pétales, éclats d'or) qui dérive
+  ensuite derrière la fenêtre ; le titre d'une défaite atterrit dans une lueur rouge ; un
+  record à portée montre l'écart (« Si près : … ») ; puis le bouton principal bat. Effets
+  réduits : le verre se fend sans tomber, un seul battement ; mouvement réduit respecté.
+- **L'essai d'une apparence** : à l'Atelier, une matière ou une ambiance verrouillée se porte
+  le temps d'une partie contre une pub récompensée (« ▶ PUB L'essayer une partie ») ;
+  l'ambiance se voit tout de suite autour des menus.
+- **Le kit de preuve** (`docs/PREUVE.md`) : la feuille de mesures par canal et par version,
+  le protocole et la grille des dix sessions d'inconnus, la porte de la 1.31.
+
+### Modifié
+
+- **Une seule politique de pubs** (`AdPolicy`, règles pures, et `AdScheduler`), la même sur
+  Playgama, Yandex et CrazyGames, avec une table de réglages par canal : un interstitiel
+  seulement en quittant une partie gagnée ou finie au chrono, jamais après une défaite, ni en
+  jeu, ni dans les huit premières minutes d'un nouveau joueur, ni dans les trois premières
+  minutes d'une visite, avec trois minutes d'écart ; l'expérience doublée attend trois
+  minutes de jeu ; toute pub regardée relance l'écart. CrazyGames garde ses règles : jamais
+  sur un bouton de navigation, aucune pub récompensée tant qu'il n'existe pas d'autre moyen
+  de gagner la récompense.
+- Le profil compte le temps de jeu cumulé (`playedMs`).
+- Le cahier : les lots 23 (commandes au doigt, 1.32) et 24 (course contre la montre, 1.33)
+  détaillés, l'ordre de sortie décidé (lots 16 à 20 décalés de deux versions).
+
+### Technique
+
+- Moteurs : `revivable` et `revive()` dans la Chute, la Tour, le Sable et la Mosaïque ;
+  `ContinueRule`, `wellShatter` (géométrie pure du bris), `WellShatter`, `DefeatMatter` et
+  `DEFEAT_STYLES` (registre par ambiance), `WornLook`.
+- Tests unitaires de la politique, de la reprise dans `GameRun` et dans les moteurs, du bris
+  et de l'essai ; bout en bout sur le build Yandex (SDK factice, horloge simulée) : la
+  reprise prise, laissée filer, et l'essai d'une ambiance.
+
 ## [1.30.1] — 26/10/2026
 
 ### Modifié
