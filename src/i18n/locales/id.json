@@ -236,7 +236,6 @@
     "ability": {
       "flip": "Balikkan sumur"
     },
-    "touch": "Sentuh: geser untuk memindahkan, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung.",
     "move": "Geser",
     "groupMove": "Geser dan turunkan",
     "groupAct": "Putar dan jatuhkan"
@@ -305,14 +304,36 @@
     "effectsReduced": "Tenang",
     "effectsOff": "Tidak ada",
     "shake": "Guncangan layar",
-    "haptics": "Getaran",
     "volume": "Efek suara",
     "close": "Tutup",
-    "music": "Musik",
-    "controls": "Kontrol",
-    "controlsGestures": "Gestur",
-    "controlsButtons": "Tombol",
-    "controlsHint": "Di layar sentuh, tombol muncul kembali di bawah sumur."
+    "music": "Musik"
+  },
+  "touch": {
+    "title": "Kontrol sentuh",
+    "open": "Atur",
+    "playWith": "Main dengan",
+    "gestures": "Gestur",
+    "buttons": "Tombol",
+    "both": "Keduanya",
+    "gesturesNote": "Geser, ketuk, dan sentil di mana saja di layar.",
+    "buttonsNote": "Hanya tombol di bawah sumur yang bekerja.",
+    "bothNote": "Gestur menggeser dan memutar; tombol menjatuhkan dan menyimpan.",
+    "dragSpeed": "Kecepatan geser",
+    "speed": "{speed} · {name}",
+    "speedNames": {
+      "calm": "pelan",
+      "standard": "standar",
+      "quick": "cepat"
+    },
+    "tapSides": "Putar dengan mengetuk sisi",
+    "tapSidesNote": "Separuh kiri memutar ke kiri, separuh kanan ke kanan. Mati: setiap ketukan memutar ke kanan.",
+    "leftHanded": "Kidal",
+    "leftHandedNote": "Membalik posisi tombol dan kotak Simpan.",
+    "vibrations": "Getaran",
+    "vibrationsNote": "Getaran ringan di tiap petak, lebih tegas saat memutar.",
+    "glow": "Cahaya di tiap gerakan",
+    "glowNote": "Ponsel ini tidak bisa bergetar di browser: sumur menyala lembut sebagai gantinya.",
+    "guide": "Lihat gestur"
   },
   "game": {
     "loading": "Memuat permainan…",
@@ -399,12 +420,10 @@
     "jokerCount": "×{n}"
   },
   "sand": {
-    "well": "Sumur pasir",
-    "helpTouch": "Sentuh: geser untuk memindahkan, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung. Hubungkan satu warna dari dinding ke dinding. Elemen bereaksi: minyak memberi makan api, api melelehkan es menjadi uap, petir lewat air menghancurkan semua yang disentuhnya, benih yang disiram tumbuh jadi jembatan."
+    "well": "Sumur pasir"
   },
   "tower": {
     "well": "Menara kaca",
-    "helpTouch": "Sentuh: geser untuk memindahkan, ketuk untuk memutar, geser cepat ke bawah untuk jatuh langsung, geser dengan dua jari untuk memutar menara. Kamera mengikuti kepingan.",
     "turn": "Putar menara"
   },
   "profile": {
@@ -629,7 +648,7 @@
     "goalLines": "Penuhi satu baris: baris itu pecah.",
     "skip": "Lewati panduan",
     "moveTouch": "Geser",
-    "rotateTouch": "Ketuk",
+    "rotateTouch": "Ketuk satu sisi",
     "dropTouch": "Sentil ke bawah"
   },
   "gestures": {
@@ -640,7 +659,13 @@
     "flickUp": "Sentil ke atas",
     "dragDown": "Geser ke bawah",
     "flickDown": "Sentil ke bawah",
-    "twoFingerDrag": "Geser dua jari"
+    "twoFingerDrag": "Geser dua jari",
+    "title": "Gestur",
+    "tapLeft": "Ketuk separuh kiri",
+    "tapRight": "Ketuk separuh kanan",
+    "secondFinger": "Jari kedua",
+    "secondFingerAction": "Ketuk saat menggeser: kepingan berputar",
+    "note": "Gestur bisa dimulai di mana saja di layar, jadi jarimu tidak pernah menutupi kepingan."
   },
   "hub": {
     "pages": "Halaman menu",

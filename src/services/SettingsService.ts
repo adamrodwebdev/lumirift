@@ -6,13 +6,17 @@ import {
   type RepeatTiming,
 } from '@/families/falling/input/RepeatTiming';
 import { DEFAULT_KEYS, KeyBindings, type KeyMap } from '@/families/falling/input/KeyBindings';
+import { DRAG_SPEED, validDragSpeed } from '@/families/falling/input/phone/GestureTuning';
 import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, type Locale } from '@/i18n/locales';
 import { readJson, type KeyValueStorage } from './KeyValueStorage';
 
-/** On a touch screen: gestures anywhere on the game, or the on-screen buttons. */
-export type ControlScheme = 'gestures' | 'buttons';
-export const CONTROL_SCHEMES: readonly ControlScheme[] = ['gestures', 'buttons'];
+/**
+ * On a touch screen: gestures anywhere on the game, the on-screen buttons, or
+ * both (the gestures move and turn, the buttons drop and hold).
+ */
+export type ControlScheme = 'gestures' | 'buttons' | 'both';
+export const CONTROL_SCHEMES: readonly ControlScheme[] = ['gestures', 'buttons', 'both'];
 
 export interface Settings extends RepeatTiming {
   readonly locale: Locale;
@@ -26,6 +30,12 @@ export interface Settings extends RepeatTiming {
   readonly musicVolume: number;
   readonly muted: boolean;
   readonly controls: ControlScheme;
+  /** Cells of piece for a cell of finger (0.8 to 1.6). */
+  readonly dragSpeed: number;
+  /** A tap turns the way of its side of the screen; otherwise every tap turns right. */
+  readonly tapSides: boolean;
+  /** The buttons and the Hold box mirrored, for the left thumb. */
+  readonly leftHanded: boolean;
   /** The keyboard's keys (falling family, Sand, Tower); `das` and `arr` time a held move. */
   readonly keys: KeyMap;
 }
@@ -74,9 +84,23 @@ export class SettingsService {
     this.save({ locale });
   }
 
-  /** A touch screen plays with gestures, or with the on-screen buttons. */
+  /** A touch screen plays with gestures, the on-screen buttons, or both. */
   chooseControls(controls: ControlScheme): void {
     this.save({ controls });
+  }
+
+  /** How far a drag takes the piece, kept within its range and on its steps. */
+  setDragSpeed(speed: number): void {
+    this.save({ dragSpeed: validDragSpeed(speed) });
+  }
+
+  /** Taps turn the way of their side, or always right. */
+  turnBySides(tapSides: boolean): void {
+    this.save({ tapSides });
+  }
+
+  playLeftHanded(leftHanded: boolean): void {
+    this.save({ leftHanded });
   }
 
   chooseEffects(effects: EffectsLevel): void {
@@ -146,6 +170,10 @@ export class SettingsService {
     if (isUnit(record.volume)) settings.volume = record.volume;
     if (isUnit(record.musicVolume)) settings.musicVolume = record.musicVolume;
     if (isControlScheme(record.controls)) settings.controls = record.controls;
+    if (within(record.dragSpeed, DRAG_SPEED))
+      settings.dragSpeed = validDragSpeed(record.dragSpeed as number);
+    if (typeof record.tapSides === 'boolean') settings.tapSides = record.tapSides;
+    if (typeof record.leftHanded === 'boolean') settings.leftHanded = record.leftHanded;
     if (record.keys !== undefined) settings.keys = KeyBindings.parse(record.keys).toJSON();
     if (within(record.das, DAS_RANGE)) settings.das = record.das as number;
     if (within(record.arr, ARR_RANGE)) settings.arr = record.arr as number;

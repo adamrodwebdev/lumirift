@@ -15,7 +15,10 @@ export type CoachGoal = 'lines' | 'sand';
  */
 export interface Presentation {
   readonly layout: GameLayout;
-  /** Touch help in words (translation keys), shown in the pause where no drawing says it. */
+  /**
+   * Touch help in words (translation keys), shown in the pause where no
+   * drawing says it: the Mosaic's (the others' gestures are drawn, 1.32).
+   */
   readonly touchHelp: readonly string[];
   /** The very first game is guided toward this goal (the falling controls), or not at all. */
   readonly coachGoal: CoachGoal | null;
@@ -26,13 +29,13 @@ export interface Presentation {
 const FAMILY_PRESENTATIONS: Readonly<Record<FamilyId, Presentation>> = {
   falling: {
     layout: 'well',
-    touchHelp: ['controls.touch'],
+    touchHelp: [],
     coachGoal: 'lines',
     clearNotice: 'notice.lines',
   },
   sand: {
     layout: 'well',
-    touchHelp: ['sand.helpTouch'],
+    touchHelp: [],
     coachGoal: 'sand',
     clearNotice: 'notice.regions',
   },
@@ -44,7 +47,7 @@ const FAMILY_PRESENTATIONS: Readonly<Record<FamilyId, Presentation>> = {
   },
   volume: {
     layout: 'well',
-    touchHelp: ['tower.helpTouch'],
+    touchHelp: [],
     coachGoal: 'lines',
     clearNotice: 'notice.lines',
   },

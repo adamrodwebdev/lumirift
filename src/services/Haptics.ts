@@ -8,15 +8,20 @@ interface VibratingNavigator {
 export class Haptics {
   constructor(
     private readonly navigator: VibratingNavigator,
-    private readonly enabled: () => boolean,
+    private readonly wanted: () => boolean,
   ) {}
 
   get supported(): boolean {
     return typeof this.navigator.vibrate === 'function';
   }
 
+  /** The player asked for them (where the phone cannot vibrate, the moves glow instead). */
+  get enabled(): boolean {
+    return this.wanted();
+  }
+
   pulse(pattern: number | number[]): void {
-    if (!this.enabled() || !this.navigator.vibrate) return;
+    if (!this.wanted() || !this.navigator.vibrate) return;
     // Before the player's first gesture the browser refuses it, and says so in the
     // console: a portal's first run plays at once, before any tap.
     if (this.navigator.userActivation?.hasBeenActive === false) return;

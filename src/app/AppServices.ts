@@ -2,6 +2,7 @@ import { inject, type InjectionKey } from 'vue';
 import { AD_TUNING } from '@/ads/AdPolicy';
 import { AdScheduler } from '@/ads/AdScheduler';
 import { DEFAULT_KEYS } from '@/families/falling/input/KeyBindings';
+import { DRAG_SPEED } from '@/families/falling/input/phone/GestureTuning';
 import { DEFAULT_REPEAT } from '@/families/falling/input/RepeatTiming';
 import { detectLocale } from '@/i18n/locales';
 import { allowsMode } from '@/platform/Edition';
@@ -55,10 +56,14 @@ export function createBrowserServices(
     // Players who ask their system for less motion start with calmer effects.
     effects: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full',
     shake: true,
-    haptics: true,
+    // Vibrations are asked for, not imposed (1.32): players find them tiring.
+    haptics: false,
     volume: 0.7,
     musicVolume: 0.5,
     controls: 'gestures',
+    dragSpeed: DRAG_SPEED.standard,
+    tapSides: true,
+    leftHanded: false,
     muted: false,
     keys: DEFAULT_KEYS,
     ...DEFAULT_REPEAT,

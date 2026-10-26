@@ -16,11 +16,10 @@ import { useFormat } from '@/app/useFormat';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import type { GameSession } from '@/session/GameSession';
 import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
-import { useGameSurface } from '@/ui/useGameSurface';
 import { useKeyBindings } from '@/ui/useKeyBindings';
 import SurgeButton from '@/ui/components/SurgeButton.vue';
 import { SURGE } from '@/ui/surgeControl';
-import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
+import { useLandscape } from '@/ui/useOrientation';
 import { FallingSession, type FallingCommand } from '../FallingSession';
 import { FallingEffects } from '../fx/FallingEffects';
 import { FallingSoundscape } from '../fx/FallingSoundscape';
@@ -28,15 +27,16 @@ import { HeartSounds } from '../fx/HeartSounds';
 import type { PieceSpec } from '../game/Game';
 import { FallingInput } from '../input/FallingInput';
 import { isFallingAction } from '../input/KeyBindings';
-import { WellGestures } from '../input/WellGestures';
 import type { AbilityId } from '../modes/GameMode';
 import { FallingRenderer } from '../render/FallingRenderer';
 import { TonePalette } from '@/render/TonePalette';
 import { RiftHeartMode } from '../modes/RiftHeartMode';
 import { RiftHeartDecor } from '../render/RiftHeartDecor';
 import { decorFor, type WellDecor } from '../render/WellDecor';
+import NotchGlow from './NotchGlow.vue';
 import PiecePreview from './PiecePreview.vue';
 import TouchControls from './TouchControls.vue';
+import { useTouchPlay } from './useTouchPlay';
 
 /**
  * A falling-family game: the well, the hold and the coming pieces. Each part
@@ -69,9 +69,6 @@ const keys = useKeyBindings();
 const equipment = look.current;
 const format = useFormat();
 const landscape = useLandscape();
-/** The on-screen buttons, for the touch players who chose them. */
-const touch = isTouchScreen();
-const pad = computed(() => touch && settings.current.controls === 'buttons');
 
 const wellArea = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -139,7 +136,13 @@ const input = new FallingInput(
   () => emit('pause'),
   () => settings.current,
 );
-const gestures = new WellGestures(execute, () => cellSize.value);
+/** On a touch screen: the gestures, the buttons chosen, the feel of each move. */
+const { pad, notch, glows } = useTouchPlay({
+  execute,
+  cellSize: () => cellSize.value,
+  active: () => props.active,
+  session,
+});
 
 // --- Layout and theme -------------------------------------------------------
 
@@ -181,10 +184,7 @@ watch(
 watch(
   () => props.active,
   (active) => {
-    if (!active) {
-      input.releaseAll();
-      gestures.cancel();
-    }
+    if (!active) input.releaseAll();
   },
 );
 
@@ -214,7 +214,7 @@ const offFrame = props.clock.subscribe((delta, real) => {
   renderer?.render();
 });
 
-// --- Keyboard and touch -----------------------------------------------------
+// --- Keyboard ---------------------------------------------------------------
 
 const onKey = (event: KeyboardEvent, down: boolean) => {
   const action = keys.value.actionFor(event.code);
@@ -237,13 +237,6 @@ const onKey = (event: KeyboardEvent, down: boolean) => {
 };
 const onKeyDown = (event: KeyboardEvent) => onKey(event, true);
 const onKeyUp = (event: KeyboardEvent) => onKey(event, false);
-
-useGameSurface({
-  down: (event) => gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp),
-  move: (event) => gestures.move(event.pointerId, event.clientX, event.clientY),
-  up: (event) => gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp),
-  cancel: () => gestures.cancel(),
-});
 
 onMounted(() => {
   if (canvas.value) renderer = new FallingRenderer(canvas.value, session.view);
@@ -309,6 +302,7 @@ onBeforeUnmount(() => {
         role="img"
         :aria-label="wellLabel"
       />
+      <NotchGlow v-if="glows" :beat="notch" :canvas="canvas" />
     </div>
 
     <section class="stage__next stage__box" :aria-label="t('hud.next')">
@@ -326,7 +320,12 @@ onBeforeUnmount(() => {
     <!-- Extra panels of a mode (the opponent of a duel). -->
     <div v-if="$slots.side" class="stage__side"><slot name="side" /></div>
 
-    <TouchControls v-if="pad" @press="input.press($event)" @release="input.release($event)" />
+    <TouchControls
+      v-if="pad !== 'none'"
+      :pad="pad"
+      @press="input.press($event)"
+      @release="input.release($event)"
+    />
   </div>
 </template>
 

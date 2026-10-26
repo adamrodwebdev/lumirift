@@ -57,17 +57,22 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 
 ### Commandes
 
-| Action                    | Clavier                                | Tactile (partout sur l'écran de jeu)          |
-| ------------------------- | -------------------------------------- | --------------------------------------------- |
-| Déplacer                  | ← → (ou A D)                           | Glisser sur le côté                           |
-| Descendre / chute franche | ↓ (ou S) / Espace                      | Glisser vers le bas / vite vers le bas        |
-| Tourner / autre sens      | ↑ ou X / Z (W en AZERTY)               | Toucher / toucher à deux doigts               |
-| Réserve                   | C ou Maj                               | Glisser vite vers le haut, ou toucher la case |
-| Capacité (Renversement)   | F                                      | Bouton à côté de la réserve                   |
-| Surcharge de la faille    | V                                      | Toucher le sablier                            |
-| Tourner la Tour           | Q / E (A / E en AZERTY)                | Glisser à deux doigts                         |
-| Mosaïque                  | 1, 2, 3 (4 : cube), flèches, Entrée, J | Glisser-déposer                               |
-| Pause                     | P                                      | Bouton en haut de l'écran                     |
+| Action                    | Clavier                                | Tactile (partout sur l'écran de jeu)      |
+| ------------------------- | -------------------------------------- | ----------------------------------------- |
+| Déplacer                  | ← → (ou A D)                           | Glisser sur le côté                       |
+| Descendre / chute franche | ↓ (ou S) / Espace                      | Glisser vers le bas / un coup vers le bas |
+| Tourner / autre sens      | ↑ ou X / Z (W en AZERTY)               | Toucher la moitié droite / gauche         |
+| Réserve                   | C ou Maj                               | Un coup vers le haut, ou toucher la case  |
+| Capacité (Renversement)   | F                                      | Bouton à côté de la réserve               |
+| Surcharge de la faille    | V                                      | Toucher le sablier                        |
+| Tourner la Tour           | Q / E (A / E en AZERTY)                | Glisser à deux doigts                     |
+| Mosaïque                  | 1, 2, 3 (4 : cube), flèches, Entrée, J | Glisser-déposer                           |
+| Pause                     | P                                      | Bouton en haut de l'écran                 |
+
+Sur écran tactile, Réglages, « Commandes tactiles » : jouer aux gestes, aux boutons ou aux
+deux, la vitesse du glissé, tourner selon le côté touché, le mode gaucher, les vibrations ;
+« Voir les gestes » dessine le guide. Un deuxième doigt tapé pendant un glissé tourne aussi ;
+un coup ne fait tomber que la pièce présente au début du contact.
 
 Ce sont les touches par défaut : chacun les change dans Réglages, « Clavier » (deux touches
 par action, échange quand une touche est déjà prise), avec la répétition des déplacements

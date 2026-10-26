@@ -79,7 +79,8 @@ pause. Le profil, gardé par `bridge.storage`, retient qu'il est fait.
   > Keyboard: arrows or A/D to move, Up or X to rotate, Z to rotate back (W on AZERTY), Down
   > to soft drop, Space to hard drop, C or Shift to hold, P to pause. Tower: Q/E to turn.
   > Mosaic: 1-3 to pick a piece, arrows to aim, Enter to place, J for jokers. Touch: swipe to
-  > move, tap to rotate, flick down to drop; drag and drop pieces in Mosaic.
+  > move, tap the right or left half to turn that way, flick down to drop; drag and drop pieces
+  > in Mosaic.
 
 - **Supported devices** : Desktop, Android, iOS. **Orientation** : portrait et paysage.
 - **Languages** : English, French, Indonesian, Russian.

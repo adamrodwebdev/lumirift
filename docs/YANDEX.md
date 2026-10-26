@@ -152,7 +152,7 @@ vidéo).
   >
   > Клавиатура: стрелки влево и вправо — сдвинуть, стрелка вверх или X — повернуть, Z — повернуть в другую сторону, стрелка вниз — ускорить падение, пробел — мгновенный сброс, C или Shift — отложить фигуру, V — перегрузка Разлома, P — пауза. Башня: Q и E — вращать. Мозаика: 1–3 — выбрать фигуру, стрелки — прицелиться, Enter — поставить, J — джокеры. Клавиши следуют раскладке вашей клавиатуры.
   >
-  > Касания: проведите в сторону — сдвинуть, коснитесь — повернуть, резко проведите вниз — сбросить.
+  > Касания: проведите в сторону — сдвинуть, коснитесь правой или левой половины — повернуть в ту сторону, резко проведите вниз — сбросить.
 
 ### English
 
@@ -169,7 +169,7 @@ vidéo).
   >
   > Keyboard: Left and Right arrows to move, Up or X to rotate, Z to rotate the other way, Down to drop faster, Space to hard drop, C or Shift to hold, V for the rift surge, P to pause. Tower: Q and E to turn. Mosaic: 1–3 to pick a piece, arrows to aim, Enter to place, J for the jokers. Keys follow your keyboard layout.
   >
-  > Touch: swipe sideways to move, tap to rotate, flick down to drop.
+  > Touch: swipe sideways to move, tap the right or left half to turn that way, flick down to drop.
 
 ### Français
 
@@ -186,7 +186,7 @@ vidéo).
   >
   > Clavier : flèches gauche et droite pour déplacer, Haut ou X pour tourner, Z pour tourner dans l’autre sens, Bas pour accélérer la chute, Espace pour la chute instantanée, C ou Maj pour la réserve, V pour la surcharge de la faille, P pour la pause. Tour : Q et E pour la faire tourner. Mosaïque : 1 à 3 pour choisir une pièce, flèches pour viser, Entrée pour poser, J pour les jokers. Les touches suivent la disposition de votre clavier.
   >
-  > Tactile : glissez sur le côté pour déplacer, touchez pour tourner, glissez vite vers le bas pour lâcher la pièce.
+  > Tactile : glissez sur le côté pour déplacer, touchez la moitié droite ou gauche pour tourner de ce côté, glissez vite vers le bas pour lâcher la pièce.
 
 ### Bahasa Indonesia
 
@@ -203,7 +203,7 @@ vidéo).
   >
   > Keyboard: panah kiri dan kanan untuk menggeser, atas atau X untuk memutar, Z untuk memutar ke arah sebaliknya, bawah untuk mempercepat jatuh, Spasi untuk menjatuhkan langsung, C atau Shift untuk menyimpan, V untuk lonjakan retakan, P untuk jeda. Menara: Q dan E untuk memutar. Mozaik: 1–3 untuk memilih balok, panah untuk membidik, Enter untuk menaruh, J untuk joker. Tombol mengikuti tata letak keyboard-mu.
   >
-  > Sentuh: geser ke samping untuk menggeser, ketuk untuk memutar, sentil ke bawah untuk menjatuhkan.
+  > Sentuh: geser ke samping untuk menggeser, ketuk separuh kanan atau kiri untuk memutar ke arah itu, sentil ke bawah untuk menjatuhkan.
 
 ## Visuels
 

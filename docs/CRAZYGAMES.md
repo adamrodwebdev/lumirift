@@ -106,12 +106,14 @@ training ». Le build CrazyGames le rejoue de bout en bout (`e2e/portal.spec.ts`
   >
   > **Touch**
   >
-  > - Drag sideways to move, tap to rotate, tap with two fingers to rotate the other way.
+  > - Drag sideways to move; tap the right half to rotate, the left half to rotate the other way
+  >   (a second finger's tap turns the piece during a drag).
   > - Drag down to drop softly, flick down to drop at once, flick up (or tap the hold box) to
   >   hold.
   > - Turn the Tower with a two-finger drag. Mosaic: drag pieces onto the board, or tap a piece
   >   then a cell.
-  > - On-screen buttons can be turned on in the settings.
+  > - Touch controls in the settings: gestures, on-screen buttons or both, drag speed,
+  >   left-handed, vibrations.
 
 - **Orientation** : paysage et portrait (le jeu s'adapte aux deux).
 - **Mobile** : oui. **Progress Save** : oui (module Data). **Multijoueur** : non.

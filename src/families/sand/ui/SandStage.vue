@@ -16,16 +16,16 @@ import { useFormat } from '@/app/useFormat';
 import type { FallingCommand } from '@/families/falling/FallingSession';
 import { FallingInput } from '@/families/falling/input/FallingInput';
 import { isFallingAction } from '@/families/falling/input/KeyBindings';
-import { WellGestures } from '@/families/falling/input/WellGestures';
+import NotchGlow from '@/families/falling/ui/NotchGlow.vue';
 import TouchControls from '@/families/falling/ui/TouchControls.vue';
+import { useTouchPlay } from '@/families/falling/ui/useTouchPlay';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
-import { useGameSurface } from '@/ui/useGameSurface';
 import { useKeyBindings } from '@/ui/useKeyBindings';
 import SurgeButton from '@/ui/components/SurgeButton.vue';
 import { SURGE } from '@/ui/surgeControl';
-import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
+import { useLandscape } from '@/ui/useOrientation';
 import type { PieceSpec } from '../engine/SandGame';
 import { SandEffects } from '../fx/SandEffects';
 import { SandSoundscape } from '../fx/SandSoundscape';
@@ -56,9 +56,6 @@ const { theme, settings, audio, haptics } = useServices();
 const surge = inject(SURGE, null);
 const keys = useKeyBindings();
 const landscape = useLandscape();
-/** The on-screen buttons, for the touch players who chose them. */
-const touch = isTouchScreen();
-const pad = computed(() => touch && settings.current.controls === 'buttons');
 
 const wellArea = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -88,7 +85,13 @@ const input = new FallingInput(
   () => emit('pause'),
   () => settings.current,
 );
-const gestures = new WellGestures(execute, () => cellSize.value);
+/** On a touch screen: the gestures, the buttons chosen, the feel of each move. */
+const { pad, notch, glows } = useTouchPlay({
+  execute,
+  cellSize: () => cellSize.value,
+  active: () => props.active,
+  session,
+});
 
 const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
@@ -113,10 +116,7 @@ watch(
 watch(
   () => props.active,
   (active) => {
-    if (!active) {
-      input.releaseAll();
-      gestures.cancel();
-    }
+    if (!active) input.releaseAll();
   },
 );
 
@@ -153,13 +153,6 @@ const onKey = (event: KeyboardEvent, down: boolean) => {
 const onKeyDown = (event: KeyboardEvent) => onKey(event, true);
 const onKeyUp = (event: KeyboardEvent) => onKey(event, false);
 
-useGameSurface({
-  down: (event) => gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp),
-  move: (event) => gestures.move(event.pointerId, event.clientX, event.clientY),
-  up: (event) => gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp),
-  cancel: () => gestures.cancel(),
-});
-
 onMounted(() => {
   if (canvas.value) renderer = new SandRenderer(canvas.value, session.view, effects);
   renderer?.setGhost(props.ghost);
@@ -186,6 +179,7 @@ onBeforeUnmount(() => {
 
     <div ref="wellArea" class="stage__well">
       <canvas ref="canvas" class="stage__canvas" role="img" :aria-label="t('sand.well')" />
+      <NotchGlow v-if="glows" :beat="notch" :canvas="canvas" />
     </div>
 
     <section class="stage__next stage__box" :aria-label="t('hud.next')">
@@ -199,7 +193,12 @@ onBeforeUnmount(() => {
       />
     </section>
 
-    <TouchControls v-if="pad" @press="input.press($event)" @release="input.release($event)" />
+    <TouchControls
+      v-if="pad !== 'none'"
+      :pad="pad"
+      @press="input.press($event)"
+      @release="input.release($event)"
+    />
   </div>
 </template>
 

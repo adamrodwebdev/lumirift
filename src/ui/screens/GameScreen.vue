@@ -27,6 +27,7 @@ import CoachCard from '../components/CoachCard.vue';
 import DangerLayer from '../components/DangerLayer.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import GuideCard from '../components/GuideCard.vue';
+import TapZones from '../components/TapZones.vue';
 import { closeTo, NO_PROGRESS, type ContinueCard, type GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
 import RecordBurst from '../components/RecordBurst.vue';
@@ -136,6 +137,10 @@ const touch = isTouchScreen();
 /** How the family shows itself: its layout, its touch help, a first game's guide, its clears. */
 const presentation = presentationFor(descriptor);
 const { layout } = presentation;
+/** Left-handed (1.32): the screen mirrored, the buttons and the Hold box under the other thumb. */
+const hand = computed(() =>
+  touch && settings.current.leftHanded && layout !== 'mosaic' ? 'left' : null,
+);
 /** A duel names its opponent over the opponent's well already. */
 const shownSubtitle = computed(() => (layout === 'duel' ? null : subtitle.value));
 const muted = computed(() => settings.current.muted);
@@ -172,6 +177,18 @@ const skipCoach = () => {
 const guide = shallowRef<GuideLine | null>(null);
 const guideLines = computed(() => session.value?.guideLines?.() ?? []);
 const guideHidden = ref(false);
+/**
+ * While a guide asks to turn the piece, on a touch screen played with taps by
+ * side, the two halves show which way each turns (1.32).
+ */
+const turnZones = computed(
+  () =>
+    touch &&
+    phase.value === 'playing' &&
+    settings.current.tapSides &&
+    settings.current.controls !== 'buttons' &&
+    (coachStep.value === 'rotate' || (!guideHidden.value && guide.value?.action === 'rotate')),
+);
 const campaignText = useCampaignText();
 /** The goal over the game: a campaign level's, or a training step's. */
 const goalCard = computed(() => {
@@ -565,6 +582,7 @@ onBeforeUnmount(() => {
     :class="{ 'game--training': training }"
     :data-family="descriptor.family"
     :data-layout="layout"
+    :data-hand="hand"
     :style="{ '--danger-amount': settings.current.effects === 'off' ? 0 : dangerAmount }"
   >
     <h1 class="sr-only">{{ title }}</h1>
@@ -624,6 +642,8 @@ onBeforeUnmount(() => {
       :ghost="settings.current.ghost"
       @pause="pause"
     />
+
+    <TapZones v-if="turnZones" />
 
     <DangerLayer
       :amount="dangerAmount"
@@ -989,6 +1009,28 @@ onBeforeUnmount(() => {
   position: fixed;
   inset: 0;
   z-index: 50;
+}
+
+/*
+ * Left-handed (1.32): the screen mirrored, its columns swapped (the Hold box
+ * and the moves go right, the coming pieces and the drop left); what each
+ * part shows reads as ever, and the moves keep their arrows' order.
+ */
+.game[data-hand='left'] {
+  direction: rtl;
+}
+
+.game[data-hand='left'] > * {
+  direction: ltr;
+}
+
+.game[data-hand='left'] :deep(.controls__act) {
+  direction: rtl;
+}
+
+/* The Hold box at the screen's edge, the buttons beside it inward. */
+.game[data-hand='left'] :deep(.stage__hold) {
+  flex-direction: row-reverse;
 }
 
 /* The parts of the stages, aligned in the band (portrait). */

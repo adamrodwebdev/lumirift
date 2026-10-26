@@ -1,15 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
 import type { FallingAction } from '../input/FallingInput';
+import type { PadMode } from './useTouchPlay';
 
 /**
- * The on-screen buttons, for the players who choose them over gestures
- * (Settings, Controls). Two groups, one per thumb: the moves on the left, the
- * rotations and the drop on the right. The game screen places them, under
- * the well in portrait and on each side of it in landscape. The hold and the
- * ability have their own buttons next to the well; the pause is at the top.
+ * The on-screen buttons, for the players who choose them over gestures, or
+ * with them (Settings, Touch controls). Two groups, one per thumb: the moves
+ * on the left, the rotations and the drop on the right (mirrored for the
+ * left-handed); with the gestures, which move, only the second. The game
+ * screen places them, under the well in portrait and on each side of it in
+ * landscape. The hold and the ability have their own buttons next to the
+ * well; the pause is at the top.
  */
+const props = defineProps<{ pad: Exclude<PadMode, 'none'> }>();
 const emit = defineEmits<{ press: [action: FallingAction]; release: [action: FallingAction] }>();
 
 const { t } = useI18n();
@@ -31,6 +36,18 @@ const acts = (): Control[] => [
   { action: 'hardDrop', icon: 'drop', label: t('controls.hardDrop') },
 ];
 
+interface Group {
+  readonly kind: 'move' | 'act';
+  readonly label: string;
+  readonly controls: readonly Control[];
+}
+
+const groups = computed<readonly Group[]>(() => {
+  const act: Group = { kind: 'act', label: t('controls.groupAct'), controls: acts() };
+  if (props.pad === 'act') return [act];
+  return [{ kind: 'move', label: t('controls.groupMove'), controls: moves() }, act];
+});
+
 const press = (event: PointerEvent, action: FallingAction) => {
   (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   emit('press', action);
@@ -40,15 +57,15 @@ const press = (event: PointerEvent, action: FallingAction) => {
 <template>
   <div class="controls">
     <div
-      v-for="(group, index) in [moves(), acts()]"
-      :key="index"
+      v-for="group in groups"
+      :key="group.kind"
       class="controls__group"
-      :class="index === 0 ? 'controls__move' : 'controls__act'"
+      :class="`controls__${group.kind}`"
       role="group"
-      :aria-label="index === 0 ? t('controls.groupMove') : t('controls.groupAct')"
+      :aria-label="group.label"
     >
       <button
-        v-for="control in group"
+        v-for="control in group.controls"
         :key="control.action"
         type="button"
         class="control"

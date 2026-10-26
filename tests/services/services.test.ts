@@ -15,6 +15,9 @@ const DEFAULTS = {
   volume: 0.7,
   musicVolume: 0.5,
   controls: 'gestures',
+  dragSpeed: 1,
+  tapSides: true,
+  leftHanded: false,
   muted: false,
   keys: DEFAULT_KEYS,
   ...DEFAULT_REPEAT,
@@ -52,10 +55,32 @@ describe('SettingsService', () => {
     expect(settings.current).toEqual({ ...DEFAULTS, locale: 'id', effects: 'reduced' });
   });
 
-  it('remembers the touch controls chosen: gestures or buttons', () => {
+  it('remembers the touch controls chosen: gestures, buttons or both', () => {
     const storage = new MemoryStorage();
     new SettingsService(storage, DEFAULTS).chooseControls('buttons');
     expect(new SettingsService(storage, DEFAULTS).current.controls).toBe('buttons');
+    new SettingsService(storage, DEFAULTS).chooseControls('both');
+    expect(new SettingsService(storage, DEFAULTS).current.controls).toBe('both');
+  });
+
+  it('keeps the touch preferences valid: the drag speed on its steps, within its range', () => {
+    const storage = new MemoryStorage();
+    const settings = new SettingsService(storage, DEFAULTS);
+    settings.setDragSpeed(1.34);
+    settings.turnBySides(false);
+    settings.playLeftHanded(true);
+    expect(new SettingsService(storage, DEFAULTS).current).toMatchObject({
+      dragSpeed: 1.3,
+      tapSides: false,
+      leftHanded: true,
+    });
+    settings.setDragSpeed(9);
+    expect(settings.current.dragSpeed).toBe(1.6);
+    storage.set(SETTINGS_KEY, JSON.stringify({ dragSpeed: 0.2, tapSides: 'no' }));
+    expect(new SettingsService(storage, DEFAULTS).current).toMatchObject({
+      dragSpeed: 1,
+      tapSides: true,
+    });
   });
 
   it('remembers the keys and the repeat timing, within their bounds', () => {
