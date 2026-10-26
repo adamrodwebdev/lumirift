@@ -29,7 +29,8 @@ racine, des chemins relatifs et des séparateurs « / » (bsdtar).
 détecté, chargement 0,76 s, 243 Ko au premier affichage).
 
 **Premier lancement (1.29)** : comme sur CrazyGames, un nouveau joueur arrive directement
-dans l'entraînement en deux étapes (le Sable vivant, puis le Ver des dunes), sans
+dans l'entraînement, une seule partie depuis la 1.33 (le choc au premier éclair, les
+éléments du Sable, puis le Ver des dunes avant 30 s), sans
 écran-titre ni menu, sans pub ; les menus s'ouvrent à la fin ou quand il le passe depuis la
 pause. Le profil, gardé par `bridge.storage`, retient qu'il est fait.
 
