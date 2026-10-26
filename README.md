@@ -152,7 +152,8 @@ Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAME
 ### Version Yandex Games
 
 ```bash
-npm run package:yandex   # build, contrôles, zip dans release/
+npm run package:yandex          # build, contrôles, zip dans release/
+node scripts/yandex-media.mjs   # icône, couverture, captures et vidéos MP4 dans release/yandex-media/
 ```
 
 Exigences et leur contrôle, fiche en quatre langues et étapes de publication :

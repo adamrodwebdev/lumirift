@@ -6,15 +6,15 @@
 // 800×1200 (2:3), 800×800 (1:1); the title as the only text; no border, no
 // icon. Videos: 15–20 s, 1080p landscape (16:9) and portrait (2:3), no sound,
 // no cursor, no black bars, opening on the cover. They are rendered frame by
-// frame from the real game (media/showcase.html on the dev server) and
-// encoded in VP9 (WebM) with the ffmpeg that comes with Playwright.
+// frame from the real game (showcase-frames.mjs) and encoded in VP9 (WebM)
+// with the ffmpeg that comes with Playwright.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
-import { createServer } from 'vite';
 import { COVERS } from './media-covers.mjs';
+import { sceneFrames, startShowcase } from './showcase-frames.mjs';
 
 const OUT = join('release', 'crazygames-media');
 /** `--covers-only`: skip the videos (a few minutes each). */
@@ -92,12 +92,7 @@ const FFMPEG =
     ? custom
     : join(homedir(), 'AppData', 'Local', 'ms-playwright', ffmpegDir ?? '', 'ffmpeg-win64.exe');
 
-const server = await createServer({
-  // No hot reload: an edit during a recording must not reload the page.
-  server: { port: 5179, strictPort: true, hmr: false, watch: null },
-  logLevel: 'error',
-});
-await server.listen();
+const server = await startShowcase();
 
 /** Records one video: the cover, then each scene, frame by frame. */
 async function record(name, width, height, coverHtml) {
@@ -150,25 +145,14 @@ async function record(name, width, height, coverHtml) {
   const cover = await shoot(coverHtml, width, height, FRAME);
   for (let i = 0; i < COVER_SECONDS * FPS; i++) await write(cover);
 
-  const tab = await browser.newPage({
-    viewport: { width: width / 2, height: height / 2 },
-    deviceScaleFactor: 2,
-    colorScheme: 'dark',
-    reducedMotion: 'no-preference',
+  const frames = sceneFrames(browser, {
+    width,
+    height,
+    fps: FPS,
+    scenes: SCENES,
+    onScene: (scene) => console.log(`${name}: ${scene}`),
   });
-  await tab.goto('http://localhost:5179/media/showcase.html');
-  await tab.waitForFunction(() => 'showcase' in window);
-  for (const [scene, seconds] of SCENES) {
-    console.log(`${name}: ${scene}`);
-    await tab.evaluate((s) => window.showcase.scene(s), scene);
-    // Two frames unrecorded: a canvas draws its first picture on the first frame (never a black one).
-    for (let i = 0; i < 2; i++) await tab.evaluate((ms) => window.showcase.step(ms), 1000 / FPS);
-    for (let i = 0; i < Math.round(seconds * FPS); i++) {
-      await tab.evaluate((ms) => window.showcase.step(ms), 1000 / FPS);
-      await write(await tab.screenshot(FRAME));
-    }
-  }
-  await tab.close();
+  for await (const frame of frames) await write(frame);
   encoder.stdin.end();
   await new Promise((resolve) => encoder.on('close', resolve));
   console.log(`${file} (${(statSync(file).size / 1024 / 1024).toFixed(1)} MB)`);

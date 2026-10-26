@@ -90,7 +90,8 @@ statistiques coupées pendant la remise en état, sans date de retour).
 2. **Titre** : vérifier dans la console que « Lumirift Blocks » est libre (5.12).
 3. **Brouillon** : « Добавить игру », les champs ci-dessous, l'archive ; tester avec « Открыть
    черновик с debug-панелью » (chargeur `IT`, point vert, 文 « I18N is used », 🎮 juste).
-4. **Visuels** : icône, couverture, captures et vidéo horizontale (voir plus bas).
+4. **Visuels** : icône, couverture, captures et vidéos, prêts dans `release/yandex-media/`
+   (voir plus bas).
 5. **Contrat, obligatoire avant la modération** (un brouillon envoyé sans contrat revient). Un
    seul pour le compte, signé quand le premier des deux jeux est prêt :
    - le **contrat unique (ЕЛС)**, ouvert aux entrepreneurs individuels étrangers, si ses
@@ -203,15 +204,32 @@ vidéo).
   >
   > Sentuh: geser ke samping untuk menggeser, ketuk untuk memutar, sentil ke bawah untuk menjatuhkan.
 
-## Visuels à produire
+## Visuels
 
-| Visuel                | Format                                          | Règles                                                                        |
-| --------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------- |
-| Icône                 | 512 × 512 PNG                                   | Jamais une capture, ni interface du jeu, ni badge, ni bord arrondi (5.6, 8.3) |
-| Couverture            | 800 × 470 PNG                                   | Mêmes règles ; le titre « Lumirift Blocks » identique au jeu (5.1.3)          |
-| Captures (ordinateur) | 2 au moins, paysage 16:9, côté long 1280–2560   | 70 % de vrai jeu au moins (5.1.1.2), sans barre système ni panneau            |
-| Captures (téléphone)  | 2 au moins, portrait 9:16, côté long 1280–2560  | Idem                                                                          |
-| Vidéo horizontale     | MP4 16:9, 400 px de haut au moins, 28 s au plus | Obligatoire ; 70 % de vrai jeu ; ni bandes noires ni texte promotionnel       |
+```bash
+node scripts/yandex-media.mjs   # tout, dans release/yandex-media/ (une dizaine de minutes)
+node scripts/yandex-media.mjs --no-video --lang=ru   # les captures d'une langue
+```
+
+Le script dessine l'icône et la couverture (l'art des portails, `scripts/media-covers.mjs`),
+joue le build Yandex avec un faux SDK pour les captures de chaque langue, et enregistre les
+vidéos depuis les vraies scènes du jeu (`scripts/showcase-frames.mjs`), image par image, puis
+les fait encoder en H.264 par Chrome (WebCodecs) dans un MP4 (`scripts/mp4-encoder.mjs`) :
+pas de ffmpeg, rien à télécharger.
+
+| Visuel                          | Fichier                                                      | Format                  | Règles                                                                                                            |
+| ------------------------------- | ------------------------------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Icône                           | `icon-512x512.png`                                           | 512 × 512 PNG           | L'Œil au-dessus de sa tour de gemmes ; ni capture, ni interface, ni texte, ni coin arrondi (5.6, 8.3)             |
+| Couverture                      | `cover-800x470.png`                                          | 800 × 470 PNG           | Le titre « Lumirift Blocks », seul texte, identique au jeu (5.1.3)                                                |
+| Captures, ordinateur            | `screenshots/<langue>/desktop-1-elements`, `desktop-2-heart` | 1920 × 1080 JPEG        | L'huile qui s'embrase dans l'entraînement ; le Cœur de la faille (5-7)                                            |
+| Captures, téléphone             | `screenshots/<langue>/mobile-1-wyrm`, `mobile-2-golem`       | 1080 × 1920 JPEG        | Le Ver qui jaillit du sable ; le Golem de céramique (3-7)                                                         |
+| Vidéo horizontale (obligatoire) | `video-horizontal-1920x1080.mp4`                             | MP4 16:9, 25,5 s, 30 Mo | La couverture 1,5 s, puis sept scènes de vrai jeu (94 %) : éléments, Renversement, Ver, Bascule, Golem, Œil, Cœur |
+| Vidéo verticale                 | `video-vertical-1080x1920.mp4`                               | MP4 9:16, 25,5 s, 34 Mo | Les mêmes scènes, en portrait                                                                                     |
+
+Les captures montrent de vraies parties de chaque langue (100 % de jeu) ; les bulles de texte,
+qui couvriraient le puits, y sont masquées. Chaque onglet de langue du brouillon reçoit ses
+quatre captures ; l'icône, la couverture et les vidéos, sans texte de l'interface, servent
+pour toutes les langues.
 
 ## Après la publication
 
