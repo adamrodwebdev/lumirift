@@ -1705,9 +1705,98 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Livré (1.3)                                                  |
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames (1.2), Playgama (1.4), Yandex Games (1.30) livrés |
 | 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                                                        |
+| 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, boutique                         | Prévu                                                        |
+| 16  | Accroche et courbe (1.32) : entraînement 2.0, bot de courbe, clémence                                      | Prévu                                                        |
+| 17  | Cadeaux et collections (1.33) : calendrier de sept jours, collections, série affichée                      | Prévu                                                        |
+| 18  | Événements et saison 1 (1.34) : élément de la semaine, saisons de six semaines                             | Prévu                                                        |
+| 19  | Dunes, le test web (1.35) : sable posé, trois pièces en main, sans chrono                                  | Prévu                                                        |
+| 20  | Niveaux générés (1.36) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
+| 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
+| 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
 
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 98 en
 Performance (95 jusqu'à la 1.19.0), ni sous 95 dans les trois autres catégories.
+
+## 9 bis. Le chemin vers 5 (lots 15 à 22, validés le 26/10/2026)
+
+La stratégie « Lumirift Path to Five » et ses lots ont été validés le 26/10/2026, avec leurs
+maquettes. Chaque lot garde les règles communes : ni vies ni pouvoir vendu, grâce
+publicitaire, aucun traceur, Lighthouse 100, quatre langues dès la première chaîne, revue de
+chaque build de portail avant envoi, dix premières sessions d'inconnus par version. Une porte
+qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la forcer.
+
+- **Lot 15 · 1.31 Preuve et pubs.**
+  - Une seule politique de pubs (`AdPolicy`, règles pures sur le temps de jeu depuis le
+    premier lancement, le temps depuis la dernière pub, l'issue de la partie et le segment du
+    joueur, avec une table par canal) : un interstitiel seulement en quittant une partie
+    gagnée ou entre deux niveaux, jamais après une défaite, pendant le jeu ou dans les huit
+    premières minutes d'un nouveau joueur. L'offre d'expérience doublée attend la même grâce.
+  - La reprise récompensée, une fois par partie, après une défaite et dès la cinquième minute
+    de vie du joueur : chaque famille dégage le haut de son plateau (`RescueRule` : quatre
+    rangées, la bande haute du sable, deux anneaux de la Tour, un 3 × 3 de la Mosaïque). Ni en
+    Duel ni dans les défis ; une partie reprise ne bat pas de record.
+  - L'écran de défaite selon l'ambiance (`DefeatStyle` par ambiance) : la pile se brise en
+    sa matière (poussière d'étoiles, rubans de lumière, bulles, braises, vide, pétales, éclats
+    d'or), ses deux lumières s'embrasent, la fenêtre de fin monte à 1,1 s, le résultat compte
+    et une ligne dit l'écart au record. Effets calmes : sans particules, à 0,6 s ; sans
+    effets : aussitôt.
+  - L'essai d'une apparence verrouillée pour une partie, contre une pub récompensée.
+  - Les achats : `Platform` gagne un port d'achats (catalogue, achat, possédés), avec son
+    adaptateur Yandex ; produits : sans pub et deux packs d'apparences. La boutique n'existe que
+    là où le port existe, jamais sur notre site ni sur Playgama.
+  - Porte : une ligne 1.31 par canal vivant dans la feuille de mesures, temps de jeu moyen et
+    pubs par partie au moins égaux à la 1.30, aucune plainte sur les pubs dans les dix
+    sessions.
+- **Lot 16 · 1.32 Accroche et courbe.** L'entraînement 2.0 ouvre sur un tableau où la première
+  pièce déclenche une chaîne de chocs où qu'elle tombe, et le Ver surgit avant 50 s. Une fiche
+  de rythme par niveau ; un bot de courbe à trois niveaux de joueur (`CurveBot`,
+  `CurveReport` : temps sous pression, temps mort, quasi-défaites, pic) ; un débutant frôle la
+  défaite dès les niveaux 2-3, avec une clémence près du haut (`MercyRule`) qui s'efface au
+  chapitre 4 ; les signaux de danger sous les pics simulés. Porte : dix inconnus voient un choc
+  et le Ver avant 60 s ; 80 % des joueurs du bac à sable passent la minute.
+- **Lot 17 · 1.33 Cadeaux et collections.** Un calendrier de sept jours (`DailyGifts`,
+  `GiftService`, `DailyGiftDialog`) : de l'expérience les jours 1 à 6, une apparence le
+  jour 7 ; un jour manqué met le cycle en pause, sans rien reprendre ; le doublement par pub
+  après la grâce. Des collections d'apparences qui débloquent une ambiance ; la série (jours de
+  défi du jour) enfin affichée, avec un bonus à 3, 7, 14 et 30 jours ; un cadeau de retour
+  après sept jours d'absence. Porte : la rétention à 7 jours monte sur les tableaux de bord des
+  portails.
+- **Lot 18 · 1.34 Événements et saison 1.** Un calendrier daté sans serveur
+  (`EventCalendar`, comme le défi du Gardien) : un élément par semaine, plus fréquent dans les
+  modes libres du Sable, avec un objectif hebdomadaire ; des saisons de six semaines (saison 1
+  du 14/12/2026 au 24/01/2027) avec une piste gratuite d'apparences et une piste premium,
+  d'apparences seules, là où le port d'achats existe ; les saisons 2 et 3 en données. Porte : la
+  saison 1 ouvre et ferme à l'heure.
+- **Lot 19 · 1.35 Dunes, le test web.** Un mode calme de la famille Sable : trois pièces en
+  main, glissées sur un plateau de 9 × 12 cases où elles s'effritent ; une couleur qui relie
+  les deux murs s'efface ; ni chrono ni chute ; une des trois pièces rentre toujours (prouvé
+  par un solveur, comme les mains de la Mosaïque) ; un échange gratuit par partie, d'autres
+  gagnés en jouant ; les éléments et le Ver. Porte : sur plus de 1 000 parties, deux builds de
+  bac à sable (environ 300 $ de trafic), il bat le Sable en temps de jeu et en sessions de plus
+  de 3 minutes ; sinon il est abandonné.
+- **Lot 20 · 1.36 Niveaux générés.** Un générateur par famille sur une graine
+  (`LevelGenerator`), qui ne garde que les niveaux dans la bande du bot de courbe ; les
+  chapitres 6 à 10 ; de 34 à plus de 300 niveaux, livrés en données ; un paquet tous les
+  quinze jours (`PackRun`).
+- **Lot 21 · 2.0 Google Play.** L'application Android jouable hors ligne (Capacitor, AdMob et
+  Play Billing derrière `Platform`), une fiche testée (titre avec les mots du genre, icône,
+  captures en quatre langues), un test fermé de 12 testeurs pendant 14 jours, puis le
+  lancement en Indonésie. Avant tout magasin, l'avis juridique (puits 10 × 20, aspect du genre,
+  sanctions Yandex et VK). Porte : rétention de 27 % à J1 et 7 % à J7, 99,5 % de sessions sans
+  plantage, conversion de la fiche à 16 %.
+- **Lot 22 · après 2.0 : la cadence.** Une version tous les quinze jours (un paquet de
+  niveaux, une ligne de mesures, dix sessions), une saison toutes les six semaines, un élément
+  par semaine, des tests de fiche un à la fois ; de la publicité payante seulement si le revenu
+  à 90 jours atteint 1,2 fois le coût d'installation, remboursé en 30 jours. Porte : trois
+  saisons à l'heure ; Google Play dans le monde entier à 11 % de rétention à J7 et une note de
+  4,0.
+
+**Décisions du 26/10/2026.** La boutique ouvre en 1.31 sur Yandex (sans pub et deux packs) ;
+la reprise dégage le haut du plateau une fois par partie, sans record ; la monnaie de
+progression n'est pas vendue (les étoiles achètent des améliorations) ; le mode s'appelle
+Dunes, sur 9 × 12 cases ; le test web reçoit environ 300 $ de trafic ; l'avis juridique est
+financé tout de suite. Les canaux ouvrent sur preuve : catalogue Playgama, lancement Yandex
+(après le choix du contrat), GameDistribution, CrazyGames, puis Google Play.
 
 ## 10. Hors périmètre (v1)
 
