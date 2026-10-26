@@ -12,8 +12,9 @@ portails, lue en entier le 23/10/2026 (exigences du 9 octobre 2026).
 - **Sans bannière collante** au départ : pubs plein écran entre deux parties et pub récompensée
   seulement ; le puits garde toute sa place.
 - **Langues** : russe, anglais, français, indonésien ; le biélorusse, le kazakh, l'ukrainien et
-  l'ouzbek mènent au russe (sur tous les builds), sauf si une langue du jeu vient avant dans
-  les préférences du joueur.
+  l'ouzbek mènent au russe, sauf si une langue du jeu vient avant dans les préférences du
+  joueur. Sur ce build seulement depuis la 1.30.1 (`russianForNeighbours`) : ailleurs,
+  l'anglais, la langue de repli que Playgama demande.
 - **VK** : en attente d'un avis juridique (sanctions de l'UE sur la holding VK depuis le
   13/07/2026), comme Ball Mania.
 - **Un seul compte développeur et un seul contrat pour Ball Mania et Lumirift** : un contrat

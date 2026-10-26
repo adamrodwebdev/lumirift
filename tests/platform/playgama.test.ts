@@ -66,6 +66,8 @@ describe('PlaygamaPlatform', () => {
     expect(platform.reservesEscape).toBe(true);
     // A new player starts in the training, before any menu (1.29).
     expect(platform.firstRun).toBe('training');
+    // English for every language the game lacks, Ukrainian too (Playgama's checklist, 1.30.1).
+    expect(platform.russianForNeighbours).toBe(false);
   });
 
   it('groups a burst of saves into one Bridge call', async () => {

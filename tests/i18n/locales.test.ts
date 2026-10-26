@@ -163,13 +163,22 @@ describe('detectLocale', () => {
     expect(detectLocale(['in-ID'])).toBe('id');
   });
 
-  it('opens in Russian for its neighbours, unless a language the game has comes first', () => {
-    expect(detectLocale(['uk'])).toBe('ru');
-    expect(detectLocale(['be-BY'])).toBe('ru');
-    expect(detectLocale(['kk'])).toBe('ru');
-    expect(detectLocale(['uz-UZ'])).toBe('ru');
-    expect(detectLocale(['uk-UA', 'en-US'])).toBe('en');
-    expect(detectLocale(['kk', 'ru'])).toBe('ru');
+  it('opens in Russian for its neighbours on Yandex, unless a language the game has comes first', () => {
+    const yandex = { russianForNeighbours: true };
+    expect(detectLocale(['uk'], yandex)).toBe('ru');
+    expect(detectLocale(['be-BY'], yandex)).toBe('ru');
+    expect(detectLocale(['kk'], yandex)).toBe('ru');
+    expect(detectLocale(['uz-UZ'], yandex)).toBe('ru');
+    expect(detectLocale(['uk-UA', 'en-US'], yandex)).toBe('en');
+    expect(detectLocale(['kk', 'ru'], yandex)).toBe('ru');
+  });
+
+  it('opens in English for them elsewhere: the portals’ fallback (Playgama), our site', () => {
+    const elsewhere = { russianForNeighbours: false };
+    for (const language of ['uk', 'be-BY', 'kk', 'uz-UZ'])
+      expect(detectLocale([language], elsewhere), language).toBe('en');
+    expect(detectLocale(['uk'])).toBe('en');
+    expect(detectLocale(['uk-UA', 'ru'], elsewhere)).toBe('ru');
   });
 
   it('falls back to English', () => {

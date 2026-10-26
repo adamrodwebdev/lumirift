@@ -100,6 +100,8 @@ describe('YandexPlatform (1.30)', () => {
     expect(platform.showsVersion).toBe(false);
     expect(platform.reservesEscape).toBe(true);
     expect(platform.stopsOnAutoPause).toBe(true);
+    // Yandex's own fallback for this Ukrainian player: Russian.
+    expect(platform.russianForNeighbours).toBe(true);
   });
 
   it('runs without Yandex (no SDK, or no player data): saves in the browser, no ad', async () => {

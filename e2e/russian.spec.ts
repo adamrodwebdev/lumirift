@@ -84,6 +84,15 @@ test('a browser in Russian gets the game in Russian', async ({ page }) => {
   await expect(panel(page, 'Главная').getByRole('button', { name: /^Играть/ })).toBeVisible();
 });
 
+test.describe('a neighbour of Russian, on our site', () => {
+  test.use({ locale: 'uk-UA' });
+
+  test('a browser in Ukrainian gets English: Russian is for Yandex’s players', async ({ page }) => {
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(tab(page, 'Home')).toBeVisible();
+  });
+});
+
 test('the words agree with the numbers, as Russian counts', async ({ page }) => {
   await page.evaluate(() =>
     localStorage.setItem(

@@ -125,6 +125,8 @@ export class PlaygamaPlatform implements Platform {
   readonly reservesEscape = true;
   readonly stopsOnAutoPause = false;
   readonly showsVersion = true;
+  // Playgama's checklist: English is the fallback of every language the game lacks.
+  readonly russianForNeighbours = false;
   readonly locale: string | null;
   private audioEnabled: boolean;
   private readonly muteListeners = new Set<(muted: boolean) => void>();

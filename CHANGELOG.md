@@ -3,6 +3,18 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.30.1] — 26/10/2026
+
+### Modifié
+
+- **Les langues voisines du russe ne mènent au russe que sur Yandex Games.** Ailleurs
+  (Playgama, CrazyGames, notre site), un joueur qui lit le biélorusse, le kazakh, l'ukrainien
+  ou l'ouzbek, et aucune des quatre langues du jeu, lit l'anglais : la langue de repli que la
+  liste de contrôle de Playgama exige, et la plus neutre sur un portail ouvert au monde. Sur
+  Yandex, rien ne change, comme Yandex le fait lui-même. Chaque plateforme le dit
+  (`Platform.russianForNeighbours`).
+- Tests : la règle des deux côtés ; un navigateur en ukrainien ouvre notre site en anglais.
+
 ## [1.30.0] — 26/10/2026
 
 La version Yandex Games : un build de plus, pour la plateforme de jeux de Yandex, en russe,
