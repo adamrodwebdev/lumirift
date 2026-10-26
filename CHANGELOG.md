@@ -55,6 +55,13 @@ et les règles des portails. La boutique attendra le contrat Yandex.
 - Le cahier : les lots 23 (commandes au doigt, 1.32) et 24 (course contre la montre, 1.33)
   détaillés, l'ordre de sortie décidé (lots 16 à 20 décalés de deux versions).
 
+### Corrigé
+
+- **Playgama avec un bloqueur de pubs** : le jeu demande une fois au Bridge si les pubs sont
+  bloquées (`checkAdBlock`) ; si oui, il ne propose aucun bouton de pub (expérience doublée,
+  reprise, essai) et n'en demande aucune. Avant, le Bridge restait « en chargement » pour de
+  bon : les boutons étaient offerts et échouaient après une attente.
+
 ### Technique
 
 - Moteurs : `revivable` et `revive()` dans la Chute, la Tour, le Sable et la Mosaïque ;
