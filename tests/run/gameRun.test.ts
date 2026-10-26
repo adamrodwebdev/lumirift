@@ -267,7 +267,7 @@ describe('GameRun', () => {
     expect(platform.gameOver).toHaveBeenCalledWith(true);
   });
 
-  it('plays a training step: no clock, no record, no ad; once won, the next step', async () => {
+  it('plays the training: no clock, no record, no ad; once won, the campaign comes next', async () => {
     const { run, scores, campaign, platform, profile, game } = setUp(
       new TrainingRun(TRAINING[0]!),
       {
@@ -275,30 +275,19 @@ describe('GameRun', () => {
       },
     );
     await run.start();
-    expect(game().options).toMatchObject({ timeLimitMs: null, training: 'elements' });
-    const over = vi.fn();
-    run.events.on('over', over);
-    game().clear(2);
-    run.update(16);
-    const { ending } = over.mock.calls[0]![0] as { ending: NonNullable<typeof run.last> };
-    expect(ending.training).toEqual({ step: 'livingSand', won: true, next: TRAINING[1] });
+    expect(game().options).toMatchObject({ timeLimitMs: null, training: 'hook' });
+    expect(run.kind.boss).toBe('duneWorm');
+    game().end('victory');
+    const ending = run.last!;
+    expect(ending.training).toEqual({ step: 'firstEncounter', won: true, next: null });
     expect(ending.campaign).toBeUndefined();
     expect(campaign.record).not.toHaveBeenCalled();
     expect(scores.best('sand')).toBeNull();
-    // Its experience counts; no ad to double it, none between two steps.
+    // Its experience counts; no ad to double it, none after it.
     expect(profile.recordGame).toHaveBeenCalledOnce();
     expect(ending.rewardOffered).toBe(false);
     await run.adBreak({ onStart: () => {}, onEnd: () => {} }, 'replay');
     expect(platform.midgameAd).not.toHaveBeenCalled();
-    expect(profile.finishTraining).not.toHaveBeenCalled();
-  });
-
-  it('ends the training with its last step won: the campaign comes next', async () => {
-    const { run, profile, game } = setUp(new TrainingRun(TRAINING[1]!));
-    await run.start();
-    expect(game().options).toMatchObject({ training: 'wyrm' });
-    game().end('victory');
-    expect(run.last?.training).toEqual({ step: 'firstEncounter', won: true, next: null });
     expect(profile.finishTraining).toHaveBeenCalledOnce();
   });
 

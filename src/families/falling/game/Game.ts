@@ -1,5 +1,6 @@
 import { Board, type ClearedRow, type RemovedCell } from '../board/Board';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
+import { Mercy } from '@/session/Mercy';
 import { inDanger } from '@/session/Tension';
 import { Emitter } from '@/core/Emitter';
 import type { RandomSource } from '@/core/Random';
@@ -41,6 +42,8 @@ export interface GameOptions {
   readonly lineClearDelayMs?: number;
   /** Campaign upgrades (none by default). */
   readonly boosts?: Boosts;
+  /** The early campaign's mercy: the fall slows near the top (none by default). */
+  readonly mercy?: Mercy;
 }
 
 /**
@@ -61,6 +64,7 @@ export class Game {
   private readonly upcoming: PieceSpec[] = [];
   private readonly lineClearDelayMs: number;
   private readonly boosts: Boosts;
+  private readonly mercy: Mercy;
   /** The second chance has not been used yet. */
   private rescueReady: boolean;
 
@@ -114,6 +118,7 @@ export class Game {
     this._level = this.startLevel;
     this.lineClearDelayMs = options.lineClearDelayMs ?? 0;
     this.boosts = options.boosts ?? NO_BOOSTS;
+    this.mercy = options.mercy ?? Mercy.NONE;
     this.rescueReady = this.boosts.rescueRows > 0;
     mode.attach(this);
   }
@@ -438,6 +443,14 @@ export class Game {
     return this.board.fits(piece, 0, 1) ? null : piece.cells();
   }
 
+  /**
+   * The pace of the threats near the top (the fall, the rising rows): 1 at
+   * full speed, less where the early campaign shows mercy.
+   */
+  get mercyPace(): number {
+    return this.mercy.pace(this.pressure());
+  }
+
   /** How full the well is: the stack over the visible height (0 to 1). */
   pressure(): number {
     return Math.min(1, this.board.stackHeight() / (this.board.height - this.board.hiddenRows));
@@ -484,7 +497,7 @@ export class Game {
   private applyGravity(deltaMs: number): boolean {
     const interval = this.softDropping
       ? this.gravity.softDropIntervalMs(this._level)
-      : this.gravity.rowIntervalMs(this._level) / this.boosts.gravityScale;
+      : this.gravity.rowIntervalMs(this._level) / (this.boosts.gravityScale * this.mercyPace);
     let fell = false;
     this.fallAccumulator += deltaMs;
     while (this.fallAccumulator >= interval && this._active) {

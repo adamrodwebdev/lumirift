@@ -73,8 +73,10 @@ test('a new player on Yandex: the SDK first, the training in Russian, then ready
 }) => {
   await open(page);
   const goal = page.getByRole('group', { name: 'Цель' });
-  await expect(goal).toContainText('Этап 1/2');
-  await expect(page.getByText('Положите воду на песок.').filter({ visible: true })).toBeVisible();
+  await expect(goal).toContainText('Обучение');
+  await expect(
+    page.getByText('Молния в воде разбивает песок вокруг — сбросьте её!').filter({ visible: true }),
+  ).toBeVisible();
   await expect.poll(() => calls(page)).toEqual(expect.arrayContaining(['ready', 'start']));
   const list = await calls(page);
   expect(list[0]).toBe('init');
@@ -102,7 +104,7 @@ test('no browser menu and no selection anywhere in the frame (rules 1.6.1.8, 1.6
 }) => {
   await open(page);
   const goal = page.getByRole('group', { name: 'Цель' });
-  await expect(goal).toContainText('Этап 1/2');
+  await expect(goal).toContainText('Обучение');
   // Off the well too: moderators right-click and long-press everywhere.
   const prevented = await goal.evaluate((element) => {
     const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
@@ -117,7 +119,7 @@ test('a Ukrainian player reads Russian, sees no version number, and keeps the pr
   page,
 }) => {
   await open(page, 'uk');
-  await expect(page.getByRole('group', { name: 'Цель' })).toContainText('Этап 1/2');
+  await expect(page.getByRole('group', { name: 'Цель' })).toContainText('Обучение');
   await page.getByRole('button', { name: 'Пауза' }).click();
   await page.getByRole('button', { name: 'Пропустить обучение' }).click();
   await expect(page.getByRole('tab', { name: 'Главная' })).toBeVisible();

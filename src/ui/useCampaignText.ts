@@ -1,5 +1,6 @@
 import { useI18n } from 'vue-i18n';
 import { useFormat } from '@/app/useFormat';
+import type { GoalKind } from '@/campaign/Goals';
 import type { CampaignLevel, StarRule } from '@/campaign/Levels';
 import { upgradeById, type UpgradeId } from '@/campaign/Upgrades';
 
@@ -11,6 +12,14 @@ export function useCampaignText() {
   const format = useFormat();
   const duration = format.duration;
 
+  /** An amount of a goal, as its kind counts it: a time, a share, or a number. */
+  const goalAmount = (kind: GoalKind, value: number): string =>
+    kind === 'survive'
+      ? duration(value)
+      : kind === 'fill'
+        ? format.percent(value)
+        : format.number(value);
+
   // In Sand, what clears is a region linking both walls, not a line. A
   // Guardian's goal is a sentence of its own: its name takes an article
   // (l’Œil) or a case (Песчаного червя) that no placeholder could give it.
@@ -20,7 +29,7 @@ export function useCampaignText() {
     return t(
       `campaign.goal.${kind === 'lines' && modeId === 'sand' ? 'regions' : kind}`,
       {
-        n: format.number(goal.target),
+        n: goalAmount(kind, goal.target),
         time: duration(goal.target),
         ai: variant ? t(`variants.duel.${variant}`) : '',
       },
@@ -45,5 +54,5 @@ export function useCampaignText() {
     return t(`upgrades.${id}.effect`, { value }, value);
   };
 
-  return { goal, stars, upgradeName, upgradeEffect, duration };
+  return { goal, goalAmount, stars, upgradeName, upgradeEffect, duration };
 }

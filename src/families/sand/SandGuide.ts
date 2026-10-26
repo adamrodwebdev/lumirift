@@ -37,19 +37,28 @@ function distinct(lines: readonly (GuideLine | null | undefined)[]): readonly Gu
   return [...texts.values()];
 }
 const STAGE_LINES: Readonly<Record<TrainingStage, readonly GuideLine[]>> = {
-  elements: distinct([...Object.values(ELEMENT_LINES), ON_SEED, LINK]),
-  wyrm: distinct([...Object.values(WYRM_LINES), WAIT, HIT]),
+  hook: distinct([
+    ...Object.values(ELEMENT_LINES),
+    ON_SEED,
+    LINK,
+    ...Object.values(WYRM_LINES),
+    WAIT,
+    HIT,
+  ]),
 };
 
 /**
- * The guide of the portals' training in the Sand (1.29): what to do with the
- * piece in play (the elements' step) or with the Dune Wyrm (the encounter),
- * read from the game as it stands, every frame. The same line is the same
- * object, so the screen redraws it only when it changes.
+ * The guide of the portals' training in the Sand (1.29, one game since
+ * 1.33): what to do with the piece in play, until the Dune Wyrm first
+ * cracks the sand; then what to do as it moves. Read from the game as it
+ * stands, every frame. The same line is the same object, so the screen
+ * redraws it only when it changes.
  */
 export class SandGuide {
   /** The element that landed last: its partner is dropped on it. */
   private landed: Tone | null = null;
+  /** The Wyrm has warned once: from then on, the guide speaks of it. */
+  private woken = false;
   /** The Wyrm has come out once: under the sand again, it got away. */
   private surfaced = false;
   private readonly offs: (() => void)[];
@@ -61,13 +70,14 @@ export class SandGuide {
     this.offs = [
       game.events.on('lock', ({ piece }) => (this.landed = piece.tone)),
       game.events.on('boss', ({ event }) => {
+        if (event.type === 'warn') this.woken = true;
         if (event.type === 'surge') this.surfaced = true;
       }),
     ];
   }
 
   line(): GuideLine | null {
-    return this.stage === 'elements' ? this.elements() : this.encounter();
+    return this.woken ? this.encounter() : this.elements();
   }
 
   /** Every line this stage may say. */

@@ -548,7 +548,7 @@
       "bigClear": "Effacer {n} lignes d’un coup",
       "survive": "Tenir {time}",
       "win": "Battre l’{ai}",
-      "shape": "Compléter la silhouette",
+      "fill": "Remplir la silhouette à {n}",
       "regions": "Effacer {n} zone | Effacer {n} zones"
     },
     "starRule": {
@@ -771,16 +771,13 @@
     "running": "Surcharge : le temps ralentit"
   },
   "training": {
-    "title": "Entraînement · étape {n}/{total}",
-    "step": "Étape {n}/{total}",
+    "name": "Entraînement",
     "goal": {
-      "livingSand": "Reliez 2 zones",
       "firstEncounter": "Repoussez le Ver"
     },
     "stepDone": "Étape réussie !",
     "done": "Entraînement réussi !",
     "lesson": {
-      "livingSand": "Les éléments réagissent entre eux : servez-vous-en pour briser le sable.",
       "firstEncounter": "Le Ver des dunes a replongé. Il vous attend au niveau 2-7 : la campagne commence au 1-1."
     },
     "continue": "Continuer",

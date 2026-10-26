@@ -54,6 +54,8 @@ export interface SessionOptions {
   readonly variant?: string;
   /** Campaign upgrades; never set outside the campaign. */
   readonly boosts?: Boosts;
+  /** The early campaign's mercy (1.33): how much the threat slows near the top, 0 to 1. */
+  readonly mercy?: number;
   /** The gentle version of the mode, to teach it: none of its hazards (the Sand's wind and elements). */
   readonly calm?: boolean;
   /** The mode opens on its best moments, scripted (the first level of the campaign). */
@@ -66,8 +68,12 @@ export interface SessionOptions {
   readonly training?: TrainingStage;
 }
 
-/** How a step of the portals' training is staged: the elements in pairs, or the Dune Wyrm. */
-export type TrainingStage = 'elements' | 'wyrm';
+/**
+ * How a step of the portals' training is staged (1.33): the hook, one game
+ * where the first bolt shocks the sand, the blaze and the vine follow, and
+ * the Dune Wyrm surfaces before half a minute is out.
+ */
+export type TrainingStage = 'hook';
 
 /** What the training's guide asks for: the gesture or keys it shows. */
 export type GuideAction = 'move' | 'rotate' | 'drop';
@@ -116,6 +122,8 @@ export interface GameSession<C extends Command = Command> {
   subtitleKey(): string | null;
   /** The boss of this game and how it stands; absent or null outside a boss level. */
   boss?(): BossStatus | null;
+  /** The share of the shape to fill that is filled (0 to 1); absent, or 0, where there is none. */
+  filled?(): number;
   /**
    * The game was lost to its board and can continue (the rewarded continue,
    * 1.31); absent where a game never continues (the duel).

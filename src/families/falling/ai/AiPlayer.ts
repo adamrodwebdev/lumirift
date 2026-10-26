@@ -20,6 +20,8 @@ export interface AiProfile {
   readonly mistakeChance: number;
   /** A mistake picks among this many best placements, the nearest ones more often. */
   readonly mistakeSpread: number;
+  /** Chance of a blunder: any placement at all, as a beginner drops a piece (the curve bot's newcomer). */
+  readonly blunderChance: number;
   /** Weighs each placement with the best one for the next piece. */
   readonly lookahead: boolean;
   /** Puts a piece in reserve when the other one fits better. */
@@ -39,6 +41,7 @@ export const AI_PROFILES: Readonly<Record<AiLevel, AiProfile>> = {
     stepMs: 200,
     mistakeChance: 0.3,
     mistakeSpread: 5,
+    blunderChance: 0,
     lookahead: false,
     useHold: false,
     attacks: false,
@@ -48,6 +51,7 @@ export const AI_PROFILES: Readonly<Record<AiLevel, AiProfile>> = {
     stepMs: 150,
     mistakeChance: 0.18,
     mistakeSpread: 4,
+    blunderChance: 0,
     lookahead: false,
     useHold: false,
     attacks: false,
@@ -57,6 +61,7 @@ export const AI_PROFILES: Readonly<Record<AiLevel, AiProfile>> = {
     stepMs: 120,
     mistakeChance: 0.08,
     mistakeSpread: 3,
+    blunderChance: 0,
     lookahead: false,
     useHold: true,
     attacks: true,
@@ -66,6 +71,7 @@ export const AI_PROFILES: Readonly<Record<AiLevel, AiProfile>> = {
     stepMs: 80,
     mistakeChance: 0.03,
     mistakeSpread: 2,
+    blunderChance: 0,
     lookahead: true,
     useHold: true,
     attacks: true,
@@ -75,6 +81,7 @@ export const AI_PROFILES: Readonly<Record<AiLevel, AiProfile>> = {
     stepMs: 60,
     mistakeChance: 0,
     mistakeSpread: 1,
+    blunderChance: 0,
     lookahead: true,
     useHold: true,
     attacks: true,
@@ -105,7 +112,7 @@ export class AiPlayer {
   ) {}
 
   /** Attacks while the well is low, plays safe once it grows. */
-  private get evaluator(): Evaluator {
+  protected get evaluator(): Evaluator {
     const low = this.session.view.board.stackHeight() < ATTACK_SAFE_HEIGHT;
     return this.profile.attacks && low ? this.attack : this.safe;
   }
@@ -145,6 +152,10 @@ export class AiPlayer {
   private choose(piece: Piece): Placement | null {
     const ranked = this.rank(piece);
     if (ranked.length === 0) return null;
+    // No draw at all where blunders never happen: the AI levels play as they always did.
+    if (this.profile.blunderChance > 0 && this.random.next() < this.profile.blunderChance) {
+      return ranked[this.random.nextInt(ranked.length)]!;
+    }
     const spread = Math.min(this.profile.mistakeSpread, ranked.length);
     if (spread < 2 || this.random.next() >= this.profile.mistakeChance) return ranked[0]!;
     // A human-looking slip: a near-best placement far more often than a bad one.

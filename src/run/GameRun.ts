@@ -11,6 +11,7 @@ import { RecordChase } from '@/progression/RecordChase';
 import type { GameSession, Indicator, ResultKind } from '@/session/GameSession';
 import type { ModeCatalog } from '@/session/ModeCatalog';
 import { GameEnding, type Ending, type EndingPorts } from './GameEnding';
+import { liveStateOf } from './LiveState';
 import type { RunKind } from './RunKind';
 
 export type RunPhase = 'loading' | 'playing' | 'paused' | 'over';
@@ -374,12 +375,7 @@ export class GameRun {
 
   /** Where the game stands, for a campaign level's goal. */
   private liveState(game: GameSession): LiveState {
-    const boss = game.boss?.() ?? null;
-    return {
-      ...(this.tracker?.live ?? { durationMs: 0, clears: 0, lines: 0, bestAtOnce: 0 }),
-      score: game.result().value,
-      bossDamage: boss ? boss.maxHealth - boss.health : 0,
-    };
+    return liveStateOf(game, this.tracker);
   }
 
   /** The record chased: beaten once a game, then the score shown in its place. */

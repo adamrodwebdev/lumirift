@@ -53,7 +53,8 @@ export class DuelMode extends AbstractMode {
 
   protected override tick(game: Game, deltaMs: number): void {
     for (const batch of [...this.incoming]) {
-      batch.timer -= deltaMs;
+      // Near the top, the early campaign's mercy holds the rows back.
+      batch.timer -= deltaMs * game.mercyPace;
       if (batch.timer > 0) continue;
       this.incoming.splice(this.incoming.indexOf(batch), 1);
       const hole = game.random.nextInt(game.board.width);

@@ -3,6 +3,7 @@ import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import type { CampaignLevel, StarRule } from '@/campaign/Levels';
 import type { TrainingStep } from '@/campaign/Training';
 import { boostsFor, levelTimeMs, type UpgradeRanks } from '@/campaign/Upgrades';
+import { mercyOfChapter } from '@/session/Mercy';
 import { SeededRandom } from '@/core/Random';
 import type { GameReport } from '@/progression/GameReport';
 import type { DailyChallenge } from '@/session/DailyChallenge';
@@ -223,11 +224,13 @@ export class LevelRun implements RunKind {
 
   sessionOptions(seed: number, today: Date): SessionOptions {
     const { level } = this;
+    const mercy = mercyOfChapter(level.chapter);
     return {
       random: new SeededRandom(seed),
       timeLimitMs: this.timeLimitMs,
       today,
       boosts: boostsFor(this.ranks),
+      ...(mercy > 0 ? { mercy } : {}),
       ...(level.variant ? { variant: level.variant } : {}),
       ...(level.calm ? { calm: true } : {}),
       ...(level.showcase ? { showcase: true } : {}),
@@ -272,7 +275,7 @@ export class TrainingRun implements RunKind {
   constructor(readonly training: TrainingStep) {
     this.modeId = training.modeId;
     this.recordKey = training.modeId;
-    this.boss = training.stage === 'wyrm' ? 'duneWorm' : null;
+    this.boss = training.boss ?? null;
     this.teaser = training.teaser ?? null;
   }
 

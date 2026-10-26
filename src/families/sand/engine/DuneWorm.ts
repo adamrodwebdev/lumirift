@@ -1,4 +1,5 @@
 import type { RandomSource } from '@/core/Random';
+import type { Tone } from '@/core/Tone';
 import { GUARDIAN_HEALTH, GuardianHealth } from '@/session/GuardianHealth';
 import { SAND_TONES, type SandGrid } from './SandGrid';
 
@@ -57,7 +58,8 @@ export const HIT_DAMAGE: Readonly<Record<WormHit, number>> = {
   shock: 8,
   fire: 6,
   blaze: 2,
-  link: 5,
+  // Its fight leans on the links (7 since 1.33): bolts on its head are rarer than links.
+  link: 7,
 };
 /** A shock leaves it stunned this long (ms). */
 const STUN_MS = 1500;
@@ -346,16 +348,28 @@ export class DuneWorm {
     this.timer = ROAM_MS[this.phase] + this.random.next() * 1500;
   }
 
+  /**
+   * Throws up the sand around its head: each grain of the colour lying at
+   * the surface where it lands (1.33). Grains of every colour at random made
+   * a confetti no colour could link through, and the sand won the fight.
+   */
   private erupt(x: number, y: number): void {
     const { grid, random } = this;
     for (let k = 0; k < ERUPTION_GRAINS; k++) {
       const nx = x + Math.round((random.next() - 0.5) * 18);
       const ny = y - 2 - random.nextInt(10);
       if (nx < 0 || ny < 0 || nx >= grid.width || ny >= grid.height) continue;
-      if (grid.isFree(nx, ny)) {
-        grid.put(nx, ny, SAND_TONES[random.nextInt(SAND_TONES.length)]!, random.nextInt(4));
-      }
+      if (grid.isFree(nx, ny)) grid.put(nx, ny, this.sandAt(nx), random.nextInt(4));
     }
+  }
+
+  /** The colour of the sand at the surface of column x (any colour where there is none). */
+  private sandAt(x: number): Tone {
+    const { grid } = this;
+    for (let y = this.surfaceAt(x); y < grid.height; y++) {
+      if (grid.isSand(y * grid.width + x)) return grid.get(x, y);
+    }
+    return SAND_TONES[this.random.nextInt(SAND_TONES.length)]!;
   }
 
   /** Gulps a patch of sand where it comes up; returns the grains eaten. */

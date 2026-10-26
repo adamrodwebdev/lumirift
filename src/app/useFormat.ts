@@ -26,9 +26,12 @@ export function useFormat() {
     return `${numbers.value.format(Math.floor(seconds / 60))}:${twoDigits.value.format(seconds % 60)}`;
   };
 
+  /** "90 %" — a share given from 0 to 100, rounded down. */
+  const percent = (value: number): string => percents.value.format(Math.floor(value) / 100);
+
   const indicator = (item: Indicator): string => {
     if (item.format === 'duration') return duration(item.value);
-    if (item.format === 'percent') return percents.value.format(Math.floor(item.value) / 100);
+    if (item.format === 'percent') return percent(item.value);
     return number(item.value);
   };
 
@@ -43,5 +46,5 @@ export function useFormat() {
   /** "×1.4", a multiplier. */
   const factor = (value: number): string => `×${factors.value.format(value)}`;
 
-  return { number, duration, indicator, result, date, milliseconds, factor };
+  return { number, duration, percent, indicator, result, date, milliseconds, factor };
 }

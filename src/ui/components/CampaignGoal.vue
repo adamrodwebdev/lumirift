@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useFormat } from '@/app/useFormat';
 import type { Goal } from '@/campaign/Goals';
+import { useCampaignText } from '../useCampaignText';
 
 /**
  * The goal of a campaign level or of a training step, over the game, and how
@@ -12,13 +12,12 @@ import type { Goal } from '@/campaign/Goals';
 const props = defineProps<{ label: string; text: string; goal: Goal; value: number }>();
 
 const { t } = useI18n();
-const format = useFormat();
+const { goalAmount } = useCampaignText();
 
 const target = computed(() => props.goal.target);
-/** Win and shape goals are judged at the end: no gauge for them. */
-const measured = computed(() => props.goal.kind !== 'win' && props.goal.kind !== 'shape');
-const shown = (n: number) =>
-  props.goal.kind === 'survive' ? format.duration(n) : format.number(n);
+/** A duel's win is judged at the end: no gauge for it. */
+const measured = computed(() => props.goal.kind !== 'win');
+const shown = (n: number) => goalAmount(props.goal.kind, n);
 </script>
 
 <template>
