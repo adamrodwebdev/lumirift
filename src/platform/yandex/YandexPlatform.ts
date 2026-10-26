@@ -154,6 +154,8 @@ export class YandexPlatform implements Platform {
   readonly stopsOnAutoPause = true;
   // Rule 1.14: a build version is developer information.
   readonly showsVersion = false;
+  // Yandex's own fallback: Russian for Belarusian, Kazakh, Ukrainian and Uzbek players.
+  readonly russianForNeighbours = true;
   // Yandex has no mute button of its own: the game's sound setting decides.
   readonly muted = false;
   readonly locale: string | null;

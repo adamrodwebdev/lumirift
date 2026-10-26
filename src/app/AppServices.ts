@@ -41,8 +41,9 @@ export function createBrowserServices(
   storage: KeyValueStorage = platform.storage ?? BrowserStorage.local(),
 ): AppServices {
   const settings = new SettingsService(storage, {
-    // A portal knows the player's language; English when it does not.
-    locale: detectLocale(platform.locale ? [platform.locale] : navigator.languages),
+    // A portal knows the player's language; English when the game lacks it (Russian for
+    // Russia's neighbours on Yandex).
+    locale: detectLocale(platform.locale ? [platform.locale] : navigator.languages, platform),
     ghost: true,
     // Players who ask their system for less motion start with calmer effects.
     effects: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full',
@@ -57,7 +58,7 @@ export function createBrowserServices(
   });
   // A portal's language wins at each launch over the saved one (Playgama and
   // CrazyGames both check that the game follows it).
-  if (platform.locale) settings.chooseLocale(detectLocale([platform.locale]));
+  if (platform.locale) settings.chooseLocale(detectLocale([platform.locale], platform));
   const catalog = new ModeCatalog();
   // Objectives only ask for modes this edition lets the player reach.
   const profile = new ProfileService(storage, () =>

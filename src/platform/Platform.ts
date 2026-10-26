@@ -50,6 +50,13 @@ export interface Platform {
   readonly stopsOnAutoPause: boolean;
   /** The game may show its version number (Yandex counts it as developer information). */
   readonly showsVersion: boolean;
+  /**
+   * A player whose language the game lacks but who reads Russian more often
+   * than English (Belarusian, Kazakh, Ukrainian, Uzbek) gets Russian: Yandex's
+   * own rule for its players. Elsewhere English, the fallback the portals ask
+   * for (Playgama) and the neutral one on a site open to the world.
+   */
+  readonly russianForNeighbours: boolean;
   /** The player's language as the portal knows it (`en-US`…), or null. */
   readonly locale: string | null;
   /** The portal's save, synced with the player's account, or null for the browser's. */
@@ -90,6 +97,7 @@ export class WebPlatform implements Platform {
   readonly reservesEscape = false;
   readonly stopsOnAutoPause = false;
   readonly showsVersion = true;
+  readonly russianForNeighbours = false;
   readonly locale = null;
   readonly storage = null;
   readonly muted = false;

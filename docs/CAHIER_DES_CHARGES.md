@@ -1043,8 +1043,10 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 ### 4.4 Internationalisation
 
 - **Langue au lancement** : celle du portail ; sinon celle que le joueur a choisie, ou la
-  première des préférences du navigateur que le jeu parle ; à défaut, le russe pour un joueur
-  qui lit le biélorusse, le kazakh, l'ukrainien ou l'ouzbek (1.30), l'anglais pour les autres.
+  première des préférences du navigateur que le jeu parle ; à défaut, sur Yandex Games, le
+  russe pour un joueur qui lit le biélorusse, le kazakh, l'ukrainien ou l'ouzbek (1.30 ; Yandex
+  seulement depuis la 1.30.1, `Platform.russianForNeighbours`), l'anglais pour les autres et
+  partout ailleurs (la langue de repli que Playgama demande).
 - Quatre langues complètes : **français** (référence), **anglais**, **indonésien** et
   **russe** (1.24). Mêmes clés et mêmes paramètres dans les quatre fichiers, vérifiés par un
   test automatisé ; chaque langue est un module à part, téléchargé seul.

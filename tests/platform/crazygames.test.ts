@@ -91,6 +91,8 @@ describe('CrazyGamesPlatform', () => {
     expect(platform.reservesEscape).toBe(true);
     // A new player starts in the training, before any menu (1.29).
     expect(platform.firstRun).toBe('training');
+    // English for the languages the game lacks: Russian is for Yandex's players (1.30.1).
+    expect(platform.russianForNeighbours).toBe(false);
   });
 
   it('stops the sound only while an ad really plays, and goes on after it', async () => {
@@ -202,6 +204,7 @@ describe('WebPlatform', () => {
     const platform = new WebPlatform();
     expect(platform.allowsExternalLinks).toBe(true);
     expect(platform.reservesEscape).toBe(false);
+    expect(platform.russianForNeighbours).toBe(false);
     const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
     await platform.midgameAd();
     expect(hooks.onStart).not.toHaveBeenCalled();

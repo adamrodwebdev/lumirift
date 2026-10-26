@@ -99,6 +99,7 @@ export class CrazyGamesPlatform implements Platform {
   /** CrazyGames tracks the focus itself, and forbids a gameplayStop for a lost focus. */
   readonly stopsOnAutoPause = false;
   readonly showsVersion = true;
+  readonly russianForNeighbours = false;
   readonly locale: string | null;
   readonly storage: KeyValueStorage | null;
   private playing = false;
