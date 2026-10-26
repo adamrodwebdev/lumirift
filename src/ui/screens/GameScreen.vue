@@ -668,6 +668,39 @@ onBeforeUnmount(() => {
     'jokers jokers jokers';
 }
 
+/*
+ * Portrait, a level's goal beside a hold box (the falling family, the Tower,
+ * the duel): the hold, the Flip's button and the surge on one side, the next
+ * pieces on the other, left the goal 30 to 120 px of a phone (its level on
+ * three lines, its text cut). It takes the band's width, under them, as in
+ * the Mosaic.
+ */
+@media (orientation: portrait) {
+  .game[data-layout='well']:has(.stage__hold):has(.game__goal .goal) {
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'pause score sound'
+      'hold . next'
+      'goal goal goal'
+      'stats stats stats'
+      'well well well'
+      'padm padm padm'
+      'pada pada pada';
+  }
+
+  .game[data-layout='duel']:has(.game__goal .goal) {
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'pause score sound sound'
+      'hold . next next'
+      'goal goal goal goal'
+      'stats stats stats stats'
+      'well well well side'
+      'padm padm padm padm'
+      'pada pada pada pada';
+  }
+}
+
 /* Each family has its own light behind the game; it drifts slowly. */
 .game[data-family='sand'] {
   --family-1: rgb(255 181 71 / 0.2);
