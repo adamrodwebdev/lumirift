@@ -13,14 +13,27 @@ interface Point {
   readonly y: number;
 }
 
-/** A finger on the screen, through the browser's touch input. */
+/** A touch screen samples the finger every 8 ms (120 Hz). */
+const SAMPLE_MS = 8;
+
+/**
+ * A finger on the screen, through the browser's touch input. The events
+ * carry the touch screen's own times, a sample every 8 ms from the moment
+ * the finger lands, however slowly a busy machine sends them: on a phone,
+ * the time of a touch is the screen's, never the page's.
+ */
 async function finger(page: Page) {
   const cdp = await page.context().newCDPSession(page);
-  const send = (type: 'touchStart' | 'touchMove' | 'touchEnd', points: readonly Point[]) =>
-    cdp.send('Input.dispatchTouchEvent', {
+  /** The touch screen's clock (seconds since 1970, as the protocol counts). */
+  let clock = 0;
+  const send = (type: 'touchStart' | 'touchMove' | 'touchEnd', points: readonly Point[]) => {
+    clock = type === 'touchStart' ? Date.now() / 1000 : clock + SAMPLE_MS / 1000;
+    return cdp.send('Input.dispatchTouchEvent', {
       type,
       touchPoints: points.map(({ x, y }) => ({ x, y, id: 1 })),
+      timestamp: clock,
     });
+  };
   return {
     down: (point: Point) => send('touchStart', [point]),
     move: (point: Point) => send('touchMove', [point]),
