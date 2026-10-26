@@ -236,7 +236,6 @@
     "ability": {
       "flip": "Flip the well"
     },
-    "touch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop.",
     "move": "Move",
     "groupMove": "Move and drop",
     "groupAct": "Rotate and hard drop"
@@ -305,14 +304,36 @@
     "effectsReduced": "Calm",
     "effectsOff": "None",
     "shake": "Screen shake",
-    "haptics": "Vibration",
     "volume": "Sound effects",
     "close": "Close",
-    "music": "Music",
-    "controls": "Controls",
-    "controlsGestures": "Gestures",
-    "controlsButtons": "Buttons",
-    "controlsHint": "On touch screens, the buttons show under the well."
+    "music": "Music"
+  },
+  "touch": {
+    "title": "Touch controls",
+    "open": "Adjust",
+    "playWith": "Play with",
+    "gestures": "Gestures",
+    "buttons": "Buttons",
+    "both": "Both",
+    "gesturesNote": "Drag, tap and flick anywhere on the screen.",
+    "buttonsNote": "Only the buttons under the well play.",
+    "bothNote": "Gestures move and turn; the buttons drop and hold.",
+    "dragSpeed": "Drag speed",
+    "speed": "{speed} · {name}",
+    "speedNames": {
+      "calm": "calm",
+      "standard": "standard",
+      "quick": "quick"
+    },
+    "tapSides": "Turn by tapping a side",
+    "tapSidesNote": "The left half turns left, the right half right. Off: every tap turns right.",
+    "leftHanded": "Left-handed",
+    "leftHandedNote": "Mirrors the buttons and the Hold box.",
+    "vibrations": "Vibrations",
+    "vibrationsNote": "A light tick per cell, a firmer one on a turn.",
+    "glow": "Glow on each move",
+    "glowNote": "This phone cannot vibrate in a browser: the well glows softly instead.",
+    "guide": "See the gestures"
   },
   "game": {
     "loading": "Loading the game…",
@@ -399,12 +420,10 @@
     "jokerCount": "×{n}"
   },
   "sand": {
-    "well": "Sand well",
-    "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop. Link one colour from wall to wall. Elements react: oil feeds fire, fire melts ice into steam, lightning through water breaks everything it touches, watered seeds grow bridges."
+    "well": "Sand well"
   },
   "tower": {
     "well": "Glass tower",
-    "helpTouch": "Touch: swipe to move, tap to rotate, swipe down fast for a hard drop, drag with two fingers to turn the tower. The camera follows the piece.",
     "turn": "Turn the tower"
   },
   "profile": {
@@ -629,7 +648,7 @@
     "goalLines": "Fill a row: it breaks.",
     "skip": "Skip the guide",
     "moveTouch": "Swipe",
-    "rotateTouch": "Tap",
+    "rotateTouch": "Tap a side",
     "dropTouch": "Flick down"
   },
   "gestures": {
@@ -640,7 +659,13 @@
     "flickUp": "Flick up",
     "dragDown": "Drag down",
     "flickDown": "Flick down",
-    "twoFingerDrag": "Two-finger drag"
+    "twoFingerDrag": "Two-finger drag",
+    "title": "The gestures",
+    "tapLeft": "Tap the left half",
+    "tapRight": "Tap the right half",
+    "secondFinger": "Second finger",
+    "secondFingerAction": "Tap it during a drag: the piece turns",
+    "note": "Gestures start anywhere on the screen, so your finger never hides the pieces."
   },
   "hub": {
     "pages": "Menu pages",

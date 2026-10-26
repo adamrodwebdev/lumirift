@@ -19,9 +19,11 @@ const OWN_EVENTS = 'button, a, input, select, textarea, dialog, [data-own-pointe
 
 /**
  * Sends the pointer events of the game screen to a stage's gestures, except
- * the ones that start on a control or in a dialog.
+ * the ones that start on a control or in a dialog. Answers the game screen.
  */
-export function useGameSurface(handlers: SurfaceHandlers): void {
+export function useGameSurface(
+  handlers: SurfaceHandlers,
+): Readonly<Ref<HTMLElement | null>> | null {
   const surface = inject(GAME_SURFACE, null);
   let element: HTMLElement | null = null;
   const tracked = new Set<number>();
@@ -66,4 +68,5 @@ export function useGameSurface(handlers: SurfaceHandlers): void {
     element.removeEventListener('pointercancel', onCancel);
     element.removeEventListener('contextmenu', onMenu);
   });
+  return surface;
 }

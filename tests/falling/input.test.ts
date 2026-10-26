@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import type { FallingCommand } from '@/families/falling/FallingSession';
 import { FallingInput } from '@/families/falling/input/FallingInput';
 import { DEFAULT_REPEAT, type RepeatTiming } from '@/families/falling/input/RepeatTiming';
-import { WellGestures } from '@/families/falling/input/WellGestures';
 
 const { das: DAS_MS, arr: ARR_MS } = DEFAULT_REPEAT;
 
@@ -135,114 +134,5 @@ describe('FallingInput', () => {
     room = 3;
     input.update(500);
     expect(room).toBe(3);
-  });
-});
-
-describe('WellGestures', () => {
-  const CELL = 30;
-  const setupGestures = () => {
-    const commands: FallingCommand[] = [];
-    const gestures = new WellGestures(
-      (command) => commands.push(command),
-      () => CELL,
-    );
-    return { gestures, commands };
-  };
-
-  it('rotates on a tap', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 100, 0);
-    gestures.up(1, 103, 102, 120);
-    expect(commands).toEqual([{ type: 'rotate', direction: 1 }]);
-  });
-
-  it('moves one cell per cell dragged sideways, without rotating', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 100, 0);
-    gestures.move(1, 165, 100);
-    gestures.move(1, 40, 100);
-    gestures.up(1, 40, 100, 400);
-    expect(commands).toEqual([
-      { type: 'move', direction: 1 },
-      { type: 'move', direction: 1 },
-      { type: 'move', direction: -1 },
-      { type: 'move', direction: -1 },
-      { type: 'move', direction: -1 },
-      { type: 'move', direction: -1 },
-    ]);
-  });
-
-  it('hard drops on a fast flick down', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 100, 0);
-    gestures.move(1, 100, 140);
-    gestures.up(1, 100, 220, 90);
-    expect(commands.at(-1)).toEqual({ type: 'hardDrop' });
-  });
-
-  it('soft drops while dragging down slowly', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 100, 0);
-    gestures.move(1, 100, 150);
-    expect(commands).toEqual([{ type: 'softDrop', active: true }]);
-    gestures.up(1, 100, 160, 900);
-    expect(commands).toEqual([
-      { type: 'softDrop', active: true },
-      { type: 'softDrop', active: false },
-    ]);
-  });
-
-  it('ignores other pointers and releases on cancel', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 100, 0);
-    gestures.move(2, 300, 100);
-    gestures.move(1, 100, 150);
-    gestures.cancel();
-    expect(commands).toEqual([
-      { type: 'softDrop', active: true },
-      { type: 'softDrop', active: false },
-    ]);
-  });
-
-  it('rotates the other way on a two-finger tap', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 100, 0);
-    gestures.down(2, 180, 100, 30);
-    gestures.up(1, 101, 100, 140);
-    expect(commands).toEqual([]);
-    gestures.up(2, 181, 101, 160);
-    expect(commands).toEqual([{ type: 'rotate', direction: -1 }]);
-  });
-
-  it('does nothing when two fingers drag (the Tower turns its camera with them)', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 100, 0);
-    gestures.down(2, 180, 100, 20);
-    gestures.move(1, 160, 100);
-    gestures.move(2, 240, 100);
-    gestures.up(1, 160, 100, 200);
-    gestures.up(2, 240, 100, 210);
-    expect(commands).toEqual([]);
-  });
-
-  it('ends a soft drop when a second finger comes', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 100, 0);
-    gestures.move(1, 100, 150);
-    gestures.down(2, 200, 100, 300);
-    expect(commands).toEqual([
-      { type: 'softDrop', active: true },
-      { type: 'softDrop', active: false },
-    ]);
-  });
-
-  it('holds on a fast flick up, not on a slow drag up', () => {
-    const { gestures, commands } = setupGestures();
-    gestures.down(1, 100, 300, 0);
-    gestures.up(1, 102, 200, 80);
-    expect(commands).toEqual([{ type: 'hold' }]);
-    gestures.down(1, 100, 300, 1000);
-    gestures.up(1, 100, 200, 1900);
-    expect(commands).toEqual([{ type: 'hold' }]);
   });
 });

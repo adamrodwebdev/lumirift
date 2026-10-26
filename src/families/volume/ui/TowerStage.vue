@@ -18,17 +18,17 @@ import { FallingEffects } from '@/families/falling/fx/FallingEffects';
 import { FallingSoundscape } from '@/families/falling/fx/FallingSoundscape';
 import type { PieceSpec } from '@/families/falling/game/Game';
 import { FallingInput } from '@/families/falling/input/FallingInput';
-import { WellGestures } from '@/families/falling/input/WellGestures';
+import NotchGlow from '@/families/falling/ui/NotchGlow.vue';
 import PiecePreview from '@/families/falling/ui/PiecePreview.vue';
 import TouchControls from '@/families/falling/ui/TouchControls.vue';
+import { useTouchPlay } from '@/families/falling/ui/useTouchPlay';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
-import { useGameSurface } from '@/ui/useGameSurface';
 import { useKeyBindings } from '@/ui/useKeyBindings';
 import SurgeButton from '@/ui/components/SurgeButton.vue';
 import { SURGE } from '@/ui/surgeControl';
-import { isTouchScreen, useLandscape } from '@/ui/useOrientation';
+import { useLandscape } from '@/ui/useOrientation';
 import { TowerCamera, TURN_STEP } from '../camera/TowerCamera';
 import { EyeEffects } from '../fx/EyeEffects';
 import { TowerTurn } from '../input/TowerTurn';
@@ -66,9 +66,6 @@ const surge = inject(SURGE, null);
 const keys = useKeyBindings();
 const format = useFormat();
 const landscape = useLandscape();
-/** The on-screen buttons, for the touch players who chose them. */
-const touch = isTouchScreen();
-const pad = computed(() => touch && settings.current.controls === 'buttons');
 
 const wellArea = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -122,7 +119,6 @@ const input = new FallingInput(
     arr: Math.max(settings.current.arr, ROUND_WELL_ARR_MS),
   }),
 );
-const gestures = new WellGestures(execute, () => columnSize.value);
 
 const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
@@ -149,10 +145,7 @@ watch(
 watch(
   () => props.active,
   (active) => {
-    if (!active) {
-      input.releaseAll();
-      gestures.cancel();
-    }
+    if (!active) input.releaseAll();
   },
 );
 
@@ -213,24 +206,13 @@ const turn = new TowerTurn(
   (columns) => props.active && camera.turn(columns),
   () => columnSize.value,
 );
-
-useGameSurface({
-  down: (event) => {
-    turn.down(event.pointerId, event.clientX);
-    gestures.down(event.pointerId, event.clientX, event.clientY, event.timeStamp);
-  },
-  move: (event) => {
-    if (turn.move(event.pointerId, event.clientX))
-      gestures.move(event.pointerId, event.clientX, event.clientY);
-  },
-  up: (event) => {
-    turn.up(event.pointerId);
-    gestures.up(event.pointerId, event.clientX, event.clientY, event.timeStamp);
-  },
-  cancel: (event) => {
-    turn.up(event.pointerId);
-    gestures.cancel();
-  },
+/** On a touch screen: the gestures, the buttons chosen, the feel of each move. */
+const { pad, notch, glows } = useTouchPlay({
+  execute,
+  cellSize: () => columnSize.value,
+  active: () => props.active,
+  session,
+  turn,
 });
 
 onMounted(() => {
@@ -278,6 +260,7 @@ onBeforeUnmount(() => {
         role="img"
         :aria-label="t('tower.well')"
       />
+      <NotchGlow v-if="glows" :beat="notch" :canvas="canvas" />
     </div>
 
     <section class="stage__next stage__box" :aria-label="t('hud.next')">
@@ -291,7 +274,12 @@ onBeforeUnmount(() => {
       />
     </section>
 
-    <TouchControls v-if="pad" @press="input.press($event)" @release="input.release($event)" />
+    <TouchControls
+      v-if="pad !== 'none'"
+      :pad="pad"
+      @press="input.press($event)"
+      @release="input.release($event)"
+    />
   </div>
 </template>
 

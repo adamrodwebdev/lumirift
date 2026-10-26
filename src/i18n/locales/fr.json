@@ -236,7 +236,6 @@
     "ability": {
       "flip": "Renverser le puits"
     },
-    "touch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée.",
     "move": "Déplacer",
     "groupMove": "Déplacer et descendre",
     "groupAct": "Tourner et faire tomber"
@@ -305,14 +304,36 @@
     "effectsReduced": "Sobres",
     "effectsOff": "Aucun",
     "shake": "Secousses de l’écran",
-    "haptics": "Vibrations",
     "volume": "Effets sonores",
     "close": "Fermer",
-    "music": "Musique",
-    "controls": "Commandes",
-    "controlsGestures": "Gestes",
-    "controlsButtons": "Boutons",
-    "controlsHint": "Sur écran tactile, les boutons reviennent sous le puits."
+    "music": "Musique"
+  },
+  "touch": {
+    "title": "Commandes tactiles",
+    "open": "Régler",
+    "playWith": "Jouer avec",
+    "gestures": "Gestes",
+    "buttons": "Boutons",
+    "both": "Les deux",
+    "gesturesNote": "Glissez, touchez, glissez vite, n’importe où sur l’écran.",
+    "buttonsNote": "Seuls les boutons sous le puits jouent.",
+    "bothNote": "Les gestes déplacent et tournent ; les boutons font tomber et mettent en réserve.",
+    "dragSpeed": "Vitesse du glissé",
+    "speed": "{speed} · {name}",
+    "speedNames": {
+      "calm": "douce",
+      "standard": "normale",
+      "quick": "vive"
+    },
+    "tapSides": "Tourner selon le côté touché",
+    "tapSidesNote": "La moitié gauche tourne à gauche, la droite à droite. Désactivé : chaque toucher tourne à droite.",
+    "leftHanded": "Gaucher",
+    "leftHandedNote": "Inverse les boutons et la case Réserve.",
+    "vibrations": "Vibrations",
+    "vibrationsNote": "Un léger tic à chaque case, un plus franc à chaque rotation.",
+    "glow": "Lueur à chaque mouvement",
+    "glowNote": "Ce téléphone ne vibre pas dans un navigateur : le puits s’éclaire doucement à la place.",
+    "guide": "Voir les gestes"
   },
   "game": {
     "loading": "Chargement de la partie…",
@@ -399,12 +420,10 @@
     "jokerCount": "×{n}"
   },
   "sand": {
-    "well": "Puits de sable",
-    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée. Reliez une couleur d’un mur à l’autre. Les éléments réagissent : l’huile nourrit le feu, le feu fait fondre la glace en vapeur, la foudre dans l’eau brise tout ce qu’elle touche, une graine arrosée pousse en pont."
+    "well": "Puits de sable"
   },
   "tower": {
     "well": "Tour de verre",
-    "helpTouch": "Tactile : glissez pour déplacer, touchez pour tourner, glissez vite vers le bas pour la chute instantanée, glissez à deux doigts pour faire pivoter la tour. La caméra suit la pièce.",
     "turn": "Faire pivoter la tour"
   },
   "profile": {
@@ -629,7 +648,7 @@
     "goalLines": "Remplissez une ligne : elle se brise.",
     "skip": "Passer le guide",
     "moveTouch": "Glissez",
-    "rotateTouch": "Touchez",
+    "rotateTouch": "Touchez un côté",
     "dropTouch": "Glissez vite vers le bas"
   },
   "gestures": {
@@ -640,7 +659,13 @@
     "flickUp": "Glisser vite vers le haut",
     "dragDown": "Glisser vers le bas",
     "flickDown": "Glisser vite vers le bas",
-    "twoFingerDrag": "Glisser à deux doigts"
+    "twoFingerDrag": "Glisser à deux doigts",
+    "title": "Les gestes",
+    "tapLeft": "Toucher la moitié gauche",
+    "tapRight": "Toucher la moitié droite",
+    "secondFinger": "Deuxième doigt",
+    "secondFingerAction": "Touchez pendant un glissé : la pièce tourne",
+    "note": "Les gestes partent de n’importe où sur l’écran : votre doigt ne cache jamais les pièces."
   },
   "hub": {
     "pages": "Pages du menu",
