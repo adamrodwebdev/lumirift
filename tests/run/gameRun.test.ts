@@ -110,7 +110,10 @@ const OPEN: AdTuning = {
   intervalMs: 0,
   onLeave: true,
   rewardedAfterMs: 0,
+  continues: true,
   continueAfterMs: 0,
+  continueIntervalMs: 0,
+  continueMinRunMs: 0,
 };
 
 /** A run with its doors stubbed; the last session it created, to play by hand. */
@@ -459,6 +462,27 @@ describe('GameRun', () => {
       expect(offer).not.toHaveBeenCalled();
       expect(run.last).not.toBeNull();
     }
+    // Not on CrazyGames yet, nor at every defeat, nor after a short run.
+    for (const tuning of [
+      { ...OPEN, continues: false },
+      { ...OPEN, continueMinRunMs: 2 * 60_000 },
+    ]) {
+      const { run, game } = setUp(new FreeRun('classic'), { rewarded: true, tuning });
+      await run.start();
+      game().lose();
+      expect(run.offer).toBeNull();
+    }
+    const twice = setUp(new FreeRun('classic'), {
+      rewarded: true,
+      tuning: { ...OPEN, continueIntervalMs: 10 * 60_000 },
+    });
+    await twice.run.start();
+    twice.game().lose();
+    expect(twice.run.offer).not.toBeNull();
+    twice.run.decline();
+    await twice.run.start();
+    twice.game().lose();
+    expect(twice.run.offer).toBeNull();
     // A game that ran out of time cannot continue: only a board lost can.
     const { run, game } = setUp(new FreeRun('classic'), { rewarded: true });
     await run.start();

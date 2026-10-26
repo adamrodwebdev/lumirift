@@ -38,6 +38,14 @@ describe('The continue in the falling engine', () => {
     expect(game.board.stackHeight()).toBeLessThanOrEqual(before - CONTINUE_FREES.falling);
     expect(revive.mock.calls[0]![0].cells.length).toBeGreaterThan(0);
     expect(game.revivable).toBe(false);
+    // Nothing falls before the player's first move.
+    const y = game.active!.y;
+    for (let t = 0; t < 3000; t += 16) game.update(16);
+    expect(game.active!.y).toBe(y);
+    expect(game.elapsedMs).toBe(0);
+    game.moveLeft();
+    for (let t = 0; t < 3000; t += 16) game.update(16);
+    expect(game.elapsedMs).toBeGreaterThan(0);
   });
 
   it('cannot take back a game that ran out of time', () => {

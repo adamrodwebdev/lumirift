@@ -60,7 +60,7 @@ export interface GameRunPorts extends EndingPorts {
     >;
   /** The ad policy: whether a break may show an interstitial or a lost game continue, and when an ad played. */
   readonly ads: EndingPorts['ads'] &
-    Pick<AdScheduler, 'breakAllowed' | 'adShown' | 'continueAllowed'>;
+    Pick<AdScheduler, 'breakAllowed' | 'adShown' | 'continueAllowed' | 'continueOffered'>;
   /** A seed for a new game's pieces. */
   readonly seed: () => number;
 }
@@ -274,7 +274,7 @@ export class GameRun {
       this.kind.continues &&
       game.revivable === true &&
       this.ports.platform.supportsRewarded &&
-      this.ports.ads.continueAllowed
+      this.ports.ads.continueAllowed(this.tracker?.live.durationMs ?? 0)
     );
   }
 
@@ -289,6 +289,7 @@ export class GameRun {
     };
     this.pending = offer;
     this.continueOffered = true;
+    this.ports.ads.continueOffered();
     this.setPhase('over');
     this.ports.platform.gameplayStop();
     this.events.emit('offer', { offer });

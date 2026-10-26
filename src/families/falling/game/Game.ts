@@ -97,6 +97,8 @@ export class Game {
   private pauseAfterLock = false;
   /** The piece that found no room to enter: a continued game deals it first. */
   private blocked: PieceSpec | null = null;
+  /** A continued game waits for the player's first move before anything falls again. */
+  private waiting = false;
 
   constructor(
     readonly mode: GameMode,
@@ -185,7 +187,7 @@ export class Game {
 
   /** Advances the simulation; call once per frame with the elapsed time. */
   update(deltaMs: number): void {
-    if (this._state !== 'running') return;
+    if (this._state !== 'running' || this.waiting) return;
     this._elapsedMs += deltaMs;
     this.mode.update(this, deltaMs);
     // The mode may have ended the game (time limit, top out).
@@ -232,6 +234,7 @@ export class Game {
     this._canHold = true;
     this.softDropping = false;
     this.spawnDelay = 0;
+    this.waiting = true;
     this.setState('running');
     this.events.emit('revive', { cells });
     const blocked = this.blocked;
@@ -243,18 +246,22 @@ export class Game {
   // --- Player intentions ----------------------------------------------------
 
   moveLeft(): boolean {
+    this.wake();
     return this.shift(-1);
   }
 
   moveRight(): boolean {
+    this.wake();
     return this.shift(1);
   }
 
   setSoftDrop(active: boolean): void {
+    if (active) this.wake();
     this.softDropping = active;
   }
 
   hardDrop(): void {
+    this.wake();
     if (!this.canAct() || !this._active) return;
     const distance = this.dropDistance();
     this._active = this._active.moved(0, distance);
@@ -264,6 +271,7 @@ export class Game {
   }
 
   rotate(direction: RotationDirection): boolean {
+    this.wake();
     const piece = this._active;
     if (!this.canAct() || !piece) return false;
     const rotated = piece.rotated(direction);
@@ -278,6 +286,7 @@ export class Game {
   }
 
   hold(): boolean {
+    this.wake();
     const piece = this._active;
     if (!this.canAct() || !piece || !this._canHold) return false;
     const previous = this._held;
@@ -294,6 +303,7 @@ export class Game {
   }
 
   useAbility(): boolean {
+    this.wake();
     return this.canAct() && this.mode.useAbility(this);
   }
 
@@ -437,6 +447,11 @@ export class Game {
 
   private canAct(): boolean {
     return this._state === 'running';
+  }
+
+  /** The player acts: a continued game that waited for them goes on. */
+  private wake(): void {
+    if (this._state === 'running') this.waiting = false;
   }
 
   private setState(state: GameState): void {

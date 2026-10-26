@@ -195,6 +195,8 @@ export class SandGame {
     region: null,
   };
   private softDropping = false;
+  /** A continued game waits for the player's first move before anything falls again. */
+  private waiting = false;
   private fallAccumulator = 0;
   private stepAccumulator = 0;
   private lockTimer = 0;
@@ -417,7 +419,7 @@ export class SandGame {
   }
 
   update(deltaMs: number): void {
-    if (this._state !== 'running') return;
+    if (this._state !== 'running' || this.waiting) return;
     if (this.teasing) {
       this.stepAccumulator += deltaMs;
       while (this.stepAccumulator >= STEP_MS) {
@@ -469,6 +471,7 @@ export class SandGame {
     const grains = this.grid.clearTopRows(rows * GRAINS_PER_CELL);
     this._overReason = null;
     this.softDropping = false;
+    this.waiting = true;
     this.setState('running');
     this.events.emit('revive', { grains });
     this.spawnNext();
@@ -477,18 +480,22 @@ export class SandGame {
   // --- Player intentions ----------------------------------------------------
 
   moveLeft(): boolean {
+    this.wake();
     return this.shift(-GRAINS_PER_CELL);
   }
 
   moveRight(): boolean {
+    this.wake();
     return this.shift(GRAINS_PER_CELL);
   }
 
   setSoftDrop(active: boolean): void {
+    if (active) this.wake();
     this.softDropping = active;
   }
 
   rotate(direction: RotationDirection): boolean {
+    this.wake();
     const piece = this._active;
     if (this._state !== 'running' || !piece) return false;
     const turned = piece.rotated(direction);
@@ -511,6 +518,7 @@ export class SandGame {
   }
 
   hardDrop(): void {
+    this.wake();
     const piece = this._active;
     if (this._state !== 'running' || !piece) return;
     const distance = this.dropDistance();
@@ -934,6 +942,11 @@ export class SandGame {
 
   private isRunning(): boolean {
     return this._state === 'running';
+  }
+
+  /** The player acts: a continued game that waited for them goes on. */
+  private wake(): void {
+    if (this._state === 'running') this.waiting = false;
   }
 
   private setState(state: SandState): void {

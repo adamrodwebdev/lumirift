@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   AD_TUNING,
+  continueAllowed,
   interstitialAllowed,
   outcomeOf,
   rewardedAllowed,
@@ -58,6 +59,18 @@ describe('the ad policy', () => {
     expect(rewardedAllowed(2 * MINUTE + 59_000, playgama)).toBe(false);
     expect(rewardedAllowed(3 * MINUTE, playgama)).toBe(true);
     expect(rewardedAllowed(60 * MINUTE, AD_TUNING.web)).toBe(false);
+  });
+
+  it('offers a continue rarely: after five minutes of life, a run of two, ten minutes apart', () => {
+    const lost = { playedMs: 30 * MINUTE, sinceOfferMs: Infinity, runMs: 3 * MINUTE };
+    expect(continueAllowed(lost, playgama)).toBe(true);
+    expect(continueAllowed({ ...lost, playedMs: 4 * MINUTE }, playgama)).toBe(false);
+    expect(continueAllowed({ ...lost, runMs: 90_000 }, playgama)).toBe(false);
+    expect(continueAllowed({ ...lost, sinceOfferMs: 9 * MINUTE }, playgama)).toBe(false);
+    expect(continueAllowed({ ...lost, sinceOfferMs: 10 * MINUTE }, playgama)).toBe(true);
+    // Not on CrazyGames (another way to earn it first), nor where ads are off.
+    expect(continueAllowed(lost, crazygames)).toBe(false);
+    expect(continueAllowed(lost, AD_TUNING.web)).toBe(false);
   });
 
   it('reads how a game ended: the verdict first, then its reason', () => {

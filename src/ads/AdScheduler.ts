@@ -24,6 +24,8 @@ export class AdScheduler {
   /** The player's play when the visit began: the visit's play is what came after. */
   private readonly visitStartMs: number;
   private lastAdAt: number | null = null;
+  /** The player's play when the last continue was offered, or null. */
+  private lastOfferPlayedMs: number | null = null;
 
   constructor(
     private readonly tuning: AdTuning | null,
@@ -60,8 +62,16 @@ export class AdScheduler {
     return rewardedAllowed(this.player().playedMs, this.tuning);
   }
 
-  /** Whether a lost game may continue for an ad (1.31). */
-  get continueAllowed(): boolean {
-    return continueAllowed(this.player().playedMs, this.tuning);
+  /** Whether a game lost after `runMs` of play may continue for an ad (1.31). */
+  continueAllowed(runMs: number): boolean {
+    const { playedMs } = this.player();
+    const sinceOfferMs =
+      this.lastOfferPlayedMs === null ? Infinity : playedMs - this.lastOfferPlayedMs;
+    return continueAllowed({ playedMs, sinceOfferMs, runMs }, this.tuning);
+  }
+
+  /** A continue was offered: the next one waits its interval of play. */
+  continueOffered(): void {
+    this.lastOfferPlayedMs = this.player().playedMs;
   }
 }

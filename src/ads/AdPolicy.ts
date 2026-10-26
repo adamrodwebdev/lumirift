@@ -22,8 +22,18 @@ export interface AdTuning {
   readonly onLeave: boolean;
   /** A new player's play before any rewarded offer. */
   readonly rewardedAfterMs: number;
-  /** A new player's play before a lost game may continue for an ad (1.31). */
+  /**
+   * The channel offers the rewarded continue (1.31). CrazyGames asks for
+   * another way to earn every ad's reward and one revive a session at most:
+   * not there until an earned continue exists.
+   */
+  readonly continues: boolean;
+  /** A new player's play before a lost game may continue for an ad. */
   readonly continueAfterMs: number;
+  /** Play between two continue offers: never at every defeat (the portals forbid it). */
+  readonly continueIntervalMs: number;
+  /** Only a run this long is worth a continue. */
+  readonly continueMinRunMs: number;
 }
 
 const MINUTE = 60_000;
@@ -35,14 +45,17 @@ const STANDARD: AdTuning = {
   intervalMs: 3 * MINUTE,
   onLeave: true,
   rewardedAfterMs: 3 * MINUTE,
+  continues: true,
   continueAfterMs: 5 * MINUTE,
+  continueIntervalMs: 10 * MINUTE,
+  continueMinRunMs: 2 * MINUTE,
 };
 
 /** Each channel's pacing; null where the game shows no ad (our site, the demo). */
 export const AD_TUNING: Readonly<Record<PlatformId, AdTuning | null>> = {
   web: null,
   demo: null,
-  crazygames: { ...STANDARD, onLeave: false },
+  crazygames: { ...STANDARD, onLeave: false, continues: false },
   playgama: STANDARD,
   yandex: STANDARD,
 };
@@ -81,9 +94,29 @@ export function rewardedAllowed(playedMs: number, tuning: AdTuning | null): bool
   return tuning !== null && playedMs >= tuning.rewardedAfterMs;
 }
 
-/** Whether a lost game may continue for an ad: a newcomer learns to lose first. */
-export function continueAllowed(playedMs: number, tuning: AdTuning | null): boolean {
-  return tuning !== null && playedMs >= tuning.continueAfterMs;
+/** What the policy weighs when a game is lost to its board. */
+export interface ContinueContext {
+  /** The player's play since the first launch. */
+  readonly playedMs: number;
+  /** Play since the last continue offered; Infinity before the first. */
+  readonly sinceOfferMs: number;
+  /** How long the lost game was played. */
+  readonly runMs: number;
+}
+
+/**
+ * Whether a lost game may continue for an ad: a newcomer learns to lose
+ * first, a short run is simply played again, and the offer stays rare (the
+ * portals forbid one at every defeat; players resent being asked each time).
+ */
+export function continueAllowed(context: ContinueContext, tuning: AdTuning | null): boolean {
+  return (
+    tuning !== null &&
+    tuning.continues &&
+    context.playedMs >= tuning.continueAfterMs &&
+    context.sinceOfferMs >= tuning.continueIntervalMs &&
+    context.runMs >= tuning.continueMinRunMs
+  );
 }
 
 /** The ends a player feels as losing: the well or the board full, the duel lost, no piece left. */

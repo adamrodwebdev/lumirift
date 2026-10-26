@@ -1722,7 +1722,7 @@ lots 16 à 20 (1.34 à 1.38), lot 21 (2.0) et lot 22.
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 98 en
 Performance (95 jusqu'à la 1.19.0), ni sous 95 dans les trois autres catégories.
 
-## 9 bis. Le chemin vers 5 (lots 15 à 22, validés le 26/10/2026)
+## 9 bis. Le chemin vers 5 (lots 15 à 24, validés le 26/10/2026)
 
 La stratégie « Lumirift Path to Five » et ses lots ont été validés le 26/10/2026, avec leurs
 maquettes. Chaque lot garde les règles communes : ni vies ni pouvoir vendu, grâce
@@ -1736,15 +1736,26 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
     joueur, avec une table par canal) : un interstitiel seulement en quittant une partie
     gagnée ou entre deux niveaux, jamais après une défaite, pendant le jeu ou dans les huit
     premières minutes d'un nouveau joueur. L'offre d'expérience doublée attend la même grâce.
-  - La reprise récompensée, une fois par partie, après une défaite et dès la cinquième minute
-    de vie du joueur : chaque famille dégage le haut de son plateau (`RescueRule` : quatre
-    rangées, la bande haute du sable, deux anneaux de la Tour, un 3 × 3 de la Mosaïque). Ni en
-    Duel ni dans les défis ; une partie reprise ne bat pas de record.
-  - L'écran de défaite selon l'ambiance (`DefeatStyle` par ambiance) : la pile se brise en
-    sa matière (poussière d'étoiles, rubans de lumière, bulles, braises, vide, pétales, éclats
-    d'or), ses deux lumières s'embrasent, la fenêtre de fin monte à 1,1 s, le résultat compte
-    et une ligne dit l'écart au record. Effets calmes : sans particules, à 0,6 s ; sans
-    effets : aussitôt.
+  - La reprise récompensée, rare et utile : après une défaite, une fois par partie, au plus
+    une fois toutes les dix minutes de jeu, après une partie d'au moins deux minutes et dès la
+    cinquième minute de vie du joueur (les portails interdisent l'offre à chaque défaite). La
+    moitié haute du plateau saute (`CONTINUE_FREES` : la pile du puits et de la Tour, le tas du
+    Sable ; les rangées les plus pleines de la Mosaïque, davantage tant qu'aucune pièce n'entre),
+    la pièce bloquée revient la première et rien ne tombe avant le premier geste du joueur. La
+    fenêtre montre deux boutons égaux, « Regarder une pub » et « Non merci », avec un anneau de
+    cinq secondes ; « Rejouer » marche tout de suite et bat quand l'anneau finit. Une pub qui
+    échoue garde l'offre et le dit. Ni en Duel, ni dans les défis ou l'entraînement, ni sur
+    CrazyGames tant qu'il n'existe pas d'autre moyen de la gagner. Une partie reprise ne bat pas
+    de record (à confirmer, voir les décisions).
+  - L'écran de défaite : le verre du puits se brise (`wellShatter`), des fêlures rouge vif
+    partent de l'impact et les vitres proches tombent ; la pulsation rouge du danger frappe, puis
+    bat de plus en plus lentement et s'éteint en trois secondes, tandis que « Rejouer » reprend le
+    battement en or. Selon l'ambiance (`DEFEAT_STYLES`), la pile se brise en sa matière
+    (poussière d'étoiles, rubans de lumière, bulles, braises, vide, pétales, éclats d'or) et ses
+    deux lumières s'embrasent ; la fenêtre de fin monte à 1,1 s, le résultat compte et une ligne
+    dit l'écart au record. Effets calmes : le verre se fend sans tomber, un seul battement, sans
+    particules, à 0,6 s ; sans effets : aussitôt. Seul le verre du puits se brise, jamais tout
+    l'écran.
   - L'essai d'une apparence verrouillée pour une partie, contre une pub récompensée.
   - Les achats : `Platform` gagne un port d'achats (catalogue, achat, possédés), avec son
     adaptateur Yandex ; produits : sans pub et deux packs d'apparences. La boutique n'existe que
@@ -1796,12 +1807,69 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
   saisons à l'heure ; Google Play dans le monde entier à 11 % de rétention à J7 et une note de
   4,0.
 
+- **Lot 23 · 1.32 Commandes au doigt.** Un module tactile maison (plus simple à maintenir
+  qu'une bibliothèque) pour la Chute, le Sable et la Tour, chargé seulement sur écran tactile
+  (`PhoneGestures`, qui remplace `WellGestures`).
+  - La vitesse d'un coup se lit sur ses 100 dernières ms (trois échantillons au moins, doigt
+    arrêté après 40 ms), à 30° de la verticale près ; la chute dure part dès qu'un coup se
+    qualifie, et le reste du contact est ignoré.
+  - Une garde contre les chutes accidentelles : un coup ne fait tomber que la pièce présente au
+    début du contact ; après une pose, le doigt se lève avant qu'une autre chute compte.
+  - Une zone morte d'un tiers de case, remise à chaque retour en arrière ; une vitesse de glissé
+    réglable de 0,8 à 1,6 case par case de doigt.
+  - Tourner par côté (à droite dans le sens horaire, à gauche dans l'autre) ; un second doigt
+    tapé pendant un glissé tourne aussi ; le tap à deux doigts reste ; la Tour garde son tour à
+    deux doigts. La réserve par un coup vers le haut ou un tap sur sa case (48 px au moins).
+  - Jouer aux gestes, aux boutons ou aux deux (les gestes déplacent, les boutons posent et
+    gardent), avec un miroir pour gauchers.
+  - Des vibrations discrètes, coupées au départ : sur Android, 10 ms au plus par case, jamais à
+    moins de 50 ms d'écart, 15 à 20 ms sur une rotation ; sur iPhone, un son léger et une lueur
+    à la place.
+  - Porte : dans chaque cas enregistré, 99 gestes sur 100 donnent la bonne commande, au plus une
+    chute accidentelle sur 500 traces qui n'en sont pas, sur écrans 60 et 120 Hz, Chrome et
+    Firefox sur Android, Safari sur iOS 17 et 18, et pendant le chargement d'une pub ; aucune
+    chute manquée ni accidentelle dans les dix sessions d'inconnus.
+- **Lot 24 · 1.33 Course contre la montre.** Un mode chronométré où la faille change de monde
+  toutes les 40 s entre le puits, le Sable et la Tour (jamais la Mosaïque, sans gravité),
+  chaque monde sur un plateau neuf ; seul le chrono termine la partie.
+  - Le chrono part de 90 s (une partie de débutant dure environ 2 min 30, vérifié par le bot)
+    et plafonne à 99 s, les secondes en trop devenant des points. Une ligne (une région du
+    Sable) +2 s, chaque palier de combo +1 s, quatre lignes d'un coup +5 s de plus (13 s en
+    tout), un coup porté à un Gardien +1 s, un Gardien vaincu +15 s. Un débordement coûte 10 s
+    sans jamais laisser moins de 5 s, et la moitié haute du plateau saute.
+  - Les changements se voient venir : une barre de phase et l'icône du monde suivant restent à
+    l'écran, l'avertissement de 3 s le confirme (« Plus vite ! » quand la gravité monte) et les
+    lignes faites pendant l'avertissement comptent double ; un balayage d'une seconde, chrono
+    figé, compte les cases restantes, puis le monde suivant s'ouvre. La gravité monte une fois
+    par cycle complet, sur le plateau neuf, jamais juste après un Gardien vaincu ; le
+    multiplicateur de score gagne +1 par cycle. Une alarme à 10 s, un dernier feu de 2 s à 0:00.
+  - Les Gardiens : l'un d'eux rejoint la deuxième phase à coup sûr, puis la chance d'une phase
+    vaut 25 % plus 25 % par phase sans Gardien ; l'avertissement le nomme. Il reste 25 s avec
+    un tiers de sa vie ; vaincu, il rapporte 15 s ; parti, il ne coûte rien.
+  - Le temps n'est jamais vendu ni donné contre une pub ; la fenêtre de fin montre le record
+    personnel et celui de la semaine. Le mode s'ouvre au niveau 4-1, quand le joueur a vu les
+    trois mondes.
+  - Architecture : `RaceClock` (gains, plafond, plancher), `ShiftSchedule` (mondes,
+    avertissement, gravité, multiplicateur), le tirage du Gardien ; `RaceSession`, une session de
+    sessions ; l'écran change de scène avec le monde.
+  - Porte : trois minutes de jeu ou plus par partie en moyenne dans le bac à sable, et des
+    inconnus qui suivent chaque changement sans aide.
+
 **Décisions du 26/10/2026.** La boutique ouvre en 1.31 sur Yandex (sans pub et deux packs) ;
 la reprise dégage le haut du plateau une fois par partie, sans record ; la monnaie de
 progression n'est pas vendue (les étoiles achètent des améliorations) ; le mode s'appelle
 Dunes, sur 9 × 12 cases ; le test web reçoit environ 300 $ de trafic ; l'avis juridique est
 financé tout de suite. Les canaux ouvrent sur preuve : catalogue Playgama, lancement Yandex
 (après le choix du contrat), GameDistribution, CrazyGames, puis Google Play.
+
+**Décisions du 26/10/2026, second tour.** Les lots 23 et 24 sortent juste après la 1.31 : les
+sessions d'inconnus jouent sur des commandes sûres et le nouvel entraînement peut montrer un
+changement de monde. Le module tactile est notre propre code. L'offre de reprise mène cinq
+secondes avec son anneau, puis « Rejouer » bat. Une recherche du même jour (les succès du genre,
+plus de 20 000 avis de joueurs, les règles des portails) a rendu la reprise plus rare, ses
+boutons égaux et son effacement plus large (la moitié haute du plateau), et précisé les lots 23
+et 24. Question ouverte : une partie reprise peut-elle battre un record ? La plupart des succès
+la comptent et les joueurs s'y attendent.
 
 ## 10. Hors périmètre (v1)
 
