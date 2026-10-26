@@ -218,7 +218,8 @@
       },
       "tease": "Sesuatu bergerak di bawah pasir…"
     },
-    "surge": "Lonjakan: +{value}"
+    "surge": "Lonjakan: +{value}",
+    "continued": "Giliranmu: tidak ada yang jatuh sebelum kamu bergerak."
   },
   "wellWords": {
     "combo": "KOMBO ×{n}"
@@ -274,7 +275,22 @@
     "doubleXp": "Gandakan XP: +{n}",
     "doubleXpLabel": "Tonton iklan untuk menggandakan pengalaman permainan ini (+{n} XP)",
     "doubled": "Pengalaman digandakan: +{n} XP!",
-    "noAd": "Belum ada iklan saat ini. Coba lagi setelah permainan berikutnya."
+    "noAd": "Belum ada iklan saat ini. Coba lagi setelah permainan berikutnya.",
+    "continue": {
+      "title": "Lanjutkan permainan ini",
+      "clears": {
+        "falling": "separuh atas sumur dikosongkan",
+        "volume": "separuh atas menara dikosongkan",
+        "sand": "separuh atas pasir tersapu",
+        "placement": "baris yang paling penuh dikosongkan"
+      },
+      "watch": "Tonton iklan",
+      "watchLabel": "Tonton iklan untuk melanjutkan permainan ini",
+      "skip": "Tidak, terima kasih",
+      "note": "Sesekali saja, tidak di setiap kekalahan.",
+      "noAd": "Belum ada iklan saat ini. Coba lagi, atau main lagi."
+    },
+    "soClose": "Nyaris: kurang {n} poin dari rekormu ({best})"
   },
   "share": {
     "daily": "Lumirift · Tantangan harian {date} ({mode}): {value}. Giliranmu: {url}",

@@ -131,3 +131,88 @@ test('a Ukrainian player reads Russian, sees no version number, and keeps the pr
   await page.reload();
   await expect(page.getByRole('tab', { name: 'Главная' })).toBeVisible();
 });
+
+/** A player of ten minutes, the training done: the menus open, a continue may be offered. */
+const SEASONED = JSON.stringify({
+  'stackrift:profile': JSON.stringify({ trained: true, games: 3, playedMs: 600_000 }),
+});
+
+/** A Classic game run calmly past two minutes, then lost to its stack. */
+async function loseAClassicRun(page: Page) {
+  test.setTimeout(120_000);
+  const modes = page.getByRole('tabpanel', { name: 'Modes' });
+  await page.getByRole('tab', { name: 'Modes' }).click();
+  await modes.getByRole('button', { name: 'Classic', exact: true }).click();
+  await modes.getByRole('button', { name: 'Play' }).click();
+  await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
+  // A run worth a continue lasts two minutes at least. The game's clock steps 100 ms a
+  // frame; the pieces go to the walls by turns, so that the stack stays low meanwhile.
+  for (let step = 0; step < 1300; step++) {
+    if (step % 30 === 0) {
+      const wall = Math.floor(step / 205) % 2 === 0 ? 'ArrowLeft' : 'ArrowRight';
+      for (let move = 0; move < 5; move++) await page.keyboard.press(wall);
+    }
+    await page.clock.fastForward(100);
+  }
+  await expect(page.locator('.danger--broken')).toHaveCount(0);
+  await dropUntilLost(page);
+}
+
+async function dropUntilLost(page: Page) {
+  for (let drop = 0; drop < 40 && !(await page.locator('.danger--broken').count()); drop++) {
+    await page.keyboard.press('Space');
+    await page.clock.fastForward(100);
+  }
+  // The window rises once the well has broken.
+  await page.clock.fastForward(1500);
+}
+
+test('a lost game may continue once for an ad: the top of the well clears and play goes on', async ({
+  page,
+}) => {
+  await page.addInitScript((data) => {
+    if (!sessionStorage.getItem('fake-yandex-data'))
+      sessionStorage.setItem('fake-yandex-data', data);
+  }, SEASONED);
+  await page.clock.install();
+  await open(page, 'en');
+  await loseAClassicRun(page);
+
+  const offer = page.getByRole('region', { name: 'Continue this game' });
+  await expect(offer).toBeVisible();
+  // Watch and decline alike, Play again working all along (the portals ask for it).
+  await expect(offer.getByRole('button', { name: 'No thanks' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play again' })).toBeEnabled();
+  await offer.getByRole('button', { name: 'Watch an ad to continue this game' }).click();
+  await page.clock.fastForward(500);
+  expect(await calls(page)).toContain('rewarded');
+  await expect(offer).toBeHidden();
+  await expect(page.locator('.danger--broken')).toHaveCount(0);
+
+  // Lost again: no second offer; the end settles at once and Play again beats.
+  await dropUntilLost(page);
+  await expect(page.getByRole('button', { name: 'Play again' })).toHaveClass(/again--beat/);
+  await expect(page.getByRole('region', { name: 'Continue this game' })).toHaveCount(0);
+});
+
+test('a continue let go: its ring runs out, the experience shows in its place', async ({
+  page,
+}) => {
+  await page.addInitScript((data) => {
+    if (!sessionStorage.getItem('fake-yandex-data'))
+      sessionStorage.setItem('fake-yandex-data', data);
+  }, SEASONED);
+  await page.clock.install();
+  await open(page, 'en');
+  await loseAClassicRun(page);
+
+  const offer = page.getByRole('region', { name: 'Continue this game' });
+  await expect(offer).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play again' })).not.toHaveClass(/again--beat/);
+  // Five seconds, then the offer goes and the game's end settles in the same window.
+  await page.clock.fastForward(5200);
+  await expect(offer).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Progress' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play again' })).toHaveClass(/again--beat/);
+  expect(await calls(page)).not.toContain('rewarded');
+});
