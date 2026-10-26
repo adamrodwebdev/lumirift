@@ -99,6 +99,60 @@
   --glow-2: rgb(255 170 70 / 0.16);
 }
 
+/*
+ * The defeat in each ambiance (1.31, DefeatStyles.ts): the colours of the
+ * matter the stack breaks into, and its two lights that flare. Night's on
+ * every ambiance that does not set its own.
+ */
+:root {
+  --defeat-matter-1: #f4f1ff;
+  --defeat-matter-2: #b9b2dd;
+  --defeat-light-1: rgb(185 178 221 / 0.32);
+  --defeat-light-2: rgb(185 178 221 / 0.18);
+}
+
+:root[data-ambiance='aurora'] {
+  --defeat-matter-1: #3cdcaa;
+  --defeat-matter-2: #8c64ff;
+  --defeat-light-1: rgb(60 220 170 / 0.42);
+  --defeat-light-2: rgb(140 100 255 / 0.36);
+}
+
+:root[data-ambiance='abyss'] {
+  --defeat-matter-1: rgb(160 225 255 / 0.85);
+  --defeat-matter-2: #1ec8dc;
+  --defeat-light-1: rgb(40 120 255 / 0.42);
+  --defeat-light-2: rgb(30 200 220 / 0.34);
+}
+
+:root[data-ambiance='forge'] {
+  --defeat-matter-1: #ffb03a;
+  --defeat-matter-2: #ff6a2a;
+  --defeat-light-1: rgb(255 130 40 / 0.46);
+  --defeat-light-2: rgb(220 60 40 / 0.36);
+}
+
+:root[data-ambiance='cosmos'] {
+  --defeat-matter-1: #e6dcff;
+  --defeat-matter-2: #c850ff;
+  --defeat-light-1: rgb(200 80 255 / 0.44);
+  --defeat-light-2: rgb(80 90 255 / 0.38);
+}
+
+:root[data-ambiance='sakura'] {
+  --defeat-matter-1: #ffd9ec;
+  --defeat-matter-2: #ff82b4;
+  --defeat-light-1: rgb(255 130 180 / 0.42);
+  --defeat-light-2: rgb(255 210 225 / 0.24);
+}
+
+:root[data-ambiance='rift'] {
+  --defeat-matter-1: #ffe8a3;
+  --defeat-matter-2: #ff9f3f;
+  --defeat-light-1: rgb(150 70 255 / 0.46);
+  --defeat-light-2: rgb(255 170 70 / 0.4);
+}
+
 body::before {
   content: '';
   position: fixed;

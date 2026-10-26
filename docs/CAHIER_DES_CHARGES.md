@@ -1,8 +1,9 @@
 # Cahier des charges — Lumirift
 
-| Version | Date       | Statut                  |
-| ------- | ---------- | ----------------------- |
-| 1.30    | 26/10/2026 | La version Yandex Games |
+| Version | Date       | Statut                                                                                                                                                                                       |
+| ------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.30    | 26/10/2026 | La version Yandex Games                                                                                                                                                                      |
+| 1.31    | 26/10/2026 | Preuve et pubs : une politique de pubs, la reprise rare et utile, le verre du puits qui se brise selon l'ambiance, l'essai d'une apparence, le kit de preuve ; lots 23 et 24 (§ 9, § 9 bis). |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1705,9 +1706,174 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Livré (1.3)                                                  |
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames (1.2), Playgama (1.4), Yandex Games (1.30) livrés |
 | 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                                                        |
+| 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, essai                            | Prévu                                                        |
+| 16  | Accroche et courbe (1.34) : entraînement 2.0, bot de courbe, clémence                                      | Prévu                                                        |
+| 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Prévu                                                        |
+| 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Prévu                                                        |
+| 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Prévu                                                        |
+| 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
+| 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
+| 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
+| 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Prévu                                                        |
+| 24  | Course contre la montre (1.33) : le monde change toutes les 40 s, Gardiens surprises                       | Prévu                                                        |
+
+Ordre de sortie (décidé le 26/10/2026) : lot 15 (1.31), lots 23 (1.32) et 24 (1.33), puis
+lots 16 à 20 (1.34 à 1.38), lot 21 (2.0) et lot 22.
 
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 98 en
 Performance (95 jusqu'à la 1.19.0), ni sous 95 dans les trois autres catégories.
+
+## 9 bis. Le chemin vers 5 (lots 15 à 24, validés le 26/10/2026)
+
+La stratégie « Lumirift Path to Five » et ses lots ont été validés le 26/10/2026, avec leurs
+maquettes. Chaque lot garde les règles communes : ni vies ni pouvoir vendu, grâce
+publicitaire, aucun traceur, Lighthouse 100, quatre langues dès la première chaîne, revue de
+chaque build de portail avant envoi, dix premières sessions d'inconnus par version. Une porte
+qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la forcer.
+
+- **Lot 15 · 1.31 Preuve et pubs.**
+  - Une seule politique de pubs (`AdPolicy`, règles pures sur le temps de jeu depuis le
+    premier lancement, le temps depuis la dernière pub, l'issue de la partie et le segment du
+    joueur, avec une table par canal) : un interstitiel seulement en quittant une partie
+    gagnée ou entre deux niveaux, jamais après une défaite, pendant le jeu ou dans les huit
+    premières minutes d'un nouveau joueur. L'offre d'expérience doublée attend la même grâce.
+  - La reprise récompensée, rare et utile : après une défaite, une fois par partie, au plus
+    une fois toutes les dix minutes de jeu, après une partie d'au moins deux minutes et dès la
+    cinquième minute de vie du joueur (les portails interdisent l'offre à chaque défaite). La
+    moitié haute du plateau saute (`CONTINUE_FREES` : la pile du puits et de la Tour, le tas du
+    Sable ; les rangées les plus pleines de la Mosaïque, davantage tant qu'aucune pièce n'entre),
+    la pièce bloquée revient la première et rien ne tombe avant le premier geste du joueur. La
+    fenêtre montre deux boutons égaux, « Regarder une pub » et « Non merci », avec un anneau de
+    cinq secondes ; « Rejouer » marche tout de suite et bat quand l'anneau finit. Une pub qui
+    échoue garde l'offre et le dit. Ni en Duel, ni dans les défis ou l'entraînement, ni sur
+    CrazyGames tant qu'il n'existe pas d'autre moyen de la gagner. Une partie reprise compte
+    pour les records, comme chez la plupart des succès du genre.
+  - L'écran de défaite : le verre du puits se brise (`wellShatter`), des fêlures rouge vif
+    partent de l'impact et les vitres proches tombent ; la pulsation rouge du danger frappe, puis
+    bat de plus en plus lentement et s'éteint en trois secondes, tandis que « Rejouer » reprend le
+    battement en or. Selon l'ambiance (`DEFEAT_STYLES`), la pile se brise en sa matière
+    (poussière d'étoiles, rubans de lumière, bulles, braises, vide, pétales, éclats d'or) et ses
+    deux lumières s'embrasent ; la fenêtre de fin monte à 1,1 s, le résultat compte et une ligne
+    dit l'écart au record. Effets calmes : le verre se fend sans tomber, un seul battement, sans
+    particules, à 0,6 s ; sans effets : aussitôt. Seul le verre du puits se brise, jamais tout
+    l'écran.
+  - L'essai d'une apparence verrouillée pour une partie, contre une pub récompensée.
+  - Les achats, après le contrat Yandex : sans lui, les achats ne s'activent pas sur Yandex.
+    `Platform` gagnera un port d'achats (catalogue, achat, possédés) et son adaptateur Yandex
+    dans une petite version à part, dès que les achats pourront être activés ; la 1.31 sort sans
+    eux. Produits : sans pub et deux packs d'apparences. La boutique n'existera que là où le
+    port existe, jamais sur notre site ni sur Playgama.
+  - Porte : une ligne 1.31 par canal vivant dans la feuille de mesures, temps de jeu moyen et
+    pubs par partie au moins égaux à la 1.30, aucune plainte sur les pubs dans les dix
+    sessions.
+- **Lot 16 · 1.34 Accroche et courbe.** L'entraînement 2.0 ouvre sur un tableau où la première
+  pièce déclenche une chaîne de chocs où qu'elle tombe, et le Ver surgit avant 50 s. Une fiche
+  de rythme par niveau ; un bot de courbe à trois niveaux de joueur (`CurveBot`,
+  `CurveReport` : temps sous pression, temps mort, quasi-défaites, pic) ; un débutant frôle la
+  défaite dès les niveaux 2-3, avec une clémence près du haut (`MercyRule`) qui s'efface au
+  chapitre 4 ; les signaux de danger sous les pics simulés. Porte : dix inconnus voient un choc
+  et le Ver avant 60 s ; 80 % des joueurs du bac à sable passent la minute.
+- **Lot 17 · 1.35 Cadeaux et collections.** Un calendrier de sept jours (`DailyGifts`,
+  `GiftService`, `DailyGiftDialog`) : de l'expérience les jours 1 à 6, une apparence le
+  jour 7 ; un jour manqué met le cycle en pause, sans rien reprendre ; le doublement par pub
+  après la grâce. Des collections d'apparences qui débloquent une ambiance ; la série (jours de
+  défi du jour) enfin affichée, avec un bonus à 3, 7, 14 et 30 jours ; un cadeau de retour
+  après sept jours d'absence. Porte : la rétention à 7 jours monte sur les tableaux de bord des
+  portails.
+- **Lot 18 · 1.36 Événements et saison 1.** Un calendrier daté sans serveur
+  (`EventCalendar`, comme le défi du Gardien) : un élément par semaine, plus fréquent dans les
+  modes libres du Sable, avec un objectif hebdomadaire ; des saisons de six semaines (saison 1
+  du 14/12/2026 au 24/01/2027) avec une piste gratuite d'apparences et une piste premium,
+  d'apparences seules, là où le port d'achats existe ; les saisons 2 et 3 en données. Porte : la
+  saison 1 ouvre et ferme à l'heure.
+- **Lot 19 · 1.37 Dunes, le test web.** Un mode calme de la famille Sable : trois pièces en
+  main, glissées sur un plateau de 9 × 12 cases où elles s'effritent ; une couleur qui relie
+  les deux murs s'efface ; ni chrono ni chute ; une des trois pièces rentre toujours (prouvé
+  par un solveur, comme les mains de la Mosaïque) ; un échange gratuit par partie, d'autres
+  gagnés en jouant ; les éléments et le Ver. Porte : sur plus de 1 000 parties, deux builds de
+  bac à sable (environ 300 $ de trafic), il bat le Sable en temps de jeu et en sessions de plus
+  de 3 minutes ; sinon il est abandonné.
+- **Lot 20 · 1.38 Niveaux générés.** Un générateur par famille sur une graine
+  (`LevelGenerator`), qui ne garde que les niveaux dans la bande du bot de courbe ; les
+  chapitres 6 à 10 ; de 34 à plus de 300 niveaux, livrés en données ; un paquet tous les
+  quinze jours (`PackRun`).
+- **Lot 21 · 2.0 Google Play.** L'application Android jouable hors ligne (Capacitor, AdMob et
+  Play Billing derrière `Platform`), une fiche testée (titre avec les mots du genre, icône,
+  captures en quatre langues), un test fermé de 12 testeurs pendant 14 jours, puis le
+  lancement en Indonésie. Avant tout magasin, l'avis juridique (puits 10 × 20, aspect du genre,
+  sanctions Yandex et VK). Porte : rétention de 27 % à J1 et 7 % à J7, 99,5 % de sessions sans
+  plantage, conversion de la fiche à 16 %.
+- **Lot 22 · après 2.0 : la cadence.** Une version tous les quinze jours (un paquet de
+  niveaux, une ligne de mesures, dix sessions), une saison toutes les six semaines, un élément
+  par semaine, des tests de fiche un à la fois ; de la publicité payante seulement si le revenu
+  à 90 jours atteint 1,2 fois le coût d'installation, remboursé en 30 jours. Porte : trois
+  saisons à l'heure ; Google Play dans le monde entier à 11 % de rétention à J7 et une note de
+  4,0.
+
+- **Lot 23 · 1.32 Commandes au doigt.** Un module tactile maison (plus simple à maintenir
+  qu'une bibliothèque) pour la Chute, le Sable et la Tour, chargé seulement sur écran tactile
+  (`PhoneGestures`, qui remplace `WellGestures`).
+  - La vitesse d'un coup se lit sur ses 100 dernières ms (trois échantillons au moins, doigt
+    arrêté après 40 ms), à 30° de la verticale près ; la chute dure part dès qu'un coup se
+    qualifie, et le reste du contact est ignoré.
+  - Une garde contre les chutes accidentelles : un coup ne fait tomber que la pièce présente au
+    début du contact ; après une pose, le doigt se lève avant qu'une autre chute compte.
+  - Une zone morte d'un tiers de case, remise à chaque retour en arrière ; une vitesse de glissé
+    réglable de 0,8 à 1,6 case par case de doigt.
+  - Tourner par côté (à droite dans le sens horaire, à gauche dans l'autre) ; un second doigt
+    tapé pendant un glissé tourne aussi ; le tap à deux doigts reste ; la Tour garde son tour à
+    deux doigts. La réserve par un coup vers le haut ou un tap sur sa case (48 px au moins).
+  - Jouer aux gestes, aux boutons ou aux deux (les gestes déplacent, les boutons posent et
+    gardent), avec un miroir pour gauchers.
+  - Des vibrations discrètes, coupées au départ : sur Android, 10 ms au plus par case, jamais à
+    moins de 50 ms d'écart, 15 à 20 ms sur une rotation ; sur iPhone, un son léger et une lueur
+    à la place.
+  - Porte : dans chaque cas enregistré, 99 gestes sur 100 donnent la bonne commande, au plus une
+    chute accidentelle sur 500 traces qui n'en sont pas, sur écrans 60 et 120 Hz, Chrome et
+    Firefox sur Android, Safari sur iOS 17 et 18, et pendant le chargement d'une pub ; aucune
+    chute manquée ni accidentelle dans les dix sessions d'inconnus.
+- **Lot 24 · 1.33 Course contre la montre.** Un mode chronométré où la faille change de monde
+  toutes les 40 s entre le puits, le Sable et la Tour (jamais la Mosaïque, sans gravité),
+  chaque monde sur un plateau neuf ; seul le chrono termine la partie.
+  - Le chrono part de 90 s (une partie de débutant dure environ 2 min 30, vérifié par le bot)
+    et plafonne à 99 s, les secondes en trop devenant des points. Une ligne (une région du
+    Sable) +2 s, chaque palier de combo +1 s, quatre lignes d'un coup +5 s de plus (13 s en
+    tout), un coup porté à un Gardien +1 s, un Gardien vaincu +15 s. Un débordement coûte 10 s
+    sans jamais laisser moins de 5 s, et la moitié haute du plateau saute.
+  - Les changements se voient venir : une barre de phase et l'icône du monde suivant restent à
+    l'écran, l'avertissement de 3 s le confirme (« Plus vite ! » quand la gravité monte) et les
+    lignes faites pendant l'avertissement comptent double ; un balayage d'une seconde, chrono
+    figé, compte les cases restantes, puis le monde suivant s'ouvre. La gravité monte une fois
+    par cycle complet, sur le plateau neuf, jamais juste après un Gardien vaincu ; le
+    multiplicateur de score gagne +1 par cycle. Une alarme à 10 s, un dernier feu de 2 s à 0:00.
+  - Les Gardiens : l'un d'eux rejoint la deuxième phase à coup sûr, puis la chance d'une phase
+    vaut 25 % plus 25 % par phase sans Gardien ; l'avertissement le nomme. Il reste 25 s avec
+    un tiers de sa vie ; vaincu, il rapporte 15 s ; parti, il ne coûte rien.
+  - Le temps n'est jamais vendu ni donné contre une pub ; la fenêtre de fin montre le record
+    personnel et celui de la semaine. Le mode s'ouvre au niveau 4-1, quand le joueur a vu les
+    trois mondes.
+  - Architecture : `RaceClock` (gains, plafond, plancher), `ShiftSchedule` (mondes,
+    avertissement, gravité, multiplicateur), le tirage du Gardien ; `RaceSession`, une session de
+    sessions ; l'écran change de scène avec le monde.
+  - Porte : trois minutes de jeu ou plus par partie en moyenne dans le bac à sable, et des
+    inconnus qui suivent chaque changement sans aide.
+
+**Décisions du 26/10/2026.** La boutique ouvre en 1.31 sur Yandex (sans pub et deux packs) ;
+la reprise dégage le haut du plateau une fois par partie, sans record ; la monnaie de
+progression n'est pas vendue (les étoiles achètent des améliorations) ; le mode s'appelle
+Dunes, sur 9 × 12 cases ; le test web reçoit environ 300 $ de trafic ; l'avis juridique est
+financé tout de suite. Les canaux ouvrent sur preuve : catalogue Playgama, lancement Yandex
+(après le choix du contrat), GameDistribution, CrazyGames, puis Google Play.
+
+**Décisions du 26/10/2026, second tour.** Les lots 23 et 24 sortent juste après la 1.31 : les
+sessions d'inconnus jouent sur des commandes sûres et le nouvel entraînement peut montrer un
+changement de monde. Le module tactile est notre propre code. L'offre de reprise mène cinq
+secondes avec son anneau, puis « Rejouer » bat. Une recherche du même jour (les succès du genre,
+plus de 20 000 avis de joueurs, les règles des portails) a rendu la reprise plus rare, ses
+boutons égaux et son effacement plus large (la moitié haute du plateau), et précisé les lots 23
+et 24. Le même jour : une partie reprise compte pour les records, comme chez la plupart des succès ;
+la boutique attend le contrat Yandex et forme une petite version à part, pour que la 1.31 sorte
+plus tôt.
 
 ## 10. Hors périmètre (v1)
 

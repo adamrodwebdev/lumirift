@@ -245,17 +245,17 @@ Légende : ✅ conforme, vérifié · 🟡 conforme, vérification humaine à fa
 
 ### Publicité
 
-| Exigence                                                         | Statut | Preuve                                                                                       |
-| ---------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------- |
-| Uniquement via le SDK                                            | ✅     | `ad.requestAd('midgame')`                                                                    |
-| Basic Launch : le jeu tourne sans pub                            | ✅     | `adError` → la partie suivante démarre aussitôt (test unitaire)                              |
-| Midgame aux pauses naturelles, **jamais sur la navigation**      | ✅     | Seulement « Play again » et « Next level » ; rien vers l'accueil ou la carte (test unitaire) |
-| Jeu en pause, interface bloquée jusqu'à `adFinished` / `adError` | ✅     | Fenêtre de fin fermée, voile bloquant, partie non démarrée                                   |
-| Son coupé seulement quand la pub démarre                         | ✅     | `adStarted` → `audio.suspend()`, fin → `resume()` (test unitaire)                            |
-| Fréquence (1 / 3 min)                                            | ✅     | Gérée par le SDK                                                                             |
-| Pub récompensée                                                  | ➖     | **Désactivée sur CrazyGames** (`supportsRewarded = false`) : voir ci-dessous                 |
-| Bannières                                                        | ➖     | Non utilisées                                                                                |
-| Bloqueurs de pub                                                 | ✅     | Rien ne dépend d'une pub                                                                     |
+| Exigence                                                         | Statut | Preuve                                                                                                                       |
+| ---------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Uniquement via le SDK                                            | ✅     | `ad.requestAd('midgame')`                                                                                                    |
+| Basic Launch : le jeu tourne sans pub                            | ✅     | `adError` → la partie suivante démarre aussitôt (test unitaire)                                                              |
+| Midgame aux pauses naturelles, **jamais sur la navigation**      | ✅     | Seulement « Play again » et « Next level » ; rien vers l'accueil ou la carte (test unitaire)                                 |
+| Jeu en pause, interface bloquée jusqu'à `adFinished` / `adError` | ✅     | Fenêtre de fin fermée, voile bloquant, partie non démarrée                                                                   |
+| Son coupé seulement quand la pub démarre                         | ✅     | `adStarted` → `audio.suspend()`, fin → `resume()` (test unitaire)                                                            |
+| Fréquence (1 / 3 min)                                            | ✅     | Gérée par le SDK, et par notre politique (1.31) : 8 min de grâce, 3 min d'écart, jamais après une défaite                    |
+| Pub récompensée                                                  | ➖     | **Désactivée sur CrazyGames** (`supportsRewarded = false`, et `rewarded: false` dans la politique de pubs) : voir ci-dessous |
+| Bannières                                                        | ➖     | Non utilisées                                                                                                                |
+| Bloqueurs de pub                                                 | ✅     | Rien ne dépend d'une pub                                                                                                     |
 
 La pub récompensée « doubler l'XP » (1.6, pour Playgama) reste coupée sur CrazyGames : les pubs
 y sont désactivées pendant le Basic Launch (le bouton ne ferait rien, motif de refus), et au

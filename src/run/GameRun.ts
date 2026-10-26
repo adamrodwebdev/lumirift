@@ -1,3 +1,5 @@
+import { outcomeOf } from '@/ads/AdPolicy';
+import type { AdScheduler } from '@/ads/AdScheduler';
 import type { CampaignOutcome, CampaignRun, GoalProgress } from '@/campaign/CampaignRun';
 import type { LiveState } from '@/campaign/Goals';
 import { Emitter } from '@/core/Emitter';
@@ -6,12 +8,23 @@ import type { BestLine } from '@/progression/BestLine';
 import { GameTracker } from '@/progression/GameReport';
 import type { GameProgress } from '@/progression/Profile';
 import { RecordChase } from '@/progression/RecordChase';
-import type { GameSession, Indicator } from '@/session/GameSession';
+import type { GameSession, Indicator, ResultKind } from '@/session/GameSession';
 import type { ModeCatalog } from '@/session/ModeCatalog';
 import { GameEnding, type Ending, type EndingPorts } from './GameEnding';
 import type { RunKind } from './RunKind';
 
 export type RunPhase = 'loading' | 'playing' | 'paused' | 'over';
+
+/** A defeat the player may take back once for a rewarded ad (1.31), until they choose. */
+export interface ContinueOffer {
+  /** Why the game was lost. */
+  readonly reason: string;
+  /** The result so far, as it would count. */
+  readonly amount: number;
+  readonly kind: ResultKind;
+  /** The record of this kind of game, or null when it has none yet. */
+  readonly best: number | null;
+}
 
 export interface GameRunEventMap {
   phase: { readonly phase: RunPhase };
@@ -25,6 +38,10 @@ export interface GameRunEventMap {
   goal: { readonly goal: GoalProgress | null };
   /** The game is over, its end settled; a teased Guardian shows itself this long (ms) first. */
   over: { readonly ending: Ending; readonly reason: string; readonly teaserMs: number };
+  /** The game is lost but may continue: its end waits for the player's choice (1.31). */
+  offer: { readonly offer: ContinueOffer };
+  /** The lost game continues: the top of its board blew away, play goes on. */
+  continued: Readonly<Record<string, never>>;
 }
 
 /** The doors a run goes through: its ending's, the modes, the portal's, a seed. */
@@ -41,6 +58,9 @@ export interface GameRunPorts extends EndingPorts {
       | 'rewardedAd'
       | 'stopsOnAutoPause'
     >;
+  /** The ad policy: whether a break may show an interstitial or a lost game continue, and when an ad played. */
+  readonly ads: EndingPorts['ads'] &
+    Pick<AdScheduler, 'breakAllowed' | 'adShown' | 'continueAllowed' | 'continueOffered'>;
   /** A seed for a new game's pieces. */
   readonly seed: () => number;
 }
@@ -76,6 +96,10 @@ export class GameRun {
   private stopReported = false;
   /** A rewarded ad was just watched: no interstitial on top of it at the next break. */
   private rewardWatched = false;
+  /** The continue offered, waiting for the player's choice; null otherwise. */
+  private pending: ContinueOffer | null = null;
+  /** This game offered its continue (once a game). */
+  private continueOffered = false;
 
   constructor(
     readonly kind: RunKind,
@@ -104,6 +128,11 @@ export class GameRun {
     return this.ended;
   }
 
+  /** The continue offered after a defeat, until the player takes it or lets it go; null otherwise. */
+  get offer(): ContinueOffer | null {
+    return this.pending;
+  }
+
   /**
    * A new game: its session created and followed, `setup` (the screen's
    * listeners, the guide's watch) given the session to hold, then started.
@@ -130,6 +159,8 @@ export class GameRun {
     this.offGame = created.events.on('over', ({ reason }) => this.finish(reason));
     this.game = setup(created);
     this.ended = null;
+    this.pending = null;
+    this.continueOffered = false;
     this.shown = created.indicators();
     this.events.emit('indicators', { indicators: this.shown });
     created.start();
@@ -190,10 +221,82 @@ export class GameRun {
     this.stopReported = false;
   }
 
-  /** The game ends (by itself, or a level's goal met): its end settled and told. */
+  /**
+   * The game ends (by itself, or a level's goal met): its end settled and
+   * told; a game lost to its board may first offer its continue (1.31).
+   */
   finish(reason: string, decided: CampaignOutcome | null = null, teaserMs = 0): void {
     const game = this.game;
     if (!game || this.state === 'over') return;
+    if (decided === null && this.mayContinue(game)) this.offerContinue(game, reason);
+    else this.settle(game, reason, decided, teaserMs);
+  }
+
+  /**
+   * The player takes the continue: the portal's rewarded ad, then the game
+   * goes on, the top of its board blown away; its record still counts, as in
+   * the genre's hits. Returns false when no ad played (the offer stands).
+   */
+  async continueGame(hooks: AdHooks): Promise<boolean> {
+    const offer = this.pending;
+    const game = this.game;
+    if (!offer || !game) return false;
+    const watched = await this.ports.platform.rewardedAd(hooks);
+    if (!watched || this.pending !== offer || this.game !== game) return false;
+    this.pending = null;
+    this.rewardWatched = true;
+    this.ports.ads.adShown();
+    game.revive?.();
+    this.setPhase('playing');
+    this.ports.platform.gameplayStart();
+    this.events.emit('continued', {});
+    return true;
+  }
+
+  /** The player lets the continue go (its time ran out, Play again, Home): the end settles. */
+  decline(): void {
+    const offer = this.pending;
+    const game = this.game;
+    if (!offer || !game) return;
+    this.pending = null;
+    this.settle(game, offer.reason, null, 0);
+  }
+
+  /** A game lost to its board may continue once, if the kind, the portal and the ad policy allow it. */
+  private mayContinue(game: GameSession): boolean {
+    return (
+      !this.continueOffered &&
+      this.kind.continues &&
+      game.revivable === true &&
+      this.ports.platform.supportsRewarded &&
+      this.ports.ads.continueAllowed(this.tracker?.live.durationMs ?? 0)
+    );
+  }
+
+  /** The defeat waits: gameplay stops, the offer is told with the result as it stands. */
+  private offerContinue(game: GameSession, reason: string): void {
+    const result = game.result();
+    const offer: ContinueOffer = {
+      reason,
+      amount: this.kind.score(result, reason, 0).amount,
+      kind: result.kind,
+      best: this.kind.records ? this.ports.scores.best(this.kind.recordKey) : null,
+    };
+    this.pending = offer;
+    this.continueOffered = true;
+    this.ports.ads.continueOffered();
+    this.setPhase('over');
+    this.ports.platform.gameplayStop();
+    this.events.emit('offer', { offer });
+  }
+
+  /** The end settled (GameEnding) and told. */
+  private settle(
+    game: GameSession,
+    reason: string,
+    decided: CampaignOutcome | null,
+    teaserMs: number,
+  ): void {
     const tracker = this.tracker;
     const state = this.liveState(game);
     const verdict = this.judge ? (decided ?? this.judge.end(reason, state)) : null;
@@ -206,6 +309,7 @@ export class GameRun {
       timeLeftMs: game.indicators().find((item) => item.id === 'timeLeft')?.value ?? 0,
       verdict,
       teased: teaserMs > 0,
+      continueOffered: this.continueOffered,
       report: (base) =>
         tracker
           ? tracker.report(base)
@@ -231,14 +335,29 @@ export class GameRun {
     const progress = this.ports.profile.doubleExperience(ended.progress);
     this.ended = { ...ended, progress, rewardOffered: false };
     this.rewardWatched = true;
+    this.ports.ads.adShown();
     this.ports.platform.happyTime();
     return progress;
   }
 
-  /** Leaving a game's end: the portal may show an ad (never right after a rewarded one). */
+  /**
+   * Leaving a game's end: the portal may show an ad if the ad policy allows
+   * it (never after a defeat, nor in the first minutes), never right after a
+   * rewarded one. Its interval starts only if the ad really plays.
+   */
   async adBreak(hooks: AdHooks, moment: BreakMoment): Promise<void> {
-    if (this.kind.adBreaks && !this.rewardWatched)
-      await this.ports.platform.midgameAd(hooks, moment);
+    const ended = this.ended;
+    if (!ended || !this.kind.adBreaks || this.rewardWatched) return;
+    const { ads, platform } = this.ports;
+    if (!ads.breakAllowed(moment, outcomeOf(ended.reason, ended.campaign?.won ?? null))) return;
+    const shown: AdHooks = {
+      onStart: () => {
+        ads.adShown();
+        hooks.onStart();
+      },
+      onEnd: hooks.onEnd,
+    };
+    await platform.midgameAd(shown, moment);
   }
 
   /** The game is left: its session and its followers let go. */

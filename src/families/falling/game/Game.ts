@@ -16,6 +16,9 @@ export const LOCK_DELAY_MS = 500;
 export const MAX_LOCK_RESETS = 15;
 export const PREVIEW_COUNT = 3;
 
+/** The ends a continue can undo: the stack overflowing, never the clock or a won game. */
+const REVIVABLE: ReadonlySet<GameOverReason> = new Set(['blockOut', 'lockOut', 'topOut']);
+
 /** A piece waiting in the queue or in the hold slot. */
 /** Points for each block a bomb blows away (times the level). */
 export const BLAST_POINTS = 40;
@@ -92,6 +95,10 @@ export class Game {
   private spawnCentre: number | null = null;
   /** Something was destroyed by the last lock: the next piece waits for the effects. */
   private pauseAfterLock = false;
+  /** The piece that found no room to enter: a continued game deals it first. */
+  private blocked: PieceSpec | null = null;
+  /** A continued game waits for the player's first move before anything falls again. */
+  private waiting = false;
 
   constructor(
     readonly mode: GameMode,
@@ -180,7 +187,7 @@ export class Game {
 
   /** Advances the simulation; call once per frame with the elapsed time. */
   update(deltaMs: number): void {
-    if (this._state !== 'running') return;
+    if (this._state !== 'running' || this.waiting) return;
     this._elapsedMs += deltaMs;
     this.mode.update(this, deltaMs);
     // The mode may have ended the game (time limit, top out).
@@ -207,21 +214,54 @@ export class Game {
     this.events.emit('over', { reason });
   }
 
+  /** The game was lost to its stack, in a mode that clears lines: a continue can bring it back. */
+  get revivable(): boolean {
+    const reason = this._overReason;
+    return (
+      this._state === 'over' && reason !== null && REVIVABLE.has(reason) && this.mode.clearsLines
+    );
+  }
+
+  /**
+   * A lost game continues (the rewarded continue, 1.31): the top `rows` of
+   * the stack blow away and play goes on, the piece that could not enter
+   * coming first, the hold free again.
+   */
+  revive(rows: number): void {
+    if (!this.revivable) return;
+    const cells = this.board.clearTopRows(rows);
+    this._overReason = null;
+    this._canHold = true;
+    this.softDropping = false;
+    this.spawnDelay = 0;
+    this.waiting = true;
+    this.setState('running');
+    this.events.emit('revive', { cells });
+    const blocked = this.blocked;
+    this.blocked = null;
+    if (blocked) this.spawn(blocked);
+    else this.spawnNext();
+  }
+
   // --- Player intentions ----------------------------------------------------
 
   moveLeft(): boolean {
+    this.wake();
     return this.shift(-1);
   }
 
   moveRight(): boolean {
+    this.wake();
     return this.shift(1);
   }
 
   setSoftDrop(active: boolean): void {
+    if (active) this.wake();
     this.softDropping = active;
   }
 
   hardDrop(): void {
+    this.wake();
     if (!this.canAct() || !this._active) return;
     const distance = this.dropDistance();
     this._active = this._active.moved(0, distance);
@@ -231,6 +271,7 @@ export class Game {
   }
 
   rotate(direction: RotationDirection): boolean {
+    this.wake();
     const piece = this._active;
     if (!this.canAct() || !piece) return false;
     const rotated = piece.rotated(direction);
@@ -245,6 +286,7 @@ export class Game {
   }
 
   hold(): boolean {
+    this.wake();
     const piece = this._active;
     if (!this.canAct() || !piece || !this._canHold) return false;
     const previous = this._held;
@@ -261,6 +303,7 @@ export class Game {
   }
 
   useAbility(): boolean {
+    this.wake();
     return this.canAct() && this.mode.useAbility(this);
   }
 
@@ -404,6 +447,11 @@ export class Game {
 
   private canAct(): boolean {
     return this._state === 'running';
+  }
+
+  /** The player acts: a continued game that waited for them goes on. */
+  private wake(): void {
+    if (this._state === 'running') this.waiting = false;
   }
 
   private setState(state: GameState): void {
@@ -596,7 +644,10 @@ export class Game {
     }
     if (!this.board.fits(piece)) {
       if (this.rescue()) this.spawn(spec);
-      else this.finish('blockOut');
+      else {
+        this.blocked = spec;
+        this.finish('blockOut');
+      }
       return;
     }
     // Pieces enter the visible well right away when there is room.

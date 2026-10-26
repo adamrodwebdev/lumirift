@@ -1,4 +1,6 @@
 import { inject, type InjectionKey } from 'vue';
+import { AD_TUNING } from '@/ads/AdPolicy';
+import { AdScheduler } from '@/ads/AdScheduler';
 import { DEFAULT_KEYS } from '@/families/falling/input/KeyBindings';
 import { DEFAULT_REPEAT } from '@/families/falling/input/RepeatTiming';
 import { detectLocale } from '@/i18n/locales';
@@ -6,6 +8,7 @@ import { allowsMode } from '@/platform/Edition';
 import { WebPlatform, type Platform } from '@/platform/Platform';
 import { ModeCatalog } from '@/session/ModeCatalog';
 import { AmbianceController } from '@/services/AmbianceController';
+import { WornLook } from '@/services/WornLook';
 import { AudioEngine } from '@/services/audio/AudioEngine';
 import { CampaignService } from '@/services/CampaignService';
 import { Haptics } from '@/services/Haptics';
@@ -23,6 +26,8 @@ export interface AppServices {
   readonly scores: ScoreBoard;
   /** Experience, objectives, streak and cosmetics. */
   readonly profile: ProfileService;
+  /** What the player wears now: their equipment, or a look tried for one game (1.31). */
+  readonly look: WornLook;
   /** Campaign stars and upgrades. */
   readonly campaign: CampaignService;
   readonly share: ShareService;
@@ -32,6 +37,8 @@ export interface AppServices {
   readonly clock: () => Date;
   /** Our site or a game portal: gameplay events, ads, the portal's mute button. */
   readonly platform: Platform;
+  /** The ad policy for this visit: the newcomers' grace, the interval, the rewarded offers. */
+  readonly ads: AdScheduler;
 }
 
 export const APP_SERVICES: InjectionKey<AppServices> = Symbol('AppServices');
@@ -67,19 +74,28 @@ export function createBrowserServices(
       .map((mode) => mode.id)
       .filter((id) => allowsMode(platform.edition, id)),
   );
-  new AmbianceController(profile, settings, document.documentElement);
+  const look = new WornLook(profile);
+  new AmbianceController(look, settings, document.documentElement);
+  const clock = () => new Date();
   return {
     settings,
     theme: new ThemeController(document.documentElement),
     scores: new ScoreBoard(storage),
     profile,
+    look,
     campaign: new CampaignService(storage),
     share: new ShareService(navigator),
     catalog,
     audio: AudioEngine.browser(),
     haptics: new Haptics(navigator, () => settings.current.haptics),
-    clock: () => new Date(),
+    clock,
     platform,
+    ads: new AdScheduler(
+      AD_TUNING[platform.id],
+      // No-ads arrives with the purchases (1.31): until then, nobody owns it.
+      () => ({ playedMs: profile.current.playedMs, adFree: false }),
+      () => clock().getTime(),
+    ),
   };
 }
 

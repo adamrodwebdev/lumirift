@@ -43,6 +43,8 @@ export interface RunKind {
   readonly teaser: BossId | null;
   /** The portal may show an ad between two of its games (never in the training). */
   readonly adBreaks: boolean;
+  /** A lost game may continue once for a rewarded ad (1.31): never in a challenge or the training. */
+  readonly continues: boolean;
   /** What the progression hears of the kind of game. */
   readonly progression: Pick<GameReport, 'daily' | 'guardian' | 'variant'>;
   /** A new game's options; `seed` deals the pieces when the kind deals none of its own. */
@@ -70,6 +72,7 @@ export class FreeRun implements RunKind {
   readonly boss = null;
   readonly teaser = null;
   readonly adBreaks = true;
+  readonly continues = true;
   readonly recordKey: string;
   readonly progression: RunKind['progression'];
 
@@ -112,6 +115,7 @@ export class DailyRun implements RunKind {
   readonly boss = null;
   readonly teaser = null;
   readonly adBreaks = true;
+  readonly continues = false;
   readonly recordKey: string;
   readonly progression = { daily: true, guardian: false, variant: null };
 
@@ -152,6 +156,7 @@ export class GuardianRun implements RunKind {
   readonly boss: BossId;
   readonly teaser = null;
   readonly adBreaks = true;
+  readonly continues = false;
   readonly recordKey: string;
   readonly progression = { daily: false, guardian: true, variant: null };
 
@@ -199,6 +204,7 @@ export class LevelRun implements RunKind {
   readonly boss: BossId | null;
   readonly teaser: BossId | null;
   readonly adBreaks = true;
+  readonly continues = true;
   readonly recordKey: string;
   readonly progression = { daily: false, guardian: false, variant: null };
   /** The clock of this game, hourglass included (null: untimed). */
@@ -258,6 +264,7 @@ export class TrainingRun implements RunKind {
   readonly boss: BossId | null;
   readonly teaser: BossId | null;
   readonly adBreaks = false;
+  readonly continues = false;
   readonly modeId: ModeId;
   readonly recordKey: string;
   readonly progression = { daily: false, guardian: false, variant: null };

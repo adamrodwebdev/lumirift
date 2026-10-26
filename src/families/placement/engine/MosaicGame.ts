@@ -56,6 +56,8 @@ export interface MosaicEventMap {
   perfect: { readonly points: number };
   /** A second chance: the fullest lines vanished instead of the game ending. */
   rescue: { readonly lines: number };
+  /** A lost game continues (1.31): the fullest rows blew away, these tiles with them. */
+  revive: { readonly removed: readonly RemovedTile[] };
   jokerGained: { readonly joker: JokerId };
   jokerUsed: { readonly joker: JokerId };
   bomb: { readonly x: number; readonly y: number; readonly removed: readonly RemovedTile[] };
@@ -236,6 +238,29 @@ export class MosaicGame {
     this._overReason = reason;
     this.setState('over');
     this.events.emit('over', { reason });
+  }
+
+  /** The game ran out of moves: a continue can bring it back. */
+  get revivable(): boolean {
+    return this._state === 'over' && this._overReason === 'noMoves';
+  }
+
+  /**
+   * A lost game continues (the rewarded continue, 1.31): the `lines` fullest
+   * rows blow away, more while no piece of the hand has room, and play goes
+   * on with the same hand.
+   */
+  revive(lines: number): void {
+    if (!this.revivable) return;
+    const rows = this.fullestRows();
+    const removed: RemovedTile[] = [];
+    for (let count = 0; count < rows.length && (count < lines || !this.anyPieceFits()); count++) {
+      removed.push(...this.grid.clearLines({ rows: [rows[count]!], columns: [] }));
+    }
+    this.history = null;
+    this._overReason = null;
+    this.setState('running');
+    this.events.emit('revive', { removed });
   }
 
   // --- Player intentions ----------------------------------------------------
@@ -421,9 +446,8 @@ export class MosaicGame {
   /** Over when no piece fits and no joker could change that. */
   private checkMoves(): void {
     if (this._state !== 'running') return;
-    const fits = this.pieces().some(({ piece }) => this.grid.fitsAnywhere(piece.shape));
     const help = this.inventory.some((joker) => JOKERS[joker].canHelp(this));
-    if (fits || help) return;
+    if (this.anyPieceFits() || help) return;
     if (this.rescueReady) {
       this.rescue();
       return;
@@ -437,20 +461,28 @@ export class MosaicGame {
    */
   private rescue(): void {
     this.rescueReady = false;
-    const size = this.grid.size;
-    const fill = (y: number) =>
-      Array.from({ length: size }, (_, x) => (this.grid.isFree(x, y) ? 0 : 1)).reduce(
-        (sum: number, n: number) => sum + n,
-        0,
-      );
-    const rows = Array.from({ length: size }, (_, y) => y)
-      .sort((a, b) => fill(b) - fill(a))
-      .slice(0, Math.max(1, Math.round(this.boosts.rescueRows / 2)));
+    const rows = this.fullestRows().slice(0, Math.max(1, Math.round(this.boosts.rescueRows / 2)));
     // Not a clear: it scores nothing and does not count towards objectives.
     this.grid.clearLines({ rows, columns: [] });
     this.history = null;
     this.events.emit('rescue', { lines: rows.length });
     this.checkMoves();
+  }
+
+  /** A piece in hand has room somewhere on the board. */
+  private anyPieceFits(): boolean {
+    return this.pieces().some(({ piece }) => this.grid.fitsAnywhere(piece.shape));
+  }
+
+  /** The rows of the board, the fullest first. */
+  private fullestRows(): number[] {
+    const size = this.grid.size;
+    const fill = (y: number) => {
+      let taken = 0;
+      for (let x = 0; x < size; x++) if (!this.grid.isFree(x, y)) taken++;
+      return taken;
+    };
+    return Array.from({ length: size }, (_, y) => y).sort((a, b) => fill(b) - fill(a));
   }
 
   private snapshot(): Snapshot {

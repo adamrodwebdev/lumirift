@@ -278,6 +278,22 @@ export class SandGrid {
     }
   }
 
+  /**
+   * Empties the top `count` rows of the pile, from its highest grain down:
+   * what a lost game's continue blows away (1.31). Returns the grains emptied.
+   */
+  clearTopRows(count: number): number[] {
+    const top = this.height - this.sandHeight();
+    const end = Math.min(this.height, top + count) * this.width;
+    const emptied: number[] = [];
+    for (let i = top * this.width; i < end; i++) {
+      if (this.tones[i] === 0) continue;
+      emptied.push(i);
+      this.clear(i);
+    }
+    return emptied;
+  }
+
   /** Empties the given grains. */
   remove(indices: readonly number[]): void {
     for (const i of indices) this.clear(i);

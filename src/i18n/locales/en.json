@@ -218,7 +218,8 @@
       },
       "tease": "Something stirs beneath the sand…"
     },
-    "surge": "Rift surge: +{value}"
+    "surge": "Rift surge: +{value}",
+    "continued": "Your move: nothing falls until you play."
   },
   "wellWords": {
     "combo": "COMBO ×{n}"
@@ -274,7 +275,22 @@
     "doubleXp": "Double the XP: +{n}",
     "doubleXpLabel": "Watch an ad to double this game’s experience (+{n} XP)",
     "doubled": "Experience doubled: +{n} XP!",
-    "noAd": "No ad available right now. Try again after another game."
+    "noAd": "No ad available right now. Try again after another game.",
+    "continue": {
+      "title": "Continue this game",
+      "clears": {
+        "falling": "the top half of the well clears",
+        "volume": "the top half of the tower clears",
+        "sand": "the top half of the sand blows away",
+        "placement": "the fullest rows clear"
+      },
+      "watch": "Watch an ad",
+      "watchLabel": "Watch an ad to continue this game",
+      "skip": "No thanks",
+      "note": "Once in a while, never at every defeat.",
+      "noAd": "No ad available right now. Try again, or play on."
+    },
+    "soClose": "So close: one point to the record | So close: {n} points to the record"
   },
   "share": {
     "daily": "Lumirift · Daily challenge, {date} ({mode}): {value}. Your turn: {url}",
@@ -480,7 +496,12 @@
     "nowWornGame": "You now wear {name}: start a game to see it.",
     "unlocksWith": "To unlock {name}: {rule}.",
     "trying": "Preview",
-    "new": "New"
+    "new": "New",
+    "tryForGame": "Try it for one game",
+    "tryLabel": "Watch an ad to wear {name} for one game",
+    "tried": "Yours for your next game: {name}",
+    "triedShort": "Yours for the next game",
+    "noAd": "No ad available right now. Try again later."
   },
   "campaign": {
     "chapter": "Chapter {n}",

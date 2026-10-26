@@ -13,9 +13,10 @@ import { TRAINING, trainingRank, type TrainingStep } from '@/campaign/Training';
 import type { BreakMoment } from '@/platform/Platform';
 import type { BestLine } from '@/progression/BestLine';
 import type { Ending } from '@/run/GameEnding';
-import { GameRun, type RunPhase } from '@/run/GameRun';
+import { GameRun, type ContinueOffer, type RunPhase } from '@/run/GameRun';
 import { runKindFor, type RunKindId } from '@/run/RunKind';
 import { Coach, type CoachStep } from '@/session/Coach';
+import { CONTINUE_OFFER_MS } from '@/session/ContinueRule';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { GameSession, GuideLine, Indicator } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
@@ -26,7 +27,7 @@ import CoachCard from '../components/CoachCard.vue';
 import DangerLayer from '../components/DangerLayer.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
 import GuideCard from '../components/GuideCard.vue';
-import type { GameOutcome } from '../GameOutcome';
+import { closeTo, NO_PROGRESS, type ContinueCard, type GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
 import RecordBurst from '../components/RecordBurst.vue';
 import SurgeLayer from '../components/SurgeLayer.vue';
@@ -78,6 +79,8 @@ const {
   audio,
   haptics,
   clock: today,
+  ads,
+  look,
 } = useServices();
 const descriptor = catalog.get(props.modeId);
 
@@ -91,6 +94,7 @@ const run = new GameRun(runKindFor(props, campaign.current.ranks), descriptor.sh
   scores,
   profile,
   platform,
+  ads,
   today,
   campaign: {
     record: (outcome) => campaign.record(outcome),
@@ -106,6 +110,9 @@ const outcome = ref<GameOutcome | null>(null);
 const status = ref('');
 /** The rewarded ad of this game's end: offered, playing, or not (used, refused, unsupported). */
 const reward = ref<'offer' | 'busy' | 'none'>('none');
+/** The continue offered for a lost game (1.31), until the player takes it or lets it go. */
+const continueCard = shallowRef<ContinueCard | null>(null);
+let ringTimer: ReturnType<typeof setTimeout> | undefined;
 const announcement = ref('');
 /** The record beside the score (modes that show it). */
 const best = shallowRef<BestLine | null>(null);
@@ -264,6 +271,8 @@ run.events.on('best', ({ best: line }) => (best.value = line));
 run.events.on('record', celebrateRecord);
 run.events.on('goal', ({ goal: progress }) => (goal.value = progress));
 run.events.on('over', ({ ending, reason, teaserMs }) => showEnding(ending, reason, teaserMs));
+run.events.on('offer', ({ offer }) => showOffer(offer));
+run.events.on('continued', () => continued());
 
 clock.subscribe((delta, real) => {
   const current = run.session;
@@ -314,10 +323,17 @@ const listen = (current: GameSession) => {
   ];
 };
 
-/** The game's end, settled by the run: the effects end, the end window waits for the collapse. */
+/**
+ * The game's end, settled by the run: the effects end, the end window waits
+ * for the collapse. A continue let go settles in the window already open.
+ */
 const showEnding = (ending: Ending, reason: string, teaserMs: number) => {
-  tension.end(reason);
-  surge.end();
+  const inPlace = continueCard.value !== null || showOutcome.value;
+  continueCard.value = null;
+  if (!inPlace) {
+    tension.end(reason);
+    surge.end();
+  }
   outcome.value = {
     reason: ending.reason,
     amount: ending.amount,
@@ -336,24 +352,97 @@ const showEnding = (ending: Ending, reason: string, teaserMs: number) => {
           },
         }
       : {}),
+    ...(ending.isNewBest ? {} : closeTo(ending.kind, ending.amount, ending.best)),
   };
   status.value = '';
   reward.value = ending.rewardOffered ? 'offer' : 'none';
+  if (!inPlace) openOutcome(teaserMs);
+};
+
+/**
+ * The end window opens once the stack has collapsed (a Guardian showing
+ * itself, the teaser, is seen to the end of its dive); a continue's ring
+ * runs from the moment the window shows it.
+ */
+const openOutcome = (teaserMs: number) => {
   const { gameOverDelayMs } = effectsProfile(settings.current.effects, settings.current.shake);
   outcomeTimer = setTimeout(
     () => {
       showOutcome.value = true;
       clock.stop();
+      const card = continueCard.value;
+      if (card && card.ringMs > 0) ringTimer = setTimeout(declineContinue, card.ringMs);
     },
-    // A Guardian showing itself (the teaser) is seen to the end of its dive.
     Math.max(gameOverDelayMs, teaserMs),
   );
+};
+
+/** A lost game that may continue (1.31): the window opens on the offer, the end waits. */
+const showOffer = (offer: ContinueOffer) => {
+  tension.end(offer.reason);
+  surge.end();
+  outcome.value = {
+    reason: offer.reason,
+    amount: offer.amount,
+    kind: offer.kind,
+    value: format.result(offer.kind, offer.amount),
+    best: format.result(offer.kind, offer.best ?? offer.amount),
+    isNewBest: false,
+    progress: NO_PROGRESS,
+    ...closeTo(offer.kind, offer.amount, offer.best),
+  };
+  status.value = '';
+  reward.value = 'none';
+  continueCard.value = {
+    clears: t(`over.continue.clears.${descriptor.family}`),
+    ringMs: CONTINUE_OFFER_MS,
+    busy: false,
+  };
+  openOutcome(0);
+};
+
+/** The player takes the continue: the ad, then the game goes on; no ad, the offer stays, said so. */
+const takeContinue = async () => {
+  const card = continueCard.value;
+  if (!card || card.busy) return;
+  clearTimeout(ringTimer);
+  const waiting = { ...card, busy: true, ringMs: 0 };
+  continueCard.value = waiting;
+  status.value = '';
+  if (await run.continueGame(adHooks)) return;
+  // Let go meanwhile (the window left): nothing more to say.
+  if (continueCard.value !== waiting) return;
+  continueCard.value = { ...card, busy: false, ringMs: 0 };
+  status.value = t('over.continue.noAd');
+};
+
+/** The offer let go (any way out of the window): the end settles. */
+const settleOffer = () => {
+  if (!continueCard.value) return;
+  clearTimeout(ringTimer);
+  run.decline();
+};
+
+/** The ring ran out, or No thanks (never while the ad plays). */
+const declineContinue = () => {
+  if (!continueCard.value?.busy) settleOffer();
+};
+
+/** The game goes on: the window closes, the glass is whole again, and it is the player's move. */
+const continued = () => {
+  clearTimeout(ringTimer);
+  continueCard.value = null;
+  showOutcome.value = false;
+  tension.revive();
+  announce(t('notice.continued'));
 };
 
 const start = async () => {
   dispose();
   tension.reset();
   recordBurst.value = 0;
+  // A look tried for an ad is worn by this game, or ends if the last one wore it.
+  look.gameStarted();
   session.value = await run.start((created) => {
     listen(created);
     // The training teaches the elements and the Wyrm: no surge yet.
@@ -375,6 +464,8 @@ const start = async () => {
 const adBreak = ref(false);
 const adHooks = { onStart: () => audio.suspend(), onEnd: () => audio.resume() };
 const afterBreak = async (moment: BreakMoment, next: () => void) => {
+  // A continue still on offer is let go: the game's end settles first.
+  settleOffer();
   // The interface stays blocked until the ad ends (or does not come).
   showOutcome.value = false;
   adBreak.value = true;
@@ -408,6 +499,8 @@ const doubleExperience = async () => {
 const dispose = () => {
   clearTimeout(outcomeTimer);
   clearTimeout(recordTimer);
+  clearTimeout(ringTimer);
+  continueCard.value = null;
   unsubscribe.forEach((off) => off());
   unsubscribe = [];
   surge.detach();
@@ -451,6 +544,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  look.gameLeft();
   document.removeEventListener('visibilitychange', onVisibility);
   window.removeEventListener('blur', pauseForFocus);
   clearTimeout(toastTimer);
@@ -538,6 +632,7 @@ onBeforeUnmount(() => {
       :flash="closeCallFlash"
       :relief="reliefCount"
       :broken="wellBroken"
+      :ambiance="look.current.value.ambiance"
     />
     <SurgeLayer
       :active="surgeActive"
@@ -590,11 +685,14 @@ onBeforeUnmount(() => {
       :status="status"
       :can-share="platform.allowsExternalLinks"
       :reward="reward"
+      :continue-card="continueCard"
       @again="again"
       @home="toHome"
       @share="onShare"
       @campaign="toCampaign"
       @double="doubleExperience"
+      @continue="takeContinue"
+      @decline="declineContinue"
       @next="(next) => afterBreak('replay', () => emit('next', next))"
       @step="(next) => emit('step', next)"
     />

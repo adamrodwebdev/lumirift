@@ -145,6 +145,14 @@ export function useTension(options: TensionOptions) {
     if (options.level() === 'full') clock.slow(DEFEAT_SLOW.scale, DEFEAT_SLOW.ms);
   };
 
+  /**
+   * A lost game continues (1.31): the glass is whole again and the danger
+   * goes on from where it stood; the freed board will bring its relief.
+   */
+  const revive = () => {
+    broken.value = false;
+  };
+
   /** A new game: calm, a new well to find. */
   const reset = () => {
     tension.reset();
@@ -161,5 +169,18 @@ export function useTension(options: TensionOptions) {
     audio.setTempo(TEMPO.calm);
   });
 
-  return { amount, urgent, flash, relief, broken, well, update, rest, closeCall, end, reset };
+  return {
+    amount,
+    urgent,
+    flash,
+    relief,
+    broken,
+    well,
+    update,
+    rest,
+    closeCall,
+    end,
+    revive,
+    reset,
+  };
 }

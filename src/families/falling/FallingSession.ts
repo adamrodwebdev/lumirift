@@ -1,4 +1,5 @@
 import { Emitter, type Listener } from '@/core/Emitter';
+import { CONTINUE_FREES } from '@/session/ContinueRule';
 import type {
   BossStatus,
   GameSession,
@@ -145,6 +146,14 @@ export class FallingSession implements GameSession<FallingCommand> {
 
   boss(): BossStatus | null {
     return this.game.mode.boss?.() ?? null;
+  }
+
+  get revivable(): boolean {
+    return this.game.revivable;
+  }
+
+  revive(): void {
+    this.game.revive(CONTINUE_FREES[this.family]);
   }
 
   dispose(): void {

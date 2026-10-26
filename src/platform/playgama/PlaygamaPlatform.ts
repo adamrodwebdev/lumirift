@@ -31,6 +31,8 @@ export interface PlaygamaBridge {
     on(event: string, listener: (state: RewardedState) => void): void;
     showInterstitial(placement?: string): void;
     showRewarded(placement?: string): void;
+    /** An ad blocker stops the portal's ads: Bridge would wait on them forever (absent before 2.x). */
+    checkAdBlock?(): Promise<boolean>;
   };
 }
 
@@ -135,6 +137,11 @@ export class PlaygamaPlatform implements Platform {
   private rewardedListener: ((state: RewardedState) => void) | null = null;
   private level: 'none' | 'playing' | 'paused' = 'none';
   private isReady = false;
+  /**
+   * The player's browser blocks the portal's ads: no ad is ever asked for,
+   * no ad button offered (with a blocker, Bridge stays `loading` for good).
+   */
+  private adsBlocked = false;
   /** Level messages said before `game_ready` (a first run plays at once): sent right after it. */
   private readonly early: string[] = [];
 
@@ -161,6 +168,11 @@ export class PlaygamaPlatform implements Platform {
     bridge.advertisement.on(EVENT_NAME.REWARDED_STATE_CHANGED, (state) =>
       this.rewardedListener?.(state),
     );
+    // Asked once, the answer stable for the visit: ads come minutes later, never at start.
+    bridge.advertisement
+      .checkAdBlock?.()
+      .then((blocked) => (this.adsBlocked = blocked))
+      .catch(() => undefined);
     // Hidden page: the save leaves now, the player may never come back.
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
@@ -238,7 +250,7 @@ export class PlaygamaPlatform implements Platform {
   /** An interstitial at every break, towards a game or a menu: Playgama allows both. */
   midgameAd(hooks: AdHooks): Promise<void> {
     const bridge = this.bridge;
-    if (!bridge?.advertisement.isInterstitialSupported) return Promise.resolve();
+    if (!bridge?.advertisement.isInterstitialSupported || this.adsBlocked) return Promise.resolve();
     return new Promise((resolve) => {
       let opened = false;
       let timer = setTimeout(() => done(), AD_START_TIMEOUT_MS);
@@ -268,8 +280,9 @@ export class PlaygamaPlatform implements Platform {
     });
   }
 
+  /** A rewarded ad can play: supported, and not stopped by an ad blocker. */
   get supportsRewarded(): boolean {
-    return this.bridge?.advertisement.isRewardedSupported === true;
+    return this.bridge?.advertisement.isRewardedSupported === true && !this.adsBlocked;
   }
 
   /**

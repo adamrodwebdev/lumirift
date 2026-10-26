@@ -60,12 +60,13 @@ const session: FallingSession = props.session;
 const ABILITY_ICONS: Readonly<Record<AbilityId, IconName>> = { flip: 'flip' };
 
 const { t } = useI18n();
-const { theme, settings, audio, haptics, profile: progression } = useServices();
+const { theme, settings, audio, haptics, look } = useServices();
 /** The rift surge, the game screen's: its key and its button are here. */
 const surge = inject(SURGE, null);
 const keys = useKeyBindings();
 /** The cosmetics the player wears. */
-const equipment = computed(() => progression.current.equipment);
+/** The look worn: the player's own, or one tried for this game (1.31). */
+const equipment = look.current;
 const format = useFormat();
 const landscape = useLandscape();
 /** The on-screen buttons, for the touch players who chose them. */

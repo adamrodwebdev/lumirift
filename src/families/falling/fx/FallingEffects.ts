@@ -208,6 +208,7 @@ export class FallingEffects {
       session.onGame('beat', ({ count }) => this.onBeat(count)),
       session.onGame('groove', ({ level, onBeat }) => this.onGroove(level, onBeat)),
       session.onGame('over', () => this.collapse()),
+      session.onGame('revive', ({ cells }) => this.onRevive(cells)),
     ];
     return () => offs.forEach((off) => off());
   }
@@ -509,6 +510,20 @@ export class FallingEffects {
     }
     this.stackHidden = true;
     this.kick(0.4);
+  }
+
+  /** A lost game continues (1.31): the stack comes back, its top blown away in shards. */
+  private onRevive(cells: readonly RemovedCell[]): void {
+    this.stackHidden = false;
+    const profile = this.profile();
+    if (!profile.destruction) return;
+    const { board } = this.view;
+    const perCell = Math.max(1, Math.round(3 * profile.particles));
+    for (const { x, y, tone } of cells) {
+      if (y >= board.hiddenRows)
+        this.shardsFor(x, y - board.hiddenRows, tone, perCell, board.width / 2, 1.4);
+    }
+    this.kick(0.3);
   }
 
   // --- Simulation -----------------------------------------------------------

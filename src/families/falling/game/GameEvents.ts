@@ -74,6 +74,8 @@ export interface GameEventMap {
   groove: { readonly level: number; readonly onBeat: boolean };
   /** A second chance: the bottom rows vanished instead of the game ending. */
   rescue: { readonly rows: number };
+  /** A lost game continues (1.31): the top of the stack blew away, these blocks with it. */
+  revive: { readonly cells: readonly RemovedCell[] };
   /** Mode-specific announcement; `id` is a translation key suffix. */
   notice: { readonly id: string; readonly value?: number };
   over: { readonly reason: GameOverReason };

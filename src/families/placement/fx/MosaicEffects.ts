@@ -109,6 +109,7 @@ export class MosaicEffects {
       session.onGame('bomb', ({ removed }) => this.onBomb(removed)),
       session.onGame('perfect', () => this.flashBoard(0.25)),
       session.onGame('over', () => this.collapse()),
+      session.onGame('revive', ({ removed }) => this.onRevive(removed)),
       session.onGame('boss', ({ event }) => this.onBoss(event)),
     ];
     return () => offs.forEach((off) => off());
@@ -255,6 +256,14 @@ export class MosaicEffects {
     }
     this.boardHidden = true;
     this.kick(0.4);
+  }
+
+  /** A lost game continues (1.31): the board comes back, its fullest rows breaking away. */
+  private onRevive(removed: readonly RemovedTile[]): void {
+    this.boardHidden = false;
+    if (!this.profile().destruction) return;
+    for (const tile of removed) this.shatter(tile, 1.6);
+    this.kick(0.3);
   }
 
   /** The Guardian: stones fly from its eyes, parries ring, wounds flash in its eyes. */

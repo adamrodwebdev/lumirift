@@ -21,4 +21,41 @@ export interface GameOutcome {
   readonly training?: TrainingResult;
   /** Set for the Guardian challenge: the game's points and, on a victory, their factor. */
   readonly guardian?: { readonly points: string; readonly factor: string | null };
+  /** The record was close (the score three quarters of it or more): the points missing, the bar's fill. */
+  readonly closeTo?: { readonly gap: number; readonly fill: number };
+}
+
+/** A game whose end is not settled yet (a continue on offer): nothing earned to show. */
+export const NO_PROGRESS: GameProgress = {
+  xp: [],
+  total: 0,
+  levelBefore: 0,
+  levelAfter: 0,
+  completed: [],
+  unlocked: [],
+  streak: 0,
+};
+
+/** A score this share of the record or more is "so close": the window shows the gap. */
+const CLOSE_SHARE = 0.75;
+
+/** The record within reach, for the window: the points missing and the bar's fill; or nothing. */
+export function closeTo(
+  kind: ResultKind,
+  amount: number,
+  best: number | null,
+): Pick<GameOutcome, 'closeTo'> {
+  return kind === 'score' && best !== null && amount < best && amount >= best * CLOSE_SHARE
+    ? { closeTo: { gap: best - amount, fill: amount / best } }
+    : {};
+}
+
+/** The continue the end window offers (1.31): what it frees, its ring, the ad playing. */
+export interface ContinueCard {
+  /** What it frees, in the family's words. */
+  readonly clears: string;
+  /** How long its ring runs (ms); 0 once stopped (an ad that did not play). */
+  readonly ringMs: number;
+  /** The ad is playing: the buttons wait. */
+  readonly busy: boolean;
 }

@@ -3,10 +3,11 @@ import { computed, watch } from 'vue';
 import { I18nT, useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
+import { outcomeOf } from '@/ads/AdPolicy';
 import { LEVELS, type CampaignLevel } from '@/campaign/Levels';
 import type { TrainingStep } from '@/campaign/Training';
 import { levelProgress } from '@/progression/Experience';
-import type { GameOutcome } from '../GameOutcome';
+import type { ContinueCard, GameOutcome } from '../GameOutcome';
 import { useProgressText } from '../useProgressText';
 import { useCountUp, useXpReveal, XP_FILL_MS } from '../useReveal';
 import AppIcon from './AppIcon.vue';
@@ -15,9 +16,12 @@ import StarRow from './StarRow.vue';
 
 /**
  * The end of a game, staged: the verdict, the result counting up (a record
- * pops), the experience filling its bar (a new level pops), what the game
- * unlocked, the optional rewarded ad, then the way on. Two columns on a
- * wide screen; nothing to scroll.
+ * pops, a close one shows its gap), the experience filling its bar (a new
+ * level pops), what the game unlocked, the optional rewarded ad, then the way
+ * on, whose main button beats. A lost game may first offer its continue
+ * (1.31): two equal buttons in the experience's place, a ring of five
+ * seconds, the way on working all along. Two columns on a wide screen;
+ * nothing to scroll.
  */
 const props = defineProps<{
   open: boolean;
@@ -28,6 +32,8 @@ const props = defineProps<{
   canShare?: boolean;
   /** The rewarded ad offered (double the experience), or waiting for it. */
   reward?: 'offer' | 'busy' | 'none';
+  /** The continue offered for a lost game, until the player takes it or lets it go. */
+  continueCard?: ContinueCard | null;
 }>();
 const emit = defineEmits<{
   again: [];
@@ -39,6 +45,10 @@ const emit = defineEmits<{
   step: [step: TrainingStep];
   /** The player chooses to watch an ad for the bonus. */
   double: [];
+  /** The player takes the continue (an ad first). */
+  continue: [];
+  /** The player lets the continue go. */
+  decline: [];
 }>();
 
 /** After the training, the campaign starts from its first level. */
@@ -87,11 +97,20 @@ watch(
 const shownScore = computed(() =>
   props.outcome ? format.result(props.outcome.kind, score.value.value) : '',
 );
+
+/** A game lost: the window says it in the danger's red. */
+const lost = computed(() => {
+  const outcome = props.outcome;
+  return outcome !== null && outcomeOf(outcome.reason, outcome.campaign?.won ?? null) === 'lost';
+});
+/** No continue waits: the way on beats, the next game's heartbeat. */
+const beats = computed(() => !props.continueCard);
 </script>
 
 <template>
   <ModalDialog
     class="results"
+    :class="{ 'results--lost': lost }"
     :open="open"
     :title="title"
     hero
@@ -156,15 +175,65 @@ const shownScore = computed(() =>
             })
           }}
         </span>
-        <span v-if="!outcome.campaign && !outcome.isNewBest" class="score__best">
-          {{
-            t(outcome.guardian ? 'guardianChallenge.best' : 'over.best', { value: outcome.best })
-          }}
-        </span>
+        <template v-if="!outcome.campaign && !outcome.isNewBest">
+          <span v-if="outcome.closeTo" class="score__close">
+            {{ t('over.soClose', { n: format.number(outcome.closeTo.gap) }, outcome.closeTo.gap) }}
+          </span>
+          <span v-else class="score__best">
+            {{
+              t(outcome.guardian ? 'guardianChallenge.best' : 'over.best', { value: outcome.best })
+            }}
+          </span>
+          <span v-if="outcome.closeTo" class="close" aria-hidden="true">
+            <i :style="{ transform: `scaleX(${outcome.closeTo.fill})` }" />
+          </span>
+        </template>
       </div>
 
+      <!-- The continue takes the experience's place, so that nothing moves when it goes. -->
       <section
-        v-if="outcome.progress.total > 0"
+        v-if="continueCard"
+        class="cont results__right"
+        :aria-label="t('over.continue.title')"
+      >
+        <p class="cont__title">
+          <strong>{{ t('over.continue.title') }}</strong> · {{ continueCard.clears }}
+        </p>
+        <div class="cont__row">
+          <button
+            type="button"
+            class="btn btn--raised cont__btn"
+            :disabled="continueCard.busy"
+            :aria-label="t('over.continue.watchLabel')"
+            @click="emit('continue')"
+          >
+            <svg
+              v-if="continueCard.ringMs > 0"
+              class="cont__ring"
+              :style="{ '--ring': `${continueCard.ringMs}ms` }"
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+            >
+              <circle cx="10" cy="10" r="8" pathLength="100" />
+            </svg>
+            <span class="reward__badge" aria-hidden="true">
+              <AppIcon name="play" :size="12" />{{ t('over.adBadge') }}
+            </span>
+            <span aria-hidden="true">{{ t('over.continue.watch') }}</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn--raised cont__btn"
+            :disabled="continueCard.busy"
+            @click="emit('decline')"
+          >
+            {{ t('over.continue.skip') }}
+          </button>
+        </div>
+        <p class="cont__note">{{ t('over.continue.note') }}</p>
+      </section>
+      <section
+        v-else-if="outcome.progress.total > 0"
         class="xp results__right"
         :aria-label="t('progress.title')"
       >
@@ -225,7 +294,9 @@ const shownScore = computed(() =>
       </p>
 
       <button
-        v-if="outcome.progress.total > 0 && (reward === 'offer' || reward === 'busy')"
+        v-if="
+          !continueCard && outcome.progress.total > 0 && (reward === 'offer' || reward === 'busy')
+        "
         type="button"
         class="btn btn--raised reward results__right"
         :disabled="reward === 'busy'"
@@ -246,6 +317,7 @@ const shownScore = computed(() =>
         v-if="outcome.training.next"
         type="button"
         class="btn btn--primary btn--raised"
+        :class="{ 'again--beat': beats }"
         autofocus
         @click="outcome.training.next && emit('step', outcome.training.next)"
       >
@@ -255,6 +327,7 @@ const shownScore = computed(() =>
         <button
           type="button"
           class="btn btn--primary btn--raised"
+          :class="{ 'again--beat': beats }"
           autofocus
           @click="emit('next', FIRST_LEVEL)"
         >
@@ -271,6 +344,7 @@ const shownScore = computed(() =>
         v-if="outcome.campaign.next"
         type="button"
         class="btn btn--primary btn--raised"
+        :class="{ 'again--beat': beats }"
         autofocus
         @click="outcome.campaign.next && emit('next', outcome.campaign.next)"
       >
@@ -280,7 +354,10 @@ const shownScore = computed(() =>
       <button
         type="button"
         class="btn btn--raised"
-        :class="{ 'btn--primary': !outcome.campaign.next }"
+        :class="{
+          'btn--primary': !outcome.campaign.next,
+          'again--beat': beats && !outcome.campaign.next,
+        }"
         :autofocus="!outcome.campaign.next"
         @click="emit('again')"
       >
@@ -291,7 +368,13 @@ const shownScore = computed(() =>
       </button>
     </div>
     <div v-else class="sheet-buttons sheet-buttons--lead results__right">
-      <button type="button" class="btn btn--primary btn--raised" autofocus @click="emit('again')">
+      <button
+        type="button"
+        class="btn btn--primary btn--raised"
+        :class="{ 'again--beat': beats }"
+        autofocus
+        @click="emit('again')"
+      >
         <AppIcon name="restart" :size="20" />{{ t('over.again') }}
       </button>
       <button
@@ -500,6 +583,208 @@ const shownScore = computed(() =>
 .xp__news :deep(svg) {
   flex: none;
   color: var(--accent);
+}
+
+/* A record within reach: the points missing, and a bar nearly full, in the box's own margin. */
+.score__close {
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.close {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 50%;
+  width: min(60%, 12rem);
+  height: 0.3rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--danger) 30%, var(--well-bg));
+  translate: -50% 0;
+}
+
+.close i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--rift-glow), var(--accent-strong));
+  transform-origin: left;
+  animation: close-fill 700ms var(--ease-out) 400ms both;
+}
+
+@keyframes close-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/*
+ * The continue (1.31): watch and decline alike, same size and look (the
+ * portals ask for it); a ring of five seconds on the ad's button; a short
+ * line that says it comes once in a while.
+ */
+.cont {
+  display: grid;
+  gap: 0.6rem;
+  padding: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 1.1rem;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.cont__title {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.cont__title strong {
+  color: var(--text);
+}
+
+.cont__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.cont__btn {
+  gap: var(--space-1);
+  min-height: 3rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.cont__btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.cont__ring {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  transform: rotate(-90deg);
+}
+
+.cont__ring circle {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 100;
+  animation: cont-ring var(--ring) linear forwards;
+}
+
+@keyframes cont-ring {
+  to {
+    stroke-dashoffset: 100;
+  }
+}
+
+.cont__note {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* A game lost: the title glows the danger's red and lands; the reason in red. */
+.results--lost :deep(.sheet__title) {
+  text-shadow:
+    0 0 1.1rem color-mix(in srgb, var(--defeat-glow) 70%, transparent),
+    0 0.12rem 0 rgb(90 11 36);
+  animation: title-slam 340ms cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.results--lost .results__reason {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+@keyframes title-slam {
+  from {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+/* The way on beats, the next game's heartbeat, once the result is told. */
+.again--beat {
+  position: relative;
+  animation: again-beat 1.2s ease-in-out 1s infinite;
+}
+
+.again--beat::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* A ring drawn by a shadow: it never adds to the button's size (its label keeps its room). */
+  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--accent) 75%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: again-ring 1.2s ease-out 1s infinite;
+}
+
+@keyframes again-beat {
+  0%,
+  26%,
+  52%,
+  to {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.06);
+  }
+  38% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes again-ring {
+  from {
+    opacity: 0.85;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 75%, transparent);
+  }
+  60%,
+  to {
+    opacity: 0;
+    box-shadow: 0 0 0 0.6rem color-mix(in srgb, var(--accent) 75%, transparent);
+  }
+}
+
+@keyframes again-glow {
+  0%,
+  to {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+/* Calmer effects or less motion: the way on glows, it does not grow. */
+:root[data-motion='still'] .again--beat {
+  animation: none;
+}
+
+:root[data-motion='still'] .again--beat::after {
+  animation: again-glow 2.4s ease-in-out 1s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .again--beat,
+  .close i,
+  .results--lost :deep(.sheet__title) {
+    animation: none;
+  }
+
+  .again--beat::after {
+    animation: again-glow 2.4s ease-in-out 1s infinite;
+  }
+
+  .cont__ring circle {
+    animation-timing-function: steps(5);
+  }
 }
 
 /* The rewarded ad: an option, labelled as an ad, never the main action. */

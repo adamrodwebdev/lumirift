@@ -218,7 +218,8 @@
       },
       "tease": "Quelque chose bouge sous le sable…"
     },
-    "surge": "Surcharge : +{value}"
+    "surge": "Surcharge : +{value}",
+    "continued": "À vous : rien ne tombe avant votre geste."
   },
   "wellWords": {
     "combo": "COMBO ×{n}"
@@ -274,7 +275,22 @@
     "doubleXp": "Doubler l’XP : +{n}",
     "doubleXpLabel": "Regarder une pub pour doubler l’expérience de cette partie (+{n} XP)",
     "doubled": "Expérience doublée : +{n} XP !",
-    "noAd": "Aucune pub disponible pour le moment. Réessayez après une autre partie."
+    "noAd": "Aucune pub disponible pour le moment. Réessayez après une autre partie.",
+    "continue": {
+      "title": "Continuer cette partie",
+      "clears": {
+        "falling": "la moitié haute du puits se vide",
+        "volume": "la moitié haute de la tour se vide",
+        "sand": "la moitié haute du sable s’envole",
+        "placement": "les rangées les plus pleines se vident"
+      },
+      "watch": "Regarder une pub",
+      "watchLabel": "Regarder une pub pour continuer cette partie",
+      "skip": "Non merci",
+      "note": "De temps en temps, jamais à chaque défaite.",
+      "noAd": "Aucune pub disponible pour le moment. Réessayez, ou rejouez."
+    },
+    "soClose": "Si près : un point du record | Si près : {n} points du record"
   },
   "share": {
     "daily": "Lumirift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",
@@ -480,7 +496,12 @@
     "nowWornGame": "Vous portez : {name}. Lancez une partie pour voir l’effet.",
     "unlocksWith": "Pour débloquer {name} : {rule}.",
     "trying": "Aperçu",
-    "new": "Nouveau"
+    "new": "Nouveau",
+    "tryForGame": "L’essayer une partie",
+    "tryLabel": "Regarder une pub pour porter {name} le temps d’une partie",
+    "tried": "À vous pour la prochaine partie : {name}",
+    "triedShort": "À vous pour la prochaine partie",
+    "noAd": "Aucune pub disponible pour le moment. Réessayez plus tard."
   },
   "campaign": {
     "chapter": "Chapitre {n}",

@@ -117,6 +117,13 @@ export interface GameSession<C extends Command = Command> {
   /** The boss of this game and how it stands; absent or null outside a boss level. */
   boss?(): BossStatus | null;
   /**
+   * The game was lost to its board and can continue (the rewarded continue,
+   * 1.31); absent where a game never continues (the duel).
+   */
+  readonly revivable?: boolean;
+  /** The lost game continues: the top of its board blows away (`CONTINUE_FREES`), play goes on. */
+  revive?(): void;
+  /**
    * Pays points won outside the mode's rules (the rift surge's exit), with a
    * notice `reason`. Absent where the game keeps no points to add to.
    */

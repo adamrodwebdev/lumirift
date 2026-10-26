@@ -359,6 +359,19 @@ export class Board {
     return { x: column, y };
   }
 
+  /**
+   * Empties the top `count` rows of the stack, from its highest block down:
+   * what a lost game's continue blows away (1.31). Returns what they held.
+   */
+  clearTopRows(count: number): RemovedCell[] {
+    const top = this.height - this.stackHeight();
+    const cells: Cell[] = [];
+    for (let y = top; y < Math.min(this.height, top + count); y++) {
+      for (let x = 0; x < this.width; x++) if (this.get(x, y) !== Tone.Empty) cells.push({ x, y });
+    }
+    return this.removeCells(cells);
+  }
+
   /** Empties the given cells and returns what they held. */
   removeCells(cells: readonly Cell[]): RemovedCell[] {
     return cells.map(({ x, y }) => {

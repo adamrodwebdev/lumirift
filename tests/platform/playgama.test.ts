@@ -5,7 +5,7 @@ import { SAVED_KEYS } from '@/platform/savedKeys';
 type Listener = (value: never) => void;
 
 /** A Bridge double: records messages and saves, fires events on demand. */
-function fakeBridge(saved: Record<string, string> = {}) {
+function fakeBridge(saved: Record<string, string> = {}, adsBlocked = false) {
   const listeners = new Map<string, Listener>();
   const messages: string[] = [];
   const writes: { keys: readonly string[]; values: readonly string[] }[] = [];
@@ -43,6 +43,7 @@ function fakeBridge(saved: Record<string, string> = {}) {
       on: (event, listener) => listeners.set(event, listener),
       showInterstitial: (placement) => ads.push(placement ?? ''),
       showRewarded: (placement) => ads.push(`rewarded:${placement ?? ''}`),
+      checkAdBlock: () => Promise.resolve(adsBlocked),
     },
   };
   const fire = (event: string, value: unknown) => listeners.get(event)?.(value as never);
@@ -200,5 +201,19 @@ describe('PlaygamaPlatform', () => {
     await expect(platform.midgameAd({ onStart: vi.fn(), onEnd: vi.fn() })).resolves.toBe(undefined);
     expect(platform.supportsRewarded).toBe(false);
     await expect(platform.rewardedAd({ onStart: vi.fn(), onEnd: vi.fn() })).resolves.toBe(false);
+  });
+
+  it('offers and asks for no ad when the browser blocks them (Bridge would wait for good)', async () => {
+    const fake = fakeBridge({}, true);
+    const platform = await PlaygamaPlatform.create(fake.bridge);
+    await Promise.resolve();
+    expect(platform.supportsRewarded).toBe(false);
+    await platform.midgameAd({ onStart: () => {}, onEnd: () => {} });
+    expect(await platform.rewardedAd({ onStart: () => {}, onEnd: () => {} })).toBe(false);
+    expect(fake.ads).toEqual([]);
+    // Without a blocker, both stay on offer.
+    const open = await PlaygamaPlatform.create(fakeBridge().bridge);
+    await Promise.resolve();
+    expect(open.supportsRewarded).toBe(true);
   });
 });

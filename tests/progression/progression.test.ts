@@ -106,6 +106,20 @@ describe('Profile', () => {
     expect(veteran.needsTraining).toBe(false);
   });
 
+  it('adds up the real play of every game, kept with the save (the ads’ grace reads it)', () => {
+    const profile = new Profile();
+    expect(profile.snapshot.playedMs).toBe(0);
+    profile.recordGame(report({ durationMs: 95_000 }), '20261026', MODES);
+    profile.recordGame(report({ durationMs: 30_500 }), '20261026', MODES);
+    expect(profile.snapshot.playedMs).toBe(125_500);
+    expect(Profile.parse(JSON.parse(JSON.stringify(profile.snapshot))).snapshot.playedMs).toBe(
+      125_500,
+    );
+    // Saved before 1.31: no play counted yet, so the newcomers' grace once more.
+    expect(Profile.parse({ xp: 900, games: 30 }).snapshot.playedMs).toBe(0);
+    expect(Profile.parse({ playedMs: -5 }).snapshot.playedMs).toBe(0);
+  });
+
   it('earns experience and completes the objectives of the day', () => {
     const profile = new Profile();
     const day = '20261012';

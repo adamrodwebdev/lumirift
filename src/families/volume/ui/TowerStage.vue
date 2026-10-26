@@ -60,7 +60,7 @@ const session: FallingSession = props.session;
 const ROUND_WELL_ARR_MS = 16;
 
 const { t } = useI18n();
-const { theme, settings, audio, haptics, profile: progression } = useServices();
+const { theme, settings, audio, haptics, look } = useServices();
 /** The rift surge, the game screen's: its key and its button are here. */
 const surge = inject(SURGE, null);
 const keys = useKeyBindings();
@@ -93,7 +93,7 @@ const effects = new FallingEffects(
 );
 const detachEffects = effects.attach(session);
 watch(
-  () => progression.current.equipment.shatter,
+  () => look.current.value.shatter,
   (shatter) => effects.setShatter(shatter),
   { immediate: true },
 );
