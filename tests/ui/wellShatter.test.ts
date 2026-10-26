@@ -40,6 +40,13 @@ describe('wellShatter', () => {
       expect(
         [pane.burstX, pane.burstY, pane.spin, pane.originX, pane.originY].every(Number.isFinite),
       ).toBe(true);
+      // Its outline sits in its own box.
+      for (const point of pane.points.split(' ')) {
+        const [x, y] = point.split(',').map(Number);
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThanOrEqual(pane.width + 0.05);
+        expect(y).toBeLessThanOrEqual(pane.height + 0.05);
+      }
     }
   });
 

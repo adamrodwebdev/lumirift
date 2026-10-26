@@ -540,6 +540,7 @@ onBeforeUnmount(() => {
       :flash="closeCallFlash"
       :relief="reliefCount"
       :broken="wellBroken"
+      :ambiance="profile.current.equipment.ambiance"
     />
     <SurgeLayer
       :active="surgeActive"

@@ -3,6 +3,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import type { EffectsLevel } from '@/fx/EffectsProfile';
 import { useWellBox } from './useWellBox';
 import { REVEAL, wellCracks } from './wellCracks';
+import type { AmbianceId } from '@/progression/Cosmetics';
+import DefeatMatter from './DefeatMatter.vue';
 import WellShatter from './WellShatter.vue';
 
 /**
@@ -25,6 +27,8 @@ const props = defineProps<{
   relief: number;
   /** The game is lost to the stack: the rift breaks the well. */
   broken: boolean;
+  /** The ambiance worn: a defeat breaks the stack into its matter. */
+  ambiance: AmbianceId;
 }>();
 
 const layer = ref<HTMLElement | null>(null);
@@ -111,6 +115,7 @@ const healing = moment(() => props.relief, 800);
         <rect v-if="flashing" class="danger__flash" width="100%" height="100%" />
       </svg>
       <WellShatter v-if="broken && box" :box="box" :level="level" />
+      <DefeatMatter v-if="broken && box" :box="box" :level="level" :ambiance="ambiance" />
     </template>
     <div v-else-if="box && (amount > 0.05 || broken)" class="danger__frame" :style="boxStyle" />
   </div>

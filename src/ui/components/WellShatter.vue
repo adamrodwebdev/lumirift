@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, useId } from 'vue';
 import type { EffectsLevel } from '@/fx/EffectsProfile';
 import type { Box } from './useWellBox';
 import { SHATTER_FALL_MS, wellShatter, type ShatterCrack, type ShatterPane } from './wellShatter';
@@ -18,6 +18,8 @@ const inner = computed(() => shatter.value.cracks.filter((crack) => crack.inner)
 const edge = computed(() => shatter.value.cracks.filter((crack) => !crack.inner));
 /** Only every effect on lets the glass fall. */
 const falls = computed(() => props.level === 'full');
+/** The glass's gradient, shared by every pane (an id unique in the page). */
+const glassId = `shatter-glass-${useId()}`;
 
 const place = computed(() => ({
   left: `${props.box.left}px`,
@@ -38,7 +40,6 @@ const paneStyle = (pane: ShatterPane) => ({
   top: `${pane.top}px`,
   width: `${pane.width}px`,
   height: `${pane.height}px`,
-  clipPath: `polygon(${pane.outline})`,
   transformOrigin: `${pane.originX}px ${pane.originY}px`,
   '--burst-x': `${pane.burstX}px`,
   '--burst-y': `${pane.burstY}px`,
@@ -47,7 +48,6 @@ const paneStyle = (pane: ShatterPane) => ({
   '--spin': `${pane.spin}deg`,
   '--delay': `${pane.delayMs}ms`,
   '--fall-ms': `${pane.fallMs}ms`,
-  '--sheen': `${pane.sheen}deg`,
 });
 </script>
 
@@ -59,6 +59,13 @@ const paneStyle = (pane: ShatterPane) => ({
       :style="{ left: `${shatter.impact.x}px`, top: `${shatter.impact.y}px` }"
     />
     <svg class="shatter__cracks" :viewBox="`0 0 ${box.width} ${box.height}`">
+      <defs>
+        <linearGradient :id="glassId" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" class="shatter__stop shatter__stop--light" />
+          <stop offset="0.46" class="shatter__stop shatter__stop--clear" />
+          <stop offset="1" class="shatter__stop shatter__stop--red" />
+        </linearGradient>
+      </defs>
       <g class="shatter__glass shatter__glass--inner">
         <g v-for="(crack, i) in inner" :key="i" class="shatter__crack" :style="crackStyle(crack)">
           <path class="shatter__glow" :d="crack.d" />
@@ -73,14 +80,16 @@ const paneStyle = (pane: ShatterPane) => ({
       </g>
     </svg>
     <template v-if="falls">
-      <span
+      <svg
         v-for="(pane, i) in shatter.panes"
         :key="i"
         class="shatter__pane"
         :style="paneStyle(pane)"
+        :viewBox="`0 0 ${pane.width} ${pane.height}`"
       >
-        <span class="shatter__pane-glass" :style="{ clipPath: `polygon(${pane.glass})` }" />
-      </span>
+        <polygon class="shatter__pane-glass" :points="pane.points" :fill="`url(#${glassId})`" />
+        <polygon class="shatter__pane-glint" :points="pane.points" />
+      </svg>
     </template>
   </div>
 </template>
@@ -145,30 +154,34 @@ const paneStyle = (pane: ShatterPane) => ({
   animation: shatter-beats 3s ease-in-out both;
 }
 
-/* A pane: its rim of light, its glass, a glint as it turns; out, spun, then down. */
+/* A pane: clear glass with a rim of light, a glint as it turns; out, spun, then down. */
 .shatter__pane {
   position: absolute;
-  background: color-mix(in srgb, var(--rift-core) 90%, transparent);
+  overflow: visible;
   opacity: 0;
   animation: shatter-fall var(--fall-ms) linear var(--delay) both;
 }
 
 .shatter__pane-glass {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    var(--sheen),
-    rgb(255 226 232 / 0.36),
-    rgb(255 255 255 / 0.05) 46%,
-    color-mix(in srgb, var(--defeat-glow) 26%, transparent)
-  );
+  stroke: color-mix(in srgb, var(--rift-core) 85%, transparent);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
 }
 
-.shatter__pane-glass::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.9) 48%, transparent 66%);
+.shatter__stop--light {
+  stop-color: rgb(255 226 232 / 0.34);
+}
+
+.shatter__stop--clear {
+  stop-color: rgb(255 255 255 / 0.04);
+}
+
+.shatter__stop--red {
+  stop-color: color-mix(in srgb, var(--defeat-glow) 24%, transparent);
+}
+
+.shatter__pane-glint {
+  fill: rgb(255 255 255 / 0.55);
   opacity: 0;
   animation: shatter-glint 500ms ease-out calc(var(--delay) + 140ms) both;
 }

@@ -18,9 +18,8 @@ export interface ShatterPane {
   readonly top: number;
   readonly width: number;
   readonly height: number;
-  /** Its outline in its box, and the same drawn in a little (`polygon()` points): its rim shows. */
-  readonly outline: string;
-  readonly glass: string;
+  /** Its outline in its box, as SVG points ("x,y x,y …"). */
+  readonly points: string;
   /** Its centre in its box: it spins around it. */
   readonly originX: number;
   readonly originY: number;
@@ -32,8 +31,6 @@ export interface ShatterPane {
   readonly spin: number;
   readonly delayMs: number;
   readonly fallMs: number;
-  /** The angle of its sheen (deg). */
-  readonly sheen: number;
 }
 
 export interface WellShatter {
@@ -79,8 +76,8 @@ const lengthOf = (points: readonly Point[]) =>
     0,
   );
 
-const polygonOf = (points: readonly Point[]) =>
-  points.map(([x, y]) => `${x.toFixed(1)}px ${y.toFixed(1)}px`).join(', ');
+const pointsOf = (points: readonly Point[]) =>
+  points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 
 /**
  * The well's glass breaking (1.31): from the impact on the rim, cracks fan
@@ -171,10 +168,6 @@ export function wellShatter(width: number, height: number): WellShatter {
     const local = outline.map(([x, y]): Point => [x - left, y - top]);
     const originX = local.reduce((sum, [x]) => sum + x, 0) / local.length;
     const originY = local.reduce((sum, [, y]) => sum + y, 0) / local.length;
-    const glass = local.map(([x, y]): Point => {
-      const s = Math.min(1, 1.6 / (Math.hypot(originX - x, originY - y) || 1));
-      return [x + (originX - x) * s, y + (originY - y) * s];
-    });
     const outX = left + originX - impact[0];
     const outY = top + originY - impact[1];
     const norm = Math.hypot(outX, outY) || 1;
@@ -184,8 +177,7 @@ export function wellShatter(width: number, height: number): WellShatter {
       top,
       width: Math.max(...xs) - left,
       height: Math.max(...ys) - top,
-      outline: polygonOf(local),
-      glass: polygonOf(glass),
+      points: pointsOf(local),
       originX,
       originY,
       burstX: (outX / norm) * push,
@@ -195,7 +187,6 @@ export function wellShatter(width: number, height: number): WellShatter {
       spin: (random.next() < 0.5 ? -1 : 1) * between(70, 240),
       delayMs: SHATTER_FALL_MS + rank * 50 + between(0, 70),
       fallMs: between(1050, 1380),
-      sheen: between(100, 170),
     };
   }
 
