@@ -3,6 +3,71 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.32.0] — 26/10/2026
+
+Les commandes au doigt (lot 23 du chemin vers 5) : un module tactile maison pour le puits, le
+Sable et la Tour, qui lit les coups comme les téléphones les lisent et ne fait plus tomber une
+pièce par erreur ; jouer aux gestes, aux boutons ou aux deux ; un mode gaucher ; des vibrations
+discrètes, coupées au départ ; un guide des gestes. Les réglages suivent la recherche du
+26 octobre (les succès du genre et les avis de leurs joueurs) et une porte de traces
+enregistrées.
+
+### Ajouté
+
+- **Le module tactile** (`PhoneGestures`), chargé seulement sur écran tactile (2,2 ko
+  compressés) :
+  - un coup se lit sur ses 100 dernières ms, par une courbe des moindres carrés comme sur
+    Android et Flutter, à 30° de la verticale près : même après un déplacement de côté, le
+    coup compte à sa propre vitesse ; un coup franc fait tomber la pièce sans attendre que le
+    doigt se lève, un coup plus doux au lever ; le reste du contact est ignoré ;
+  - la garde contre les chutes accidentelles : un coup ne fait tomber que la pièce présente au
+    début du contact ; après une pose, le doigt se lève avant qu'une autre chute compte ;
+  - un cran par case, avec une zone morte d'un tiers de case, remise à chaque retour en
+    arrière : un doigt posé sur une limite ne fait plus trembler la pièce ; l'arc d'un coup ne
+    déplace rien de côté ;
+  - la descente seulement sur un glissé presque vertical, une case et demie après qu'il a
+    tourné vers le bas : l'arc du pouce ne fait plus descendre la pièce ;
+  - tourner selon le côté touché (la moitié droite dans le sens horaire, la gauche dans
+    l'autre) ; un deuxième doigt tapé pendant un glissé tourne aussi, sans couper le glissé ;
+    le toucher à deux doigts reste ; la Tour garde son tour à deux doigts ;
+  - la réserve par un coup vers le haut (jamais depuis le bord bas de l'écran, qui est au
+    téléphone) ou un toucher sur sa case ;
+  - les navigateurs qui fusionnent les échantillons quand la page est occupée (Firefox sur
+    Android, Safari avant iOS 18.2) : un saut se lit d'un bout à l'autre.
+- **Les commandes tactiles**, leur fenêtre dans Réglages (comme le clavier a la sienne) :
+  jouer aux gestes, aux boutons ou aux deux (les gestes déplacent et tournent, les boutons
+  font tomber et mettent en réserve) ; la vitesse du glissé, de ×0,8 à ×1,6 ; tourner selon le
+  côté touché ; le mode gaucher (l'écran en miroir : les boutons et la case Réserve changent
+  de côté) ; les vibrations.
+- **Des vibrations discrètes**, à la demande : 8 ms à chaque case, 18 ms à chaque rotation,
+  jamais à moins de 50 ms d'écart ; un téléphone qui ne vibre pas dans un navigateur
+  (l'iPhone) fait briller le bord du puits à la place.
+- **Le guide des gestes** : un téléphone dessiné, chaque geste à sa place, numéroté comme la
+  liste, selon les réglages du joueur ; depuis la pause et la fenêtre des commandes. Les deux
+  moitiés de l'écran s'éclairent quand le guide d'une première partie demande de tourner.
+
+### Modifié
+
+- Les vibrations sont coupées au départ (on les demande dans les commandes tactiles).
+- La souris ne joue plus les gestes sur ordinateur : le clavier joue, la souris sert aux menus
+  et à la Mosaïque (un clic pour rendre la main au jeu ne tourne plus la pièce).
+- Avec les boutons seuls, les gestes ne jouent plus (sauf le tour de la Tour à deux doigts).
+- La pause liste les gestes réglés, avec le lien « Voir les gestes ».
+
+### Technique
+
+- Les règles (`GestureTuning`), la logique (`VelocityTracker`, `PhoneGestures`), le ressenti
+  (`TouchFeel`) ; les trois scènes partagent `useTouchPlay` ; `WellGestures` disparaît.
+- La porte des gestes (`tests/falling/gestureGate.test.ts`) : des traces de gestes humains
+  (taps, glissés suivis d'un coup, arcs du pouce, doigt tremblant sur sa case, coups vers le
+  haut, glissés en biais, taps tremblants), 1 000 par cas à 60 et 120 Hz, et sur une page qui
+  charge une pub : la bonne commande 99 fois sur 100 au moins, aucune chute accidentelle en
+  20 000 traces qui n'en sont pas. Limite mesurée : sur une page occupée, dans un navigateur
+  qui fusionne les échantillons, un glissé suivi aussitôt d'un coup perd son dernier cran
+  environ 2,5 fois sur 100 (la tâche avale la fin du glissé et le début du coup en un seul
+  saut) ; jamais de chute accidentelle.
+- Un test Playwright joue de vrais événements tactiles sur un téléphone.
+
 ## [1.31.0] — 26/10/2026
 
 La preuve et les leviers de pub (lot 15 du chemin vers 5) : une seule politique de pubs, la
