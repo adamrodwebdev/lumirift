@@ -858,7 +858,8 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
     partie repasse sous 55 % après plus d'1,2 s de danger : le filtre s'ouvre, accord de ré
     majeur sur la tonalité mineure, souffle.
   - Image : fissures dorées dans le verre du puits, du bord vers le centre, une de plus à
-    chaque palier ; vignette violet-rouge, large puis serrée ; fond désaturé ; la prochaine
+    chaque palier ; vignette violet-rouge, large puis serrée, la serrée battant seulement
+    quand le danger la montre (1.30) ; fond désaturé ; la prochaine
     pièce en rouge là où elle apparaîtrait quand elle ne peut plus entrer (Chute, Tour,
     Sable). Effets calmes : sans mouvement ; aucun effet : un cadre rouge immobile.
   - Règle : une ligne effacée en danger (mesuré avant l'effacement) compte **double**
@@ -1278,7 +1279,8 @@ src/
   `useTension` (écran de jeu) joue le tout : la musique (`setTempo`, `setDanger`,
   `relief` du moteur audio), le ralenti (`FrameClock.slow`, qui raccourcit les images vues
   par tous les abonnés), et ce que dessine `DangerLayer` (fissures en SVG calées sur le
-  canvas du puits, vignettes en opacité seule). Les avertissements d'apparition sont
+  canvas du puits, vignettes en opacité seule ; le battement est sur une couche intérieure,
+  que l'opacité du danger module). Les avertissements d'apparition sont
   dessinés par chaque moteur de rendu (`spawnWarning()` de la vue).
 - **Surcharge de la faille** (1.25) : `SurgeTuning` (règles : réglages par famille, et
   `surgeTuningFor`, seule règle des modes qui l'ont, lue aussi par la légende des touches) ;

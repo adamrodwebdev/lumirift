@@ -7,8 +7,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 
 La version Yandex Games : un build de plus, pour la plateforme de jeux de Yandex, en russe,
 anglais, français et indonésien, avec les visuels de sa fiche. Les autres builds ne changent
-pas, sauf la langue d'un joueur qui lit une langue voisine du russe et l'objectif d'un niveau
-en portrait.
+pas, sauf la langue d'un joueur qui lit une langue voisine du russe, l'objectif d'un niveau
+en portrait et la pulsation rouge du danger, qui battait à tort dans les parties calmes.
 
 ### Ajouté
 
@@ -63,6 +63,13 @@ en portrait.
 
 ### Corrigé
 
+- **La pulsation rouge du danger ne bat plus qu'en danger.** Avec tous les effets (le
+  réglage par défaut), la vignette serrée battait dès le premier niveau et à chaque partie,
+  le puits vide : son battement remplaçait l'intensité du danger au lieu de la moduler (de
+  0,75 à 0 quand tout était calme). Il bat maintenant sur une couche intérieure, de 75 à
+  100 % de ce que montre le danger, et seulement quand le danger la montre. Les captures
+  Yandex, prises avec ce défaut, sont refaites ; un parcours le vérifie avec tous les
+  effets.
 - **En portrait, l'objectif d'un niveau n'est plus écrasé à côté de la réserve** : dans la
   famille des chutes, la Tour et le Duel, il se glissait entre la réserve et les suivantes,
   de 30 à 120 px de large sur un téléphone (au 2-2, son niveau sur trois lignes et sa phrase

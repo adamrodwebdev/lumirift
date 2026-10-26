@@ -71,7 +71,12 @@ const healing = moment(() => props.relief, 800);
     class="danger"
     :class="[
       `danger--${level}`,
-      { 'danger--broken': broken, 'danger--flash': flashing, 'danger--heal': healing },
+      {
+        'danger--deep': close > 0,
+        'danger--broken': broken,
+        'danger--flash': flashing,
+        'danger--heal': healing,
+      },
     ]"
     aria-hidden="true"
   >
@@ -136,7 +141,10 @@ const healing = moment(() => props.relief, 800);
   );
 }
 
-.danger__vignette--close {
+.danger__vignette--close::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: radial-gradient(
     ellipse 62% 58% at 50% 50%,
     transparent 38%,
@@ -144,8 +152,14 @@ const healing = moment(() => props.relief, 800);
   );
 }
 
-/* With every effect on, the close vignette throbs like a pulse; it stops with the game. */
-.danger--full:not(.danger--broken) .danger__vignette--close {
+/*
+ * With every effect on, the close vignette throbs like a pulse while the
+ * danger shows it, and stops with the game. The beat is on its inner layer,
+ * from 75 % to all of it: the vignette's own opacity, the danger, scales it.
+ * (On the vignette itself, the beat would replace the danger: from 0.75 to
+ * 0, a red pulse in a calm game.)
+ */
+.danger--full.danger--deep:not(.danger--broken) .danger__vignette--close::before {
   animation: danger-throb 620ms ease-in-out infinite alternate;
 }
 
@@ -228,6 +242,9 @@ const healing = moment(() => props.relief, 800);
   from {
     opacity: 0.75;
   }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes danger-leak {
@@ -270,7 +287,7 @@ const healing = moment(() => props.relief, 800);
     transition: none;
   }
 
-  .danger--full .danger__vignette--close,
+  .danger--full .danger__vignette--close::before,
   .danger--full .danger__glow,
   .danger--full .danger__split path {
     animation: none;
