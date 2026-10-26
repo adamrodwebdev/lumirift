@@ -290,7 +290,7 @@
       "note": "De temps en temps, jamais à chaque défaite.",
       "noAd": "Aucune pub disponible pour le moment. Réessayez, ou rejouez."
     },
-    "soClose": "Si près : un point de votre record ({best}) | Si près : {n} points de votre record ({best})"
+    "soClose": "Si près : un point du record | Si près : {n} points du record"
   },
   "share": {
     "daily": "Lumirift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",

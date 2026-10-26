@@ -177,13 +177,7 @@ const beats = computed(() => !props.continueCard);
         </span>
         <template v-if="!outcome.campaign && !outcome.isNewBest">
           <span v-if="outcome.closeTo" class="score__close">
-            {{
-              t(
-                'over.soClose',
-                { n: format.number(outcome.closeTo.gap), best: outcome.best },
-                outcome.closeTo.gap,
-              )
-            }}
+            {{ t('over.soClose', { n: format.number(outcome.closeTo.gap) }, outcome.closeTo.gap) }}
           </span>
           <span v-else class="score__best">
             {{
@@ -591,22 +585,25 @@ const beats = computed(() => !props.continueCard);
   color: var(--accent);
 }
 
-/* A record within reach: the points missing, and a bar nearly full. */
+/* A record within reach: the points missing, and a bar nearly full, in the box's own margin. */
 .score__close {
-  max-width: 18rem;
   color: var(--accent-strong);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-align: center;
   text-wrap: balance;
 }
 
 .close {
-  width: min(100%, 14rem);
-  height: 0.5rem;
+  position: absolute;
+  bottom: 0.3rem;
+  left: 50%;
+  width: min(60%, 12rem);
+  height: 0.3rem;
   overflow: hidden;
   border-radius: 999px;
   background: color-mix(in srgb, var(--danger) 30%, var(--well-bg));
+  translate: -50% 0;
 }
 
 .close i {
@@ -719,9 +716,10 @@ const beats = computed(() => !props.continueCard);
 .again--beat::after {
   content: '';
   position: absolute;
-  inset: -0.25rem;
-  border: 2px solid var(--accent);
+  inset: 0;
   border-radius: inherit;
+  /* A ring drawn by a shadow: it never adds to the button's size (its label keeps its room). */
+  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--accent) 75%, transparent);
   opacity: 0;
   pointer-events: none;
   animation: again-ring 1.2s ease-out 1s infinite;
@@ -745,12 +743,12 @@ const beats = computed(() => !props.continueCard);
 @keyframes again-ring {
   from {
     opacity: 0.85;
-    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 75%, transparent);
   }
   60%,
   to {
     opacity: 0;
-    transform: scale(1.06, 1.3);
+    box-shadow: 0 0 0 0.6rem color-mix(in srgb, var(--accent) 75%, transparent);
   }
 }
 

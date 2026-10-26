@@ -290,7 +290,7 @@
       "note": "Sesekali saja, tidak di setiap kekalahan.",
       "noAd": "Belum ada iklan saat ini. Coba lagi, atau main lagi."
     },
-    "soClose": "Nyaris: kurang {n} poin dari rekormu ({best})"
+    "soClose": "Nyaris: {n} poin lagi menuju rekor"
   },
   "share": {
     "daily": "Lumirift · Tantangan harian {date} ({mode}): {value}. Giliranmu: {url}",

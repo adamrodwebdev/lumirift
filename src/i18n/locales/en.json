@@ -290,7 +290,7 @@
       "note": "Once in a while, never at every defeat.",
       "noAd": "No ad available right now. Try again, or play on."
     },
-    "soClose": "So close: one point from your record ({best}) | So close: {n} points from your record ({best})"
+    "soClose": "So close: one point to the record | So close: {n} points to the record"
   },
   "share": {
     "daily": "Lumirift · Daily challenge, {date} ({mode}): {value}. Your turn: {url}",
