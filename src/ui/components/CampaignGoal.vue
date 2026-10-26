@@ -46,15 +46,14 @@ const shown = (n: number) =>
 /*
  * Sizes in `em`, like the rest of the HUD: 14 px at least. The level (or the
  * step) and the count share the first line; what to do has the card's whole
- * width, so that no word of any language is cut.
+ * width, so that no word of any language is cut. The card adapts to its own
+ * width (its slot gives it, never its words): three columns, which the parts
+ * span or share.
  */
 .goal {
+  container: goal / inline-size;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'level count'
-    'text text'
-    'bar bar';
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.15em 0.5em;
   flex: 1 1 12em;
@@ -65,7 +64,8 @@ const shown = (n: number) =>
 }
 
 .goal__level {
-  grid-area: level;
+  grid-row: 1;
+  grid-column: 1 / 3;
   font-size: 0.875em;
   font-weight: 800;
   color: var(--accent);
@@ -73,7 +73,8 @@ const shown = (n: number) =>
 
 /* Two lines at most, never cut in the middle of a word. */
 .goal__text {
-  grid-area: text;
+  grid-row: 2;
+  grid-column: 1 / -1;
   display: -webkit-box;
   overflow: hidden;
   font-size: 0.875em;
@@ -84,14 +85,16 @@ const shown = (n: number) =>
 }
 
 .goal__count {
-  grid-area: count;
+  grid-row: 1;
+  grid-column: 3;
   font-size: 0.875em;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
 
 .goal__bar {
-  grid-area: bar;
+  grid-row: 3;
+  grid-column: 1 / -1;
   block-size: 0.35em;
   margin-block-start: 0.2em;
   border-radius: 999px;
@@ -105,6 +108,28 @@ const shown = (n: number) =>
   border-radius: inherit;
   background: var(--accent-gradient);
   transition: inline-size 200ms ease;
+}
+
+/*
+ * As wide as a large phone's band (portrait, the goal under the hold box, from
+ * 390 px): the level, what to do and the count on one line, the gauge under
+ * them, a line of height given back to the well. What to do may take a second
+ * line, never a third (a Guardian's name in Russian): a narrower card, up to a
+ * 360-px phone, keeps its three lines.
+ */
+@container goal (width >= 21em) {
+  .goal__level {
+    grid-column: 1;
+  }
+
+  .goal__text {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .goal__bar {
+    grid-row: 2;
+  }
 }
 
 /* A desktop (the dashboard's column beside the well): the card takes the column. */

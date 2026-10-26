@@ -74,9 +74,11 @@ const gem = (x, y, sw, sh, colour, shade = 0) =>
 /**
  * The glass tower of gems, seen face on: columns narrow towards its edges as on
  * the cylinder, darker on the right (the light comes from the left). The gaze
- * of the Eye lights its top red; a bomb goes off on its flank.
+ * of the Eye lights its top red; a bomb goes off on its flank. `fill` gives
+ * the share of gems in each row (by default, gaps at the top: the tower is
+ * still being built).
  */
-function tower(cx, top, bottom, radius, rows) {
+function tower(cx, top, bottom, radius, rows, fill = (r) => (r < 2 ? 0.35 : r < 4 ? 0.7 : 0.94)) {
   const columns = 9;
   const rowH = (bottom - top) / rows;
   const next = random(7);
@@ -84,8 +86,7 @@ function tower(cx, top, bottom, radius, rows) {
   // The glass body.
   html += `<div style="position:absolute;left:${cx - radius}px;top:${top - rowH * 0.6}px;width:${radius * 2}px;height:${bottom - top + rowH * 0.6}px;border-radius:${radius}px / ${rowH * 0.6}px;background:linear-gradient(90deg,rgb(120 210 255 / .22),rgb(180 160 255 / .1) 45%,rgb(40 10 80 / .4));box-shadow:inset 0 0 ${radius * 0.2}px rgb(160 220 255 / .45),0 0 ${radius * 0.6}px rgb(120 80 255 / .5)"></div>`;
   for (let r = 0; r < rows; r++) {
-    // Gaps at the top: the tower is still being built.
-    const filled = r < 2 ? 0.35 : r < 4 ? 0.7 : 0.94;
+    const filled = fill(r);
     for (let c = 0; c < columns; c++) {
       const a0 = -Math.PI / 2 + (c / columns) * Math.PI;
       const a1 = -Math.PI / 2 + ((c + 1) / columns) * Math.PI;
@@ -172,5 +173,16 @@ export const COVERS = {
       h,
       '50% 58%',
       `${eye(w * 0.5, h * 0.585, w * 0.56)}${tower(w * 0.5, h * 0.74, h * 1.03, w * 0.26, 4)}${gaze(w * 0.5, h * 0.625, h * 0.95, w * 0.4)}${blast(w * 0.5 + w * 0.21, h * 0.89, w * 0.1)}${title(w / 2, h * 0.04, w * 0.15, 'center')}`,
+    ),
+  /**
+   * The app icon (Yandex Games, 512 × 512): the Eye over the top of its tower,
+   * full of gems; no text, square corners (the catalogue rounds them itself).
+   */
+  icon: (s = 512) =>
+    page(
+      s,
+      s,
+      '50% 38%',
+      `${eye(s * 0.5, s * 0.36, s * 0.8)}${tower(s * 0.5, s * 0.71, s * 1.13, s * 0.38, 3, () => 0.9)}${gaze(s * 0.5, s * 0.44, s * 0.98, s * 0.5)}`,
     ),
 };

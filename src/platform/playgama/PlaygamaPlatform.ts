@@ -1,6 +1,7 @@
 import type { KeyValueStorage } from '@/services/KeyValueStorage';
 import { FULL_EDITION } from '../Edition';
 import type { AdHooks, Platform } from '../Platform';
+import { SAVED_KEYS } from '../savedKeys';
 
 type InterstitialState = 'loading' | 'opened' | 'closed' | 'failed';
 type RewardedState = InterstitialState | 'rewarded';
@@ -38,14 +39,6 @@ declare global {
     bridge?: PlaygamaBridge;
   }
 }
-
-/** Every key the game saves (settings, records, progression, campaign). */
-export const SAVED_KEYS = [
-  'stackrift:settings',
-  'stackrift:records',
-  'stackrift:profile',
-  'stackrift:campaign',
-];
 
 /** Writes are grouped: one SDK call for a burst of changes (a slider, a game end). */
 const SAVE_DELAY_MS = 300;
@@ -130,6 +123,8 @@ export class PlaygamaPlatform implements Platform {
   // Playgama forbids links to other sites (and returns false for them).
   readonly allowsExternalLinks = false;
   readonly reservesEscape = true;
+  readonly stopsOnAutoPause = false;
+  readonly showsVersion = true;
   readonly locale: string | null;
   private audioEnabled: boolean;
   private readonly muteListeners = new Set<(muted: boolean) => void>();

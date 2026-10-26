@@ -668,6 +668,39 @@ onBeforeUnmount(() => {
     'jokers jokers jokers';
 }
 
+/*
+ * Portrait, a level's goal beside a hold box (the falling family, the Tower,
+ * the duel): the hold, the Flip's button and the surge on one side, the next
+ * pieces on the other, left the goal 30 to 120 px of a phone (its level on
+ * three lines, its text cut). It takes the band's width, under them, as in
+ * the Mosaic.
+ */
+@media (orientation: portrait) {
+  .game[data-layout='well']:has(.stage__hold):has(.game__goal .goal) {
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'pause score sound'
+      'hold . next'
+      'goal goal goal'
+      'stats stats stats'
+      'well well well'
+      'padm padm padm'
+      'pada pada pada';
+  }
+
+  .game[data-layout='duel']:has(.game__goal .goal) {
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'pause score sound sound'
+      'hold . next next'
+      'goal goal goal goal'
+      'stats stats stats stats'
+      'well well well side'
+      'padm padm padm padm'
+      'pada pada pada pada';
+  }
+}
+
 /* Each family has its own light behind the game; it drifts slowly. */
 .game[data-family='sand'] {
   --family-1: rgb(255 181 71 / 0.2);
@@ -990,6 +1023,21 @@ onBeforeUnmount(() => {
     grid-area: help;
     display: grid;
     align-content: end;
+  }
+}
+
+/*
+ * A desktop window wider than 2:1: the playing frame (the well, the dashboard
+ * and its buttons) stops at 2:1 and stays centred, the game's light and rift
+ * filling the rest (Yandex rule 1.6.2.2, Playgama's 2:1, the user's rule).
+ */
+@media (orientation: landscape) and (hover: hover) and (pointer: fine) and (min-aspect-ratio: 2/1) {
+  .game {
+    /* 1.96 rather than 2: the buttons and the well sit a little inside the frame's height. */
+    --frame-inset: calc((100% - 196dvh) / 2 + 2 * var(--space-3));
+
+    padding-left: max(var(--space-4), env(safe-area-inset-left, 0px), var(--frame-inset));
+    padding-right: max(var(--space-4), env(safe-area-inset-right, 0px), var(--frame-inset));
   }
 }
 

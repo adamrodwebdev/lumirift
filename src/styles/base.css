@@ -58,8 +58,9 @@ button {
   outline-offset: 2px;
 }
 
-/* On portals, no text selection or magnifier while playing (CrazyGames requirement). */
-:root[data-platform='crazygames'] body {
+/* On portals, no text selection or magnifier while playing (CrazyGames requirement, Yandex 1.6.1.8 and 1.6.2.7). */
+:root[data-platform='crazygames'] body,
+:root[data-platform='yandex'] body {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -235,4 +236,9 @@ html[data-platform='playgama'] #app > main {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+}
+
+/* Yandex: a swipe never moves or reloads the page around the game (rule 1.10.2). */
+html[data-platform='yandex'] {
+  overscroll-behavior: none;
 }

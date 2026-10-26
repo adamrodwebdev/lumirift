@@ -42,7 +42,7 @@ Cahier des charges (règles détaillées, architecture, décisions) :
 - **Écran titre vivant** : une boucle de vraies parties montre, avant même de jouer, ce
   qu'aucun autre jeu de blocs n'a : les éléments du Sable, les puits qui se retournent,
   basculent et se reflètent, les quatre Gardiens de la faille.
-- **Sur les portails** (CrazyGames, Playgama) : un nouveau joueur arrive directement dans un
+- **Sur les portails** (CrazyGames, Playgama, Yandex Games) : un nouveau joueur arrive directement dans un
   entraînement en deux étapes, le Sable vivant puis le Ver des dunes, guidé à l'écran et
   passable ; les menus s'ouvrent ensuite. Notre site garde son écran titre.
 - **Menu en quatre pages** (Accueil, Modes, Carte, Atelier) : onglets sous le pouce ou rail
@@ -149,6 +149,16 @@ node scripts/crazygames-media.mjs   # covers et vidéos dans release/crazygames-
 
 Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAMES.md).
 
+### Version Yandex Games
+
+```bash
+npm run package:yandex          # build, contrôles, zip dans release/
+node scripts/yandex-media.mjs   # icône, couverture, captures et vidéos MP4 dans release/yandex-media/
+```
+
+Exigences et leur contrôle, fiche en quatre langues et étapes de publication :
+[docs/YANDEX.md](docs/YANDEX.md).
+
 ## Qualité
 
 - TypeScript strict, ESLint `strictTypeChecked`, Prettier.
@@ -157,7 +167,8 @@ Détail des exigences et de leur contrôle : [docs/CRAZYGAMES.md](docs/CRAZYGAME
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 13
   modes, une partie complète, défi du jour, réglages retenus, menu (onglets, glissement,
   carte, Atelier), clavier seul ; le premier lancement d'un portail, sur le build
-  CrazyGames ; en russe, la langue la plus longue, chaque page et chaque
+  CrazyGames ; le build Yandex Games avec un faux SDK (chargement, pauses, langue,
+  sauvegarde, cadre sans menu ni sélection) ; en russe, la langue la plus longue, chaque page et chaque
   famille de jeu de 320 px au bureau, en portrait et en paysage, sans rien de coupé.
 - Garde responsive : aucun défilement horizontal de 320 à 2560 px (tous les 20 px), et
   quatre tailles clés : petit téléphone et téléphone en paysage au toucher, zooms 200 % et

@@ -194,6 +194,57 @@ test('the first level is calm Sand, with the keys drawn beside the game', async 
   }
 });
 
+test('the danger’s red pulse beats only near the top, with every effect on', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'One screen is enough: the layer is the same');
+  // Every effect on, the default when the system allows motion (read when the game starts).
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.reload();
+  await page.locator('main').waitFor();
+  /** What the deep vignette shows (the danger times its beat); null once the well is broken. */
+  const shown = () =>
+    page.evaluate(() => {
+      if (document.querySelector('.danger--broken')) return null;
+      const vignette = document.querySelector('.danger__vignette--close');
+      if (!vignette) return null;
+      const beat = Number(getComputedStyle(vignette, '::before').opacity);
+      return { red: Number(getComputedStyle(vignette).opacity) * beat, beat };
+    });
+  const watch = async (ms: number) => {
+    const seen: { red: number; beat: number }[] = [];
+    for (let elapsed = 0; elapsed < ms; elapsed += 80) {
+      const now = await shown();
+      if (now) seen.push(now);
+      await page.waitForTimeout(80);
+    }
+    return seen;
+  };
+
+  // A new player's first level, calm: nothing red, over more than a beat.
+  await panel(page, 'Accueil')
+    .getByRole('button', { name: /^Jouer/ })
+    .click();
+  await expect(page.locator('.danger')).toHaveClass(/danger--full/);
+  const calm = await watch(1500);
+  expect(Math.max(...calm.map((sample) => sample.red))).toBe(0);
+
+  // A tower of pieces in the middle, up to the danger: the red shows, and beats.
+  await page.goto('/');
+  await page.locator('main').waitFor();
+  await openMode(page, 'Classique');
+  const deep = page.locator('.danger--deep');
+  for (let drop = 0; drop < 16 && !(await deep.count()); drop++) {
+    await page.keyboard.press('Space');
+    await deep.waitFor({ timeout: 400 }).catch(() => undefined);
+  }
+  const danger = await watch(1400);
+  expect(danger.length).toBeGreaterThan(8);
+  expect(Math.max(...danger.map((sample) => sample.red))).toBeGreaterThan(0.1);
+  const beats = danger.map((sample) => sample.beat);
+  expect(Math.max(...beats) - Math.min(...beats)).toBeGreaterThan(0.15);
+});
+
 test('the week’s Guardian is one tap away from the home, for every player', async ({ page }) => {
   const card = panel(page, 'Accueil').getByRole('button', { name: /^Défi des Gardiens/ });
   await expect(card).toBeVisible();

@@ -89,12 +89,16 @@ const PROGRESS: GameProgress = {
 };
 
 /** A run with its doors stubbed; the last session it created, to play by hand. */
-function setUp(kind: RunKind, { showsBest = true, rewarded = false } = {}) {
+function setUp(
+  kind: RunKind,
+  { showsBest = true, rewarded = false, stopsOnAutoPause = false } = {},
+) {
   const scores = new ScoreBoard(new MemoryStorage());
   const sessions: FakeSession[] = [];
   const platform = {
     edition: FULL_EDITION,
     supportsRewarded: rewarded,
+    stopsOnAutoPause,
     loadingStart: vi.fn(),
     loadingStop: vi.fn(),
     gameplayStart: vi.fn(),
@@ -279,6 +283,15 @@ describe('GameRun', () => {
     expect(platform.gameplayStop).toHaveBeenCalledOnce();
     expect(platform.gameplayStart).toHaveBeenCalledTimes(2);
     expect(phases).toEqual(['paused', 'playing', 'paused', 'playing']);
+  });
+
+  it('tells a portal that counts it (Yandex) of an automatic pause too, and of the resume', async () => {
+    const { run, platform } = setUp(new FreeRun('classic'), { stopsOnAutoPause: true });
+    await run.start();
+    run.pause(false);
+    expect(platform.gameplayStop).toHaveBeenCalledOnce();
+    run.resume();
+    expect(platform.gameplayStart).toHaveBeenCalledTimes(2);
   });
 
   it('doubles the experience after a rewarded ad, and spares the next break its ad', async () => {

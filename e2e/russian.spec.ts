@@ -147,3 +147,67 @@ test('every screen keeps its Russian words inside, from 320 px to the desktop', 
     }
   }
 });
+
+test('a level’s goal stays whole on a phone: its own row beside a hold box, one line when wide', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'Own sizes: once is enough');
+  test.setTimeout(240_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  // Every level open: the map turns to any chapter.
+  const stars: Record<string, number> = {};
+  for (let chapter = 1; chapter <= 5; chapter++)
+    for (let level = 1; level <= 7; level++) stars[`${chapter}-${level}`] = 3;
+  await page.evaluate(
+    (all) => localStorage.setItem('stackrift:campaign', JSON.stringify({ stars: all, ranks: {} })),
+    stars,
+  );
+  // Classic, the Flip and its button, a duel, the Tower: the hold box's families (1.30 fix);
+  // the longest goals, the Guardians': the Heart (a hold box) and the Golem (the Mosaic).
+  // From 390 px, the card's level, goal and count share one line (21em of card).
+  for (const [width, height] of [
+    [320, 568],
+    [360, 640],
+    [390, 844],
+  ] as const) {
+    await page.setViewportSize({ width, height });
+    for (const id of ['1-3', '2-2', '1-6', '4-3', '5-7', '3-7']) {
+      await page.goto('/');
+      await tab(page, 'Карта').click();
+      const map = panel(page, 'Карта');
+      const back = map.getByRole('button', { name: 'Предыдущая глава' });
+      while (await back.isEnabled()) {
+        await back.click();
+        await page.waitForTimeout(300);
+      }
+      for (let turn = 1; turn < Number(id.split('-')[0]); turn++) {
+        await map.getByRole('button', { name: 'Следующая глава' }).click();
+        await page.waitForTimeout(300);
+      }
+      await map.getByRole('button', { name: new RegExp(`(^|[^0-9])${id}([^0-9]|$)`) }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Играть', exact: true }).click();
+      const goal = page.getByRole('group', { name: 'Цель' });
+      await expect(goal).toBeVisible();
+      const fit = await goal.evaluate((card) => {
+        const level = card.querySelector('.goal__level')!;
+        const text = card.querySelector('.goal__text')!;
+        const line = parseFloat(getComputedStyle(level).lineHeight);
+        const levelBox = level.getBoundingClientRect();
+        const textBox = text.getBoundingClientRect();
+        const middle = (levelBox.top + levelBox.bottom) / 2;
+        return {
+          levelOnOneLine: levelBox.height < line * 1.5,
+          textWhole: text.scrollHeight <= text.clientHeight + 1,
+          wide: card.getBoundingClientRect().width >= window.innerWidth * 0.8,
+          oneRow: textBox.top <= middle && middle <= textBox.bottom,
+        };
+      });
+      expect(fit, `${width} × ${height}: ${id}`).toEqual({
+        levelOnOneLine: true,
+        textWhole: true,
+        wide: true,
+        oneRow: width >= 390,
+      });
+    }
+  }
+});

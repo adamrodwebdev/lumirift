@@ -4,13 +4,25 @@ export type Locale = (typeof LOCALES)[number];
 export const isLocale = (value: unknown): value is Locale =>
   typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 
-/** First supported language among the browser's preferences, English otherwise. */
+/**
+ * Languages whose players read Russian more often than English: Belarusian,
+ * Kazakh, Ukrainian and Uzbek (Yandex Games' own fallback for them).
+ */
+const READS_RUSSIAN: ReadonlySet<string> = new Set(['be', 'kk', 'uk', 'uz']);
+
+/**
+ * The first supported language among the player's preferences; failing that,
+ * Russian for its neighbours (a preference the game does have comes first:
+ * Ukrainian then English gives English), English otherwise.
+ */
 export function detectLocale(preferred: readonly string[]): Locale {
-  for (const tag of preferred) {
-    const language = tag.toLowerCase().split('-')[0];
+  const languages = preferred.map((tag) => {
+    const language = tag.toLowerCase().split('-')[0] ?? '';
     // "in" is the legacy code for Indonesian, still sent by some Android browsers.
-    const normalised = language === 'in' ? 'id' : language;
-    if (isLocale(normalised)) return normalised;
-  }
-  return 'en';
+    return language === 'in' ? 'id' : language;
+  });
+  return (
+    languages.find(isLocale) ??
+    (languages.some((language) => READS_RUSSIAN.has(language)) ? 'ru' : 'en')
+  );
 }

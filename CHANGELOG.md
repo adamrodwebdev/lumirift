@@ -3,6 +3,81 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.30.0] — 26/10/2026
+
+La version Yandex Games : un build de plus, pour la plateforme de jeux de Yandex, en russe,
+anglais, français et indonésien, avec les visuels de sa fiche. Les autres builds ne changent
+pas, sauf la langue d'un joueur qui lit une langue voisine du russe, l'objectif d'un niveau
+en portrait et la pulsation rouge du danger, qui battait à tort dans les parties calmes.
+
+### Ajouté
+
+- **Le build Yandex Games** (`npm run package:yandex`, zip dans `release/`), branché sur le
+  SDK v2 que Yandex sert à `/sdk.js` :
+  - **Chargement et repères de jeu** : `YaGames.init()` avant tout ; `LoadingAPI.ready()`
+    une fois, quand l'étape 1 de l'entraînement est jouable ; `GameplayAPI.start()` et
+    `stop()` seulement ensuite, et seulement quand l'état change.
+  - **Les pauses de Yandex** (onglet quitté, pub de la plateforme) mettent le jeu en pause,
+    coupent le son et comptent comme un arrêt de jeu ; au retour, le jeu attend le joueur
+    sur sa fenêtre de pause.
+  - **Sauvegarde dans les données du joueur**, connecté ou non : lue en une requête au
+    lancement, écrite entière, une requête toutes les 4 s au plus (Yandex en accepte 100 par
+    5 minutes), envoyée aussitôt à la pause ou quand la page se cache ; un envoi refusé est
+    retenté une fois, jamais en boucle. Sans Yandex, le navigateur prend le relais.
+  - **Pubs** : plein écran en quittant la fin d'une partie, jamais juste après une
+    récompensée ; la récompensée double l'expérience, seulement si Yandex confirme le
+    visionnage. Une pub qui ne s'ouvre pas en 12 s est abandonnée ; une erreur retire l'offre
+    pour la visite (Yandex ne signale pas les bloqueurs de pub). Pas de bannière collante.
+  - **Langue** : celle que donne Yandex, devant la langue enregistrée.
+  - **Règles de la page** : ni numéro de version, ni lien de partage, ni menu contextuel ni
+    sélection dans tout le cadre, ni défilement ou rechargement par glissement ; sur un écran
+    de bureau plus large que 2:1, le cadre de jeu s'arrête à 2:1, centré.
+  - **Le script de paquet vérifie les règles mesurables** (taille, noms de fichiers, chemins
+    relatifs, SDK dans `<head>`, aucune requête externe ni SDK d'un autre portail) et zippe
+    avec des chemins « / ».
+  - Revue modérateur, fiche en quatre langues et étapes de publication :
+    [docs/YANDEX.md](docs/YANDEX.md).
+- **Les visuels de la fiche Yandex** (`node scripts/yandex-media.mjs`, dans
+  `release/yandex-media/`) : l'icône 512 × 512 (l'Œil au-dessus de sa tour, sans texte), la
+  couverture 800 × 470, quatre captures de vraies parties dans chacune des quatre langues
+  (deux sur ordinateur, deux sur téléphone) et deux vidéos de 25,5 s, en 16:9 et en 9:16.
+  Les vidéos sont tirées image par image des scènes du jeu, puis encodées en H.264 par Chrome
+  lui-même (WebCodecs) dans un MP4 que le script assemble : ni ffmpeg, ni téléchargement.
+- Tests : l'adaptateur Yandex face à un faux SDK (initialisation, repères, pauses, rythme des
+  sauvegardes, pubs et délais) ; quatre parcours Playwright sur le build Yandex (projet
+  `yandex`) ; en russe, à 320 et 360 px, l'objectif de quatre niveaux à réserve garde toute
+  sa largeur.
+
+### Modifié
+
+- **Les langues voisines mènent au russe**, sur tous les builds : un joueur dont le
+  navigateur demande le biélorusse, le kazakh, l'ukrainien ou l'ouzbek, et aucune des quatre
+  langues du jeu, lit le russe plutôt que l'anglais.
+- Une plateforme dit si une pause automatique compte comme un arrêt de jeu
+  (`stopsOnAutoPause` : oui sur Yandex, non sur CrazyGames et Playgama) et si le jeu montre
+  sa version (`showsVersion`). Les clés sauvegardées par les portails sont partagées
+  (`SAVED_KEYS`).
+- Les visuels CrazyGames et Yandex enregistrent les scènes du jeu par le même module
+  (`scripts/showcase-frames.mjs`), qui attend la vraie interface de la vitrine et non la
+  balise qui porte son nom.
+
+### Corrigé
+
+- **La pulsation rouge du danger ne bat plus qu'en danger.** Avec tous les effets (le
+  réglage par défaut), la vignette serrée battait dès le premier niveau et à chaque partie,
+  le puits vide : son battement remplaçait l'intensité du danger au lieu de la moduler (de
+  0,75 à 0 quand tout était calme). Il bat maintenant sur une couche intérieure, de 75 à
+  100 % de ce que montre le danger, et seulement quand le danger la montre. Les captures
+  Yandex, prises avec ce défaut, sont refaites ; un parcours le vérifie avec tous les
+  effets.
+- **En portrait, l'objectif d'un niveau n'est plus écrasé à côté de la réserve** : dans la
+  famille des chutes, la Tour et le Duel, il se glissait entre la réserve et les suivantes,
+  de 30 à 120 px de large sur un téléphone (au 2-2, son niveau sur trois lignes et sa phrase
+  coupée). Il prend maintenant toute la largeur de la bande, sous elles, comme dans la
+  Mosaïque. Dès 390 px, le niveau, l'objectif et le compte y tiennent sur une ligne, la
+  jauge dessous : le puits y perd au plus 6 % de sa taille (7 % pour la Tour) au lieu de 9
+  et 10 %. Aucun objectif coupé, dans les quatre langues, de 320 à 430 px.
+
 ## [1.29.0] — 23/10/2026
 
 L'entraînement des portails : sur CrazyGames et Playgama, un nouveau joueur arrive
