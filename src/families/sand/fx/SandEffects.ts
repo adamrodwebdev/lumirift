@@ -90,6 +90,7 @@ export class SandEffects {
         if (this.profile().shake) this.shake.kick(3);
       }),
       session.onGame('over', () => this.collapse()),
+      session.onGame('revive', () => this.onRevive()),
     ];
     return () => offs.forEach((off) => off());
   }
@@ -413,6 +414,12 @@ export class SandEffects {
     }
     this.hidden = true;
     if (profile.shake) this.shake.kick(4);
+  }
+
+  /** A lost game continues (1.31): the pile comes back, its top already blown away. */
+  private onRevive(): void {
+    this.hidden = false;
+    if (this.profile().shake) this.shake.kick(3);
   }
 
   /** Points that come in a stream (a blaze) gather into one popup that grows, then rises. */

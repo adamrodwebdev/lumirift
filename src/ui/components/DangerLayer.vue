@@ -2,13 +2,15 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import type { EffectsLevel } from '@/fx/EffectsProfile';
 import { useWellBox } from './useWellBox';
-import { REVEAL, splitCrack, wellCracks } from './wellCracks';
+import { REVEAL, wellCracks } from './wellCracks';
+import WellShatter from './WellShatter.vue';
 
 /**
  * The danger of a game, over its screen (1.19): as the stack rises, the rift
  * splits the well's glass with golden cracks and a violet-red vignette closes
  * in from the edges; a close call flashes the cracks gold, the relief heals
- * them, a defeat breaks the well. The effect level sets how much of it shows:
+ * them, a defeat shatters the glass while the vignette, crimson, beats the
+ * game's last heartbeats (1.31). The effect level sets how much of it shows:
  * a calmer version without motion, or, with no effects, a still red frame.
  */
 const props = defineProps<{
@@ -28,7 +30,6 @@ const props = defineProps<{
 const layer = ref<HTMLElement | null>(null);
 const { box, boxStyle } = useWellBox(() => props.well, layer);
 const cracks = computed(() => (box.value ? wellCracks(box.value.width, box.value.height) : []));
-const split = computed(() => (box.value ? splitCrack(box.value.width, box.value.height) : null));
 /** How much of a crack shows: it grows with the danger; a broken well shows them all. */
 const reveal = (from: number) =>
   props.broken ? 1 : Math.min(1, Math.max(0, (props.amount - from) / REVEAL));
@@ -107,12 +108,9 @@ const healing = moment(() => props.relief, 800);
             :stroke-dashoffset="crack.length * (1 - crack.shown)"
           />
         </g>
-        <g v-if="broken && split" class="danger__split">
-          <path class="danger__split-glow" :d="split.d" />
-          <path class="danger__split-core" :d="split.d" />
-        </g>
         <rect v-if="flashing" class="danger__flash" width="100%" height="100%" />
       </svg>
+      <WellShatter v-if="broken && box" :box="box" :level="level" />
     </template>
     <div v-else-if="box && (amount > 0.05 || broken)" class="danger__frame" :style="boxStyle" />
   </div>
@@ -213,21 +211,32 @@ const healing = moment(() => props.relief, 800);
   animation: danger-heal 800ms ease-out both;
 }
 
-/* The defeat: a crack splits the well from rim to floor. */
-.danger__split-glow {
-  stroke: var(--rift-glow);
-  stroke-width: 16;
-  stroke-opacity: 0.45;
+/*
+ * The defeat (1.31): the golden cracks give way to the broken glass
+ * (WellShatter); the close vignette turns crimson and beats the game's last
+ * heartbeats, a slam then slower and slower, fading, so that only Play
+ * again keeps beating.
+ */
+.danger--broken .danger__cracks {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
 }
 
-.danger__split-core {
-  stroke: var(--rift-core);
-  stroke-width: 3;
+.danger--broken .danger__vignette--close::before {
+  background: radial-gradient(
+    ellipse 74% 62% at 50% 40%,
+    transparent 32%,
+    var(--defeat-vignette-mid) 70%,
+    var(--defeat-vignette) 100%
+  );
 }
 
-.danger--full .danger__split path {
-  stroke-dasharray: 2000;
-  animation: danger-split 300ms ease-out both;
+.danger--full.danger--broken .danger__vignette--close::before {
+  animation: danger-last-beats 3s ease-in-out both;
+}
+
+.danger--reduced.danger--broken .danger__vignette--close::before {
+  animation: danger-last-beat 1.2s ease-out both;
 }
 
 /* No effects: a still red frame tells the danger. */
@@ -272,12 +281,68 @@ const healing = moment(() => props.relief, 800);
   }
 }
 
-@keyframes danger-split {
-  from {
-    stroke-dashoffset: 2000;
+/* A slam, then lub-dub beats that slow and fade (the same as the broken glass's light). */
+@keyframes danger-last-beats {
+  0% {
+    opacity: 0.55;
+  }
+  3% {
+    opacity: 1;
+  }
+  10% {
+    opacity: 0.62;
+  }
+  13% {
+    opacity: 0.8;
+  }
+  23% {
+    opacity: 0.5;
+  }
+  29% {
+    opacity: 0.92;
+  }
+  34% {
+    opacity: 0.6;
+  }
+  37% {
+    opacity: 0.74;
+  }
+  48% {
+    opacity: 0.46;
+  }
+  55% {
+    opacity: 0.76;
+  }
+  61% {
+    opacity: 0.5;
+  }
+  64% {
+    opacity: 0.58;
+  }
+  77% {
+    opacity: 0.4;
+  }
+  85% {
+    opacity: 0.52;
+  }
+  92% {
+    opacity: 0.4;
   }
   to {
-    stroke-dashoffset: 0;
+    opacity: 0.34;
+  }
+}
+
+/* Calmer effects: one beat, then a steady glow. */
+@keyframes danger-last-beat {
+  0% {
+    opacity: 0.4;
+  }
+  25% {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0.45;
   }
 }
 
@@ -289,7 +354,7 @@ const healing = moment(() => props.relief, 800);
 
   .danger--full .danger__vignette--close::before,
   .danger--full .danger__glow,
-  .danger--full .danger__split path {
+  .danger--full.danger--broken .danger__vignette--close::before {
     animation: none;
   }
 }

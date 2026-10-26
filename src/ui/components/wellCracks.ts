@@ -96,15 +96,3 @@ export function wellCracks(width: number, height: number): Crack[] {
   }
   return cracks;
 }
-
-/** The crack that splits the well from rim to floor when the game is lost. */
-export function splitCrack(width: number, height: number): Crack {
-  const random = new SeededRandom(Math.round(width) + Math.round(height) * 31);
-  const points: [number, number][] = [[width * (0.42 + 0.16 * random.next()), 0]];
-  const steps = 9;
-  for (let s = 1; s <= steps; s++) {
-    const swing = (random.next() - 0.5) * width * 0.22;
-    points.push([clamp(width / 2 + swing, width), (height * s) / steps]);
-  }
-  return { d: pathOf(points), length: lengthOf(points), from: 0 };
-}

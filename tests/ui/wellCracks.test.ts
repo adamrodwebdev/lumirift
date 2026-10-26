@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { splitCrack, wellCracks } from '@/ui/components/wellCracks';
+import { wellCracks } from '@/ui/components/wellCracks';
 
 const coordinates = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
 
@@ -20,13 +20,5 @@ describe('wellCracks', () => {
         expect(value).toBeLessThanOrEqual(i % 2 === 0 ? 300 : 600);
       });
     }
-  });
-
-  it('splits a lost well from its rim to its floor', () => {
-    const split = splitCrack(300, 600);
-    const values = coordinates(split.d);
-    expect(values[1]).toBe(0);
-    expect(values.at(-1)).toBe(600);
-    expect(split.length).toBeGreaterThanOrEqual(600);
   });
 });

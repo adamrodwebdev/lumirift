@@ -32,6 +32,10 @@
   /* Danger (1.19): the vignette closing in on the well, wide then close. */
   --danger-vignette: rgb(120 14 70 / 0.55);
   --danger-vignette-deep: rgb(64 4 36 / 0.72);
+  /* The defeat (1.31): the danger's red turned crimson, the broken glass red-hot. */
+  --defeat-vignette: rgb(214 18 62 / 0.92);
+  --defeat-vignette-mid: rgb(150 10 45 / 0.5);
+  --defeat-glow: #ff2d55;
   /* The rift surge: time thickens, cold light (1.25). */
   --surge: #8ee9ff;
   --surge-veil: rgb(46 120 190 / 0.34);
