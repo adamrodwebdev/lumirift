@@ -16,6 +16,9 @@ export const LOCK_DELAY_MS = 500;
 export const MAX_LOCK_RESETS = 15;
 export const PREVIEW_COUNT = 3;
 
+/** The ends a continue can undo: the stack overflowing, never the clock or a won game. */
+const REVIVABLE: ReadonlySet<GameOverReason> = new Set(['blockOut', 'lockOut', 'topOut']);
+
 /** A piece waiting in the queue or in the hold slot. */
 /** Points for each block a bomb blows away (times the level). */
 export const BLAST_POINTS = 40;
@@ -92,6 +95,8 @@ export class Game {
   private spawnCentre: number | null = null;
   /** Something was destroyed by the last lock: the next piece waits for the effects. */
   private pauseAfterLock = false;
+  /** The piece that found no room to enter: a continued game deals it first. */
+  private blocked: PieceSpec | null = null;
 
   constructor(
     readonly mode: GameMode,
@@ -205,6 +210,34 @@ export class Game {
     this._active = null;
     this.setState('over');
     this.events.emit('over', { reason });
+  }
+
+  /** The game was lost to its stack, in a mode that clears lines: a continue can bring it back. */
+  get revivable(): boolean {
+    const reason = this._overReason;
+    return (
+      this._state === 'over' && reason !== null && REVIVABLE.has(reason) && this.mode.clearsLines
+    );
+  }
+
+  /**
+   * A lost game continues (the rewarded continue, 1.31): the top `rows` of
+   * the stack blow away and play goes on, the piece that could not enter
+   * coming first, the hold free again.
+   */
+  revive(rows: number): void {
+    if (!this.revivable) return;
+    const cells = this.board.clearTopRows(rows);
+    this._overReason = null;
+    this._canHold = true;
+    this.softDropping = false;
+    this.spawnDelay = 0;
+    this.setState('running');
+    this.events.emit('revive', { cells });
+    const blocked = this.blocked;
+    this.blocked = null;
+    if (blocked) this.spawn(blocked);
+    else this.spawnNext();
   }
 
   // --- Player intentions ----------------------------------------------------
@@ -596,7 +629,10 @@ export class Game {
     }
     if (!this.board.fits(piece)) {
       if (this.rescue()) this.spawn(spec);
-      else this.finish('blockOut');
+      else {
+        this.blocked = spec;
+        this.finish('blockOut');
+      }
       return;
     }
     // Pieces enter the visible well right away when there is room.

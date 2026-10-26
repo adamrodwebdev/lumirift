@@ -38,6 +38,9 @@ class FakeSession {
   points = 0;
   timeLeftMs = 0;
   paused = 0;
+  /** Lost to its board: a continue can bring it back. */
+  revivable = false;
+  revived = 0;
   constructor(readonly options: SessionOptions) {}
   start() {
     this.state = 'running';
@@ -77,6 +80,16 @@ class FakeSession {
     this.state = 'over';
     this.events.emit('over', { reason });
   }
+  /** The game is lost to its board: it may continue. */
+  lose() {
+    this.revivable = true;
+    this.end('topOut');
+  }
+  revive() {
+    this.revived++;
+    this.revivable = false;
+    this.state = 'running';
+  }
   dispose() {}
 }
 
@@ -97,12 +110,13 @@ const OPEN: AdTuning = {
   intervalMs: 0,
   onLeave: true,
   rewardedAfterMs: 0,
+  continueAfterMs: 0,
 };
 
 /** A run with its doors stubbed; the last session it created, to play by hand. */
 function setUp(
   kind: RunKind,
-  { showsBest = true, rewarded = false, stopsOnAutoPause = false } = {},
+  { showsBest = true, rewarded = false, stopsOnAutoPause = false, tuning = OPEN } = {},
 ) {
   const scores = new ScoreBoard(new MemoryStorage());
   const sessions: FakeSession[] = [];
@@ -141,7 +155,7 @@ function setUp(
     campaign,
     platform,
     ads: new AdScheduler(
-      OPEN,
+      tuning,
       () => ({ playedMs: 0, adFree: false }),
       () => 0,
     ),
@@ -358,6 +372,98 @@ describe('GameRun', () => {
     expect(run.last?.campaign?.won).toBe(true);
     await run.adBreak(hooks, 'leave');
     expect(platform.midgameAd).toHaveBeenCalledOnce();
+  });
+
+  it('offers a lost game its continue; declined, the end settles as usual', async () => {
+    const { run, scores, platform, game } = setUp(new FreeRun('classic'), { rewarded: true });
+    scores.record('classic', 100);
+    const offer = vi.fn();
+    const over = vi.fn();
+    run.events.on('offer', offer);
+    run.events.on('over', over);
+    await run.start();
+    game().points = 140;
+    game().lose();
+    expect(run.phase).toBe('over');
+    expect(offer).toHaveBeenCalledWith({
+      offer: { reason: 'topOut', amount: 140, kind: 'score', best: 100 },
+    });
+    // Nothing settled yet: no record, no game over told, gameplay stopped.
+    expect(over).not.toHaveBeenCalled();
+    expect(scores.best('classic')).toBe(100);
+    expect(platform.gameplayStop).toHaveBeenCalledOnce();
+    expect(platform.gameOver).not.toHaveBeenCalled();
+
+    run.decline();
+    expect(run.offer).toBeNull();
+    expect(over).toHaveBeenCalledOnce();
+    expect(run.last).toMatchObject({ amount: 140, isNewBest: true, rewardOffered: false });
+    expect(scores.best('classic')).toBe(140);
+    expect(platform.gameOver).toHaveBeenCalledWith(false);
+  });
+
+  it('continues a lost game after the rewarded ad: play goes on, with no record to set', async () => {
+    const { run, scores, platform, game } = setUp(new FreeRun('classic'), { rewarded: true });
+    scores.record('classic', 100);
+    const best = vi.fn();
+    const continued = vi.fn();
+    run.events.on('best', best);
+    run.events.on('continued', continued);
+    await run.start();
+    game().points = 90;
+    game().lose();
+    // No ad played: the offer stands.
+    platform.rewardedAd.mockResolvedValueOnce(false);
+    expect(await run.continueGame({ onStart: () => {}, onEnd: () => {} })).toBe(false);
+    expect(run.offer).not.toBeNull();
+
+    expect(await run.continueGame({ onStart: () => {}, onEnd: () => {} })).toBe(true);
+    expect(game().revived).toBe(1);
+    expect(run.phase).toBe('playing');
+    expect(platform.gameplayStart).toHaveBeenCalledTimes(2);
+    expect(continued).toHaveBeenCalledOnce();
+    // The HUD stops chasing the record: this game cannot set one any more.
+    expect(best).toHaveBeenLastCalledWith({ best: null });
+
+    // Lost again: no second offer; a higher score is no record, and no second ad is offered.
+    const offer = vi.fn();
+    run.events.on('offer', offer);
+    game().points = 400;
+    game().lose();
+    expect(offer).not.toHaveBeenCalled();
+    expect(run.last).toMatchObject({ amount: 400, isNewBest: false, rewardOffered: false });
+    expect(scores.best('classic')).toBe(100);
+    // No interstitial right after it, either.
+    await run.adBreak({ onStart: () => {}, onEnd: () => {} }, 'replay');
+    expect(platform.midgameAd).not.toHaveBeenCalled();
+  });
+
+  it('offers no continue in a challenge, the training, without rewarded ads, or to a newcomer', async () => {
+    const daily = new DailyChallenge(new Date(2026, 9, 22), ['classic']);
+    const challenge = new GuardianChallenge(new Date(2026, 9, 22));
+    const cases = [
+      setUp(new DailyRun('classic', daily), { rewarded: true }),
+      setUp(new GuardianRun(challenge.modeId, challenge), { rewarded: true }),
+      setUp(new TrainingRun(TRAINING[0]!), { rewarded: true }),
+      setUp(new FreeRun('classic')),
+      setUp(new FreeRun('classic'), {
+        rewarded: true,
+        tuning: { ...OPEN, continueAfterMs: 5 * 60_000 },
+      }),
+    ];
+    for (const { run, game } of cases) {
+      const offer = vi.fn();
+      run.events.on('offer', offer);
+      await run.start();
+      game().lose();
+      expect(offer).not.toHaveBeenCalled();
+      expect(run.last).not.toBeNull();
+    }
+    // A game that ran out of time cannot continue: only a board lost can.
+    const { run, game } = setUp(new FreeRun('classic'), { rewarded: true });
+    await run.start();
+    game().end('timeUp');
+    expect(run.offer).toBeNull();
   });
 });
 

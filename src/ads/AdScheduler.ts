@@ -1,5 +1,11 @@
 import type { BreakMoment } from '@/platform/Platform';
-import { interstitialAllowed, rewardedAllowed, type AdTuning, type GameOutcome } from './AdPolicy';
+import {
+  continueAllowed,
+  interstitialAllowed,
+  rewardedAllowed,
+  type AdTuning,
+  type GameOutcome,
+} from './AdPolicy';
 
 /** What the scheduler reads of the player, each time it is asked. */
 export interface AdPlayer {
@@ -44,13 +50,18 @@ export class AdScheduler {
     );
   }
 
-  /** An interstitial really played: the interval starts. */
+  /** An ad really played (an interstitial, or a rewarded one the player chose): the interval starts. */
   adShown(): void {
     this.lastAdAt = this.now();
   }
 
-  /** Whether a rewarded offer may show (the double experience, later the continue and gifts). */
+  /** Whether a rewarded offer may show (the double experience, later the gifts). */
   get rewardedAllowed(): boolean {
     return rewardedAllowed(this.player().playedMs, this.tuning);
+  }
+
+  /** Whether a lost game may continue for an ad (1.31). */
+  get continueAllowed(): boolean {
+    return continueAllowed(this.player().playedMs, this.tuning);
   }
 }

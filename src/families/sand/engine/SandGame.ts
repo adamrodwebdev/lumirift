@@ -107,6 +107,8 @@ export interface SandEventMap {
   notice: { readonly id: string; readonly value?: number };
   /** A second chance: the bottom of the sand vanished instead of the game ending. */
   rescue: { readonly rows: number };
+  /** A lost game continues (1.31): the top of the pile blew away, these grains with it. */
+  revive: { readonly grains: readonly number[] };
   /** The Guardian of the level did something (see `DuneWorm`). */
   boss: { readonly event: WormEvent };
   /** The next chapter's Guardian passes under the sand (the campaign's teaser). */
@@ -450,6 +452,26 @@ export class SandGame {
     this.grid.calm();
     this.setState('over');
     this.events.emit('over', { reason });
+  }
+
+  /** The game was lost to its pile: a continue can bring it back. */
+  get revivable(): boolean {
+    return this._state === 'over' && this._overReason === 'blockOut';
+  }
+
+  /**
+   * A lost game continues (the rewarded continue, 1.31): the top `rows` of
+   * the pile (in cells) blow away and play goes on, the piece that could not
+   * enter coming first.
+   */
+  revive(rows: number): void {
+    if (!this.revivable) return;
+    const grains = this.grid.clearTopRows(rows * GRAINS_PER_CELL);
+    this._overReason = null;
+    this.softDropping = false;
+    this.setState('running');
+    this.events.emit('revive', { grains });
+    this.spawnNext();
   }
 
   // --- Player intentions ----------------------------------------------------
@@ -895,6 +917,9 @@ export class SandGame {
         this.spawnNext();
         return;
       }
+      // Kept for a continue: the same piece, at the same rank.
+      this.dealer.giveBack(spec);
+      this.spawned--;
       this.finish('blockOut');
       return;
     }

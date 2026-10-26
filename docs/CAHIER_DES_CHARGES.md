@@ -1706,13 +1706,18 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames (1.2), Playgama (1.4), Yandex Games (1.30) livrés |
 | 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                                                        |
 | 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, boutique                         | Prévu                                                        |
-| 16  | Accroche et courbe (1.32) : entraînement 2.0, bot de courbe, clémence                                      | Prévu                                                        |
-| 17  | Cadeaux et collections (1.33) : calendrier de sept jours, collections, série affichée                      | Prévu                                                        |
-| 18  | Événements et saison 1 (1.34) : élément de la semaine, saisons de six semaines                             | Prévu                                                        |
-| 19  | Dunes, le test web (1.35) : sable posé, trois pièces en main, sans chrono                                  | Prévu                                                        |
-| 20  | Niveaux générés (1.36) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
+| 16  | Accroche et courbe (1.34) : entraînement 2.0, bot de courbe, clémence                                      | Prévu                                                        |
+| 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Prévu                                                        |
+| 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Prévu                                                        |
+| 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Prévu                                                        |
+| 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
 | 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
 | 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
+| 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Prévu                                                        |
+| 24  | Course contre la montre (1.33) : le monde change toutes les 40 s, Gardiens surprises                       | Prévu                                                        |
+
+Ordre de sortie (décidé le 26/10/2026) : lot 15 (1.31), lots 23 (1.32) et 24 (1.33), puis
+lots 16 à 20 (1.34 à 1.38), lot 21 (2.0) et lot 22.
 
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 98 en
 Performance (95 jusqu'à la 1.19.0), ni sous 95 dans les trois autres catégories.
@@ -1747,34 +1752,34 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
   - Porte : une ligne 1.31 par canal vivant dans la feuille de mesures, temps de jeu moyen et
     pubs par partie au moins égaux à la 1.30, aucune plainte sur les pubs dans les dix
     sessions.
-- **Lot 16 · 1.32 Accroche et courbe.** L'entraînement 2.0 ouvre sur un tableau où la première
+- **Lot 16 · 1.34 Accroche et courbe.** L'entraînement 2.0 ouvre sur un tableau où la première
   pièce déclenche une chaîne de chocs où qu'elle tombe, et le Ver surgit avant 50 s. Une fiche
   de rythme par niveau ; un bot de courbe à trois niveaux de joueur (`CurveBot`,
   `CurveReport` : temps sous pression, temps mort, quasi-défaites, pic) ; un débutant frôle la
   défaite dès les niveaux 2-3, avec une clémence près du haut (`MercyRule`) qui s'efface au
   chapitre 4 ; les signaux de danger sous les pics simulés. Porte : dix inconnus voient un choc
   et le Ver avant 60 s ; 80 % des joueurs du bac à sable passent la minute.
-- **Lot 17 · 1.33 Cadeaux et collections.** Un calendrier de sept jours (`DailyGifts`,
+- **Lot 17 · 1.35 Cadeaux et collections.** Un calendrier de sept jours (`DailyGifts`,
   `GiftService`, `DailyGiftDialog`) : de l'expérience les jours 1 à 6, une apparence le
   jour 7 ; un jour manqué met le cycle en pause, sans rien reprendre ; le doublement par pub
   après la grâce. Des collections d'apparences qui débloquent une ambiance ; la série (jours de
   défi du jour) enfin affichée, avec un bonus à 3, 7, 14 et 30 jours ; un cadeau de retour
   après sept jours d'absence. Porte : la rétention à 7 jours monte sur les tableaux de bord des
   portails.
-- **Lot 18 · 1.34 Événements et saison 1.** Un calendrier daté sans serveur
+- **Lot 18 · 1.36 Événements et saison 1.** Un calendrier daté sans serveur
   (`EventCalendar`, comme le défi du Gardien) : un élément par semaine, plus fréquent dans les
   modes libres du Sable, avec un objectif hebdomadaire ; des saisons de six semaines (saison 1
   du 14/12/2026 au 24/01/2027) avec une piste gratuite d'apparences et une piste premium,
   d'apparences seules, là où le port d'achats existe ; les saisons 2 et 3 en données. Porte : la
   saison 1 ouvre et ferme à l'heure.
-- **Lot 19 · 1.35 Dunes, le test web.** Un mode calme de la famille Sable : trois pièces en
+- **Lot 19 · 1.37 Dunes, le test web.** Un mode calme de la famille Sable : trois pièces en
   main, glissées sur un plateau de 9 × 12 cases où elles s'effritent ; une couleur qui relie
   les deux murs s'efface ; ni chrono ni chute ; une des trois pièces rentre toujours (prouvé
   par un solveur, comme les mains de la Mosaïque) ; un échange gratuit par partie, d'autres
   gagnés en jouant ; les éléments et le Ver. Porte : sur plus de 1 000 parties, deux builds de
   bac à sable (environ 300 $ de trafic), il bat le Sable en temps de jeu et en sessions de plus
   de 3 minutes ; sinon il est abandonné.
-- **Lot 20 · 1.36 Niveaux générés.** Un générateur par famille sur une graine
+- **Lot 20 · 1.38 Niveaux générés.** Un générateur par famille sur une graine
   (`LevelGenerator`), qui ne garde que les niveaux dans la bande du bot de courbe ; les
   chapitres 6 à 10 ; de 34 à plus de 300 niveaux, livrés en données ; un paquet tous les
   quinze jours (`PackRun`).

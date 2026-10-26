@@ -1,5 +1,6 @@
 import { Emitter, type Listener } from '@/core/Emitter';
 import type { ComboView } from '@/session/ComboGauge';
+import { CONTINUE_FREES } from '@/session/ContinueRule';
 import type { BossId, BossStatus, GuideLine, TrainingStage } from '@/session/GameSession';
 import { WORM_HEALTH, type DuneWorm } from './engine/DuneWorm';
 import type { FallingCommand } from '@/families/falling/FallingSession';
@@ -146,6 +147,14 @@ export class SandSession implements GameSession<FallingCommand> {
     // A worm passing by in a teaser is not a fight.
     if (!worm || this.game.isTeasing) return null;
     return { id: 'duneWorm', health: worm.health, maxHealth: WORM_HEALTH };
+  }
+
+  get revivable(): boolean {
+    return this.game.revivable;
+  }
+
+  revive(): void {
+    this.game.revive(CONTINUE_FREES.sand);
   }
 
   /** A Guardian passes under the sand: the game is over, its world still moves. */

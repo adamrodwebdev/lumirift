@@ -22,17 +22,20 @@ export interface AdTuning {
   readonly onLeave: boolean;
   /** A new player's play before any rewarded offer. */
   readonly rewardedAfterMs: number;
+  /** A new player's play before a lost game may continue for an ad (1.31). */
+  readonly continueAfterMs: number;
 }
 
 const MINUTE = 60_000;
 
-/** Eight minutes before a newcomer's first interstitial, three for rewards and each visit. */
+/** Eight minutes before a newcomer's first interstitial, three for rewards and each visit, five to continue. */
 const STANDARD: AdTuning = {
   firstAfterMs: 8 * MINUTE,
   visitGraceMs: 3 * MINUTE,
   intervalMs: 3 * MINUTE,
   onLeave: true,
   rewardedAfterMs: 3 * MINUTE,
+  continueAfterMs: 5 * MINUTE,
 };
 
 /** Each channel's pacing; null where the game shows no ad (our site, the demo). */
@@ -76,6 +79,11 @@ export function interstitialAllowed(context: BreakContext, tuning: AdTuning | nu
 /** Whether a rewarded offer may show: never in a new player's first minutes. */
 export function rewardedAllowed(playedMs: number, tuning: AdTuning | null): boolean {
   return tuning !== null && playedMs >= tuning.rewardedAfterMs;
+}
+
+/** Whether a lost game may continue for an ad: a newcomer learns to lose first. */
+export function continueAllowed(playedMs: number, tuning: AdTuning | null): boolean {
+  return tuning !== null && playedMs >= tuning.continueAfterMs;
 }
 
 /** The ends a player feels as losing: the well or the board full, the duel lost, no piece left. */

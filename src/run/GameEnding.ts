@@ -81,6 +81,10 @@ export interface FinishedGame {
   readonly verdict: CampaignOutcome | null;
   /** A Guardian the won level teased passes before the end window. */
   readonly teased: boolean;
+  /** The player continued this game once (1.31): it sets no record. */
+  readonly continued: boolean;
+  /** A continue was offered for this game: its end offers no second ad. */
+  readonly continueOffered: boolean;
   /** What the game tells the progression, given how it ended. */
   report(
     game: Pick<GameReport, 'modeId' | 'daily' | 'guardian' | 'variant' | 'reason' | 'boss'>,
@@ -100,9 +104,11 @@ export class GameEnding {
     const { kind, result, reason, verdict } = game;
     const { scores, platform } = this.ports;
     const score = kind.score(result, reason, game.timeLeftMs);
+    // A continued game sets no record: its second life was an ad's.
+    const records = kind.records && !game.continued;
     // Read before this game is recorded: the record it may beat.
-    const previousBest = kind.records ? scores.best(kind.recordKey) : null;
-    const record = kind.records
+    const previousBest = records ? scores.best(kind.recordKey) : null;
+    const record = records
       ? scores.record(kind.recordKey, score.amount)
       : { best: scores.best(kind.recordKey) ?? score.amount, isNewBest: false };
     const report = game.report({
@@ -135,11 +141,13 @@ export class GameEnding {
         ? { campaign: this.judge(verdict, game.teased, kind.level) }
         : {}),
       ...(score.breakdown ? { guardian: score.breakdown } : {}),
-      // No ad in the training, nor in a new player's first minutes (the ad policy).
+      // No ad in the training, nor in a new player's first minutes (the ad
+      // policy), nor a second one after the continue's offer.
       rewardOffered:
         platform.supportsRewarded &&
         progress.total > 0 &&
         !kind.training &&
+        !game.continueOffered &&
         this.ports.ads.rewardedAllowed,
     };
   }
