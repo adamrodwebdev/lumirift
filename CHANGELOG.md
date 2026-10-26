@@ -67,7 +67,9 @@ en portrait.
   famille des chutes, la Tour et le Duel, il se glissait entre la réserve et les suivantes,
   de 30 à 120 px de large sur un téléphone (au 2-2, son niveau sur trois lignes et sa phrase
   coupée). Il prend maintenant toute la largeur de la bande, sous elles, comme dans la
-  Mosaïque.
+  Mosaïque. Dès 390 px, le niveau, l'objectif et le compte y tiennent sur une ligne, la
+  jauge dessous : le puits y perd au plus 6 % de sa taille (7 % pour la Tour) au lieu de 9
+  et 10 %. Aucun objectif coupé, dans les quatre langues, de 320 à 430 px.
 
 ## [1.29.0] — 23/10/2026
 

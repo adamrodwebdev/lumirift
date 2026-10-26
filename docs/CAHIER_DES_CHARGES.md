@@ -1005,8 +1005,8 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 - Le puits occupe la hauteur disponible (`dvh`) en gardant son rapport 1:2.
 - **Écran de jeu** (1.7) : aucune page ne défile ni n'a d'en-tête pendant une partie. Une
   seule grille, aux zones nommées : en **portrait**, une bande en haut (pause, score, son ;
-  réserve et suivantes ; l'objectif d'un niveau sur toute la largeur, sous elles, depuis la
-  1.30 ; indicateurs), puis le puits sur toute la largeur ; en
+  réserve et suivantes ; l'objectif d'un niveau sur toute la largeur, sous elles, sur une
+  ligne dès 390 px, depuis la 1.30 ; indicateurs), puis le puits sur toute la largeur ; en
   **paysage**, le puits au centre sur toute la hauteur, le tableau de bord et la réserve à
   gauche, les suivantes (et l'adversaire du Duel) à droite. Les scènes des familles n'ont pas
   de boîte (`display: contents`) : chaque partie nomme sa zone. Mesures : cases de 32 px en

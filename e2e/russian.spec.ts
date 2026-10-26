@@ -148,11 +148,11 @@ test('every screen keeps its Russian words inside, from 320 px to the desktop', 
   }
 });
 
-test('a level’s goal keeps its whole width beside a hold box, on a phone', async ({
+test('a level’s goal stays whole on a phone: its own row beside a hold box, one line when wide', async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'desktop', 'Own sizes: once is enough');
-  test.setTimeout(180_000);
+  test.setTimeout(240_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   // Every level open: the map turns to any chapter.
   const stars: Record<string, number> = {};
@@ -162,13 +162,16 @@ test('a level’s goal keeps its whole width beside a hold box, on a phone', asy
     (all) => localStorage.setItem('stackrift:campaign', JSON.stringify({ stars: all, ranks: {} })),
     stars,
   );
-  // Classic, the Flip and its button, a duel, the Tower: the hold box's families (1.30 fix).
+  // Classic, the Flip and its button, a duel, the Tower: the hold box's families (1.30 fix);
+  // the longest goals, the Guardians': the Heart (a hold box) and the Golem (the Mosaic).
+  // From 390 px, the card's level, goal and count share one line (21em of card).
   for (const [width, height] of [
     [320, 568],
     [360, 640],
+    [390, 844],
   ] as const) {
     await page.setViewportSize({ width, height });
-    for (const id of ['1-3', '2-2', '1-6', '4-3']) {
+    for (const id of ['1-3', '2-2', '1-6', '4-3', '5-7', '3-7']) {
       await page.goto('/');
       await tab(page, 'Карта').click();
       const map = panel(page, 'Карта');
@@ -189,16 +192,21 @@ test('a level’s goal keeps its whole width beside a hold box, on a phone', asy
         const level = card.querySelector('.goal__level')!;
         const text = card.querySelector('.goal__text')!;
         const line = parseFloat(getComputedStyle(level).lineHeight);
+        const levelBox = level.getBoundingClientRect();
+        const textBox = text.getBoundingClientRect();
+        const middle = (levelBox.top + levelBox.bottom) / 2;
         return {
-          levelOnOneLine: level.getBoundingClientRect().height < line * 1.5,
+          levelOnOneLine: levelBox.height < line * 1.5,
           textWhole: text.scrollHeight <= text.clientHeight + 1,
           wide: card.getBoundingClientRect().width >= window.innerWidth * 0.8,
+          oneRow: textBox.top <= middle && middle <= textBox.bottom,
         };
       });
       expect(fit, `${width} × ${height}: ${id}`).toEqual({
         levelOnOneLine: true,
         textWhole: true,
         wide: true,
+        oneRow: width >= 390,
       });
     }
   }
