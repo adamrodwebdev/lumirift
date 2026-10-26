@@ -1,3 +1,4 @@
+import type { AdScheduler } from '@/ads/AdScheduler';
 import type { CampaignOutcome } from '@/campaign/CampaignRun';
 import { guardianLevel, LEVELS, type CampaignLevel } from '@/campaign/Levels';
 import { nextTrainingStep, type TrainingStep, type TrainingStepId } from '@/campaign/Training';
@@ -64,6 +65,8 @@ export interface EndingPorts {
     starsOf(levelId: string): number;
   };
   readonly platform: Pick<Platform, 'edition' | 'gameOver' | 'happyTime' | 'supportsRewarded'>;
+  /** The ad policy: whether a rewarded offer may show yet. */
+  readonly ads: Pick<AdScheduler, 'rewardedAllowed'>;
   readonly today: () => Date;
 }
 
@@ -132,8 +135,12 @@ export class GameEnding {
         ? { campaign: this.judge(verdict, game.teased, kind.level) }
         : {}),
       ...(score.breakdown ? { guardian: score.breakdown } : {}),
-      // No ad in the training.
-      rewardOffered: platform.supportsRewarded && progress.total > 0 && !kind.training,
+      // No ad in the training, nor in a new player's first minutes (the ad policy).
+      rewardOffered:
+        platform.supportsRewarded &&
+        progress.total > 0 &&
+        !kind.training &&
+        this.ports.ads.rewardedAllowed,
     };
   }
 

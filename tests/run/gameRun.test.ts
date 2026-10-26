@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { AdTuning } from '@/ads/AdPolicy';
+import { AdScheduler } from '@/ads/AdScheduler';
 import { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import { levelById } from '@/campaign/Levels';
 import { TRAINING } from '@/campaign/Training';
@@ -88,6 +90,15 @@ const PROGRESS: GameProgress = {
   streak: 0,
 };
 
+/** An ad policy with no grace and no interval: only the run's own rules hold ads back. */
+const OPEN: AdTuning = {
+  firstAfterMs: 0,
+  visitGraceMs: 0,
+  intervalMs: 0,
+  onLeave: true,
+  rewardedAfterMs: 0,
+};
+
 /** A run with its doors stubbed; the last session it created, to play by hand. */
 function setUp(
   kind: RunKind,
@@ -129,6 +140,11 @@ function setUp(
     profile,
     campaign,
     platform,
+    ads: new AdScheduler(
+      OPEN,
+      () => ({ playedMs: 0, adFree: false }),
+      () => 0,
+    ),
     today: () => new Date(2026, 9, 22),
     seed: () => 7,
   };
@@ -305,12 +321,42 @@ describe('GameRun', () => {
     expect(platform.happyTime).toHaveBeenCalledOnce();
     await run.adBreak({ onStart: () => {}, onEnd: () => {} }, 'replay');
     expect(platform.midgameAd).not.toHaveBeenCalled();
-    // Another game: no reward to double twice; its break shows the portal's ad.
+    // Another game, run out on the clock: no reward watched, so its break shows the portal's ad.
     await run.start();
-    game().end('topOut');
+    game().end('timeUp');
     platform.rewardedAd.mockResolvedValueOnce(false);
     expect(await run.doubleExperience({ onStart: () => {}, onEnd: () => {} })).toBe('refused');
     await run.adBreak({ onStart: () => {}, onEnd: () => {} }, 'leave');
+    expect(platform.midgameAd).toHaveBeenCalledOnce();
+  });
+
+  it('never shows an interstitial after a defeat: a won game, or one run out, may have one', async () => {
+    const { run, platform, game } = setUp(new FreeRun('classic'));
+    const hooks = { onStart: () => {}, onEnd: () => {} };
+    await run.start();
+    game().end('topOut');
+    await run.adBreak(hooks, 'replay');
+    expect(platform.midgameAd).not.toHaveBeenCalled();
+    await run.start();
+    game().end('victory');
+    await run.adBreak(hooks, 'replay');
+    expect(platform.midgameAd).toHaveBeenCalledOnce();
+  });
+
+  it('judges a campaign level by its verdict: lost, no interstitial; won, one', async () => {
+    const level = levelById('1-2')!;
+    const { run, platform, game } = setUp(new LevelRun(level.modeId, level, {}));
+    const hooks = { onStart: () => {}, onEnd: () => {} };
+    await run.start();
+    game().end('topOut');
+    expect(run.last?.campaign?.won).toBe(false);
+    await run.adBreak(hooks, 'replay');
+    expect(platform.midgameAd).not.toHaveBeenCalled();
+    await run.start();
+    game().clear(level.goal.target);
+    run.update(16);
+    expect(run.last?.campaign?.won).toBe(true);
+    await run.adBreak(hooks, 'leave');
     expect(platform.midgameAd).toHaveBeenCalledOnce();
   });
 });

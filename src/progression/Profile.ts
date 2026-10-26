@@ -56,6 +56,8 @@ export interface ProfileData {
   readonly guardianDay: string | null;
   /** The portals' training is over (won or passed): a portal opens on its menus. */
   readonly trained: boolean;
+  /** Real play since the first launch (ms, pauses and menus excluded): the ads' grace reads it. */
+  readonly playedMs: number;
 }
 
 /** What a game brought, for the end-of-game dialog. */
@@ -82,6 +84,7 @@ export const EMPTY_PROFILE: ProfileData = {
   bosses: [],
   guardianDay: null,
   trained: false,
+  playedMs: 0,
 };
 
 const COSMETIC_KEYS = new Set(COSMETICS.map(cosmeticKey));
@@ -213,6 +216,7 @@ export class Profile {
       ...this.data,
       xp: before.xp + total,
       games: before.games + 1,
+      playedMs: before.playedMs + Math.max(0, Math.round(report.durationMs)),
       objectivesDone: before.objectivesDone + completed.length,
       streak,
       objectives,
@@ -304,6 +308,7 @@ export class Profile {
           ? record.guardianDay
           : null,
       trained: record.trained === true,
+      playedMs: count('playedMs'),
     };
     // Saved before the Atelier marked its new looks: what was earned then is not new.
     const seen = Array.isArray(record.seen)

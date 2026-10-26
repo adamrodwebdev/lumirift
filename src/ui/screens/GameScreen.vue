@@ -78,6 +78,7 @@ const {
   audio,
   haptics,
   clock: today,
+  ads,
 } = useServices();
 const descriptor = catalog.get(props.modeId);
 
@@ -91,6 +92,7 @@ const run = new GameRun(runKindFor(props, campaign.current.ranks), descriptor.sh
   scores,
   profile,
   platform,
+  ads,
   today,
   campaign: {
     record: (outcome) => campaign.record(outcome),

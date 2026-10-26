@@ -1,3 +1,5 @@
+import { outcomeOf } from '@/ads/AdPolicy';
+import type { AdScheduler } from '@/ads/AdScheduler';
 import type { CampaignOutcome, CampaignRun, GoalProgress } from '@/campaign/CampaignRun';
 import type { LiveState } from '@/campaign/Goals';
 import { Emitter } from '@/core/Emitter';
@@ -41,6 +43,8 @@ export interface GameRunPorts extends EndingPorts {
       | 'rewardedAd'
       | 'stopsOnAutoPause'
     >;
+  /** The ad policy: whether a break may show an interstitial, and when one did. */
+  readonly ads: EndingPorts['ads'] & Pick<AdScheduler, 'breakAllowed' | 'adShown'>;
   /** A seed for a new game's pieces. */
   readonly seed: () => number;
 }
@@ -235,10 +239,24 @@ export class GameRun {
     return progress;
   }
 
-  /** Leaving a game's end: the portal may show an ad (never right after a rewarded one). */
+  /**
+   * Leaving a game's end: the portal may show an ad if the ad policy allows
+   * it (never after a defeat, nor in the first minutes), never right after a
+   * rewarded one. Its interval starts only if the ad really plays.
+   */
   async adBreak(hooks: AdHooks, moment: BreakMoment): Promise<void> {
-    if (this.kind.adBreaks && !this.rewardWatched)
-      await this.ports.platform.midgameAd(hooks, moment);
+    const ended = this.ended;
+    if (!ended || !this.kind.adBreaks || this.rewardWatched) return;
+    const { ads, platform } = this.ports;
+    if (!ads.breakAllowed(moment, outcomeOf(ended.reason, ended.campaign?.won ?? null))) return;
+    const shown: AdHooks = {
+      onStart: () => {
+        ads.adShown();
+        hooks.onStart();
+      },
+      onEnd: hooks.onEnd,
+    };
+    await platform.midgameAd(shown, moment);
   }
 
   /** The game is left: its session and its followers let go. */

@@ -1,6 +1,6 @@
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
 import { FULL_EDITION } from '../Edition';
-import type { AdHooks, BreakMoment, Platform } from '../Platform';
+import type { AdHooks, Platform } from '../Platform';
 import { SAVED_KEYS } from '../savedKeys';
 
 /** The part of the CrazyGames HTML5 SDK (v3) the game uses. */
@@ -37,14 +37,6 @@ declare global {
     CrazyGames?: { readonly SDK: CrazyGamesSdk };
   }
 }
-
-/**
- * No midgame ad before the player has played this long in the session: a
- * newcomer plays first. The portal asks for "a reasonable amount of
- * gameplay" before any ad, its pacing guide 3 to 5 minutes; its own cooldown
- * (3 minutes from the start) does not apply in its QA preview.
- */
-export const FIRST_AD_AFTER_MS = 3 * 60_000;
 
 /**
  * The CrazyGames Data module as the game's storage: progress follows the
@@ -103,33 +95,21 @@ export class CrazyGamesPlatform implements Platform {
   readonly locale: string | null;
   readonly storage: KeyValueStorage | null;
   private playing = false;
-  /** Time played in the session before the current stretch, and when that stretch began. */
-  private playedMs = 0;
-  private playingSince = 0;
 
-  private constructor(
-    private readonly sdk: CrazyGamesSdk | null,
-    private readonly now: () => number,
-  ) {
+  private constructor(private readonly sdk: CrazyGamesSdk | null) {
     this.locale = sdk?.user.systemInfo?.locale ?? null;
     this.storage = sdk ? new CrazyGamesStorage(sdk.data) : null;
   }
 
-  /** `now` is the clock the time played is measured with (tests pass their own). */
-  static async create(now: () => number = () => performance.now()): Promise<CrazyGamesPlatform> {
+  static async create(): Promise<CrazyGamesPlatform> {
     const sdk = window.CrazyGames?.SDK ?? null;
-    if (!sdk) return new CrazyGamesPlatform(null, now);
+    if (!sdk) return new CrazyGamesPlatform(null);
     try {
       await sdk.init();
     } catch {
-      return new CrazyGamesPlatform(null, now);
+      return new CrazyGamesPlatform(null);
     }
-    return new CrazyGamesPlatform(sdk.environment === 'disabled' ? null : sdk, now);
-  }
-
-  /** Time played in this session (paused, menus and game-over screens excluded). */
-  get timePlayedMs(): number {
-    return this.playedMs + (this.playing ? this.now() - this.playingSince : 0);
+    return new CrazyGamesPlatform(sdk.environment === 'disabled' ? null : sdk);
   }
 
   get muted(): boolean {
@@ -163,13 +143,11 @@ export class CrazyGamesPlatform implements Platform {
   gameplayStart(): void {
     if (this.playing) return;
     this.playing = true;
-    this.playingSince = this.now();
     this.sdk?.game.gameplayStart();
   }
 
   gameplayStop(): void {
     if (!this.playing) return;
-    this.playedMs += this.now() - this.playingSince;
     this.playing = false;
     this.sdk?.game.gameplayStop();
   }
@@ -183,14 +161,13 @@ export class CrazyGamesPlatform implements Platform {
   }
 
   /**
-   * A midgame ad between two games, never on the way to a menu (the portal
-   * forbids ads on navigation buttons), never in the first minutes of play.
+   * A midgame ad between two games, when the ad policy allows it (never on
+   * the way to a menu here: the portal forbids ads on navigation buttons).
    * The sound stops only when the ad really starts; an unfilled ad (or ads
    * off, as in Basic Launch) lets the game go on at once. The SDK itself
    * spaces ads (3 minutes at least).
    */
-  midgameAd(hooks: AdHooks, moment: BreakMoment): Promise<void> {
-    if (moment === 'leave' || this.timePlayedMs < FIRST_AD_AFTER_MS) return Promise.resolve();
+  midgameAd(hooks: AdHooks): Promise<void> {
     return this.requestAd('midgame', hooks).then(() => undefined);
   }
 
