@@ -70,6 +70,7 @@ describe('the ad policy', () => {
     expect(continueAllowed({ ...lost, sinceOfferMs: 10 * MINUTE }, playgama)).toBe(true);
     // Not on CrazyGames (another way to earn it first), nor where ads are off.
     expect(continueAllowed(lost, crazygames)).toBe(false);
+    expect(rewardedAllowed(60 * MINUTE, crazygames)).toBe(false);
     expect(continueAllowed(lost, AD_TUNING.web)).toBe(false);
   });
 

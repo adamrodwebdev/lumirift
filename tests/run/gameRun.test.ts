@@ -109,8 +109,8 @@ const OPEN: AdTuning = {
   visitGraceMs: 0,
   intervalMs: 0,
   onLeave: true,
+  rewarded: true,
   rewardedAfterMs: 0,
-  continues: true,
   continueAfterMs: 0,
   continueIntervalMs: 0,
   continueMinRunMs: 0,
@@ -466,7 +466,7 @@ describe('GameRun', () => {
     }
     // Not on CrazyGames yet, nor at every defeat, nor after a short run.
     for (const tuning of [
-      { ...OPEN, continues: false },
+      { ...OPEN, rewarded: false },
       { ...OPEN, continueMinRunMs: 2 * 60_000 },
     ]) {
       const { run, game } = setUp(new FreeRun('classic'), { rewarded: true, tuning });

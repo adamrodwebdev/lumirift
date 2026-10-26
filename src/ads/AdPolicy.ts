@@ -20,14 +20,14 @@ export interface AdTuning {
   readonly intervalMs: number;
   /** A break on the way to a menu may show one (CrazyGames forbids ads on navigation buttons). */
   readonly onLeave: boolean;
+  /**
+   * The channel offers rewarded ads (double experience, the continue).
+   * CrazyGames asks for another way to earn every ad's reward, and one revive
+   * a session at most: none there until an earned way exists.
+   */
+  readonly rewarded: boolean;
   /** A new player's play before any rewarded offer. */
   readonly rewardedAfterMs: number;
-  /**
-   * The channel offers the rewarded continue (1.31). CrazyGames asks for
-   * another way to earn every ad's reward and one revive a session at most:
-   * not there until an earned continue exists.
-   */
-  readonly continues: boolean;
   /** A new player's play before a lost game may continue for an ad. */
   readonly continueAfterMs: number;
   /** Play between two continue offers: never at every defeat (the portals forbid it). */
@@ -44,8 +44,8 @@ const STANDARD: AdTuning = {
   visitGraceMs: 3 * MINUTE,
   intervalMs: 3 * MINUTE,
   onLeave: true,
+  rewarded: true,
   rewardedAfterMs: 3 * MINUTE,
-  continues: true,
   continueAfterMs: 5 * MINUTE,
   continueIntervalMs: 10 * MINUTE,
   continueMinRunMs: 2 * MINUTE,
@@ -55,7 +55,7 @@ const STANDARD: AdTuning = {
 export const AD_TUNING: Readonly<Record<PlatformId, AdTuning | null>> = {
   web: null,
   demo: null,
-  crazygames: { ...STANDARD, onLeave: false, continues: false },
+  crazygames: { ...STANDARD, onLeave: false, rewarded: false },
   playgama: STANDARD,
   yandex: STANDARD,
 };
@@ -89,9 +89,9 @@ export function interstitialAllowed(context: BreakContext, tuning: AdTuning | nu
   );
 }
 
-/** Whether a rewarded offer may show: never in a new player's first minutes. */
+/** Whether a rewarded offer may show: where the channel has them, never in a new player's first minutes. */
 export function rewardedAllowed(playedMs: number, tuning: AdTuning | null): boolean {
-  return tuning !== null && playedMs >= tuning.rewardedAfterMs;
+  return tuning !== null && tuning.rewarded && playedMs >= tuning.rewardedAfterMs;
 }
 
 /** What the policy weighs when a game is lost to its board. */
@@ -112,7 +112,7 @@ export interface ContinueContext {
 export function continueAllowed(context: ContinueContext, tuning: AdTuning | null): boolean {
   return (
     tuning !== null &&
-    tuning.continues &&
+    tuning.rewarded &&
     context.playedMs >= tuning.continueAfterMs &&
     context.sinceOfferMs >= tuning.continueIntervalMs &&
     context.runMs >= tuning.continueMinRunMs
