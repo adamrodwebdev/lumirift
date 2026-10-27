@@ -126,6 +126,30 @@ Les tests de bout en bout et Lighthouse utilisent le build : lancez `npm run bui
 Les images de partage (`public/og-image.png`, icônes) se régénèrent avec
 `node scripts/social-images.mjs`.
 
+## Branches et déploiement
+
+- `main` est la branche de production : Netlify (projet `stackriftwebtech`) déploie chaque
+  envoi sur `main`, et chaque déploiement de production coûte des crédits.
+- Tout le travail se fait sur `dev` : une branche par version ou par étape, et sa pull
+  request vers `dev`, jamais vers `main`.
+- Publier, seulement sur demande : `dev` passe dans `main` en une fois (un seul déploiement
+  pour toutes les versions depuis la dernière), puis la version est marquée et l'on revient
+  sur `dev`.
+
+```bash
+git switch main && git merge --ff-only dev && git push origin main
+```
+
+```bash
+git tag -a vX.Y.Z -m "Lumirift Blocks X.Y.Z : …" && git push origin vX.Y.Z && git switch dev
+```
+
+- Netlify ne déploie que la branche de production (Branch deploys → « Deploy only the
+  production branch ») : les envois sur `dev` ne coûtent rien.
+- Des builds arrêtés ne rejouent pas les envois reçus entre-temps : une fois réactivés,
+  publier par un déploiement manuel (Deploys → Trigger deploy → Deploy project), qui emporte
+  tous les commits en attente.
+
 ## Mise en ligne
 
 Le build est un site statique, servi depuis n'importe quel dossier (chemins relatifs).
