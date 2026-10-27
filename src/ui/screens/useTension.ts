@@ -83,7 +83,10 @@ export function useTension(options: TensionOptions) {
     playing: boolean,
   ) => {
     elapsed += deltaMs;
-    well.value ??= options.root.value?.querySelector<HTMLElement>('.stage__well canvas') ?? null;
+    // Found again once its stage is replaced (the race's worlds).
+    if (!well.value?.isConnected) {
+      well.value = options.root.value?.querySelector<HTMLElement>('.stage__well canvas') ?? null;
+    }
     const running = playing && current?.state === 'running';
     // A pause freezes the danger (no relief for a game merely paused).
     if (running) tension.update(current.pressure(), deltaMs);

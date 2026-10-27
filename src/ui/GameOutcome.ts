@@ -13,6 +13,8 @@ export interface GameOutcome {
   readonly value: string;
   readonly best: string;
   readonly isNewBest: boolean;
+  /** Set for the race: the week's record after this game. */
+  readonly week?: { readonly best: string; readonly isNewBest: boolean };
   /** Experience, objectives and unlocks the game brought. */
   readonly progress: GameProgress;
   /** Set for a campaign level. */

@@ -12,8 +12,8 @@ export type ResultKind = 'score' | 'time';
 export interface Indicator {
   readonly id: string;
   readonly value: number;
-  /** `percent`: a value from 0 to 100. */
-  readonly format: 'count' | 'duration' | 'percent';
+  /** `percent`: a value from 0 to 100; `factor`: a multiplier (×2). */
+  readonly format: 'count' | 'duration' | 'percent' | 'factor';
 }
 
 /** A player intention, defined by each family (`{ type: 'hardDrop' }`…). */
@@ -41,6 +41,8 @@ export interface SessionEventMap {
   closeCall: { readonly points: number };
   /** Something worth announcing; `id` is the translation key suffix (`notice.<id>`). */
   notice: { readonly id: string; readonly value?: number };
+  /** The board overflowed and play went on, its top blown away (`overflowGoesOn`, the Rift Race). */
+  overflow: Readonly<Record<string, never>>;
   over: { readonly reason: string };
 }
 
@@ -56,6 +58,15 @@ export interface SessionOptions {
   readonly boosts?: Boosts;
   /** The early campaign's mercy (1.33): how much the threat slows near the top, 0 to 1. */
   readonly mercy?: number;
+  /** The level the game starts at, its gravity (the Rift Race's climb, 1.34); 1 by default. */
+  readonly startLevel?: number;
+  /** The Guardian comes with this much health (the Rift Race's, a third); full by default. */
+  readonly bossHealth?: number;
+  /**
+   * An overflow does not end the game (the Rift Race, 1.34): the top half of
+   * the board blows away (`CONTINUE_FREES`) and play goes on, with an `overflow` event.
+   */
+  readonly overflowGoesOn?: boolean;
   /** The gentle version of the mode, to teach it: none of its hazards (the Sand's wind and elements). */
   readonly calm?: boolean;
   /** The mode opens on its best moments, scripted (the first level of the campaign). */
@@ -124,6 +135,12 @@ export interface GameSession<C extends Command = Command> {
   boss?(): BossStatus | null;
   /** The share of the shape to fill that is filled (0 to 1); absent, or 0, where there is none. */
   filled?(): number;
+  /** The Guardian of the game leaves it for good (the Rift Race's, its time up); the game goes on. */
+  dismiss?(): void;
+  /** What is left on the board, in cells (the Rift Race's wipe scores it); absent where nothing is counted. */
+  remains?(): number;
+  /** The family of the board played now, where it changes (the Rift Race's worlds); absent: the session's own. */
+  boardFamily?(): FamilyId;
   /**
    * The game was lost to its board and can continue (the rewarded continue,
    * 1.31); absent where a game never continues (the duel).

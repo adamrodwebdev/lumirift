@@ -13,6 +13,8 @@ export const CONTINUE_FREES: Readonly<Record<FamilyId, number>> = {
   volume: 8,
   sand: 10,
   placement: 4,
+  // Only the race's clock ends it: each world blows away its own top at an overflow.
+  rift: 0,
 };
 
 /** How long the end window offers the continue before Play again takes the lead (ms). */

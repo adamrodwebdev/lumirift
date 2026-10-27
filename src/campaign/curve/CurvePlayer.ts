@@ -1,6 +1,6 @@
 import type { RandomSource } from '@/core/Random';
 import type { GameSession } from '@/session/GameSession';
-import type { CampaignLevel } from '../Levels';
+import type { Goal } from '../Goals';
 
 /** The three players every level is measured with (1.33). */
 export const PLAYER_SKILLS = ['newcomer', 'regular', 'expert'] as const;
@@ -19,12 +19,12 @@ export interface CurvePlayer {
   dispose(): void;
 }
 
-/** What a player sits down to: its game, its skill, its own draws, and the level (its goal is on screen). */
+/** What a player sits down to: its game, its skill, its own draws, and the goal on screen (none in a race). */
 export interface CurveSeat {
   readonly session: GameSession;
   readonly skill: PlayerSkill;
   readonly random: RandomSource;
-  readonly level: CampaignLevel;
+  readonly goal: Goal | null;
 }
 
 /** Makes a family's player for a seat at a game of that family. */

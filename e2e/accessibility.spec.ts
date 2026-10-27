@@ -71,6 +71,51 @@ for (const theme of ['dark'] as const) {
       });
     }
 
+    test('the race: its clock and worlds, the shift announced, a Guardian, the pause, its end', async ({
+      page,
+    }) => {
+      test.setTimeout(120_000);
+      await page.clock.install();
+      await page.evaluate(() => {
+        const won = ['1', '2', '3']
+          .flatMap((chapter) => [1, 2, 3, 4, 5, 6, 7].map((n) => `${chapter}-${n}`))
+          .filter((id) => id !== '1-7')
+          .concat(['4-1', '4-2', '4-3']);
+        const stars = Object.fromEntries(won.map((id) => [id, 2]));
+        localStorage.setItem('stackrift:campaign', JSON.stringify({ stars, ranks: {} }));
+      });
+      await page.reload();
+      await page.getByRole('tab', { name: 'Modes' }).click();
+      await modesPage(page)
+        .getByRole('button', { name: /^Course de la faille/ })
+        .click();
+      await modesPage(page).getByRole('button', { name: 'Jouer' }).click();
+      await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
+      await audit(page);
+      const play = async (ms: number) => {
+        for (let t = 0; t < ms; t += 100) await page.clock.fastForward(100);
+      };
+      // The second shift: announced with its Guardian, then the Guardian's card.
+      await play(78_500);
+      await expect(page.locator('.shift')).toBeVisible();
+      await audit(page);
+      await play(4_000);
+      await expect(page.getByRole('status', { name: /Œil de la Tour/ })).toBeVisible();
+      await audit(page);
+      await page.keyboard.press('KeyP');
+      await expect(page.getByRole('dialog', { name: 'Pause' })).toBeVisible();
+      await audit(page);
+      await page
+        .getByRole('dialog', { name: 'Pause' })
+        .getByRole('button', { name: 'Reprendre' })
+        .click();
+      await play(40_000);
+      await expect(page.getByRole('dialog', { name: 'Partie terminée' })).toBeVisible({
+        timeout: 10_000,
+      });
+      await audit(page);
+    });
+
     test('end of a game', async ({ page }) => {
       await openMode(page, 'Classique');
       const over = page.getByRole('dialog', { name: 'Partie terminée' });

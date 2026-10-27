@@ -7,6 +7,7 @@ import { boostsFor, nextRankCost, timeBonusMs, UPGRADES } from '@/campaign/Upgra
 import { MemoryStorage } from '@/services/KeyValueStorage';
 import { CAMPAIGN_KEY, CampaignService } from '@/services/CampaignService';
 import { NO_BOOSTS } from '@/session/Boosts';
+import { levelOpening, modeOpen } from '@/campaign/ModeUnlocks';
 import { MODE_IDS } from '@/session/ModeId';
 
 const state = (patch: Partial<LiveState> = {}): LiveState => ({
@@ -40,14 +41,33 @@ describe('Campaign levels', () => {
     expect(MAX_STARS).toBe(102);
   });
 
-  it('visits every mode of the game', () => {
+  it('visits every mode of the game, or opens it (the race, once its three worlds were seen)', () => {
     const played = new Set(LEVELS.map((level) => level.modeId));
-    for (const mode of MODE_IDS) expect(played.has(mode)).toBe(true);
+    for (const mode of MODE_IDS) expect(played.has(mode) || levelOpening(mode) !== null).toBe(true);
+    const race = levelOpening('race')!;
+    for (const world of ['classic', 'sand', 'tower'] as const) {
+      expect(LEVELS.slice(0, LEVELS.indexOf(race)).some((level) => level.modeId === world)).toBe(
+        true,
+      );
+    }
   });
 });
 
 describe('CampaignRun', () => {
   const lines = levelById('1-3')!; // 10 lines in 2 min 30
+
+  it('opens the race once the Tower’s first level is won, every other mode from the start', () => {
+    const fresh = new CampaignProgress({ stars: {}, ranks: {} });
+    expect(modeOpen('race', fresh)).toBe(false);
+    expect(modeOpen('tower', fresh)).toBe(true);
+    const towerWon = new CampaignProgress({
+      stars: Object.fromEntries(
+        LEVELS.slice(0, LEVELS.indexOf(levelById('4-3')!) + 1).map((l) => [l.id, 1]),
+      ),
+      ranks: {},
+    });
+    expect(modeOpen('race', towerWon)).toBe(true);
+  });
 
   it('ends the level as soon as a live goal is met, stars by the time left', () => {
     const run = new CampaignRun(lines, lines.timeLimitMs);

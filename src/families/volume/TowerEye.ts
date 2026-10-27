@@ -59,8 +59,18 @@ export interface EyeView {
   readonly charge: number;
 }
 
+/** How an Eye comes: where it looks first, when it first charges, with how much health. */
+export interface EyePace {
+  /** The column it starts on. */
+  readonly start?: number;
+  /** First charge after this long, so that the player sees it turn first (ms). */
+  readonly firstWatchMs?: number;
+  /** Its health (a race's comes weakened); full by default. */
+  readonly health?: number;
+}
+
 export class TowerEye implements EyeView {
-  private readonly life = new GuardianHealth();
+  private readonly life: GuardianHealth;
   private _state: EyeState = 'watch';
   private _centre: number;
   private timer: number;
@@ -70,16 +80,18 @@ export class TowerEye implements EyeView {
   constructor(
     private readonly columns: number,
     private readonly random: RandomSource,
-    start = 0,
-    /** First charge after this long, so that the player sees it turn first. */
-    firstWatchMs = 6000,
+    { start = 0, firstWatchMs = 6000, health }: EyePace = {},
   ) {
     this._centre = start;
     this.timer = firstWatchMs;
+    this.life = new GuardianHealth(health);
   }
 
   get health(): number {
     return this.life.health;
+  }
+  get maxHealth(): number {
+    return this.life.maxHealth;
   }
   get phase(): GuardianPhase {
     return this.life.phase;

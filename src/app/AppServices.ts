@@ -5,6 +5,7 @@ import { DEFAULT_KEYS } from '@/families/falling/input/KeyBindings';
 import { DRAG_SPEED } from '@/families/falling/input/phone/GestureTuning';
 import { DEFAULT_REPEAT } from '@/families/falling/input/RepeatTiming';
 import { detectLocale } from '@/i18n/locales';
+import { modeOpen } from '@/campaign/ModeUnlocks';
 import { allowsMode } from '@/platform/Edition';
 import { WebPlatform, type Platform } from '@/platform/Platform';
 import { ModeCatalog } from '@/session/ModeCatalog';
@@ -72,12 +73,13 @@ export function createBrowserServices(
   // CrazyGames both check that the game follows it).
   if (platform.locale) settings.chooseLocale(detectLocale([platform.locale], platform));
   const catalog = new ModeCatalog();
-  // Objectives only ask for modes this edition lets the player reach.
+  const campaign = new CampaignService(storage);
+  // Objectives only ask for modes the player can reach: in this edition, and open in the campaign.
   const profile = new ProfileService(storage, () =>
     catalog
       .list()
       .map((mode) => mode.id)
-      .filter((id) => allowsMode(platform.edition, id)),
+      .filter((id) => allowsMode(platform.edition, id) && modeOpen(id, campaign.model)),
   );
   const look = new WornLook(profile);
   new AmbianceController(look, settings, document.documentElement);
@@ -88,7 +90,7 @@ export function createBrowserServices(
     scores: new ScoreBoard(storage),
     profile,
     look,
-    campaign: new CampaignService(storage),
+    campaign,
     share: new ShareService(navigator),
     catalog,
     audio: AudioEngine.browser(),

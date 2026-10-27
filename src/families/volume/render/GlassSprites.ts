@@ -10,6 +10,9 @@ const rgba = ({ r, g, b }: Rgb, alpha: number) => `rgb(${r} ${g} ${b} / ${alpha}
  * (the tower is curved) and the tone's engraved motif.
  */
 export class GlassSprites {
+  /** The smallest block drawn: its gap on each side, and a pixel of glass. */
+  static readonly MIN_SIZE = 3;
+
   private readonly sprites = new Map<Tone, HTMLCanvasElement>();
 
   constructor(
@@ -37,6 +40,7 @@ export class GlassSprites {
     const rgb = this.palette.color(tone);
     const gap = Math.max(1, Math.round(s * 0.05));
     const inner = s - gap * 2;
+    if (inner < 1) return canvas;
 
     // Body: denser at the edges, as thick glass is.
     const body = ctx.createRadialGradient(s / 2, s / 2, inner * 0.1, s / 2, s / 2, inner * 0.75);

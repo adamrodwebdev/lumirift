@@ -76,6 +76,8 @@ export interface WormPace {
   readonly show?: { readonly warnMs: number; readonly exposedMs: number; readonly rise: number };
   /** Nothing hurts it before it has come out once: the player sees it first (the training). */
   readonly seenFirst?: boolean;
+  /** Its health (a race's comes weakened); full by default. */
+  readonly health?: number;
 }
 
 /**
@@ -105,7 +107,7 @@ export type WormEvent =
   | { readonly type: 'defeated' };
 
 export class DuneWorm {
-  private readonly life = new GuardianHealth();
+  private readonly life: GuardianHealth;
   private _state: WormState = 'roam';
   private timer: number;
   private stun = 0;
@@ -128,6 +130,7 @@ export class DuneWorm {
     private readonly pace: WormPace = {},
   ) {
     this.timer = pace.firstSurgeMs ?? 4000;
+    this.life = new GuardianHealth(pace.health);
     for (let k = 0; k < SEGMENTS; k++) {
       this.xs[k] = grid.width / 3 + k * 1.2;
       this.ys[k] = grid.height - 12;
@@ -139,6 +142,9 @@ export class DuneWorm {
   }
   get phase(): 1 | 2 | 3 {
     return this.life.phase;
+  }
+  get maxHealth(): number {
+    return this.life.maxHealth;
   }
   get state(): WormState {
     return this._state;

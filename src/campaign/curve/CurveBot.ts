@@ -1,6 +1,7 @@
 import { SeededRandom } from '@/core/Random';
 import { createFallingSession } from '@/families/falling';
 import { createPlacementSession } from '@/families/placement';
+import { createRaceSession } from '@/families/race';
 import { createSandSession } from '@/families/sand';
 import { createVolumeSession } from '@/families/volume';
 import { GameTracker } from '@/progression/GameReport';
@@ -63,7 +64,7 @@ export class CurveBot {
     const today = new Date(this.ports.today.getTime() + seed * DAY_MS);
     const session = this.ports.create(level.modeId, run.sessionOptions(seed, today));
     const random = new SeededRandom(seed ^ DECISION_SEEDS[skill]);
-    const player = this.ports.players[session.family]({ session, skill, random, level });
+    const player = this.ports.players[session.family]({ session, skill, random, goal: level.goal });
     const tracker = new GameTracker(session);
     const judge = run.campaignRun();
     const meter = new CurveMeter();
@@ -105,6 +106,7 @@ const SESSIONS: Readonly<Record<FamilyId, SessionFactory>> = {
   sand: createSandSession,
   placement: createPlacementSession,
   volume: createVolumeSession,
+  rift: createRaceSession,
 };
 
 /** The bot with the real games and players, playing on `today` with a regular's upgrades. */

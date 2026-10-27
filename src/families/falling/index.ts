@@ -1,4 +1,5 @@
 import { SeededRandom } from '@/core/Random';
+import { CONTINUE_FREES } from '@/session/ContinueRule';
 import type { GameSession, SessionOptions } from '@/session/GameSession';
 import { Mercy } from '@/session/Mercy';
 import type { FallingModeId, ModeId } from '@/session/ModeId';
@@ -76,7 +77,10 @@ export function createSoloSession(modeId: ModeId, options: SessionOptions): Fall
   // The last Guardian beats under the classic well.
   const mode =
     options.boss === 'riftHeart' && modeId === 'classic'
-      ? new RiftHeartMode(modeOptions(options))
+      ? new RiftHeartMode({
+          ...modeOptions(options),
+          ...(options.bossHealth === undefined ? {} : { bossHealth: options.bossHealth }),
+        })
       : SOLO_MODES[modeId](modeOptions(options));
   return new FallingSession(
     modeId,
@@ -84,6 +88,8 @@ export function createSoloSession(modeId: ModeId, options: SessionOptions): Fall
       random: options.random,
       lineClearDelayMs: LINE_CLEAR_DELAY_MS,
       mercy: Mercy.of('falling', options.mercy ?? 0),
+      ...(options.startLevel === undefined ? {} : { startLevel: options.startLevel }),
+      ...(options.overflowGoesOn ? { overflowFrees: CONTINUE_FREES.falling } : {}),
       ...(options.boosts ? { boosts: options.boosts } : {}),
     }),
   );

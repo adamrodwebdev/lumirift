@@ -1,5 +1,8 @@
-/** Families of games: each one has its own engine, renderer and commands. */
-export const FAMILY_IDS = ['falling', 'sand', 'placement', 'volume'] as const;
+/**
+ * Families of games: each one has its own engine, renderer and commands. The
+ * Rift Race (1.34) is a family of its own: it plays the others' worlds in turn.
+ */
+export const FAMILY_IDS = ['falling', 'sand', 'placement', 'volume', 'rift'] as const;
 export type FamilyId = (typeof FAMILY_IDS)[number];
 
 /** Modes of the falling family implemented so far (grows with each lot). */
@@ -28,6 +31,9 @@ export const SAND_MODE_IDS = ['sand'] as const;
 export const VOLUME_MODE_IDS = ['tower'] as const;
 export type VolumeModeId = (typeof VOLUME_MODE_IDS)[number];
 
+/** Modes of the rift: the race through the worlds (1.34). */
+export const RIFT_MODE_IDS = ['race'] as const;
+
 /** Modes played by the falling engine (`Game` + `GameMode`). */
 export type EngineModeId = FallingModeId | VolumeModeId;
 
@@ -36,5 +42,6 @@ export const MODE_IDS = [
   ...SAND_MODE_IDS,
   ...PLACEMENT_MODE_IDS,
   ...VOLUME_MODE_IDS,
+  ...RIFT_MODE_IDS,
 ] as const;
 export type ModeId = (typeof MODE_IDS)[number];

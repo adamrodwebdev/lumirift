@@ -1,3 +1,4 @@
+import { CONTINUE_FREES } from '@/session/ContinueRule';
 import type { GameSession, SessionOptions, TrainingStage } from '@/session/GameSession';
 import { Mercy } from '@/session/Mercy';
 import type { ModeId } from '@/session/ModeId';
@@ -65,6 +66,9 @@ export function createSandSession(modeId: ModeId, options: SessionOptions): Game
         : {}),
       ...(options.boosts ? { boosts: options.boosts } : {}),
       mercy: Mercy.of('sand', options.mercy ?? 0),
+      ...(options.startLevel === undefined ? {} : { startLevel: options.startLevel }),
+      ...(options.bossHealth === undefined ? {} : { bossHealth: options.bossHealth }),
+      ...(options.overflowGoesOn ? { overflowFrees: CONTINUE_FREES.sand } : {}),
     }),
   );
 }

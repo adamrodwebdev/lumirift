@@ -30,7 +30,7 @@ function until<T extends HeartEvent['type']>(heart: RiftHeart, type: T, limitMs 
 
 describe('The Heart of the Rift', () => {
   it('swells before it beats, showing the holes, then pushes its rows of rubble', () => {
-    const heart = new RiftHeart(10, new SeededRandom(2), 3000);
+    const heart = new RiftHeart(10, new SeededRandom(2), { firstBeatMs: 3000 });
     const swell = until(heart, 'swell');
     expect(heart.nextBeatMs).toBeLessThanOrEqual(SWELL_MS);
     expect(swell.rows).toHaveLength(1);
@@ -43,7 +43,7 @@ describe('The Heart of the Rift', () => {
   });
 
   it('beats faster and harder at the end: two rows sharing their hole, the well mirrored', () => {
-    const heart = new RiftHeart(10, new SeededRandom(2), 1000);
+    const heart = new RiftHeart(10, new SeededRandom(2), { firstBeatMs: 1000 });
     while (heart.phase < 3) heart.cleared(1, 1);
     heart.drain();
     const beat = until(heart, 'beat');
@@ -53,7 +53,7 @@ describe('The Heart of the Rift', () => {
   });
 
   it('is held back by lines cleared, but not once it swells', () => {
-    const heart = new RiftHeart(10, new SeededRandom(2), 5000);
+    const heart = new RiftHeart(10, new SeededRandom(2), { firstBeatMs: 5000 });
     heart.update(1000);
     heart.cleared(2, 0);
     expect(heart.nextBeatMs).toBe(4000 + 2 * HOLD_PER_LINE_MS);

@@ -85,6 +85,11 @@
     "tower": {
       "name": "Tour",
       "pitch": "Le puits s’enroule en cylindre de verre : une ligne fait le tour complet."
+    },
+    "race": {
+      "name": "Course de la faille",
+      "pitch": "Courez contre la montre dans le puits, le sable et la tour : chaque ligne rapporte du temps, et la faille change de monde toutes les 40 s.",
+      "tagline": "Trois mondes, un seul chrono"
     }
   },
   "hud": {
@@ -121,7 +126,8 @@
     "windIn": "Prochain coup de vent",
     "best": "Record",
     "newBest": "Nouveau record !",
-    "nextBeat": "Prochain battement"
+    "nextBeat": "Prochain battement",
+    "cycle": "Cycle"
   },
   "notice": {
     "closeCall": "De justesse ! +{value}",
@@ -289,7 +295,9 @@
       "note": "De temps en temps, jamais à chaque défaite.",
       "noAd": "Aucune pub disponible pour le moment. Réessayez, ou rejouez."
     },
-    "soClose": "Si près : un point du record | Si près : {n} points du record"
+    "soClose": "Si près : un point du record | Si près : {n} points du record",
+    "weekBest": "Record de la semaine",
+    "week": "Cette semaine : {value}"
   },
   "share": {
     "daily": "Lumirift · Défi du {date} ({mode}) : {value}. À vous de jouer : {url}",
@@ -629,11 +637,11 @@
   },
   "demo": {
     "title": "Démo.",
-    "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet compte treize modes et trente niveaux.",
+    "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet compte quatorze modes et trente-quatre niveaux.",
     "fullGame": "Jeu complet"
   },
   "title": {
-    "tagline": "13 façons de briser un bloc.",
+    "tagline": "14 façons de briser un bloc.",
     "play": "Jouer",
     "level": "Niveau {level} · {mode}",
     "space": "{key} pour jouer",
@@ -797,5 +805,67 @@
       "missed": "Il replonge… Guettez les prochaines fissures.",
       "hit": "Touché ! Le Ver replonge."
     }
+  },
+  "race": {
+    "clock": "Temps restant : {time}, {cap} secondes au plus",
+    "cap": "{n} s au plus",
+    "worlds": "Les mondes de la course",
+    "world": {
+      "well": "Puits",
+      "sand": "Sable",
+      "tower": "Tour"
+    },
+    "now": "en cours",
+    "in": "dans {time}",
+    "nextIn": "{world} dans {time}",
+    "rule": {
+      "well": "Complétez des lignes entières",
+      "sand": "Une zone s’efface quand une couleur relie les deux murs",
+      "tower": "Une ligne fait tout le tour de la tour"
+    },
+    "shifts": "La faille change de monde",
+    "announce": "La faille change de monde : {world}.",
+    "speedUp": "Plus vite !",
+    "double": "Les lignes comptent double jusqu’au balayage",
+    "gain": {
+      "clear": "+{s} s",
+      "combo": "+{s} s · combo ×{n}",
+      "hit": "+{s} s · touché",
+      "defeat": "+{s} s · Gardien vaincu !",
+      "shift": "+{s} s · nouveau monde",
+      "overflow": "−{s} s · débordement",
+      "points": "+{n}"
+    },
+    "guardian": {
+      "kicker": "Gardien · encore {s} s",
+      "left": "{s} s",
+      "worth": "touché +{hit} s · vaincu +{beaten} s",
+      "detail": "Chaque coup +{hit} s, vaincu +{beaten} s. Reparti dans {s} s, il ne coûte rien.",
+      "joins": {
+        "riftHeart": "Le Cœur de la faille entre en jeu",
+        "duneWorm": "Le Ver des dunes entre en jeu",
+        "towerEye": "L’Œil de la Tour entre en jeu"
+      },
+      "how": {
+        "riftHeart": "Effacez les éclats de ses décombres.",
+        "duneWorm": "Frappez sa tête quand il surgit.",
+        "towerEye": "Effacez des lignes sous son regard."
+      },
+      "beaten": {
+        "riftHeart": "Le Cœur de la faille est vaincu !",
+        "duneWorm": "Le Ver des dunes est vaincu !",
+        "towerEye": "L’Œil de la Tour est vaincu !"
+      },
+      "gone": {
+        "riftHeart": "Le Cœur de la faille est reparti.",
+        "duneWorm": "Le Ver des dunes est reparti.",
+        "towerEye": "L’Œil de la Tour est reparti."
+      }
+    },
+    "note": "Seul le chrono termine la course. Un débordement coûte {cost} s sans jamais laisser moins de {floor} s, et la moitié haute du plateau saute.",
+    "hurrah": "Terminé !",
+    "hurrahPoints": "Dernier feu : +{n}",
+    "locked": "S’ouvre au niveau {level}",
+    "new": "Nouveau"
   }
 }

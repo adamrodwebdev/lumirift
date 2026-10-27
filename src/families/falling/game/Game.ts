@@ -44,6 +44,11 @@ export interface GameOptions {
   readonly boosts?: Boosts;
   /** The early campaign's mercy: the fall slows near the top (none by default). */
   readonly mercy?: Mercy;
+  /**
+   * An overflow does not end the game (the Rift Race, 1.34): the top this
+   * many rows blow away and play goes on. 0, the default: it ends the game.
+   */
+  readonly overflowFrees?: number;
 }
 
 /**
@@ -65,6 +70,7 @@ export class Game {
   private readonly lineClearDelayMs: number;
   private readonly boosts: Boosts;
   private readonly mercy: Mercy;
+  private readonly overflowFrees: number;
   /** The second chance has not been used yet. */
   private rescueReady: boolean;
 
@@ -119,6 +125,7 @@ export class Game {
     this.lineClearDelayMs = options.lineClearDelayMs ?? 0;
     this.boosts = options.boosts ?? NO_BOOSTS;
     this.mercy = options.mercy ?? Mercy.NONE;
+    this.overflowFrees = options.overflowFrees ?? 0;
     this.rescueReady = this.boosts.rescueRows > 0;
     mode.attach(this);
   }
@@ -210,9 +217,14 @@ export class Game {
     if (!this.applyGravity(deltaMs)) this.applyLockDelay(deltaMs);
   }
 
-  /** Ends the game (time limit, top out…). */
+  /** Ends the game (time limit, top out…); in a race, an overflow blows the top away instead. */
   finish(reason: GameOverReason): void {
     if (this._state === 'over') return;
+    if (this.overflowFrees > 0 && this.overflows(reason)) {
+      this.events.emit('overflow', { cells: this.blowTopAway(this.overflowFrees) });
+      this.dealNext();
+      return;
+    }
     this._overReason = reason;
     this._active = null;
     this.setState('over');
@@ -222,9 +234,7 @@ export class Game {
   /** The game was lost to its stack, in a mode that clears lines: a continue can bring it back. */
   get revivable(): boolean {
     const reason = this._overReason;
-    return (
-      this._state === 'over' && reason !== null && REVIVABLE.has(reason) && this.mode.clearsLines
-    );
+    return this._state === 'over' && reason !== null && this.overflows(reason);
   }
 
   /**
@@ -234,14 +244,30 @@ export class Game {
    */
   revive(rows: number): void {
     if (!this.revivable) return;
-    const cells = this.board.clearTopRows(rows);
+    const cells = this.blowTopAway(rows);
     this._overReason = null;
-    this._canHold = true;
-    this.softDropping = false;
-    this.spawnDelay = 0;
     this.waiting = true;
     this.setState('running');
     this.events.emit('revive', { cells });
+    this.dealNext();
+  }
+
+  /** The stack overflowed (its game lost to it), in a mode that clears lines. */
+  private overflows(reason: GameOverReason): boolean {
+    return REVIVABLE.has(reason) && this.mode.clearsLines;
+  }
+
+  /** The top `rows` of the stack blow away: the falling piece with them, the hold free again. */
+  private blowTopAway(rows: number): readonly RemovedCell[] {
+    this._active = null;
+    this._canHold = true;
+    this.softDropping = false;
+    this.spawnDelay = 0;
+    return this.board.clearTopRows(rows);
+  }
+
+  /** The piece that found no room enters first, or the next one. */
+  private dealNext(): void {
     const blocked = this.blocked;
     this.blocked = null;
     if (blocked) this.spawn(blocked);

@@ -110,6 +110,8 @@ export interface SandEventMap {
   rescue: { readonly rows: number };
   /** A lost game continues (1.31): the top of the pile blew away, these grains with it. */
   revive: { readonly grains: readonly number[] };
+  /** The pile overflowed and play goes on (the Rift Race, 1.34): its top blew away, these grains with it. */
+  overflow: { readonly grains: readonly number[] };
   /** The Guardian of the level did something (see `DuneWorm`). */
   boss: { readonly event: WormEvent };
   /** The next chapter's Guardian passes under the sand (the campaign's teaser). */
@@ -139,12 +141,21 @@ export interface SandOptions {
   readonly bossDelayMs?: number;
   /** The Guardian cannot be hurt before it has come out once: the player sees it first (the training). */
   readonly bossSeenFirst?: boolean;
+  /** The Guardian comes with this much health (a race's, a third); full by default. */
+  readonly bossHealth?: number;
+  /** The level the game starts at (the Rift Race's climb); 1 by default. */
+  readonly startLevel?: number;
   /** The early campaign's mercy: the fall and the Wyrm slow near the top (none by default). */
   readonly mercy?: Mercy;
   /** A prepared well: bands of sand to work on (the home's reel, the portals' training). */
   readonly bed?: SandBed;
   /** Never lost (the portals' training): each time a piece cannot come in, the bottom empties. */
   readonly forgiving?: boolean;
+  /**
+   * An overflow does not end the game (the Rift Race, 1.34): the top this
+   * many rows (in cells) blow away and play goes on. 0, the default: it ends the game.
+   */
+  readonly overflowFrees?: number;
 }
 
 /**
@@ -193,6 +204,7 @@ export class SandGame {
   private rescueReady: boolean;
   /** Rescued every time: a game that cannot be lost. */
   private readonly forgiving: boolean;
+  private readonly overflowFrees: number;
   /** What the falling element would hit, cached for one grid step and one position. */
   private targetCache: { key: string; region: readonly number[] | null } = {
     key: '',
@@ -235,10 +247,13 @@ export class SandGame {
         ? new DuneWorm(this.grid, this.random, {
             ...(options.bossDelayMs === undefined ? {} : { firstSurgeMs: options.bossDelayMs }),
             ...(options.bossSeenFirst ? { seenFirst: true } : {}),
+            ...(options.bossHealth === undefined ? {} : { health: options.bossHealth }),
           })
         : null;
     this.rescueReady = this.boosts.rescueRows > 0;
     this.forgiving = options.forgiving ?? false;
+    this.overflowFrees = options.overflowFrees ?? 0;
+    this._level = options.startLevel ?? 1;
     // Drawn even in a calm game, so that a seed always deals the same pieces.
     this.wind = new SandWind(this.grid, this.random, (change) => {
       this.events.emit('wind', change);
@@ -407,6 +422,11 @@ export class SandGame {
    * (the training's, struck once) leaves it instead (1.29). Returns how long
    * its show lasts (ms), 0 when nothing shows.
    */
+  /** The Guardian of the well leaves it for good (a race's, its time up): it dives and swims away. */
+  dismissBoss(): void {
+    this._worm?.retreat();
+  }
+
   tease(): number {
     if (this._state !== 'running' || this.teasing || this._worm?.state === 'dead') return 0;
     this.teasing = true;
@@ -454,6 +474,14 @@ export class SandGame {
 
   finish(reason: SandOverReason): void {
     if (this._state === 'over') return;
+    if (reason === 'blockOut' && this.overflowFrees > 0) {
+      this._active = null;
+      this.softDropping = false;
+      const grains = this.grid.clearTopRows(this.overflowFrees * GRAINS_PER_CELL);
+      this.events.emit('overflow', { grains });
+      this.spawnNext();
+      return;
+    }
     this._overReason = reason;
     this._active = null;
     this.grid.calm();

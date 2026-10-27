@@ -209,6 +209,8 @@ export class FallingEffects {
       session.onGame('groove', ({ level, onBeat }) => this.onGroove(level, onBeat)),
       session.onGame('over', () => this.collapse()),
       session.onGame('revive', ({ cells }) => this.onRevive(cells)),
+      // A race's overflow: the same top blown away, the game never lost.
+      session.onGame('overflow', ({ cells }) => this.onRevive(cells)),
     ];
     return () => offs.forEach((off) => off());
   }

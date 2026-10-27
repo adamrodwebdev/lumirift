@@ -23,6 +23,8 @@ export const MERCY_RULES: Readonly<Record<FamilyId, MercyRule>> = {
   volume: { slowest: 0.4 },
   sand: { slowest: 0.5 },
   placement: { slowest: 1 },
+  // The race is not the campaign: its worlds keep their pace.
+  rift: { slowest: 1 },
 };
 
 /** The mercy strength of a campaign chapter (0 past the last listed). */

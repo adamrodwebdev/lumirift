@@ -242,6 +242,13 @@ export const wellBreak: SoundRecipe = (s) => {
   );
 };
 
+/** The Rift Race's wipe (1.34): the rift tears across the board, a rush of air over a deep pull. */
+export const riftTear: SoundRecipe = (s) => {
+  s.noise({ filter: 'bandpass', frequency: 220, to: 3200, q: 0.9, duration: 0.7, gain: 0.12 });
+  s.tone({ frequency: 82, to: 41, duration: 0.6, gain: 0.16 });
+  s.noise({ filter: 'highpass', frequency: 4000, duration: 0.3, gain: 0.04, start: 0.45 });
+};
+
 export const bonus: SoundRecipe = (s) => {
   s.tone({ frequency: degree(17), duration: 0.3, gain: 0.07 });
   s.tone({ frequency: degree(20), duration: 0.35, gain: 0.05, start: 0.06 });

@@ -43,6 +43,8 @@ export interface Ending {
   /** The record after this game. */
   readonly best: number;
   readonly isNewBest: boolean;
+  /** Set for the race: the week's record after this game. */
+  readonly week?: { readonly best: number; readonly isNewBest: boolean };
   /** Experience, objectives and unlocks the game brought. */
   readonly progress: GameProgress;
   /** Set for a campaign level. */
@@ -107,6 +109,8 @@ export class GameEnding {
     const record = kind.records
       ? scores.record(kind.recordKey, score.amount)
       : { best: scores.best(kind.recordKey) ?? score.amount, isNewBest: false };
+    const weekKey = kind.weekRecordKey(this.ports.today());
+    const week = weekKey === null ? null : scores.record(weekKey, score.amount);
     const report = game.report({
       modeId: kind.modeId,
       ...kind.progression,
@@ -131,6 +135,7 @@ export class GameEnding {
       kind: result.kind,
       best: record.best,
       isNewBest: record.isNewBest,
+      ...(week ? { week } : {}),
       progress,
       ...(verdict && kind.training ? { training: this.train(verdict, kind.training) } : {}),
       ...(verdict && !kind.training

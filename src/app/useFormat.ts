@@ -29,9 +29,13 @@ export function useFormat() {
   /** "90 %" — a share given from 0 to 100, rounded down. */
   const percent = (value: number): string => percents.value.format(Math.floor(value) / 100);
 
+  /** "×1.4", a multiplier. */
+  const factor = (value: number): string => `×${factors.value.format(value)}`;
+
   const indicator = (item: Indicator): string => {
     if (item.format === 'duration') return duration(item.value);
     if (item.format === 'percent') return percent(item.value);
+    if (item.format === 'factor') return factor(item.value);
     return number(item.value);
   };
 
@@ -42,9 +46,6 @@ export function useFormat() {
 
   /** "170 ms" (a setting's timing). */
   const milliseconds = (value: number): string => millis.value.format(value);
-
-  /** "×1.4", a multiplier. */
-  const factor = (value: number): string => `×${factors.value.format(value)}`;
 
   return { number, duration, percent, indicator, result, date, milliseconds, factor };
 }

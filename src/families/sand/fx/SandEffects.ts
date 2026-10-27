@@ -91,6 +91,7 @@ export class SandEffects {
       }),
       session.onGame('over', () => this.collapse()),
       session.onGame('revive', () => this.onRevive()),
+      session.onGame('overflow', () => this.onRevive()),
     ];
     return () => offs.forEach((off) => off());
   }

@@ -29,6 +29,11 @@ export class ScoreBoard {
     return `guardian:${weekKey}`;
   }
 
+  /** The week's best of the Rift Race (1.34), by the key of its Monday. */
+  static raceWeekKey(weekKey: string): string {
+    return `race:${weekKey}`;
+  }
+
   best(key: string): number | null {
     return this.records[key] ?? null;
   }
