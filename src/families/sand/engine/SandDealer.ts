@@ -8,6 +8,13 @@ import { SAND_TONES } from './SandGrid';
 /** At least this many sand pieces between two elements: never a streak of hazards. */
 export const ELEMENT_GAP = 3;
 
+/**
+ * The week's element (1.36): dealt from the first level, this many times as
+ * often as its usual weight, and elements a little more often overall.
+ */
+export const FEATURED_WEIGHT = 3;
+export const FEATURED_CHANCE = 0.05;
+
 export interface PieceSpec {
   readonly type: PieceType;
   readonly tone: Tone;
@@ -40,6 +47,8 @@ export interface DealRules {
   readonly script: ReadonlyMap<number, ScriptedPiece>;
   /** The ember upgrade: fire comes more often. */
   readonly fireBonus: number;
+  /** The week's element (a free game, 1.36), or null. */
+  readonly featured: ElementTone | null;
 }
 
 /**
@@ -107,13 +116,20 @@ export class SandDealer {
     }
   }
 
-  /** An element now and then, weighted, among those of this level; fire boosted by upgrades. */
+  /**
+   * An element now and then, weighted, among those of this level; fire
+   * boosted by upgrades, the week's element dealt from the start and more often.
+   */
   private drawElement(): ElementTone | null {
-    const { pace, fireBonus } = this.rules;
-    const roster = this.rules.elements ?? elementsAt(this.level());
-    if (roster.length === 0 || this.random.next() >= pace.chance + fireBonus) return null;
+    const { pace, fireBonus, featured } = this.rules;
+    const level = this.rules.elements ?? elementsAt(this.level());
+    const roster = featured === null || level.includes(featured) ? level : [...level, featured];
+    const chance = pace.chance + fireBonus + (featured === null ? 0 : FEATURED_CHANCE);
+    if (roster.length === 0 || this.random.next() >= chance) return null;
     const weight = (tone: ElementTone) =>
-      WEIGHT[tone] * (tone === Tone.Fire ? 1 + fireBonus * 10 : 1);
+      WEIGHT[tone] *
+      (tone === Tone.Fire ? 1 + fireBonus * 10 : 1) *
+      (tone === featured ? FEATURED_WEIGHT : 1);
     let roll = this.random.next() * roster.reduce((sum, tone) => sum + weight(tone), 0);
     for (const tone of roster) {
       roll -= weight(tone);

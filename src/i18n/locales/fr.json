@@ -453,7 +453,8 @@
     "combo": "Enchaîner {size} effacements",
     "survive": "Tenir {size} minutes dans une partie",
     "daily": "Terminer le défi du jour",
-    "duel": "Battre l’IA normale ou plus forte"
+    "duel": "Battre l’IA normale ou plus forte",
+    "element": "Objectif de la semaine : {n}"
   },
   "progress": {
     "title": "Progression",
@@ -495,7 +496,13 @@
       "obsidian": "Obsidienne",
       "gold": "Or",
       "dunes": "Écailles des dunes",
-      "kintsugi": "Kintsugi"
+      "kintsugi": "Kintsugi",
+      "cinder": "Verre de braise",
+      "phoenix": "Verre du phénix",
+      "tideglass": "Verre des marées",
+      "pearl": "Verre de nacre",
+      "stormglass": "Verre d’orage",
+      "tempest": "Verre de tempête"
     },
     "ambiance": {
       "night": "Nuit",
@@ -508,21 +515,29 @@
       "synthwave": "Synthwave",
       "lantern": "Lanternes",
       "gilded": "Dorure",
-      "sanctum": "Sanctuaire"
+      "sanctum": "Sanctuaire",
+      "embers": "Braises",
+      "lagoon": "Lagon",
+      "thunderhead": "Nuée d’orage"
     },
     "shatter": {
       "shards": "Éclats",
       "confetti": "Confettis",
       "petals": "Pétales",
       "gold": "Feuille d’or",
-      "iris": "Éclats d’iris"
+      "iris": "Éclats d’iris",
+      "riftspark": "Étincelles de la faille",
+      "ember": "Flammèches",
+      "ripple": "Ondes",
+      "static": "Décharges"
     },
     "unlock": {
       "default": "Offert",
       "level": "Niveau {n}",
       "streak": "Série de {n} jours au défi",
       "objectives": "{n} objectifs accomplis",
-      "collection": "Compléter l’ensemble {name}"
+      "collection": "Compléter l’ensemble {name}",
+      "season": "Sur la piste « {name} », puis dans le cadeau du 7e jour"
     },
     "tapToWear": "Touchez encore pour porter",
     "clickToWear": "Cliquez encore pour porter",
@@ -918,6 +933,96 @@
     },
     "trophies": {
       "name": "Trophées des Gardiens"
+    },
+    "embers": {
+      "name": "Braises"
+    },
+    "tides": {
+      "name": "Marées"
+    },
+    "storm": {
+      "name": "Orage"
+    },
+    "crown": {
+      "progress": "{done} sur {total} : complétez-le pour débloquer {name}.",
+      "complete": "Complet ! {name} est à vous : portez-le depuis l’onglet Blocs."
     }
+  },
+  "seasons": {
+    "title": "Saison {n} · {name}",
+    "preseason": {
+      "name": "Avant-saison"
+    },
+    "embers": {
+      "name": "Braises"
+    },
+    "tides": {
+      "name": "Marées"
+    },
+    "storm": {
+      "name": "Orage"
+    },
+    "left": "encore {d} j {h} h",
+    "daysLeft": "encore {n} jour | encore {n} jours",
+    "tier": "Palier {n}",
+    "of": "sur {n}",
+    "points": "{done} / {next} points",
+    "maxed": "Piste terminée : {n} points",
+    "sources": "Les points viennent de chaque partie, des objectifs et de l’événement de la semaine.",
+    "claim": "Récupérer",
+    "claimAll": "Tout récupérer ({n})",
+    "claimLabel": "Récupérer le palier {n} : {reward}",
+    "claimed": "Récupéré",
+    "locked": "À {n} points",
+    "xp": "+{n} XP",
+    "track": "Les paliers de la saison",
+    "set": "L’ensemble {name} : réunissez ses nouveautés, et {crown} est à vous.",
+    "setDone": "Ensemble complet : {crown} est à vous.",
+    "next": "Ensuite : {name}, dès le {date}.",
+    "soon": "La prochaine saison arrive bientôt.",
+    "open": "Ouvrir la saison",
+    "back": "Retour",
+    "gain": "{name} : +{n} point | {name} : +{n} points",
+    "tierUp": "Palier {n} atteint : récupérez sa récompense",
+    "ready": "{n} récompense à récupérer | {n} récompenses à récupérer",
+    "xpBadge": "XP",
+    "plus": "+{n}"
+  },
+  "events": {
+    "week": {
+      "water": "Semaine de l’eau",
+      "fire": "Semaine du feu",
+      "oil": "Semaine de l’huile",
+      "ice": "Semaine de la glace",
+      "lightning": "Semaine de la foudre",
+      "seed": "Semaine des graines",
+      "acid": "Semaine de l’acide"
+    },
+    "goal": {
+      "water": "Versez {n} pièce d’eau | Versez {n} pièces d’eau",
+      "fire": "Brûlez du sable {n} fois avec le feu | Brûlez du sable {n} fois avec le feu",
+      "oil": "Versez {n} pièce d’huile | Versez {n} pièces d’huile",
+      "ice": "Versez {n} pièce de glace | Versez {n} pièces de glace",
+      "lightning": "Faites tomber {n} éclair | Faites tomber {n} éclairs",
+      "seed": "Faites pousser {n} liane | Faites pousser {n} lianes",
+      "acid": "Rongez {n} grain de sable à l’acide | Rongez {n} grains de sable à l’acide"
+    },
+    "featured": {
+      "water": "Cette semaine, les parties libres du Sable donnent plus souvent des pièces d’eau, dès le premier niveau.",
+      "fire": "Cette semaine, les parties libres du Sable donnent plus souvent des pièces de feu, dès le premier niveau.",
+      "oil": "Cette semaine, les parties libres du Sable donnent plus souvent des pièces d’huile, dès le premier niveau.",
+      "ice": "Cette semaine, les parties libres du Sable donnent plus souvent des pièces de glace, dès le premier niveau.",
+      "lightning": "Cette semaine, les parties libres du Sable donnent plus souvent la foudre, dès le premier niveau.",
+      "seed": "Cette semaine, les parties libres du Sable donnent plus souvent des graines, dès le premier niveau.",
+      "acid": "Cette semaine, les parties libres du Sable donnent plus souvent de l’acide, dès le premier niveau."
+    },
+    "inSand": "Toutes les parties du Sable comptent.",
+    "left": "encore {d} j",
+    "lastDay": "dernier jour",
+    "progress": "{done}/{target}",
+    "reward": "+{n} point | +{n} points",
+    "done": "Objectif atteint : +{n} point | Objectif atteint : +{n} points",
+    "label": "{week}, {left} : {goal} ({done} sur {target}). {season}, palier {tier} : ouvrir la saison.",
+    "goalDone": "Objectif de la semaine atteint ! +{n} point de saison | Objectif de la semaine atteint ! +{n} points de saison"
   }
 }

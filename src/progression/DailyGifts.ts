@@ -42,13 +42,18 @@ export type Gift =
 
 /**
  * The gift of a day of the cycle (0 to 6): its experience, or on the last
- * day the next look the player does not have yet.
+ * day the next look the player does not have yet: first the looks of the
+ * seasons over (`seasonLooks`, 1.36), then the game's.
  */
-export function giftOf(day: number, owns: (cosmetic: Cosmetic) => boolean): Gift {
+export function giftOf(
+  day: number,
+  owns: (cosmetic: Cosmetic) => boolean,
+  seasonLooks: readonly string[] = [],
+): Gift {
   const amount = GIFT_XP[day];
   if (amount !== undefined) return { kind: 'xp', amount };
-  const look = GIFT_LOOKS.map(findCosmeticByKey).find(
-    (cosmetic): cosmetic is Cosmetic => cosmetic !== undefined && !owns(cosmetic),
-  );
+  const look = [...seasonLooks, ...GIFT_LOOKS]
+    .map(findCosmeticByKey)
+    .find((cosmetic): cosmetic is Cosmetic => cosmetic !== undefined && !owns(cosmetic));
   return look ? { kind: 'look', cosmetic: look } : { kind: 'xp', amount: LOOK_FALLBACK_XP };
 }

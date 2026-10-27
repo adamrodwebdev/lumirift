@@ -1,4 +1,5 @@
-import { previousDay } from '@/core/Day';
+import { dateOf, previousDay } from '@/core/Day';
+import { seasonLooksOverAt } from '@/seasons/EventCalendar';
 import { achievementsOf } from './Achievements';
 import { isUnlocked, type Cosmetic } from './Cosmetics';
 import { GIFT_DAYS, giftOf, type Gift } from './DailyGifts';
@@ -46,9 +47,12 @@ const owns =
   (cosmetic: Cosmetic): boolean =>
     isUnlocked(cosmetic, achievementsOf(data));
 
-/** The gift given next: the day of the cycle's (a look on the seventh). */
-export function nextGift(data: ProfileData): Gift {
-  return giftOf(data.gifts.next, owns(data));
+/** The looks of the seasons over by a day (its noon): the day-7 gift's first (1.36). */
+const seasonLooksOn = (day: string) => seasonLooksOverAt(dateOf(day));
+
+/** The gift given next on `day`: the day of the cycle's (a look on the seventh). */
+export function nextGift(data: ProfileData, day: string): Gift {
+  return giftOf(data.gifts.next, owns(data), seasonLooksOn(day));
 }
 
 /** The daily streak as it stands on `day`: broken once a day went by without the challenge. */
@@ -78,13 +82,14 @@ export function giftCalendar(data: ProfileData, day: string): GiftCalendar {
   const { next } = data.gifts;
   const ready = giftReady(data, day);
   const look = owns(data);
+  const seasonLooks = seasonLooksOn(day);
   const stateOf = (index: number): GiftDayState =>
     index < next ? 'claimed' : index > next ? 'coming' : ready ? 'today' : 'tomorrow';
   return {
     started: data.games > 0,
     days: Array.from({ length: GIFT_DAYS }, (_, index) => ({
       index,
-      gift: giftOf(index, look),
+      gift: giftOf(index, look, seasonLooks),
       state: stateOf(index),
     })),
     next,

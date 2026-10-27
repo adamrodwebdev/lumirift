@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { COLLECTIONS, type Collection } from '@/progression/Collections';
+import { lookShown, seasonStarted } from '@/seasons/EventCalendar';
 import {
   COSMETIC_KINDS,
   COSMETICS,
@@ -37,7 +38,10 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { profile, look, platform, ads, audio } = useServices();
+const { profile, look, platform, ads, audio, clock } = useServices();
+/** A look shows from its season's start (1.36), or once the player has it. */
+const visible = (cosmetic: Cosmetic) =>
+  lookShown(cosmeticKey(cosmetic), clock(), profile.isUnlocked(cosmetic));
 const text = useProgressText();
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const again = t(isTouchScreen() ? 'cosmetics.tapToWear' : 'cosmetics.clickToWear');
@@ -83,13 +87,15 @@ interface ShelfItem {
   readonly isNew: boolean;
 }
 const items = computed<ShelfItem[]>(() =>
-  COSMETICS.filter((cosmetic) => cosmetic.kind === kind.value).map((cosmetic) => ({
-    cosmetic,
-    unlocked: profile.isUnlocked(cosmetic),
-    worn: worn.value[kind.value] === cosmetic.id,
-    shown: shownId.value === cosmetic.id,
-    isNew: isNew(cosmetic),
-  })),
+  COSMETICS.filter((cosmetic) => cosmetic.kind === kind.value && visible(cosmetic)).map(
+    (cosmetic) => ({
+      cosmetic,
+      unlocked: profile.isUnlocked(cosmetic),
+      worn: worn.value[kind.value] === cosmetic.id,
+      shown: shownId.value === cosmetic.id,
+      isNew: isNew(cosmetic),
+    }),
+  ),
 );
 const shown = computed(() => items.value.find((item) => item.shown) ?? items.value[0]!);
 
@@ -134,7 +140,9 @@ interface CollectionCard {
   readonly complete: boolean;
 }
 const collections = computed<CollectionCard[]>(() =>
-  COLLECTIONS.map((collection) => {
+  COLLECTIONS.filter(
+    (collection) => !collection.season || seasonStarted(collection.season, clock()),
+  ).map((collection) => {
     const items = collection.items
       .map(findCosmeticByKey)
       .filter((cosmetic): cosmetic is Cosmetic => cosmetic !== undefined)
@@ -144,7 +152,7 @@ const collections = computed<CollectionCard[]>(() =>
       collection,
       items,
       done,
-      reward: findCosmeticByKey(`ambiance.${collection.reward}`)!,
+      reward: findCosmeticByKey(collection.reward)!,
       complete: done === items.length,
     };
   }),
@@ -155,14 +163,17 @@ const card = computed(() =>
 );
 const collectionName = (entry: CollectionCard) => t(`collections.${entry.collection.id}.name`);
 /** What a collection says: its progress, or its prize won. */
-const collectionNote = (entry: CollectionCard) =>
-  entry.complete
-    ? t('collections.complete', { name: text.cosmeticName(entry.reward) })
-    : t('collections.progress', {
+const collectionNote = (entry: CollectionCard) => {
+  // An ambiance (the game's sets), or a season's crown of blocks (1.36): each its words.
+  const words = entry.reward.kind === 'ambiance' ? 'collections' : 'collections.crown';
+  return entry.complete
+    ? t(`${words}.complete`, { name: text.cosmeticName(entry.reward) })
+    : t(`${words}.progress`, {
         done: entry.done,
         total: entry.items.length,
         name: text.cosmeticName(entry.reward),
       });
+};
 
 const showCollections = () => {
   if (props.active && !collecting.value) seeKind(kind.value);
@@ -249,22 +260,26 @@ const tryOn = async () => {
 
 const stage = ref<HTMLCanvasElement | null>(null);
 let art: GemArt | null = null;
+/** A collection's prize, when the shelf shows the collections and it is of this kind. */
+const prize = (of: CosmeticKind): string | null => {
+  const reward = card.value.reward;
+  return collecting.value && reward.kind === of ? reward.id : null;
+};
+/** On the stage: the look tried, or a collection's prize (an ambiance, a season's crown). */
 const material = computed(
   () =>
-    (kind.value === 'material' && !collecting.value
-      ? shownId.value
-      : worn.value.material) as MaterialId,
+    (prize('material') ??
+      (kind.value === 'material' && !collecting.value
+        ? shownId.value
+        : worn.value.material)) as MaterialId,
 );
 const shatter = computed(() =>
   kind.value === 'shatter' && !collecting.value ? (shownId.value as ShatterId) : null,
 );
-/** On the stage: the look tried, or a collection's prize. */
-const ambiance = computed(() =>
-  collecting.value
-    ? card.value.collection.reward
-    : kind.value === 'ambiance'
-      ? shownId.value
-      : worn.value.ambiance,
+const ambiance = computed(
+  () =>
+    prize('ambiance') ??
+    (kind.value === 'ambiance' && !collecting.value ? shownId.value : worn.value.ambiance),
 );
 
 const draw = () => {

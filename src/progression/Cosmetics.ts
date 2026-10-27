@@ -1,3 +1,13 @@
+import {
+  SEASON_AMBIANCES,
+  SEASON_MATERIALS,
+  SEASON_SHATTERS,
+  SEASONS,
+  type SeasonAmbianceId,
+  type SeasonId,
+  type SeasonMaterialId,
+  type SeasonShatterId,
+} from '@/seasons/SeasonData';
 import type { BossId } from '@/session/GameSession';
 import { collectionById, type CollectionId } from './Collections';
 
@@ -6,7 +16,7 @@ export const COSMETIC_KINDS = ['material', 'ambiance', 'shatter'] as const;
 export type CosmeticKind = (typeof COSMETIC_KINDS)[number];
 
 /** Block skins of the falling family (the other families keep their own material). */
-export const MATERIALS = [
+const BUILTIN_MATERIALS = [
   'crystal',
   'neon',
   'paper',
@@ -16,10 +26,15 @@ export const MATERIALS = [
   'dunes',
   'kintsugi',
 ] as const;
-export type MaterialId = (typeof MATERIALS)[number];
+export type MaterialId = (typeof BUILTIN_MATERIALS)[number] | SeasonMaterialId;
+/** The game's materials, then the seasons' (1.36, from their data). */
+export const MATERIALS: readonly MaterialId[] = [
+  ...BUILTIN_MATERIALS,
+  ...SEASON_MATERIALS.map((look) => look.id),
+];
 
-/** Backdrops of the whole game: animated glows and a tinted well; the last four crown a collection. */
-export const AMBIANCES = [
+/** Backdrops of the whole game: animated glows and a tinted well; four crown a collection. */
+const BUILTIN_AMBIANCES = [
   'night',
   'aurora',
   'abyss',
@@ -32,11 +47,19 @@ export const AMBIANCES = [
   'gilded',
   'sanctum',
 ] as const;
-export type AmbianceId = (typeof AMBIANCES)[number];
+export type AmbianceId = (typeof BUILTIN_AMBIANCES)[number] | SeasonAmbianceId;
+export const AMBIANCES: readonly AmbianceId[] = [
+  ...BUILTIN_AMBIANCES,
+  ...SEASON_AMBIANCES.map((look) => look.id),
+];
 
 /** How a cleared line bursts, in the falling family and the Tower. */
-export const SHATTERS = ['shards', 'confetti', 'petals', 'gold', 'iris'] as const;
-export type ShatterId = (typeof SHATTERS)[number];
+const BUILTIN_SHATTERS = ['shards', 'confetti', 'petals', 'gold', 'iris'] as const;
+export type ShatterId = (typeof BUILTIN_SHATTERS)[number] | SeasonShatterId;
+export const SHATTERS: readonly ShatterId[] = [
+  ...BUILTIN_SHATTERS,
+  ...SEASON_SHATTERS.map((look) => look.id),
+];
 
 export type Equipment = {
   readonly material: MaterialId;
@@ -57,7 +80,7 @@ export interface Achievements {
   readonly objectivesDone: number;
   /** The Guardians of the rift defeated. */
   readonly bosses: readonly BossId[];
-  /** The looks the gift calendar gave (`kind.id`, 1.35): the player's whatever their rule. */
+  /** The looks given outright (`kind.id`): the gift calendar's (1.35), a season's (1.36). */
   readonly gifted: readonly string[];
 }
 
@@ -69,7 +92,9 @@ export type Unlock =
   | { readonly by: 'objectives'; readonly value: number }
   | { readonly by: 'boss'; readonly value: BossId }
   /** Every look of a collection earned (1.35). */
-  | { readonly by: 'collection'; readonly value: CollectionId };
+  | { readonly by: 'collection'; readonly value: CollectionId }
+  /** A season's track gives it, or the day-7 gift once the season is over (1.36): only ever given. */
+  | { readonly by: 'season'; readonly value: SeasonId };
 
 export interface Cosmetic {
   readonly kind: CosmeticKind;
@@ -105,7 +130,27 @@ export const COSMETICS: readonly Cosmetic[] = [
   item('shatter', 'petals', { by: 'level', value: 9 }),
   item('shatter', 'gold', { by: 'objectives', value: 30 }),
   item('shatter', 'iris', { by: 'boss', value: 'towerEye' }),
+  ...seasonCosmetics(),
 ];
+
+/**
+ * The looks the seasons bring (1.36), from their data: the track's are only
+ * ever given; the crown comes with its season's set, complete.
+ */
+function seasonCosmetics(): Cosmetic[] {
+  return SEASONS.flatMap((season) =>
+    season.looks.map((look) => {
+      const key = `${look.kind}.${look.id}`;
+      return item(
+        look.kind,
+        look.id,
+        key === season.crown
+          ? { by: 'collection', value: season.id }
+          : { by: 'season', value: season.id },
+      );
+    }),
+  );
+}
 
 export function isUnlocked(cosmetic: Cosmetic, achievements: Achievements): boolean {
   if (achievements.gifted.includes(cosmeticKey(cosmetic))) return true;
@@ -126,6 +171,8 @@ export function isUnlocked(cosmetic: Cosmetic, achievements: Achievements): bool
         const item = findCosmeticByKey(key);
         return item !== undefined && isUnlocked(item, achievements);
       });
+    case 'season':
+      return false;
   }
 }
 

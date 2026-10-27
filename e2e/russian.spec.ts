@@ -38,12 +38,31 @@ const misfits = (page: Page) =>
       !element.closest('.sr-only, .skip') &&
       (!dialog || dialog.contains(element)) &&
       getComputedStyle(element).visibility !== 'hidden';
+    // A box that scrolls (the season's tiers, 1.36): what it holds is reached by scrolling it.
+    const scrolled = (element: Element) => {
+      for (let p = element.parentElement; p && p !== document.body; p = p.parentElement) {
+        const { overflowX, overflowY } = getComputedStyle(p);
+        if (overflowX === 'auto' || overflowY === 'auto') return true;
+      }
+      return false;
+    };
     for (const control of document.querySelectorAll('button, a, [role="tab"]')) {
       const box = control.getBoundingClientRect();
-      if (shown(control) && box.width > 1 && (box.left < -1 || box.right > width + 1))
+      if (
+        shown(control) &&
+        !scrolled(control) &&
+        box.width > 1 &&
+        (box.left < -1 || box.right > width + 1)
+      )
         issues.push(`off screen: ${control.getAttribute('aria-label') ?? control.textContent}`);
       // A page of the menu or a game is one screen: nothing below its bottom edge.
-      if (shown(control) && !dialog && box.height > 1 && (box.top < -1 || box.bottom > height + 1))
+      if (
+        shown(control) &&
+        !dialog &&
+        !scrolled(control) &&
+        box.height > 1 &&
+        (box.top < -1 || box.bottom > height + 1)
+      )
         issues.push(
           `below the screen: ${control.getAttribute('aria-label') ?? control.textContent}`,
         );
@@ -217,6 +236,42 @@ test('the gift calendar and the Atelier’s sets keep their Russian words inside
   await gift.getByRole('button', { name: /^Забрать/ }).click();
   await expect(gift.getByRole('button', { name: 'Продолжить' })).toBeVisible();
   expect(await misfits(page), 'claimed').toEqual([]);
+});
+
+test('the week’s event and the season’s page keep their Russian words inside', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'One sweep is enough');
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  // A day of Season 1, rewards waiting on its track.
+  await page.clock.setFixedTime(new Date('2026-12-16T12:00:00Z'));
+  await page.goto('/');
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'stackrift:season',
+      JSON.stringify({ season: 'embers', points: 1700, claimed: [1, 2], week: '20261214' }),
+    ),
+  );
+  for (const [width, height] of [
+    [320, 568],
+    [390, 844],
+    [640, 360],
+    [844, 390],
+    [1280, 800],
+  ] as const) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/');
+    await page.locator('main').waitFor();
+    const size = `${width} × ${height}`;
+    expect(await misfits(page), `${size}: home and its event`).toEqual([]);
+    await panel(page, 'Главная')
+      .getByRole('button', { name: /^Неделя/ })
+      .click();
+    await expect(page.getByRole('region', { name: 'Сезон 1 · Угли' })).toBeVisible();
+    expect(await misfits(page), `${size}: season`).toEqual([]);
+    await page.keyboard.press('Escape');
+  }
 });
 
 test('a level’s goal stays whole on a phone: its own row beside a hold box, one line when wide', async ({

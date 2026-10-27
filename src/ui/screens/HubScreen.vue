@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import {
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
@@ -41,14 +50,33 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const format = useFormat();
-const { settings, campaign, profile, gifts } = useServices();
+const { settings, campaign, profile, gifts, seasons } = useServices();
+/** The season's page loads when it first opens (1.36). */
+const SeasonPage = defineAsyncComponent(() => import('../hub/SeasonPage.vue'));
 const landscape = useLandscape();
 
 const index = computed(() => HUB_PAGES.indexOf(page.value));
 const go = (target: number) => {
+  closeSeason();
   const next = HUB_PAGES[Math.min(HUB_PAGES.length - 1, Math.max(0, target))];
   if (next) page.value = next;
 };
+
+// --- The season's page (1.36), over the pages, from the week's event ---------
+
+const seasonOpen = ref(false);
+/** What opened the season's page: the focus goes back to it. */
+let seasonOrigin: Element | null = null;
+const openSeason = (origin: Element) => {
+  seasonOrigin = origin;
+  seasonOpen.value = true;
+};
+function closeSeason() {
+  if (!seasonOpen.value) return;
+  seasonOpen.value = false;
+  const origin = seasonOrigin;
+  void nextTick(() => (origin instanceof HTMLElement ? origin.focus() : undefined));
+}
 
 /**
  * The pages are built when first needed: the one shown at once, a neighbour
@@ -110,6 +138,8 @@ const stopGiftTimer = () => {
   for (const type of BUSY_EVENTS) window.removeEventListener(type, stopGiftTimer, true);
 };
 onMounted(() => {
+  // A season over gives what it left unclaimed; a new one starts (1.36).
+  seasons.catchUp();
   gifts.visit();
   if (!gifts.opensItself) return;
   for (const type of BUSY_EVENTS) window.addEventListener(type, stopGiftTimer, true);
@@ -225,8 +255,10 @@ onMounted(() => {
     </header>
 
     <div ref="pages" class="hub__pages">
+      <SeasonPage v-if="seasonOpen" @close="closeSeason" />
       <div
         class="hub__track"
+        :inert="seasonOpen"
         :class="{ 'hub__track--dragging': dragging }"
         :style="{ '--index': index, '--drag': `${drag}px` }"
       >
@@ -239,6 +271,7 @@ onMounted(() => {
           @guardian="(challenge, origin) => emit('guardian', challenge, origin)"
           @level="(level, origin) => emit('level', level, origin)"
           @gift="giftOpen = true"
+          @season="openSeason"
         />
         <section v-else v-bind="panel('home')" class="page" />
         <ModesPage

@@ -177,6 +177,35 @@ test('the gift calendar, as it rises and once claimed, and the Atelier’s sets'
   await audit(page);
 });
 
+test('the week’s event and the season’s page, with rewards waiting', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.clock.setFixedTime(new Date('2026-12-16T12:00:00Z'));
+  await page.goto('/');
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'stackrift:season',
+      JSON.stringify({
+        season: 'embers',
+        points: 1700,
+        claimed: [1, 2],
+        week: '20261214',
+        deeds: 9,
+      }),
+    ),
+  );
+  await page.reload();
+  await page.locator('main').waitFor();
+  const event = page
+    .getByRole('tabpanel', { name: 'Accueil' })
+    .getByRole('button', { name: /^Semaine/ });
+  await expect(event).toBeVisible();
+  await audit(page);
+  await event.click();
+  const season = page.getByRole('region', { name: 'Saison 1 · Braises' });
+  await expect(season.getByRole('button', { name: /^Tout récupérer/ })).toBeVisible();
+  await audit(page);
+});
+
 test('new looks: the badge of the Atelier tab and the marks on the shelf', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');

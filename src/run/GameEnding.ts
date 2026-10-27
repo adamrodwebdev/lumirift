@@ -10,6 +10,7 @@ import type { GameProgress } from '@/progression/Profile';
 import type { BossId, ResultKind, SessionResult } from '@/session/GameSession';
 import type { ProfileService } from '@/services/ProfileService';
 import type { ScoreBoard } from '@/services/ScoreBoard';
+import type { SeasonService } from '@/services/SeasonService';
 import type { RunKind } from './RunKind';
 
 /** A campaign level's ending: won or not, its stars, and the way on. */
@@ -55,6 +56,18 @@ export interface Ending {
   readonly guardian?: { readonly points: number; readonly factor: number };
   /** The portal's rewarded ad may double the experience (a portal that has one, XP to double). */
   readonly rewardOffered: boolean;
+  /** Set while a season runs (1.36): the points this game brought, and what they reached. */
+  readonly season?: SeasonGain;
+}
+
+/** What a game brought the season (1.36): its points, a tier reached, the week's goal reached. */
+export interface SeasonGain {
+  readonly points: number;
+  /** The tier reached after this game (0: none yet), and whether this game reached it. */
+  readonly tier: number;
+  readonly tierUp: boolean;
+  /** The week's goal, reached by this very game. */
+  readonly weekDone: boolean;
 }
 
 /** The narrow doors an ending goes through: records, progression, campaign, portal, clock. */
@@ -69,6 +82,8 @@ export interface EndingPorts {
   readonly platform: Pick<Platform, 'edition' | 'gameOver' | 'happyTime' | 'supportsRewarded'>;
   /** The ad policy: whether a rewarded offer may show yet. */
   readonly ads: Pick<AdScheduler, 'rewardedAllowed'>;
+  /** The season (1.36): the points and deeds each game brings. */
+  readonly season: Pick<SeasonService, 'view' | 'recordGame'>;
   readonly today: () => Date;
 }
 
@@ -128,6 +143,7 @@ export class GameEnding {
       this.ports.campaign.starsOf(verdict.levelId) === 0;
     if (recordBeaten || guardianDown) platform.happyTime();
     const progress = this.ports.profile.recordGame(report, dayKey(this.ports.today()));
+    const season = this.season(report, progress.total);
     return {
       // A Guardian's fall is told as such, not as a duel's victory.
       reason: reason === 'victory' && kind.boss !== null ? 'guardian' : reason,
@@ -150,6 +166,23 @@ export class GameEnding {
         !kind.training &&
         !game.continueOffered &&
         this.ports.ads.rewardedAllowed,
+      ...(season ? { season } : {}),
+    };
+  }
+
+  /** The season hears the game (its experience as points, its deeds): what it brought, if one runs. */
+  private season(report: GameReport, xp: number): SeasonGain | undefined {
+    const { season } = this.ports;
+    const before = season.view;
+    season.recordGame(report, xp);
+    const after = season.view;
+    if (!after.span) return undefined;
+    const same = before.span?.season.id === after.span.season.id;
+    return {
+      points: after.points - (same ? before.points : 0),
+      tier: after.tier,
+      tierUp: after.tier > (same ? before.tier : 0),
+      weekDone: after.week?.done === true && before.week?.done !== true,
     };
   }
 

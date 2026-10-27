@@ -19,7 +19,7 @@ export function timeLeft(
 }
 
 /** The local date of a day's key, at noon (no change of hour moves it to another day). */
-function dateOf(key: string): Date {
+export function dateOf(key: string): Date {
   return new Date(Number(key.slice(0, 4)), Number(key.slice(4, 6)) - 1, Number(key.slice(6)), 12);
 }
 

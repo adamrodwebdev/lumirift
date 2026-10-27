@@ -2,6 +2,7 @@ import { CONTINUE_FREES } from '@/session/ContinueRule';
 import type { GameSession, SessionOptions, TrainingStage } from '@/session/GameSession';
 import { Mercy } from '@/session/Mercy';
 import type { ModeId } from '@/session/ModeId';
+import { ELEMENT_TONES } from './engine/Elements';
 import { SandGame, type SandOptions } from './engine/SandGame';
 import {
   HOOK_SCRIPT,
@@ -65,6 +66,7 @@ export function createSandSession(modeId: ModeId, options: SessionOptions): Game
         ? { boss: 'duneWorm' as const, elements: WYRM_ELEMENTS, elementPace: WYRM_PACE }
         : {}),
       ...(options.boosts ? { boosts: options.boosts } : {}),
+      ...(options.featuredElement ? { featured: ELEMENT_TONES[options.featuredElement] } : {}),
       mercy: Mercy.of('sand', options.mercy ?? 0),
       ...(options.startLevel === undefined ? {} : { startLevel: options.startLevel }),
       ...(options.bossHealth === undefined ? {} : { bossHealth: options.bossHealth }),

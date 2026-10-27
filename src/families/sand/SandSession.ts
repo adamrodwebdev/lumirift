@@ -1,4 +1,5 @@
 import { Emitter, type Listener } from '@/core/Emitter';
+import { Tone } from '@/core/Tone';
 import type { ComboView } from '@/session/ComboGauge';
 import { CONTINUE_FREES } from '@/session/ContinueRule';
 import type { BossId, BossStatus, GuideLine, TrainingStage } from '@/session/GameSession';
@@ -11,11 +12,30 @@ import type {
   SessionResult,
   SessionState,
 } from '@/session/GameSession';
+import type { ElementName } from '@/session/Elements';
 import type { ModeId } from '@/session/ModeId';
 import type { PieceSpec, SandEventMap, SandGame } from './engine/SandGame';
+import type { ReactionKind } from './engine/SandReactions';
 import { GRAINS_PER_CELL, type SandGrid } from './engine/SandGrid';
 import type { SandPiece } from './engine/SandPiece';
 import { SandGuide } from './SandGuide';
+
+/**
+ * What counts as an element's deed (1.36), measured on the curve bot's free
+ * games: fire's burns and lightning's bolts have events of their own; seeds
+ * sprouting and acid eating a grain are reactions. Water and oil meet fire
+ * too rarely (under once a game), and ice freezes water only for those who
+ * aim it (a newcomer took six times as long): pouring one counts.
+ */
+const DEED_OF: Readonly<Partial<Record<ReactionKind, ElementName>>> = {
+  sprout: 'seed',
+  dissolve: 'acid',
+};
+const POURED: Readonly<Partial<Record<Tone, ElementName>>> = {
+  [Tone.Water]: 'water',
+  [Tone.Oil]: 'oil',
+  [Tone.Ice]: 'ice',
+};
 
 /** Read-only view of a Sand game, for the renderer. */
 export interface SandView {
@@ -198,6 +218,17 @@ export class SandSession implements GameSession<FallingCommand> {
     );
     events.on('burn', ({ grains }) => this.events.emit('notice', { id: 'burn', value: grains }));
     events.on('quench', () => this.events.emit('notice', { id: 'quench' }));
+    // Each element's deed, for the week's goal (1.36): a burn, a bolt, a grain eaten…
+    events.on('burn', () => this.events.emit('element', { element: 'fire' }));
+    events.on('strike', () => this.events.emit('element', { element: 'lightning' }));
+    events.on('react', ({ kind }) => {
+      const element = DEED_OF[kind];
+      if (element) this.events.emit('element', { element });
+    });
+    events.on('lock', ({ piece }) => {
+      const element = POURED[piece.tone];
+      if (element) this.events.emit('element', { element });
+    });
     events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));

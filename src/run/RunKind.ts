@@ -11,6 +11,7 @@ import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { BossId, SessionOptions, SessionResult } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import { ScoreBoard } from '@/services/ScoreBoard';
+import { weekEventAt } from '@/seasons/EventCalendar';
 
 /** What a finished game counts: whole points or milliseconds, and their factor. */
 export interface RunScore {
@@ -89,11 +90,14 @@ export class FreeRun implements RunKind {
   }
 
   sessionOptions(seed: number, today: Date): SessionOptions {
+    // The week's element (1.36): only free games feature it, so the campaign's and the challenges' stay fair.
+    const event = weekEventAt(today);
     return {
       random: new SeededRandom(seed),
       timeLimitMs: null,
       today,
       ...(this.variant ? { variant: this.variant } : {}),
+      ...(event ? { featuredElement: event.element } : {}),
     };
   }
 

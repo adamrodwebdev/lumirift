@@ -27,6 +27,7 @@ import {
 } from './Experience';
 import { giftReady, nextGift } from './GiftCalendar';
 import type { GameReport } from './GameReport';
+import type { SeasonReward } from '@/seasons/SeasonTrack';
 import {
   advance,
   OBJECTIVE_KINDS,
@@ -80,7 +81,7 @@ export interface ProfileData {
   readonly playedMs: number;
   /** The gift calendar (1.35). */
   readonly gifts: GiftCycle;
-  /** The looks the calendar gave (`kind.id`): the player's whatever their rule. */
+  /** The looks given outright (`kind.id`): the calendar's, a season's (1.36); the player's whatever their rule. */
   readonly gifted: readonly string[];
   /** The last day the player came to the menu. */
   readonly lastVisit: string | null;
@@ -215,7 +216,7 @@ export class Profile {
    */
   claimGift(day: string, doubled: boolean): void {
     if (!giftReady(this.data, day)) return;
-    const gift = nextGift(this.data);
+    const gift = nextGift(this.data, day);
     const welcome = this.data.welcomeBack ? WELCOME_BACK_XP : 0;
     const xp = gift.kind === 'xp' ? gift.amount * (doubled ? 2 : 1) : 0;
     const { gifts } = this.data;
@@ -227,6 +228,18 @@ export class Profile {
       welcomeBack: false,
       gifts: { ...gifts, next: (gifts.next + 1) % GIFT_DAYS, lastDay: day },
     };
+  }
+
+  /**
+   * A season's reward is the player's (1.36): its experience, or its look,
+   * given outright like the calendar's (`gifted`). A look given twice stays one.
+   */
+  receive(reward: SeasonReward): void {
+    if (reward.kind === 'xp') {
+      this.data = { ...this.data, xp: this.data.xp + reward.amount };
+    } else if (!this.data.gifted.includes(reward.key)) {
+      this.data = { ...this.data, gifted: [...this.data.gifted, reward.key] };
+    }
   }
 
   /** The objectives of the day; a new day brings new ones. */

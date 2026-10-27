@@ -281,6 +281,25 @@ const beats = computed(() => !props.continueCard);
           <AppIcon name="check" :size="16" />
           {{ t('progress.objectiveDone', { text: text.objective(objective) }) }}
         </p>
+        <!-- The season (1.36): the points this game brought it, a tier, the week's goal. -->
+        <p v-if="outcome.season && outcome.season.points > 0" class="xp__news">
+          <AppIcon name="star" :size="16" />
+          {{
+            outcome.season.weekDone
+              ? t(
+                  'events.goalDone',
+                  { n: format.number(outcome.season.points) },
+                  outcome.season.points,
+                )
+              : outcome.season.tierUp
+                ? t('seasons.tierUp', { n: format.number(outcome.season.tier) })
+                : t(
+                    'seasons.gain',
+                    { name: outcome.season.title, n: format.number(outcome.season.points) },
+                    outcome.season.points,
+                  )
+          }}
+        </p>
         <p
           v-for="cosmetic in outcome.progress.unlocked"
           :key="cosmetic.kind + cosmetic.id"
