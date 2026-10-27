@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { closeDailyGift } from './dailyGift';
 
 /*
  * The phone controls (1.32), played with real touch events on a phone screen
@@ -53,6 +54,7 @@ const line = (from: Point, dx: number, dy: number, count: number): Point[] =>
 
 /** The Classic mode with these settings, past the first game's guide; its gestures loaded. */
 async function playClassic(page: Page, settings: Record<string, unknown> = {}) {
+  await closeDailyGift(page);
   await page.goto('/');
   await page.evaluate((saved) => {
     localStorage.setItem('stackrift:settings', JSON.stringify(saved));

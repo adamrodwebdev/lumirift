@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { closeDailyGift } from './dailyGift';
 
 /*
  * The player's journeys, in French (the browser's language), on a phone and
@@ -56,6 +57,7 @@ async function openMode(page: Page, name: string) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await closeDailyGift(page);
   await page.goto('/');
   // The game mounts one frame after its title card is painted (see bootPlugin).
   await page.locator('main').waitFor();
@@ -595,6 +597,22 @@ test('every window fits the screen, without scrolling, from 360 × 640 to the de
       'stackrift:campaign',
       JSON.stringify({ stars: { '1-1': 3, '1-2': 2, '1-3': 3 }, ranks: { phoenix: 1 } }),
     );
+    // The gift calendar at its fullest: back after a week away, on a streak, a look to claim.
+    const day = (offset: number) => {
+      const date = new Date();
+      date.setDate(date.getDate() + offset);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
+    };
+    localStorage.setItem(
+      'stackrift:profile',
+      JSON.stringify({
+        games: 9,
+        lastVisit: day(-10),
+        gifts: { next: 6, lastDay: day(-11), shownDay: null },
+        streak: { count: 3, best: 3, lastDay: day(-1) },
+      }),
+    );
   });
   /** The window on top scrolls by this much (0: it fits). */
   const overflow = async () => {
@@ -616,6 +634,11 @@ test('every window fits the screen, without scrolling, from 360 × 640 to the de
     const size = `${width} × ${height}`;
     await page.getByRole('button', { name: 'Réglages' }).click();
     expect(await overflow(), `${size}: settings`).toBe(0);
+    await page.keyboard.press('Escape');
+    await panel(page, 'Accueil')
+      .getByRole('button', { name: /^Cadeau du jour/ })
+      .click();
+    expect(await overflow(), `${size}: daily gift`).toBe(0);
     await page.keyboard.press('Escape');
     await panel(page, 'Accueil')
       .getByRole('button', { name: /Objectifs du jour/ })

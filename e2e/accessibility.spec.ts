@@ -129,6 +129,47 @@ for (const theme of ['dark'] as const) {
   });
 }
 
+test('the gift calendar, as it rises and once claimed, and the Atelier’s sets', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.locator('main').waitFor();
+  // Back after a week away, on a streak, the day's gift waiting.
+  await page.evaluate(() => {
+    const day = (offset: number) => {
+      const date = new Date();
+      date.setDate(date.getDate() + offset);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
+    };
+    localStorage.setItem(
+      'stackrift:profile',
+      JSON.stringify({
+        games: 9,
+        xp: 900,
+        lastVisit: day(-10),
+        gifts: { next: 2, lastDay: day(-11), shownDay: null },
+        streak: { count: 3, best: 3, lastDay: day(-1) },
+      }),
+    );
+  });
+  await page.reload();
+  const gift = page.getByRole('dialog', { name: 'Cadeau du jour' });
+  await expect(gift).toBeVisible();
+  await audit(page);
+  await gift.getByRole('button', { name: /^Récupérer/ }).click();
+  await expect(gift.getByRole('button', { name: 'Continuer' })).toBeVisible();
+  await audit(page);
+  await gift.getByRole('button', { name: 'Continuer' }).click();
+  await audit(page);
+  await page.getByRole('tab', { name: 'Atelier' }).click();
+  const atelier = page.getByRole('tabpanel', { name: 'Atelier' });
+  await atelier.getByRole('button', { name: 'Ensembles' }).click();
+  await expect(atelier.getByRole('button', { name: /^Arcade/ })).toBeVisible();
+  await audit(page);
+});
+
 test('new looks: the badge of the Atelier tab and the marks on the shelf', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');

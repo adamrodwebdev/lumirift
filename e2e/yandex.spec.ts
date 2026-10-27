@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { closeDailyGift, giftDialog } from './dailyGift';
 
 /**
  * The Yandex Games build (1.30), with a stand-in for the SDK Yandex serves at
@@ -52,6 +53,7 @@ interface FakeYandex {
 }
 
 async function open(page: Page, lang = 'ru') {
+  await closeDailyGift(page);
   await page.route('**/sdk.js', (route) =>
     route.fulfill({ contentType: 'text/javascript', body: FAKE_SDK }),
   );
@@ -240,4 +242,30 @@ test('a locked ambiance worn for one game after an ad, shown at once around the 
     'aria-pressed',
     'false',
   );
+});
+
+test('the day’s gift doubled for an ad the player chooses, once a newcomer’s grace is over', async ({
+  page,
+}) => {
+  await page.addInitScript(
+    (data) => {
+      if (!sessionStorage.getItem('fake-yandex-data'))
+        sessionStorage.setItem('fake-yandex-data', data);
+    },
+    JSON.stringify({
+      'stackrift:profile': JSON.stringify({
+        trained: true,
+        games: 3,
+        playedMs: 600_000,
+        gifts: { next: 2, lastDay: '20200101', shownDay: null },
+      }),
+    }),
+  );
+  await open(page, 'en');
+  // This journey is about the calendar: it stays open.
+  await page.removeLocatorHandler(giftDialog(page));
+  const gift = giftDialog(page);
+  await gift.getByRole('button', { name: 'Watch an ad to double today’s gift to 140 XP' }).click();
+  await expect(gift.getByRole('status')).toHaveText('+140 XP! Tomorrow: +80 XP.');
+  expect(await calls(page)).toContain('rewarded');
 });

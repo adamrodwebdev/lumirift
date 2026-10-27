@@ -99,6 +99,54 @@
   --glow-2: rgb(255 170 70 / 0.16);
 }
 
+/* The ambiances that crown a collection (1.35). Synthwave: magenta and electric blue. */
+:root[data-ambiance='synthwave'],
+[data-ambiance-preview='synthwave'] {
+  --glow-1: rgb(230 60 190 / 0.13);
+  --glow-2: rgb(40 190 230 / 0.12);
+}
+:root[data-theme='dark'][data-ambiance='synthwave'],
+:root[data-theme='dark'] [data-ambiance-preview='synthwave'] {
+  --glow-1: rgb(255 70 210 / 0.2);
+  --glow-2: rgb(40 220 255 / 0.18);
+}
+
+/* Lanterns: their warm light over a deep blue-green night. */
+:root[data-ambiance='lantern'],
+[data-ambiance-preview='lantern'] {
+  --glow-1: rgb(240 150 60 / 0.15);
+  --glow-2: rgb(30 130 140 / 0.12);
+}
+:root[data-theme='dark'][data-ambiance='lantern'],
+:root[data-theme='dark'] [data-ambiance-preview='lantern'] {
+  --glow-1: rgb(255 165 70 / 0.2);
+  --glow-2: rgb(40 160 170 / 0.16);
+}
+
+/* Gilded: gold leaf and bronze. */
+:root[data-ambiance='gilded'],
+[data-ambiance-preview='gilded'] {
+  --glow-1: rgb(230 180 60 / 0.16);
+  --glow-2: rgb(180 110 40 / 0.12);
+}
+:root[data-theme='dark'][data-ambiance='gilded'],
+:root[data-theme='dark'] [data-ambiance-preview='gilded'] {
+  --glow-1: rgb(255 205 90 / 0.22);
+  --glow-2: rgb(205 120 45 / 0.16);
+}
+
+/* The Sanctum, the Guardians' lair: crimson and violet. */
+:root[data-ambiance='sanctum'],
+[data-ambiance-preview='sanctum'] {
+  --glow-1: rgb(200 40 80 / 0.14);
+  --glow-2: rgb(110 60 210 / 0.14);
+}
+:root[data-theme='dark'][data-ambiance='sanctum'],
+:root[data-theme='dark'] [data-ambiance-preview='sanctum'] {
+  --glow-1: rgb(235 50 95 / 0.2);
+  --glow-2: rgb(130 70 255 / 0.2);
+}
+
 /*
  * The defeat in each ambiance (1.31, DefeatStyles.ts): the colours of the
  * matter the stack breaks into, and its two lights that flare. Night's on
@@ -151,6 +199,34 @@
   --defeat-matter-2: #ff9f3f;
   --defeat-light-1: rgb(150 70 255 / 0.46);
   --defeat-light-2: rgb(255 170 70 / 0.4);
+}
+
+:root[data-ambiance='synthwave'] {
+  --defeat-matter-1: #ff6ee0;
+  --defeat-matter-2: #3de0ff;
+  --defeat-light-1: rgb(255 70 210 / 0.44);
+  --defeat-light-2: rgb(40 220 255 / 0.36);
+}
+
+:root[data-ambiance='lantern'] {
+  --defeat-matter-1: #ffd27a;
+  --defeat-matter-2: #ff8a3c;
+  --defeat-light-1: rgb(255 165 70 / 0.46);
+  --defeat-light-2: rgb(40 160 170 / 0.32);
+}
+
+:root[data-ambiance='gilded'] {
+  --defeat-matter-1: #ffe8a3;
+  --defeat-matter-2: #e6b53c;
+  --defeat-light-1: rgb(255 205 90 / 0.48);
+  --defeat-light-2: rgb(205 120 45 / 0.36);
+}
+
+:root[data-ambiance='sanctum'] {
+  --defeat-matter-1: #ff8aa8;
+  --defeat-matter-2: #8b6cff;
+  --defeat-light-1: rgb(235 50 95 / 0.46);
+  --defeat-light-2: rgb(130 70 255 / 0.4);
 }
 
 body::before {

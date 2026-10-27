@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { closeDailyGift } from './dailyGift';
 
 /*
  * The Rift Race (1.34), in French: closed until the campaign reaches 4-4,
@@ -23,6 +24,7 @@ async function play(page: Page, ms: number) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await closeDailyGift(page);
   await page.clock.install();
   await page.goto('/');
   await page.locator('main').waitFor();

@@ -28,7 +28,8 @@
       "mirror": "The well becomes its own reflection",
       "towerEye": "Blind it in its glass tower",
       "riftHeart": "Strike its heart with your lines"
-    }
+    },
+    "streak": "Daily streak: {n} day | Daily streak: {n} days"
   },
   "daily": {
     "title": "Daily challenge"
@@ -468,7 +469,8 @@
       "guardian": "Guardian challenge",
       "victory": "Victory",
       "objective": "Objective",
-      "bonus": "Bonus (ad watched)"
+      "bonus": "Bonus (ad watched)",
+      "streak": "Daily streak"
     },
     "tooShort": "Play for at least 20 seconds to earn experience."
   },
@@ -502,7 +504,11 @@
       "forge": "Forge",
       "cosmos": "Cosmos",
       "sakura": "Sakura",
-      "rift": "The Rift"
+      "rift": "The Rift",
+      "synthwave": "Synthwave",
+      "lantern": "Lanterns",
+      "gilded": "Gilded",
+      "sanctum": "Sanctum"
     },
     "shatter": {
       "shards": "Shards",
@@ -515,7 +521,8 @@
       "default": "Free",
       "level": "Level {n}",
       "streak": "{n}-day daily streak",
-      "objectives": "{n} objectives done"
+      "objectives": "{n} objectives done",
+      "collection": "Complete the set {name}"
     },
     "tapToWear": "Tap again to wear",
     "clickToWear": "Click again to wear",
@@ -695,7 +702,8 @@
     "kinds": {
       "material": "Blocks",
       "ambiance": "Ambiance",
-      "shatter": "Shatter"
+      "shatter": "Shatter",
+      "collections": "Sets"
     },
     "newLooks": "{n} new look | {n} new looks"
   },
@@ -867,5 +875,49 @@
     "hurrahPoints": "Last hurrah: +{n}",
     "locked": "Opens at level {level}",
     "new": "New"
+  },
+  "gifts": {
+    "title": "Daily gift",
+    "dayOf": "Day {n} of {total}",
+    "days": "The seven days",
+    "day": "Day {n}",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "claimed": "Claimed",
+    "look": "New look",
+    "xp": "+{n} XP",
+    "claimXp": "Claim +{n} XP",
+    "claimLook": "Claim {name}",
+    "double": "Double it: +{n} XP",
+    "doubleLabel": "Watch an ad to double today’s gift to {n} XP",
+    "noAd": "No ad available right now: your gift is still here.",
+    "gotXp": "+{n} XP! Tomorrow: {next}.",
+    "gotLook": "{name} is yours! Tomorrow: {next}.",
+    "setDone": "The {set} set is complete: {prize} is yours too!",
+    "continue": "Continue",
+    "next": "Today’s gift is claimed. Tomorrow: {gift}.",
+    "welcome": "Welcome back! +{n} XP comes with today’s gift.",
+    "streak": "{n} day in a row with the daily challenge. | {n} days in a row with the daily challenge.",
+    "streakNext": "At {days} days: +{xp} XP.",
+    "streakStart": "Play the daily challenge each day: {days} days in a row bring +{xp} XP.",
+    "waits": "Miss a day and the calendar waits for you: nothing is lost.",
+    "ready": "Daily gift ready"
+  },
+  "collections": {
+    "lead": "Gather every look of a set to unlock its ambiance.",
+    "progress": "{done} of {total}: complete it to unlock {name}.",
+    "complete": "Complete! {name} is yours: wear it from the Ambiance shelf.",
+    "arcade": {
+      "name": "Arcade"
+    },
+    "garden": {
+      "name": "Night garden"
+    },
+    "treasure": {
+      "name": "Treasure"
+    },
+    "trophies": {
+      "name": "Guardians’ trophies"
+    }
   }
 }

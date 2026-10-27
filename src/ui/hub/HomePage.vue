@@ -38,12 +38,14 @@ const emit = defineEmits<{
   daily: [challenge: DailyChallenge, origin: Element];
   guardian: [challenge: GuardianChallenge, origin: Element];
   level: [level: CampaignLevel, origin: Element];
+  /** The gift calendar, opened from its pill (1.35). */
+  gift: [];
 }>();
 
 const { t } = useI18n();
 /** The game's name, split by the rift, then its kicker (never translated). */
 const LOGO = ['Lumi', 'rift', 'Blocks'] as const;
-const { catalog, clock, platform, campaign, profile, settings, theme } = useServices();
+const { catalog, clock, platform, campaign, profile, settings, theme, gifts } = useServices();
 const format = useFormat();
 const { edition } = platform;
 const touch = isTouchScreen();
@@ -72,6 +74,11 @@ const guardianLeft = (() => {
   const left = timeLeft(guardian.endsAt, today);
   return { d: left.days, h: left.hours };
 })();
+/** The gift calendar (1.35), once the player has played: a gift waits; the daily streak, still alive today. */
+const giftStarted = computed(() => gifts.calendar.started);
+const giftReady = computed(() => gifts.calendar.ready);
+const streak = computed(() => gifts.calendar.streak);
+
 /** The day's first attempt is still to play: it earns its bonus. */
 const guardianBonus = computed(() => guardianBonusOpen(profile.current, dayKey(today)));
 
@@ -213,6 +220,12 @@ onBeforeUnmount(() => {
             <strong>{{ t(`modes.${daily.modeId}.name`) }}</strong>
             <small>{{ t('hub.timeLeft', { h: dailyLeft.h, m: dailyLeft.m }) }}</small>
           </span>
+          <!-- The daily streak (1.35), pinned to its card like the Guardian's bonus. -->
+          <span v-if="streak > 0" class="challenge__bonus challenge__bonus--streak">
+            <AppIcon name="flame" :size="12" aria-hidden="true" />
+            <span aria-hidden="true">{{ format.number(streak) }}</span>
+            <span class="sr-only">{{ t('home.streak', { n: streak }, streak) }}</span>
+          </span>
         </button>
         <button
           v-if="guardianOpen"
@@ -305,17 +318,31 @@ onBeforeUnmount(() => {
             </template>
           </i18n-t>
         </p>
-        <button type="button" class="goals" @click="goalsOpen = true">
-          <span class="goals__dots" aria-hidden="true">
-            <i
-              v-for="entry in objectives"
-              :key="entry.objective.kind"
-              :class="{ 'goals__dot--done': entry.done }"
-            />
-          </span>
-          <span class="goals__label">{{ t('profile.objectives') }}</span>
-          <strong>{{ t('hub.objectivesDone', { n: done, total: objectives.length }) }}</strong>
-        </button>
+        <div class="home__daily">
+          <button
+            v-if="giftStarted"
+            type="button"
+            class="gift-pill"
+            :class="{ 'gift-pill--ready': giftReady }"
+            :aria-label="giftReady ? t('gifts.ready') : t('gifts.title')"
+            @click="emit('gift')"
+          >
+            <AppIcon name="gift" :size="22" />
+            <span class="gift-pill__label" aria-hidden="true">{{ t('gifts.title') }}</span>
+            <span v-if="giftReady" class="gift-pill__dot" aria-hidden="true" />
+          </button>
+          <button type="button" class="goals" @click="goalsOpen = true">
+            <span class="goals__dots" aria-hidden="true">
+              <i
+                v-for="entry in objectives"
+                :key="entry.objective.kind"
+                :class="{ 'goals__dot--done': entry.done }"
+              />
+            </span>
+            <span class="goals__label">{{ t('profile.objectives') }}</span>
+            <strong>{{ t('hub.objectivesDone', { n: done, total: objectives.length }) }}</strong>
+          </button>
+        </div>
       </div>
     </div>
     <ObjectivesDialog :open="goalsOpen" @close="goalsOpen = false" />
@@ -458,6 +485,17 @@ onBeforeUnmount(() => {
   font-weight: 800;
   line-height: 1.3;
   box-shadow: 0 0 0.8rem color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* The daily streak's flame, in the card's own gold. */
+.challenge__bonus--streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.challenge__bonus--streak :deep(svg) {
+  fill: currentColor;
 }
 
 /* A narrow column of cards (a small phone on its side): the bonus pins the card's lower edge, clear of its title. */
@@ -782,6 +820,63 @@ onBeforeUnmount(() => {
   border-bottom-width: 2px;
   border-radius: 0.35rem;
   font-family: inherit;
+}
+
+/* The day's gift beside the day's objectives (1.35). */
+.home__daily {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  max-width: 100%;
+}
+
+.gift-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: var(--touch);
+  min-height: var(--touch);
+  padding: 0 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.gift-pill--ready {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  color: var(--accent);
+}
+
+/* Its word only where the column has room; the icon and the dot say it otherwise. */
+.gift-pill__label {
+  display: none;
+}
+
+@container cta (inline-size >= 24rem) {
+  .gift-pill {
+    padding-inline: var(--space-3) var(--space-4);
+  }
+
+  .gift-pill__label {
+    display: inline;
+  }
+}
+
+.gift-pill__dot {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent-fill);
+  box-shadow: 0 0 0.6rem color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .goals {

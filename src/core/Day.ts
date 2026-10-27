@@ -18,6 +18,16 @@ export function timeLeft(
   };
 }
 
+/** The local date of a day's key, at noon (no change of hour moves it to another day). */
+function dateOf(key: string): Date {
+  return new Date(Number(key.slice(0, 4)), Number(key.slice(4, 6)) - 1, Number(key.slice(6)), 12);
+}
+
+/** Whole days from one day's key to another's (negative when `to` is earlier). */
+export function daysBetween(from: string, to: string): number {
+  return Math.round((dateOf(to).getTime() - dateOf(from).getTime()) / 86_400_000);
+}
+
 /** The key of the day before, across months and years. */
 export function previousDay(key: string): string {
   const date = new Date(Number(key.slice(0, 4)), Number(key.slice(4, 6)) - 1, Number(key.slice(6)));

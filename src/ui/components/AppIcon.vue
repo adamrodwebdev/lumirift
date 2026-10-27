@@ -59,6 +59,7 @@ const PATHS = {
   modes: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
   map: 'M6.5 17.5c3-1 2.5-4.5 5.5-5.5s3-4 5.5-5M3 19a2 2 0 1 0 4 0a2 2 0 1 0-4 0M10 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0M17 5a2 2 0 1 0 4 0a2 2 0 1 0-4 0',
   gem: 'M7 4h10l4 5-9 11L3 9zM3 9h18M12 20L8.5 9 10 4M12 20l3.5-11L14 4',
+  gift: 'M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7C10.5 3.5 6.5 3.5 8 7M12 7c1.5-3.5 5.5-3.5 4 0',
   // The Rift Race's worlds (1.34): a well with its stack, dunes under falling grains, a glass tower.
   well: 'M5 4v16h14V4M5 16h14M5 12h8v4',
   sand: 'M3 16c3-3 6-3 9 0s6 3 9 0M3 20h18M8 8v.01M12 5v.01M16 9v.01',
