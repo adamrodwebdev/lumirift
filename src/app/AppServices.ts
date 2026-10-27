@@ -13,6 +13,7 @@ import { AmbianceController } from '@/services/AmbianceController';
 import { WornLook } from '@/services/WornLook';
 import { AudioEngine } from '@/services/audio/AudioEngine';
 import { CampaignService } from '@/services/CampaignService';
+import { GiftService } from '@/services/GiftService';
 import { Haptics } from '@/services/Haptics';
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
 import { ProfileService } from '@/services/ProfileService';
@@ -28,6 +29,8 @@ export interface AppServices {
   readonly scores: ScoreBoard;
   /** Experience, objectives, streak and cosmetics. */
   readonly profile: ProfileService;
+  /** The gift calendar (1.35): one gift a day of play. */
+  readonly gifts: GiftService;
   /** What the player wears now: their equipment, or a look tried for one game (1.31). */
   readonly look: WornLook;
   /** Campaign stars and upgrades. */
@@ -89,6 +92,7 @@ export function createBrowserServices(
     theme: new ThemeController(document.documentElement),
     scores: new ScoreBoard(storage),
     profile,
+    gifts: new GiftService(profile, clock),
     look,
     campaign,
     share: new ShareService(navigator),
@@ -99,8 +103,12 @@ export function createBrowserServices(
     platform,
     ads: new AdScheduler(
       AD_TUNING[platform.id],
-      // No-ads arrives with the purchases (1.31): until then, nobody owns it.
-      () => ({ playedMs: profile.current.playedMs, adFree: false }),
+      // No-ads arrives with the purchases (1.31): until then, nobody owns it. A player back
+      // after a week away has the newcomers' grace again (1.35): their play counts from then.
+      () => ({
+        playedMs: profile.current.playedMs - profile.current.graceFromMs,
+        adFree: false,
+      }),
       () => clock().getTime(),
     ),
   };

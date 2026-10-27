@@ -1,4 +1,5 @@
-import { previousDay } from '@/core/Day';
+import { daysBetween, previousDay } from '@/core/Day';
+import { achievementsOf } from './Achievements';
 import { BOSS_IDS, type BossId } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import {
@@ -15,7 +16,16 @@ import {
   type CosmeticKind,
   type Equipment,
 } from './Cosmetics';
-import { DAILY_XP, experienceFor, GUARDIAN_XP, levelProgress, type XpLine } from './Experience';
+import { GIFT_DAYS, WELCOME_BACK_DAYS, WELCOME_BACK_XP } from './DailyGifts';
+import {
+  DAILY_XP,
+  experienceFor,
+  GUARDIAN_XP,
+  levelProgress,
+  streakBonus,
+  type XpLine,
+} from './Experience';
+import { giftReady, nextGift } from './GiftCalendar';
 import type { GameReport } from './GameReport';
 import {
   advance,
@@ -39,6 +49,16 @@ export interface Streak {
   readonly lastDay: string | null;
 }
 
+/**
+ * The gift calendar (1.35): the day of its cycle given next (0 to 6), the
+ * last day a gift was claimed, and the last day the calendar opened by itself.
+ */
+export interface GiftCycle {
+  readonly next: number;
+  readonly lastDay: string | null;
+  readonly shownDay: string | null;
+}
+
 /** Everything the player has earned, as saved on the device. */
 export interface ProfileData {
   readonly xp: number;
@@ -58,6 +78,16 @@ export interface ProfileData {
   readonly trained: boolean;
   /** Real play since the first launch (ms, pauses and menus excluded): the ads' grace reads it. */
   readonly playedMs: number;
+  /** The gift calendar (1.35). */
+  readonly gifts: GiftCycle;
+  /** The looks the calendar gave (`kind.id`): the player's whatever their rule. */
+  readonly gifted: readonly string[];
+  /** The last day the player came to the menu. */
+  readonly lastVisit: string | null;
+  /** Back after a week away: a gift of welcome waits with the day's. */
+  readonly welcomeBack: boolean;
+  /** The play when the player came back after a week away: the ads' grace counts from it again. */
+  readonly graceFromMs: number;
 }
 
 /** What a game brought, for the end-of-game dialog. */
@@ -85,19 +115,14 @@ export const EMPTY_PROFILE: ProfileData = {
   guardianDay: null,
   trained: false,
   playedMs: 0,
+  gifts: { next: 0, lastDay: null, shownDay: null },
+  gifted: [],
+  lastVisit: null,
+  welcomeBack: false,
+  graceFromMs: 0,
 };
 
 const COSMETIC_KEYS = new Set(COSMETICS.map(cosmeticKey));
-
-/** What the unlock rules look at, in saved data. */
-export function achievementsOf(data: ProfileData): Achievements {
-  return {
-    level: levelProgress(data.xp).level,
-    bestStreak: data.streak.best,
-    objectivesDone: data.objectivesDone,
-    bosses: data.bosses,
-  };
-}
 
 /**
  * The cosmetics earned and not looked at yet: the Atelier marks them new.
@@ -159,6 +184,51 @@ export class Profile {
     return true;
   }
 
+  /**
+   * The player comes to the menu on `day` (1.35): a player who has played,
+   * back after a week or more away, gets a gift of welcome and the ads' grace
+   * again. A day earlier than the last visit (a clock turned back, a flight
+   * west) changes nothing.
+   */
+  visit(day: string): void {
+    const last = this.data.lastVisit;
+    if (last !== null && day <= last) return;
+    const away =
+      last !== null && this.data.games > 0 && daysBetween(last, day) >= WELCOME_BACK_DAYS;
+    this.data = {
+      ...this.data,
+      lastVisit: day,
+      ...(away ? { welcomeBack: true, graceFromMs: this.data.playedMs } : {}),
+    };
+  }
+
+  /** The calendar opened by itself on `day`: not again that day. */
+  markGiftShown(day: string): void {
+    this.data = { ...this.data, gifts: { ...this.data.gifts, shownDay: day } };
+  }
+
+  /**
+   * The gift of `day` is claimed: its experience (twice, an ad watched) or
+   * its look, and the gift of welcome waiting; the cycle moves on a day.
+   * Nothing on a day already claimed: one gift a local day, whatever the
+   * clock does.
+   */
+  claimGift(day: string, doubled: boolean): void {
+    if (!giftReady(this.data, day)) return;
+    const gift = nextGift(this.data);
+    const welcome = this.data.welcomeBack ? WELCOME_BACK_XP : 0;
+    const xp = gift.kind === 'xp' ? gift.amount * (doubled ? 2 : 1) : 0;
+    const { gifts } = this.data;
+    this.data = {
+      ...this.data,
+      xp: this.data.xp + xp + welcome,
+      gifted:
+        gift.kind === 'look' ? [...this.data.gifted, cosmeticKey(gift.cosmetic)] : this.data.gifted,
+      welcomeBack: false,
+      gifts: { ...gifts, next: (gifts.next + 1) % GIFT_DAYS, lastDay: day },
+    };
+  }
+
   /** The objectives of the day; a new day brings new ones. */
   objectivesFor(day: string, modes: readonly ModeId[]): readonly ObjectiveProgress[] {
     if (this.data.objectivesDay !== day) {
@@ -188,6 +258,9 @@ export class Profile {
       xp.push({ source: 'daily', amount: DAILY_XP });
       const count = before.streak.lastDay === previousDay(day) ? before.streak.count + 1 : 1;
       streak = { count, best: Math.max(before.streak.best, count), lastDay: day };
+      // A step of the streak reached (1.35): its bonus, kept whatever comes next.
+      const bonus = streakBonus(count);
+      if (bonus > 0) xp.push({ source: 'streak', amount: bonus });
     }
     let guardianDay = before.guardianDay;
     if (report.guardian && guardianBonusOpen(before, day)) {
@@ -309,6 +382,19 @@ export class Profile {
           : null,
       trained: record.trained === true,
       playedMs: count('playedMs'),
+      gifts: parseGifts(record.gifts),
+      gifted: Array.isArray(record.gifted)
+        ? [
+            ...new Set(
+              record.gifted.filter(
+                (key: unknown): key is string => typeof key === 'string' && COSMETIC_KEYS.has(key),
+              ),
+            ),
+          ]
+        : [],
+      lastVisit: dayOrNull(record.lastVisit),
+      welcomeBack: record.welcomeBack === true,
+      graceFromMs: Math.min(count('graceFromMs'), count('playedMs')),
     };
     // Saved before the Atelier marked its new looks: what was earned then is not new.
     const seen = Array.isArray(record.seen)
@@ -318,6 +404,24 @@ export class Profile {
       : COSMETICS.filter((cosmetic) => isUnlocked(cosmetic, achievementsOf(data))).map(cosmeticKey);
     return new Profile({ ...data, seen: [...new Set(seen)] });
   }
+}
+
+/** A day's key (YYYYMMDD), or null. */
+function dayOrNull(value: unknown): string | null {
+  return typeof value === 'string' && /^\d{8}$/.test(value) ? value : null;
+}
+
+function parseGifts(value: unknown): GiftCycle {
+  if (typeof value !== 'object' || value === null) return EMPTY_PROFILE.gifts;
+  const { next, lastDay, shownDay } = value as Record<string, unknown>;
+  return {
+    next:
+      typeof next === 'number' && Number.isInteger(next) && next >= 0 && next < GIFT_DAYS
+        ? next
+        : 0,
+    lastDay: dayOrNull(lastDay),
+    shownDay: dayOrNull(shownDay),
+  };
 }
 
 function parseBosses(value: unknown): BossId[] {

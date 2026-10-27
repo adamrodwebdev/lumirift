@@ -23,9 +23,37 @@ export const VICTORY_XP: Readonly<Record<string, number>> = {
   expert: 50,
 };
 
-/** `bonus`: the experience of a game doubled by a rewarded ad. */
+/** `bonus`: the experience of a game doubled by a rewarded ad; `streak`: a step of the daily streak. */
 export type XpSource =
-  'game' | 'time' | 'clears' | 'daily' | 'guardian' | 'victory' | 'objective' | 'bonus';
+  'game' | 'time' | 'clears' | 'daily' | 'streak' | 'guardian' | 'victory' | 'objective' | 'bonus';
+
+/** A step of the daily streak: so many days in a row of daily challenges, and what it brings. */
+export interface StreakBonus {
+  readonly days: number;
+  readonly xp: number;
+}
+
+/**
+ * The steps of the daily streak (1.35): each brings its experience once the
+ * streak reaches it. A missed day ends the streak, never what it gave; a new
+ * streak climbs them again.
+ */
+export const STREAK_BONUSES: readonly StreakBonus[] = [
+  { days: 3, xp: 75 },
+  { days: 7, xp: 150 },
+  { days: 14, xp: 300 },
+  { days: 30, xp: 600 },
+];
+
+/** What a streak of this many days brings as it reaches it (0 between the steps). */
+export function streakBonus(days: number): number {
+  return STREAK_BONUSES.find((step) => step.days === days)?.xp ?? 0;
+}
+
+/** The next step of a streak now this long, or null past the last. */
+export function nextStreakBonus(days: number): StreakBonus | null {
+  return STREAK_BONUSES.find((step) => step.days > days) ?? null;
+}
 
 export interface XpLine {
   readonly source: XpSource;

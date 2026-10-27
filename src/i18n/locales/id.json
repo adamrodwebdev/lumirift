@@ -28,7 +28,8 @@
       "mirror": "Sumur menjadi bayangannya sendiri",
       "towerEye": "Butakan dia di menara kacanya",
       "riftHeart": "Serang jantungnya dengan barismu"
-    }
+    },
+    "streak": "Beruntun tantangan harian: {n} hari"
   },
   "daily": {
     "title": "Tantangan harian"
@@ -468,7 +469,8 @@
       "guardian": "Tantangan Penjaga",
       "victory": "Kemenangan",
       "objective": "Tujuan",
-      "bonus": "Bonus (iklan ditonton)"
+      "bonus": "Bonus (iklan ditonton)",
+      "streak": "Beruntun harian"
     },
     "tooShort": "Bermainlah minimal 20 detik untuk mendapat pengalaman."
   },
@@ -502,7 +504,11 @@
       "forge": "Tempa",
       "cosmos": "Kosmos",
       "sakura": "Sakura",
-      "rift": "Retakan"
+      "rift": "Retakan",
+      "synthwave": "Synthwave",
+      "lantern": "Lentera",
+      "gilded": "Sepuh emas",
+      "sanctum": "Sanktum"
     },
     "shatter": {
       "shards": "Serpihan",
@@ -515,7 +521,8 @@
       "default": "Gratis",
       "level": "Level {n}",
       "streak": "Beruntun {n} hari di tantangan",
-      "objectives": "{n} tujuan selesai"
+      "objectives": "{n} tujuan selesai",
+      "collection": "Lengkapi set {name}"
     },
     "tapToWear": "Ketuk lagi untuk memakai",
     "clickToWear": "Klik lagi untuk memakai",
@@ -695,7 +702,8 @@
     "kinds": {
       "material": "Blok",
       "ambiance": "Suasana",
-      "shatter": "Pecahan"
+      "shatter": "Pecahan",
+      "collections": "Set"
     },
     "newLooks": "{n} tampilan baru"
   },
@@ -867,5 +875,49 @@
     "hurrahPoints": "Ledakan terakhir: +{n}",
     "locked": "Terbuka di level {level}",
     "new": "Baru"
+  },
+  "gifts": {
+    "title": "Hadiah harian",
+    "dayOf": "Hari {n} dari {total}",
+    "days": "Tujuh hari",
+    "day": "Hari {n}",
+    "today": "Hari ini",
+    "tomorrow": "Besok",
+    "claimed": "Sudah diambil",
+    "look": "Tampilan baru",
+    "xp": "+{n} XP",
+    "claimXp": "Ambil +{n} XP",
+    "claimLook": "Ambil {name}",
+    "double": "Gandakan: +{n} XP",
+    "doubleLabel": "Tonton iklan untuk menggandakan hadiah hari ini menjadi {n} XP",
+    "noAd": "Belum ada iklan saat ini: hadiahmu tetap menunggu.",
+    "gotXp": "+{n} XP! Besok: {next}.",
+    "gotLook": "{name} jadi milikmu! Besok: {next}.",
+    "setDone": "Set {set} lengkap: {prize} juga jadi milikmu!",
+    "continue": "Lanjutkan",
+    "next": "Hadiah hari ini sudah diambil. Besok: {gift}.",
+    "welcome": "Selamat datang kembali! +{n} XP ikut bersama hadiah hari ini.",
+    "streak": "{n} hari berturut-turut main tantangan harian.",
+    "streakNext": "Di {days} hari: +{xp} XP.",
+    "streakStart": "Mainkan tantangan harian setiap hari: {days} hari berturut-turut memberi +{xp} XP.",
+    "waits": "Terlewat sehari? Kalender menunggumu: tidak ada yang hilang.",
+    "ready": "Hadiah harian siap"
+  },
+  "collections": {
+    "lead": "Kumpulkan semua tampilan dalam satu set untuk membuka suasananya.",
+    "progress": "{done} dari {total}: lengkapi untuk membuka {name}.",
+    "complete": "Lengkap! {name} jadi milikmu: pakai dari tab Suasana.",
+    "arcade": {
+      "name": "Arkade"
+    },
+    "garden": {
+      "name": "Taman malam"
+    },
+    "treasure": {
+      "name": "Harta karun"
+    },
+    "trophies": {
+      "name": "Trofi Penjaga"
+    }
   }
 }

@@ -11,6 +11,7 @@ import type { ModeId } from '@/session/ModeId';
 import AppIcon from '../components/AppIcon.vue';
 import PlayerChip from '../components/PlayerChip.vue';
 import AtelierPage from '../hub/AtelierPage.vue';
+import DailyGiftDialog from '../hub/DailyGiftDialog.vue';
 import HomePage from '../hub/HomePage.vue';
 import { HUB_ICONS, HUB_PAGES, type HubPage } from '../hub/hubPages';
 import MapPage from '../hub/MapPage.vue';
@@ -40,7 +41,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const format = useFormat();
-const { settings, campaign, profile } = useServices();
+const { settings, campaign, profile, gifts } = useServices();
 const landscape = useLandscape();
 
 const index = computed(() => HUB_PAGES.indexOf(page.value));
@@ -88,6 +89,40 @@ onBeforeUnmount(() => {
 });
 
 const muted = computed(() => settings.current.muted);
+
+// --- The gift calendar (1.35) --------------------------------------------------
+
+const giftOpen = ref(false);
+/** A gift waits: a dot on the Home tab, and on its pill. */
+const giftReady = computed(() => gifts.calendar.ready);
+/**
+ * The menu shows a moment before the calendar rises over it, once a day by
+ * itself; back from a game, once the pages have risen (700 ms). A player
+ * already busy (a tap, a key) is not interrupted, nor a window they opened
+ * covered: the calendar waits for the next visit, its dot on the Home tab.
+ */
+const GIFT_DELAY_MS = 600;
+const GIFT_DELAY_RETURNING_MS = 900;
+let giftTimer: number | undefined;
+const BUSY_EVENTS = ['pointerdown', 'keydown'] as const;
+const stopGiftTimer = () => {
+  window.clearTimeout(giftTimer);
+  for (const type of BUSY_EVENTS) window.removeEventListener(type, stopGiftTimer, true);
+};
+onMounted(() => {
+  gifts.visit();
+  if (!gifts.opensItself) return;
+  for (const type of BUSY_EVENTS) window.addEventListener(type, stopGiftTimer, true);
+  giftTimer = window.setTimeout(
+    () => {
+      stopGiftTimer();
+      gifts.markShown();
+      giftOpen.value = true;
+    },
+    props.returning ? GIFT_DELAY_RETURNING_MS : GIFT_DELAY_MS,
+  );
+});
+onBeforeUnmount(stopGiftTimer);
 /** Looks earned and not seen in the Atelier yet: a badge on its tab. */
 const newLooks = computed(() => newCosmetics(profile.current).length);
 const stars = computed(() => campaign.model.totalStars);
@@ -203,6 +238,7 @@ onMounted(() => {
           @daily="(challenge, origin) => emit('daily', challenge, origin)"
           @guardian="(challenge, origin) => emit('guardian', challenge, origin)"
           @level="(level, origin) => emit('level', level, origin)"
+          @gift="giftOpen = true"
         />
         <section v-else v-bind="panel('home')" class="page" />
         <ModesPage
@@ -254,9 +290,13 @@ onMounted(() => {
             <span aria-hidden="true">{{ format.number(newLooks) }}</span>
             <span class="sr-only">{{ t('hub.newLooks', { n: newLooks }, newLooks) }}</span>
           </span>
+          <span v-if="id === 'home' && giftReady" class="tab__dot">
+            <span class="sr-only">{{ t('gifts.ready') }}</span>
+          </span>
         </button>
       </div>
     </nav>
+    <DailyGiftDialog :open="giftOpen" @close="giftOpen = false" />
   </div>
 </template>
 
@@ -462,6 +502,18 @@ onMounted(() => {
   letter-spacing: 0;
   text-align: center;
   box-shadow: 0 0.2rem 0.6rem color-mix(in srgb, var(--jewel-rose) 50%, transparent);
+}
+
+/* A gift waits (1.35): a gold dot on the Home tab. */
+.tab .tab__dot {
+  position: absolute;
+  top: 0.45rem;
+  left: calc(50% + 0.6rem);
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--accent-fill);
+  box-shadow: 0 0 0.6rem color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .tab[aria-selected='true'] :deep(svg) {

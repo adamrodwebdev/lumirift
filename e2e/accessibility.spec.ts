@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { freezeTime, play, playUntil } from './gameTime';
 
 /*
  * Automatic WCAG 2.2 AA audits (axe-core) of every screen and dialog, in
@@ -91,28 +92,34 @@ for (const theme of ['dark'] as const) {
         .click();
       await modesPage(page).getByRole('button', { name: 'Jouer' }).click();
       await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
-      await audit(page);
-      const play = async (ms: number) => {
-        for (let t = 0; t < ms; t += 100) await page.clock.fastForward(100);
+      // The game's time moves only with the test's frames (gameTime.ts); an audit runs
+      // on the page's own timers, so time flows while it runs, then stands still again.
+      await freezeTime(page);
+      const auditRace = async () => {
+        await page.clock.resume();
+        await audit(page);
+        await freezeTime(page);
       };
+      await auditRace();
       // The second shift: announced with its Guardian, then the Guardian's card.
-      await play(78_500);
-      await expect(page.locator('.shift')).toBeVisible();
-      await audit(page);
-      await play(4_000);
-      await expect(page.getByRole('status', { name: /Œil de la Tour/ })).toBeVisible();
-      await audit(page);
+      const shift = page.locator('.shift');
+      await play(page, 75_000);
+      await playUntil(page, 5_000, () => shift.isVisible());
+      await expect(shift).toBeVisible();
+      await auditRace();
+      const guardian = page.getByRole('status', { name: /Œil de la Tour/ });
+      await playUntil(page, 6_000, () => guardian.isVisible());
+      await expect(guardian).toBeVisible();
+      await auditRace();
       await page.keyboard.press('KeyP');
-      await expect(page.getByRole('dialog', { name: 'Pause' })).toBeVisible();
-      await audit(page);
-      await page
-        .getByRole('dialog', { name: 'Pause' })
-        .getByRole('button', { name: 'Reprendre' })
-        .click();
-      await play(40_000);
-      await expect(page.getByRole('dialog', { name: 'Partie terminée' })).toBeVisible({
-        timeout: 10_000,
-      });
+      const pause = page.getByRole('dialog', { name: 'Pause' });
+      await expect(pause).toBeVisible();
+      await auditRace();
+      await pause.getByRole('button', { name: 'Reprendre' }).click();
+      const over = page.getByRole('dialog', { name: 'Partie terminée' });
+      await playUntil(page, 60_000, () => over.isVisible());
+      await expect(over).toBeVisible();
+      await page.clock.resume();
       await audit(page);
     });
 
@@ -128,6 +135,47 @@ for (const theme of ['dark'] as const) {
     });
   });
 }
+
+test('the gift calendar, as it rises and once claimed, and the Atelier’s sets', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.locator('main').waitFor();
+  // Back after a week away, on a streak, the day's gift waiting.
+  await page.evaluate(() => {
+    const day = (offset: number) => {
+      const date = new Date();
+      date.setDate(date.getDate() + offset);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
+    };
+    localStorage.setItem(
+      'stackrift:profile',
+      JSON.stringify({
+        games: 9,
+        xp: 900,
+        lastVisit: day(-10),
+        gifts: { next: 2, lastDay: day(-11), shownDay: null },
+        streak: { count: 3, best: 3, lastDay: day(-1) },
+      }),
+    );
+  });
+  await page.reload();
+  const gift = page.getByRole('dialog', { name: 'Cadeau du jour' });
+  await expect(gift).toBeVisible();
+  await audit(page);
+  await gift.getByRole('button', { name: /^Récupérer/ }).click();
+  await expect(gift.getByRole('button', { name: 'Continuer' })).toBeVisible();
+  await audit(page);
+  await gift.getByRole('button', { name: 'Continuer' }).click();
+  await audit(page);
+  await page.getByRole('tab', { name: 'Atelier' }).click();
+  const atelier = page.getByRole('tabpanel', { name: 'Atelier' });
+  await atelier.getByRole('button', { name: 'Ensembles' }).click();
+  await expect(atelier.getByRole('button', { name: /^Arcade/ })).toBeVisible();
+  await audit(page);
+});
 
 test('new looks: the badge of the Atelier tab and the marks on the shelf', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });

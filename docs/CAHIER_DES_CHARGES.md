@@ -7,6 +7,7 @@
 | 1.32    | 26/10/2026 | Commandes au doigt : module tactile (coups lus comme les téléphones, garde contre les chutes accidentelles, crans), gestes, boutons ou les deux, gaucher, vibrations discrètes, guide des gestes ; porte de traces (§ 9 bis, lot 23). |
 | 1.33    | 26/10/2026 | Accroche et courbe : le bot de courbe et ses bandes, la clémence du début de campagne, des niveaux réglés sur la mesure, l'entraînement en un seul jeu (§ 9 bis, lot 16).                                                             |
 | 1.34    | 27/10/2026 | Course contre la montre : la Course de la faille, ses mondes toutes les 40 s, son chrono et ses gains, les Gardiens du monde, le record de la semaine, ouverte au niveau 4-4 (§ 9 bis, lot 24).                                       |
+| 1.35    | 27/10/2026 | Cadeaux et collections : le calendrier de sept jours, le retour après une semaine, la série affichée et ses paliers, les ensembles de l'Atelier et leurs quatre ambiances (§ 3.6, § 9 bis, lot 17).                                   |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -756,6 +757,8 @@ l'appareil** (`stackrift:profile`), comme les records.
   | Premier défi du jour de la journée | 25                                                        |
   | Victoire en duel                   | 10, 15, 25, 35 ou 50 selon le niveau de l'IA              |
   | Objectif du jour accompli          | 40, 70 ou 110 selon sa difficulté                         |
+  | Palier de la série (1.35)          | 75, 150, 300 ou 600 à 3, 7, 14 et 30 jours d'affilée      |
+  | Cadeau du jour (1.35)              | 50 à 100 les jours 1 à 6 du cycle ; 150 au retour         |
 
   Une partie de moins de 20 s ne rapporte que son temps : relancer sans jouer ne sert à
   rien (la fin de partie le dit).
@@ -767,7 +770,13 @@ l'appareil** (`stackrift:profile`), comme les records.
   tenir plusieurs minutes, terminer le défi du jour, battre l'IA normale ou plus forte.
   Chaque objectif est compté une seule fois.
 - **Série** : jours d'affilée avec un défi du jour terminé (meilleure série gardée) ;
-  affichée sur l'accueil tant qu'elle court.
+  affichée sur l'accueil tant qu'elle court (depuis la 1.35, une flamme et son compte sur la
+  carte du défi du jour), avec ses paliers.
+- **Cadeau du jour (1.35)** : un calendrier de sept jours, un cadeau par jour local réclamé
+  (de l'expérience, une apparence le septième jour), qui s'ouvre de lui-même à la première
+  visite du menu de la journée une fois la première partie jouée ; un jour manqué met le cycle
+  en pause. Après sept jours sans visite, un cadeau de retour et la grâce des pubs à nouveau.
+  Sur les portails qui ont des pubs récompensées, l'expérience du jour doublée au choix.
 - **Atelier** (depuis l'accueil, chargé à la demande) : chaque objet porté est marqué, les
   objets verrouillés disent comment les obtenir.
 
@@ -775,12 +784,17 @@ l'appareil** (`stackrift:profile`), comme les records.
   | ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
   | **Matières** (modes de chute)        | Cristal (offert), Néon (niv. 3), Papier (niv. 6), Pixel (niv. 10), Obsidienne (niv. 15), Or (série de 7 jours) |
   | **Ambiances** (tout le jeu)          | Nuit (offerte), Aurore (niv. 2), Abysses (niv. 5), Forge (niv. 8), Cosmos (niv. 12), Sakura (20 objectifs)     |
+  | **Ambiances d'ensemble** (1.35)      | Synthwave (Arcade), Lanternes (Jardin de nuit), Dorure (Trésor), Sanctuaire (Trophées des Gardiens)            |
   | **Signatures de bris** (chute, Tour) | Éclats (offerts), Confettis (niv. 4), Pétales (niv. 9), Feuille d'or (30 objectifs)                            |
   - Les matières gardent toutes le **motif gravé** de chaque couleur. Les autres familles
     gardent leur matière propre (sable, céramique, verre de la Tour) : c'est leur identité.
   - Les ambiances ne changent que deux **lueurs** derrière le jeu, à faible opacité : les
     contrastes de textes et de pièces sont intacts. Elles bougent lentement et s'arrêtent
     avec les effets sobres ou la réduction des animations du système.
+  - Les **ensembles** (1.35), quatrième rayon de l'Atelier : Arcade (Néon, Pixel, Confettis,
+    Cosmos), Jardin de nuit (Papier, Pétales, Aurore, Sakura), Trésor (Obsidienne, Or, Feuille
+    d'or, Forge), Trophées des Gardiens (Écailles des dunes, Kintsugi, Éclats d'iris, la Faille) ; un
+    ensemble complet débloque son ambiance.
 
 - **Fin de partie** : expérience gagnée ligne par ligne, niveau atteint, objectifs
   accomplis, objets débloqués.
@@ -1731,7 +1745,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                                                        |
 | 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, essai                            | Livré (1.31)                                                 |
 | 16  | Accroche et courbe (1.33) : entraînement 2.0, bot de courbe, clémence                                      | Livré (1.33)                                                 |
-| 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Prévu                                                        |
+| 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Livré (1.35)                                                 |
 | 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Prévu                                                        |
 | 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Prévu                                                        |
 | 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
@@ -1817,6 +1831,34 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
   défi du jour) enfin affichée, avec un bonus à 3, 7, 14 et 30 jours ; un cadeau de retour
   après sept jours d'absence. Porte : la rétention à 7 jours monte sur les tableaux de bord des
   portails.
+  - **Livré en 1.35** (27/10/2026), selon les maquettes validées (feuille sur téléphone,
+    fenêtre de sept colonnes sur ordinateur). Les choix au-delà de la spécification :
+    - les cadeaux : 50, 60, 70, 80, 90 et 100 XP, puis une apparence ; le septième jour donne
+      la première apparence que le joueur n'a pas dans une liste qui part de loin dans les
+      niveaux (Obsidienne au niveau 15, Cosmos au 12, Pétales au 9…), les prix des objectifs
+      en dernier, 250 XP quand il les a toutes ; jamais un trophée de Gardien, l'or de la série
+      ni le prix d'un ensemble. Une apparence offerte compte partout, ensembles compris ;
+    - le calendrier s'ouvre de lui-même 0,6 s après le menu (0,9 s au retour d'une partie,
+      le temps que le menu monte), une fois par jour, seulement si un cadeau attend et que le
+      joueur a joué, et jamais sur un joueur déjà occupé (un geste ou une touche avant ce
+      délai : il attend la visite suivante) ; son bouton, caché jusque-là, s'affiche à côté
+      des objectifs du jour (la barre du haut est trop étroite sur un téléphone) et un point
+      d'or marque l'onglet Accueil ; après le cadeau, la semaine reste affichée jusqu'à la
+      fermeture, et un ensemble complété par le cadeau est annoncé ;
+    - un jour est le jour local de l'appareil : une horloge qui recule ne rend rien, une
+      horloge qui avance donne le cadeau suivant (un voyage vers l'est) ;
+    - le retour (sept jours sans visite, pour un joueur qui a déjà joué) : +150 XP avec le
+      cadeau du jour, et la grâce des pubs repart du temps de jeu de ce jour-là
+      (`graceFromMs`) ;
+    - les paliers de la série (+75, +150, +300, +600 XP) reviennent à chaque nouvelle série ;
+    - quatre ensembles de quatre apparences, quatre ambiances nouvelles (Synthwave,
+      Lanternes, Dorure, Sanctuaire), le rayon s'appelle « Ensembles » ; ni maquette ni badge
+      n'existaient pour eux : ils suivent le style de l'Atelier ;
+    - sur une case de téléphone, « Aujourd'hui » ne tient pas : chaque case porte son numéro,
+      celle du jour son or (et « Aujourd'hui » pour les lecteurs d'écran) ; sur une ligne de
+      sept, le jour du cadeau est une fois et demie plus large ; sur un écran bas (un
+      téléphone en largeur), les jours se resserrent et les boutons passent à côté de la
+      série, pour que la fenêtre tienne sans défiler.
 - **Lot 18 · 1.36 Événements et saison 1.** Un calendrier daté sans serveur
   (`EventCalendar`, comme le défi du Gardien) : un élément par semaine, plus fréquent dans les
   modes libres du Sable, avec un objectif hebdomadaire ; des saisons de six semaines (saison 1
@@ -1998,3 +2040,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.32    | 26/10/2026 | Commandes au doigt : `PhoneGestures`, gestes, boutons ou les deux, gaucher, vibrations discrètes, guide des gestes, porte de traces (§ 9 bis, lot 23).                 |
 | 1.33    | 26/10/2026 | Accroche et courbe : `CurveBot` et ses bandes, `BeatCharts`, `Mercy`, niveaux réglés, entraînement en un seul jeu (§ 9 bis, lot 16).                                   |
 | 1.34    | 27/10/2026 | Course contre la montre : `families/race`, le point de contrôle de 10 s mesuré par le bot, ouverture au 4-4, débordement qui continue (§ 5, § 9 bis, lot 24).          |
+| 1.35    | 27/10/2026 | Cadeaux et collections : `DailyGifts`, `GiftCalendar`, `GiftService`, les ensembles et leurs ambiances, la série et ses paliers, le retour (§ 3.6, § 9 bis, lot 17).   |

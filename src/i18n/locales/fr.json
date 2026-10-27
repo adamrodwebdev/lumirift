@@ -28,7 +28,8 @@
       "mirror": "Le puits devient son propre reflet",
       "towerEye": "Aveuglez-le dans sa tour de verre",
       "riftHeart": "Frappez son cœur avec vos lignes"
-    }
+    },
+    "streak": "Série au défi : {n} jour | Série au défi : {n} jours"
   },
   "daily": {
     "title": "Défi du jour"
@@ -468,7 +469,8 @@
       "guardian": "Défi des Gardiens",
       "victory": "Victoire",
       "objective": "Objectif",
-      "bonus": "Bonus (pub regardée)"
+      "bonus": "Bonus (pub regardée)",
+      "streak": "Série au défi du jour"
     },
     "tooShort": "Jouez au moins 20 secondes pour gagner de l’expérience."
   },
@@ -502,7 +504,11 @@
       "forge": "Forge",
       "cosmos": "Cosmos",
       "sakura": "Sakura",
-      "rift": "La Faille"
+      "rift": "La Faille",
+      "synthwave": "Synthwave",
+      "lantern": "Lanternes",
+      "gilded": "Dorure",
+      "sanctum": "Sanctuaire"
     },
     "shatter": {
       "shards": "Éclats",
@@ -515,7 +521,8 @@
       "default": "Offert",
       "level": "Niveau {n}",
       "streak": "Série de {n} jours au défi",
-      "objectives": "{n} objectifs accomplis"
+      "objectives": "{n} objectifs accomplis",
+      "collection": "Compléter l’ensemble {name}"
     },
     "tapToWear": "Touchez encore pour porter",
     "clickToWear": "Cliquez encore pour porter",
@@ -695,7 +702,8 @@
     "kinds": {
       "material": "Blocs",
       "ambiance": "Ambiance",
-      "shatter": "Éclats"
+      "shatter": "Éclats",
+      "collections": "Ensembles"
     },
     "newLooks": "{n} nouveauté | {n} nouveautés"
   },
@@ -867,5 +875,49 @@
     "hurrahPoints": "Dernier feu : +{n}",
     "locked": "S’ouvre au niveau {level}",
     "new": "Nouveau"
+  },
+  "gifts": {
+    "title": "Cadeau du jour",
+    "dayOf": "Jour {n} sur {total}",
+    "days": "Les sept jours",
+    "day": "Jour {n}",
+    "today": "Aujourd’hui",
+    "tomorrow": "Demain",
+    "claimed": "Reçu",
+    "look": "Nouveauté",
+    "xp": "+{n} XP",
+    "claimXp": "Récupérer +{n} XP",
+    "claimLook": "Récupérer {name}",
+    "double": "Le doubler : +{n} XP",
+    "doubleLabel": "Regarder une pub pour doubler le cadeau du jour à {n} XP",
+    "noAd": "Aucune pub disponible pour l’instant : votre cadeau vous attend.",
+    "gotXp": "+{n} XP ! Demain : {next}.",
+    "gotLook": "{name} est à vous ! Demain : {next}.",
+    "setDone": "L’ensemble {set} est complet : l’ambiance {prize} est à vous aussi !",
+    "continue": "Continuer",
+    "next": "Le cadeau du jour est récupéré. Demain : {gift}.",
+    "welcome": "Bon retour ! +{n} XP s’ajoutent au cadeau du jour.",
+    "streak": "{n} jour d’affilée au défi du jour. | {n} jours d’affilée au défi du jour.",
+    "streakNext": "À {days} jours : +{xp} XP.",
+    "streakStart": "Jouez le défi du jour chaque jour : {days} jours d’affilée rapportent +{xp} XP.",
+    "waits": "Un jour manqué ? Le calendrier vous attend : rien n’est perdu.",
+    "ready": "Cadeau du jour à récupérer"
+  },
+  "collections": {
+    "lead": "Réunissez toutes les nouveautés d’un ensemble pour débloquer son ambiance.",
+    "progress": "{done} sur {total} : complétez-le pour débloquer l’ambiance {name}.",
+    "complete": "Complet ! L’ambiance {name} est à vous : portez-la depuis l’onglet Ambiance.",
+    "arcade": {
+      "name": "Arcade"
+    },
+    "garden": {
+      "name": "Jardin de nuit"
+    },
+    "treasure": {
+      "name": "Trésor"
+    },
+    "trophies": {
+      "name": "Trophées des Gardiens"
+    }
   }
 }

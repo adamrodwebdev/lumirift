@@ -25,6 +25,9 @@ export function useProgressText() {
   const unlockRule = ({ unlock }: Cosmetic): string => {
     if (unlock.by === 'default') return t('cosmetics.unlock.default');
     if (unlock.by === 'boss') return t(`bosses.${unlock.value}.defeat`);
+    if (unlock.by === 'collection') {
+      return t('cosmetics.unlock.collection', { name: t(`collections.${unlock.value}.name`) });
+    }
     return t(`cosmetics.unlock.${unlock.by}`, { n: unlock.value }, unlock.value);
   };
 

@@ -52,6 +52,24 @@ export class ProfileService {
     return this.profile.isUnlocked(cosmetic);
   }
 
+  /** The player comes to the menu on `day` (1.35): a week away brings a gift of welcome. */
+  visit(day: string): void {
+    this.profile.visit(day);
+    this.save();
+  }
+
+  /** The gift calendar opened by itself on `day`. */
+  markGiftShown(day: string): void {
+    this.profile.markGiftShown(day);
+    this.save();
+  }
+
+  /** The gift of `day` is claimed: its experience twice when an ad was watched. */
+  claimGift(day: string, doubled: boolean): void {
+    this.profile.claimGift(day, doubled);
+    this.save();
+  }
+
   objectivesFor(day: string): readonly ObjectiveProgress[] {
     const objectives = this.profile.objectivesFor(day, this.modes());
     this.save();

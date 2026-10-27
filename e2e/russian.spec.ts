@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { closeDailyGift, giftDialog } from './dailyGift';
 
 /*
  * The game in Russian, the longest of its languages: a browser set to Russian
@@ -72,6 +73,7 @@ const misfits = (page: Page) =>
   });
 
 test.beforeEach(async ({ page }) => {
+  await closeDailyGift(page);
   await page.goto('/');
   await page.locator('main').waitFor();
 });
@@ -155,6 +157,66 @@ test('every screen keeps its Russian words inside, from 320 px to the desktop', 
       await pause.getByRole('button', { name: 'Выйти' }).click();
     }
   }
+});
+
+test('the gift calendar and the Atelier’s sets keep their Russian words inside', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'One sweep is enough');
+  test.setTimeout(120_000);
+  // This sweep is about the calendar: it stays open, and opens from its button.
+  await page.removeLocatorHandler(giftDialog(page));
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  // The calendar at its fullest: back after a week away, on a streak, a look to claim.
+  await page.evaluate(() => {
+    const day = (offset: number) => {
+      const date = new Date();
+      date.setDate(date.getDate() + offset);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
+    };
+    localStorage.setItem(
+      'stackrift:profile',
+      JSON.stringify({
+        games: 9,
+        xp: 900,
+        lastVisit: day(-10),
+        gifts: { next: 6, lastDay: day(-11), shownDay: day(0) },
+        streak: { count: 3, best: 3, lastDay: day(-1) },
+      }),
+    );
+  });
+  const gift = giftDialog(page);
+  for (const [width, height] of [
+    [320, 568],
+    [390, 844],
+    [640, 360],
+    [844, 390],
+    [1280, 800],
+  ] as const) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/');
+    await page.locator('main').waitFor();
+    const size = `${width} × ${height}`;
+    await panel(page, 'Главная')
+      .getByRole('button', { name: /^Подарок дня/ })
+      .click();
+    await expect(gift).toContainText('С возвращением!');
+    expect(await misfits(page), `${size}: daily gift`).toEqual([]);
+    await page.keyboard.press('Escape');
+    await tab(page, 'Ателье').click();
+    await panel(page, 'Ателье').getByRole('button', { name: 'Наборы' }).click();
+    expect(await misfits(page), `${size}: sets`).toEqual([]);
+  }
+  // Claimed: the thanks, the stamp and tomorrow's gift.
+  await tab(page, 'Главная').click();
+  await panel(page, 'Главная')
+    .getByRole('button', { name: /^Подарок дня/ })
+    .click();
+  await gift.getByRole('button', { name: /^Забрать/ }).click();
+  await expect(gift.getByRole('button', { name: 'Продолжить' })).toBeVisible();
+  expect(await misfits(page), 'claimed').toEqual([]);
 });
 
 test('a level’s goal stays whole on a phone: its own row beside a hold box, one line when wide', async ({

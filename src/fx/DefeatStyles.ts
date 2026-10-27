@@ -29,6 +29,11 @@ export const DEFEAT_STYLES: Readonly<Record<AmbianceId, DefeatStyle>> = {
   cosmos: { matter: 'mote', burst: 'spiral', drift: 'drift', opensVoid: true },
   sakura: { matter: 'petal', burst: 'petal', drift: 'petal', opensVoid: false },
   rift: { matter: 'shard', burst: 'burst', drift: 'drift', opensVoid: false },
+  // The four ambiances that crown a collection (1.35).
+  synthwave: { matter: 'shard', burst: 'burst', drift: 'sweep', opensVoid: false },
+  lantern: { matter: 'ember', burst: 'rise', drift: 'rise', opensVoid: false },
+  gilded: { matter: 'dust', burst: 'burst', drift: 'rise', opensVoid: false },
+  sanctum: { matter: 'shard', burst: 'spiral', drift: 'drift', opensVoid: true },
 };
 
 /** Grains of matter bursting out of the stack, and drifting behind the window. */

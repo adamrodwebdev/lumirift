@@ -2,10 +2,12 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
+import { COLLECTIONS, type Collection } from '@/progression/Collections';
 import {
   COSMETIC_KINDS,
   COSMETICS,
   cosmeticKey,
+  findCosmeticByKey,
   type Cosmetic,
   type CosmeticKind,
   type MaterialId,
@@ -26,7 +28,8 @@ import { loadGemArt } from './loadArt';
  * a locked one says how to earn it, and a locked material or ambiance may be
  * worn for one game for an ad the player chooses (1.31). Nothing here changes
  * the game. Looks earned since the last visit are marked new until the
- * player has seen them.
+ * player has seen them. The collections (1.35) show how far each set of
+ * looks is, and the ambiance it unlocks once complete.
  */
 const props = defineProps<{
   /** Shown (its tab chosen): what is on the shelf then has been seen. */
@@ -40,6 +43,8 @@ const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const again = t(isTouchScreen() ? 'cosmetics.tapToWear' : 'cosmetics.clickToWear');
 
 const kind = ref<CosmeticKind>('material');
+/** The collections are on the shelf instead of a kind of look. */
+const collecting = ref(false);
 /** The look tried on the stage, per kind; the worn one until another is tried. */
 const trying = ref<Partial<Record<CosmeticKind, string>>>({});
 const status = ref('');
@@ -113,9 +118,60 @@ const shortNote = (item: ShelfItem): string =>
       : note(item);
 
 const setKind = (next: CosmeticKind) => {
-  if (next !== kind.value && props.active) seeKind(kind.value);
+  if (next !== kind.value && props.active && !collecting.value) seeKind(kind.value);
   kind.value = next;
+  collecting.value = false;
   status.value = '';
+};
+
+// --- The collections (1.35) ------------------------------------------------------
+
+interface CollectionCard {
+  readonly collection: Collection;
+  readonly items: readonly { readonly cosmetic: Cosmetic; readonly owned: boolean }[];
+  readonly done: number;
+  readonly reward: Cosmetic;
+  readonly complete: boolean;
+}
+const collections = computed<CollectionCard[]>(() =>
+  COLLECTIONS.map((collection) => {
+    const items = collection.items
+      .map(findCosmeticByKey)
+      .filter((cosmetic): cosmetic is Cosmetic => cosmetic !== undefined)
+      .map((cosmetic) => ({ cosmetic, owned: profile.isUnlocked(cosmetic) }));
+    const done = items.filter((item) => item.owned).length;
+    return {
+      collection,
+      items,
+      done,
+      reward: findCosmeticByKey(`ambiance.${collection.reward}`)!,
+      complete: done === items.length,
+    };
+  }),
+);
+const collectionId = ref(COLLECTIONS[0]!.id);
+const card = computed(() =>
+  collections.value.find((each) => each.collection.id === collectionId.value)!,
+);
+const collectionName = (entry: CollectionCard) => t(`collections.${entry.collection.id}.name`);
+/** What a collection says: its progress, or its prize won. */
+const collectionNote = (entry: CollectionCard) =>
+  entry.complete
+    ? t('collections.complete', { name: text.cosmeticName(entry.reward) })
+    : t('collections.progress', {
+        done: entry.done,
+        total: entry.items.length,
+        name: text.cosmeticName(entry.reward),
+      });
+
+const showCollections = () => {
+  if (props.active && !collecting.value) seeKind(kind.value);
+  collecting.value = true;
+  status.value = '';
+};
+const chooseCollection = (entry: CollectionCard) => {
+  collectionId.value = entry.collection.id;
+  status.value = collectionNote(entry);
 };
 
 const nudge = (element: HTMLElement, keyframes: Keyframe[], duration: number) => {
@@ -161,6 +217,7 @@ const watching = ref(false);
 /** A locked material or ambiance on the stage, where a rewarded ad may be offered. */
 const canTry = computed(
   () =>
+    !collecting.value &&
     !shown.value.unlocked &&
     shown.value.cosmetic.kind !== 'shatter' &&
     platform.supportsRewarded &&
@@ -193,10 +250,22 @@ const tryOn = async () => {
 const stage = ref<HTMLCanvasElement | null>(null);
 let art: GemArt | null = null;
 const material = computed(
-  () => (kind.value === 'material' ? shownId.value : worn.value.material) as MaterialId,
+  () =>
+    (kind.value === 'material' && !collecting.value
+      ? shownId.value
+      : worn.value.material) as MaterialId,
 );
-const shatter = computed(() => (kind.value === 'shatter' ? (shownId.value as ShatterId) : null));
-const ambiance = computed(() => (kind.value === 'ambiance' ? shownId.value : worn.value.ambiance));
+const shatter = computed(() =>
+  kind.value === 'shatter' && !collecting.value ? (shownId.value as ShatterId) : null,
+);
+/** On the stage: the look tried, or a collection's prize. */
+const ambiance = computed(() =>
+  collecting.value
+    ? card.value.collection.reward
+    : kind.value === 'ambiance'
+      ? shownId.value
+      : worn.value.ambiance,
+);
 
 const draw = () => {
   if (art && stage.value) art.drawStage(stage.value, material.value, shatter.value);
@@ -233,7 +302,11 @@ watch([material, shatter, ambiance], async () => {
     <div class="atelier__body">
       <div class="showcase" :data-ambiance-preview="ambiance">
         <canvas ref="stage" class="showcase__canvas" aria-hidden="true" />
-        <p class="showcase__label">
+        <p v-if="collecting" class="showcase__label">
+          <b>{{ collectionName(card) }}</b>
+          <span>{{ collectionNote(card) }}</span>
+        </p>
+        <p v-else class="showcase__label">
           <b>{{ text.cosmeticName(shown.cosmetic) }}</b>
           <span>{{ note(shown) }}</span>
         </p>
@@ -263,7 +336,7 @@ watch([material, shatter, ambiance], async () => {
             v-for="id in COSMETIC_KINDS"
             :key="id"
             type="button"
-            :aria-pressed="kind === id"
+            :aria-pressed="!collecting && kind === id"
             @click="setKind(id)"
           >
             {{ t(`hub.kinds.${id}`) }}
@@ -271,9 +344,61 @@ watch([material, shatter, ambiance], async () => {
               <span class="sr-only">{{ t('cosmetics.new') }}</span>
             </span>
           </button>
+          <button type="button" :aria-pressed="collecting" @click="showCollections">
+            {{ t('hub.kinds.collections') }}
+          </button>
         </div>
 
-        <div class="items" :class="{ 'items--four': items.length === 4 }">
+        <div v-if="collecting" class="collections">
+          <button
+            v-for="entry in collections"
+            :key="entry.collection.id"
+            type="button"
+            class="collection"
+            :class="{ 'collection--complete': entry.complete }"
+            :aria-pressed="entry.collection.id === collectionId"
+            :aria-label="`${collectionName(entry)}, ${collectionNote(entry)}`"
+            @click="chooseCollection(entry)"
+          >
+            <b>{{ collectionName(entry) }}</b>
+            <span class="collection__items" aria-hidden="true">
+              <span
+                v-for="item in entry.items"
+                :key="cosmeticKey(item.cosmetic)"
+                class="collection__item"
+                :class="{ 'collection__item--owned': item.owned }"
+              >
+                <GemCanvas
+                  v-if="item.cosmetic.kind === 'material'"
+                  class="collection__art"
+                  :material="item.cosmetic.id as MaterialId"
+                />
+                <span
+                  v-else-if="item.cosmetic.kind === 'ambiance'"
+                  class="collection__art item__ambiance"
+                  :data-ambiance-preview="item.cosmetic.id"
+                />
+                <GemCanvas
+                  v-else
+                  class="collection__art"
+                  :shatter="item.cosmetic.id as ShatterId"
+                />
+              </span>
+            </span>
+            <span class="collection__bar" aria-hidden="true">
+              <i :style="{ transform: `scaleX(${entry.done / entry.items.length})` }" />
+            </span>
+            <small aria-hidden="true">
+              {{ entry.done }}/{{ entry.items.length }} · {{ text.cosmeticName(entry.reward) }}
+            </small>
+          </button>
+        </div>
+
+        <div
+          v-else
+          class="items"
+          :class="{ 'items--four': items.length === 4, 'items--wide': items.length > 9 }"
+        >
           <button
             v-for="item in items"
             :key="item.cosmetic.id"
@@ -311,8 +436,9 @@ watch([material, shatter, ambiance], async () => {
 
         <p class="status">
           <span aria-live="polite">{{ status }}</span>
-          <!-- Until something happens: where this kind of look shows. -->
-          <span v-if="!status && kind !== 'ambiance'">{{ t(`cosmetics.scope.${kind}`) }}</span>
+          <!-- Until something happens: where this kind of look shows (a collection's prize). -->
+          <span v-if="!status && collecting">{{ t('collections.lead') }}</span>
+          <span v-else-if="!status && kind !== 'ambiance'">{{ t(`cosmetics.scope.${kind}`) }}</span>
         </p>
       </div>
     </div>
@@ -408,7 +534,7 @@ watch([material, shatter, ambiance], async () => {
 
 .kinds {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-1);
   padding: var(--space-1);
   border: 1px solid var(--border);
@@ -450,6 +576,121 @@ watch([material, shatter, ambiance], async () => {
 .items--four {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-auto-rows: 6rem;
+}
+
+/* Many looks of a kind (the ambiances, 1.35): four a row, so that the shelf keeps its height. */
+.items--wide {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 5rem;
+}
+
+/* The collections: four cards, two a row. */
+.collections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(5.5rem, auto);
+  gap: var(--space-2);
+}
+
+.collection {
+  container: collection / inline-size;
+  display: grid;
+  align-content: center;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow:
+    inset 0 1px 0 var(--highlight),
+    0 4px 0 var(--surface-edge);
+  color: var(--text);
+  text-align: start;
+}
+
+.collection[aria-pressed='true'] {
+  border-color: var(--jewel-violet);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--jewel-violet) 55%, transparent),
+    0 4px 0 var(--surface-edge);
+}
+
+.collection--complete {
+  border-color: var(--accent);
+}
+
+/* A set's name and prize wrap rather than lose a word (Russian runs long). */
+.collection b {
+  font-size: 0.8rem;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.collection small {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.25;
+}
+
+.collection__items {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.collection__item {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 2.75rem;
+  aspect-ratio: 1;
+  border-radius: 0.45rem;
+  opacity: 0.35;
+  filter: grayscale(0.7);
+}
+
+.collection__item--owned {
+  opacity: 1;
+  filter: none;
+}
+
+.collection__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.45rem;
+}
+
+/* A small ambiance swatch shows its lights at full strength (the shelf's large ones stay true). */
+.collection__art.item__ambiance {
+  background:
+    radial-gradient(70% 80% at 25% 20%, rgb(from var(--glow-1) r g b / 0.85), transparent 75%),
+    radial-gradient(70% 80% at 80% 90%, rgb(from var(--glow-2) r g b / 0.85), transparent 75%),
+    var(--bg);
+}
+
+.collection__bar {
+  height: 0.3rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--well-bg);
+}
+
+.collection__bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent-gradient);
+  transform-origin: left;
+}
+
+/* A wide card (a desktop): its name reads larger. */
+@container collection (inline-size >= 12rem) {
+  .collection b {
+    font-size: 0.95rem;
+  }
+
+  .collection small {
+    font-size: 0.78rem;
+  }
 }
 
 .item {
