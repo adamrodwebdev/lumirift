@@ -2029,6 +2029,12 @@ Dunes, sur 9 × 12 cases ; le test web reçoit environ 300 $ de trafic ; l'avis 
 financé tout de suite. Les canaux ouvrent sur preuve : catalogue Playgama, lancement Yandex
 (après le choix du contrat), GameDistribution, CrazyGames, puis Google Play.
 
+**Décision du 27/10/2026.** Aucune dépense avant que le jeu rapporte : le trafic acheté pour le
+test des Dunes (environ 300 $) est abandonné, comme toute dépense d'acquisition, jusqu'aux
+premiers revenus ; on investira les bénéfices. Le test se joue sur des parties gratuites (les dix
+sessions d'inconnus sur chaque version, les parties gratuites du bac à sable) ; son verdict reste
+provisoire, le test payant le confirmera quand le jeu rapportera.
+
 **Décisions du 26/10/2026, second tour.** Les lots 23 et 24 sortent juste après la 1.31 : les
 sessions d'inconnus jouent sur des commandes sûres et le nouvel entraînement peut montrer un
 changement de monde. Le module tactile est notre propre code. L'offre de reprise mène cinq

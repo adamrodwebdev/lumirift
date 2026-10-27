@@ -35,7 +35,7 @@ le montre nulle part tant que le test n'a pas décidé.
     (six rangées de sable s'envolent) suivent le plateau ;
   - l'élément de la semaine vient aussi dans les Dunes, et ses actions comptent pour son
     objectif.
-- **Les versions de test** (un mode seul, pour comparer deux versions à trafic égal) :
+- **Les versions de test** (un mode seul, pour comparer deux versions, sans trafic acheté) :
   `npm run package:playgama-dunes` et `npm run package:playgama-sand` font les deux zips de
   Playgama. Un nouveau joueur commence directement par une partie du mode (ni entraînement ni
   titre, dans les deux) ; le menu n'a que l'accueil et l'Atelier : ni défi du jour, ni

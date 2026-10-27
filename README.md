@@ -199,7 +199,7 @@ npm run package:playgama                          # build, contrôles, zip dans 
 node scripts/crazygames-media.mjs --covers-only   # covers dans release/playgama-media/
 ```
 
-Le test des Dunes (1.37) : deux versions d'un seul mode, au même trafic, comparées sur les
+Le test des Dunes (1.37) : deux versions d'un seul mode, jouées sans trafic acheté, comparées sur les
 tableaux de bord de Playgama.
 
 ```bash
