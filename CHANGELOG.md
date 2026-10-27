@@ -3,6 +3,71 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.34.0] — 27/10/2026
+
+Course contre la montre (lot 24 du chemin vers 5) : la Course de la faille, un mode
+chronométré où la faille change de monde toutes les 40 s entre le puits, le Sable et la Tour,
+chaque monde sur un plateau neuf ; seul le chrono termine la partie. Mesurée par le bot de
+courbe : une partie de débutant dure 2 min 37 en moyenne, celle d'un habitué 3 min 38.
+
+### Ajouté
+
+- **La Course de la faille** :
+  - le chrono part de 1:30 et tient 99 s au plus ; les secondes en trop deviennent des
+    points (50 par seconde, fois le cycle). Une ligne (une région du Sable) +2 s, chaque
+    palier de combo +1 s, quatre lignes d'un coup +5 s de plus, un coup sur un Gardien +1 s,
+    un Gardien vaincu +15 s, **chaque monde atteint +10 s** (le point de contrôle des courses
+    d'arcade : sans lui, un débutant ne tenait que 2 min, mesuré) ;
+  - un débordement coûte 10 s, sans jamais laisser moins de 5 s, et la moitié haute du
+    plateau saute : la partie continue ;
+  - les changements se voient venir : les trois mondes, le monde suivant et son compte à
+    rebours restent à l'écran avec la barre de la phase ; 3 s avant, la carte « La faille
+    change de monde » nomme le monde suivant, sa règle, l'accélération et le Gardien qui
+    entre, et les lignes comptent double ; un balayage d'une seconde, chrono figé, compte les
+    cases restantes (5 points chacune, fois le cycle), puis le monde suivant s'ouvre ;
+  - la gravité monte une fois par cycle, jamais juste après un Gardien vaincu ; le
+    multiplicateur de score gagne +1 par cycle ;
+  - les Gardiens, chacun dans son monde (le Cœur de la faille sous le puits, le Ver des dunes,
+    l'Œil de la Tour) : sûr au deuxième changement, puis 25 % plus 25 % par changement sans
+    Gardien ; il reste 25 s avec un tiers de sa vie, et sa carte dit son temps, sa vie et ce
+    que valent ses coups ; vaincu, un plateau neuf du même monde ;
+  - l'alarme des dix dernières secondes ; à 0:00, un dernier feu de 2 s compte le plateau ;
+  - la fenêtre de fin montre le record personnel et celui de la semaine (du lundi) ;
+  - le mode s'ouvre au niveau 4-4, quand la Tour a été jouée (4-3 gagné) : une bannière en
+    tête de la page des modes, cadenassée jusque-là avec le niveau qui l'ouvre ; à côté du
+    titre sur un écran court ; jamais dans la démo.
+- Un test de courbe joue 24 courses (débutant, habitué, expert) : durées, changements à
+  l'heure, mondes dans l'ordre, chrono dans ses bornes ; un parcours de bout en bout, les
+  audits d'accessibilité et la garde responsive (de 320 à 2560 px, quatre tailles clés)
+  couvrent la course.
+
+### Modifié
+
+- « 14 façons de briser un bloc » ; la démo annonce quatorze modes et trente-quatre niveaux
+  (trente auparavant : les Gardiens étaient oubliés).
+- Les objectifs du jour ne demandent qu'un mode que le joueur peut ouvrir.
+
+### Corrigé
+
+- La boucle du jeu demande l'image suivante avant de jouer celle-ci : une partie qui échoue
+  (un rendu) est signalée dans la console sans figer le jeu.
+- La Tour ne dessine pas de blocs de moins de 3 px (un rayon négatif arrêtait le rendu
+  quand un plateau s'ouvrait avant sa mise en page).
+- Le verre fendu suit le puits quand son canevas change (les mondes de la course).
+
+### Technique
+
+- `families/race` : `RaceClock`, `ShiftSchedule` et `guardianJoins` (règles, pures),
+  `RaceSession`, une session de sessions (logique), `RaceStage` et ses parties (affichage) ;
+  `RaceRun` (record de la semaine), `campaign/ModeUnlocks` (`modeOpen`).
+- Un débordement peut ne pas finir la partie : `overflowFrees` des moteurs (chute et Sable),
+  `overflowGoesOn` des sessions, l'événement `overflow` ; les effets y jouent l'éclat de la
+  reprise, ni l'effondrement ni le son de la défaite.
+- Les Gardiens prennent une vie réduite (`GuardianHealth(maxHealth)`, phases
+  proportionnelles) et peuvent partir (`dismiss()`) ; les sessions disent ce qui reste sur le
+  plateau (`remains()`), la famille du plateau joué (`boardFamily()`) et partent d'un niveau
+  donné (`startLevel`).
+
 ## [1.33.0] — 26/10/2026
 
 Accroche et courbe (lot 16 du chemin vers 5) : la première minute montre le meilleur du jeu

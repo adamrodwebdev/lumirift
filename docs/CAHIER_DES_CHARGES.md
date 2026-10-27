@@ -6,6 +6,7 @@
 | 1.31    | 26/10/2026 | Preuve et pubs : une politique de pubs, la reprise rare et utile, le verre du puits qui se brise selon l'ambiance, l'essai d'une apparence, le kit de preuve ; lots 23 et 24 (§ 9, § 9 bis).                                          |
 | 1.32    | 26/10/2026 | Commandes au doigt : module tactile (coups lus comme les téléphones, garde contre les chutes accidentelles, crans), gestes, boutons ou les deux, gaucher, vibrations discrètes, guide des gestes ; porte de traces (§ 9 bis, lot 23). |
 | 1.33    | 26/10/2026 | Accroche et courbe : le bot de courbe et ses bandes, la clémence du début de campagne, des niveaux réglés sur la mesure, l'entraînement en un seul jeu (§ 9 bis, lot 16).                                                             |
+| 1.34    | 27/10/2026 | Course contre la montre : la Course de la faille, ses mondes toutes les 40 s, son chrono et ses gains, les Gardiens du monde, le record de la semaine, ouverte au niveau 4-4 (§ 9 bis, lot 24).                                       |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -545,7 +546,8 @@ Règles détaillées :
   ou « Gardien : nom », puis ce qu'il montre. Fondu d'un puits à l'autre ; muette ; arrêtée
   hors écran ; une image fixe (le brasier) si le mouvement est réduit ou les effets coupés ;
   masquée quand la place manque (téléphone bas tenu en largeur).
-- **Modes** : les 13 modes sur un écran, les quatre inédits en grand ; illustrations
+- **Modes** : les 14 modes sur un écran, la Course de la faille en bannière (1.34), les
+  quatre inédits en grand ; illustrations
   dessinées avec les vraies gemmes, recadrées sur leur contenu. Le mode choisi montre son
   principe, son record et Jouer (le Duel demande d'abord l'adversaire).
 - **Carte** : un chapitre par écran, six niveaux sur un chemin sinueux (vertical en
@@ -816,7 +818,7 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   Unbounded (logo, chiffres) et Sora (interface).
 - **Blocs gemmes** : corps arrondi, liseré de lumière en haut à gauche, ombre en bas à droite,
   reflet, motif gravé conservé.
-- **Écran-titre** : logo fendu par la faille, « 13 façons de briser un bloc », un grand bouton
+- **Écran-titre** : logo fendu par la faille, « 14 façons de briser un bloc », un grand bouton
   Jouer (la campagne continue ; Espace au clavier), carte et améliorations, les modes inédits
   en tuiles (Sable, Tour, Mosaïque, Duel), défi du jour, scène animée ; tous les modes et les
   objectifs plus bas. Écran de démarrage statique dans `index.html`.
@@ -1642,6 +1644,17 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   `BeatCharts` (les fiches de rythme), `session/Mercy` (la clémence, lue par chaque moteur).
   Le projet Vitest `curve` (`npm run test:curve`) joue toute la campagne et mille fois
   l'accroche ; la CI aussi.
+- **Course de la faille (1.34)** : `families/race` en trois couches. Les règles, pures :
+  `RaceClock` (gains, plafond, plancher), `ShiftSchedule` (mondes, cycle, gravité qui attend
+  après un Gardien vaincu), `guardianJoins`, `RaceTuning`. La logique : `RaceSession`, une
+  session de sessions qui ouvre la partie de chaque monde (`RaceWorlds`) avec ses options
+  (niveau de départ, Gardien au tiers de sa vie, débordement qui continue), lui relaie les
+  commandes et publie ses moments (`time`, `warning`, `wipe`, `shift`, `guardian`,
+  `hurrah`). L'affichage : `RaceStage` monte la scène du monde joué (une neuve à chaque
+  plateau), autour d'elle `RaceClock`, `RaceWorlds`, `RaceGuardianCard` et `RaceMoments`,
+  chacun dans sa zone de la grille de l'écran de jeu (disposition `race`). `RaceRun` compte
+  le record de la semaine ; `campaign/ModeUnlocks` ouvre le mode ; `RaceCurvePlayer` assoit
+  le joueur de chaque monde pour le bot.
 - Chaque moteur lit les `Boosts` qui le concernent (vitesse de chute, aperçu, délai de pose,
   bonus de points, seconde chance, jokers de départ, feu, fenêtre du Rythme, délai des
   rangées reçues) ; sans `Boosts`, il joue exactement comme avant.
@@ -1656,7 +1669,7 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   indicateur, annonce et fin de partie.
 - **Tests de bout en bout** (Playwright, `e2e/`) sur le build de production, Chrome
   installé, en **mobile (390 × 844) et bureau (1280 × 800)** : accueil, ouverture, pause,
-  reprise et sortie des 13 modes, partie complète au clavier jusqu'au record, défi du jour,
+  reprise et sortie des 14 modes, partie complète au clavier jusqu'au record, défi du jour,
   Mosaïque au clavier, langue et thème retenus, Atelier, console sans erreur, navigation au
   clavier seul. **Garde responsive** (`e2e/responsive.spec.ts`) : aucun défilement
   horizontal de 320 à 2560 px tous les 20 px, puis quatre tailles clés (320 × 568 et
@@ -1725,7 +1738,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
 | 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
 | 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Livré (1.32)                                                 |
-| 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Prévu                                                        |
+| 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Livré (1.34)                                                 |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -1887,6 +1900,17 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
     sessions ; l'écran change de scène avec le monde.
   - Porte : trois minutes de jeu ou plus par partie en moyenne dans le bac à sable, et des
     inconnus qui suivent chaque changement sans aide.
+  - **Livré en 1.34**, avec trois écarts mesurés. (1) Le bot a montré qu'avec ces gains un
+    débutant ne tient que 2 min (109 à 142 s) : chaque monde atteint rapporte **10 s**, le
+    point de contrôle des courses d'arcade ; un débutant tient alors 2 min 37 en moyenne, un
+    habitué 3 min 38 (huit courses chacun), sans toucher au départ de 90 s ni au plafond de
+    99 s affichés. (2) La Tour n'arrive qu'au 4-3 : le mode s'ouvre au **4-4**, quand le
+    joueur a vraiment vu les trois mondes. (3) Un débordement ne finit plus la partie du monde
+    (événement `overflow` des moteurs) : on voit sauter le haut du plateau, jamais
+    l'effondrement ni le son de la défaite. Les points : 50 par seconde au-delà du plafond,
+    5 par case balayée, fois le cycle. Mesure des Gardiens (25 s, un tiers de leur vie) :
+    l'expert en bat six sur dix, l'habitué leur prend un tiers de leur vie en moyenne sans en
+    battre aucun, le débutant les effleure ; leur départ ne coûte rien.
 
 **Décisions du 26/10/2026.** La boutique ouvre en 1.31 sur Yandex (sans pub et deux packs) ;
 la reprise dégage le haut du plateau une fois par partie, sans record ; la monnaie de
@@ -1973,3 +1997,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.31    | 26/10/2026 | Preuve et pubs : une politique de pubs, la reprise rare et utile, le verre du puits qui se brise, l'essai d'une apparence, le kit de preuve ; lots 23 et 24 (§ 9 bis). |
 | 1.32    | 26/10/2026 | Commandes au doigt : `PhoneGestures`, gestes, boutons ou les deux, gaucher, vibrations discrètes, guide des gestes, porte de traces (§ 9 bis, lot 23).                 |
 | 1.33    | 26/10/2026 | Accroche et courbe : `CurveBot` et ses bandes, `BeatCharts`, `Mercy`, niveaux réglés, entraînement en un seul jeu (§ 9 bis, lot 16).                                   |
+| 1.34    | 27/10/2026 | Course contre la montre : `families/race`, le point de contrôle de 10 s mesuré par le bot, ouverture au 4-4, débordement qui continue (§ 5, § 9 bis, lot 24).          |
