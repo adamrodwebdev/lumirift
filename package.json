@@ -1,6 +1,6 @@
 {
   "name": "lumirift",
-  "version": "1.36.0",
+  "version": "1.37.0",
   "private": true,
   "description": "Jeu de blocs qui tombent réinventé : 14 modes en quatre familles et une course qui les traverse, défi du jour, duel contre l’IA, en français, anglais, indonésien et russe. Vue 3, TypeScript, mobile d’abord.",
   "type": "module",
@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:dunes": "vite --mode dunes",
     "build": "vue-tsc --noEmit -p tsconfig.app.json && vite build",
     "preview": "vite preview --strictPort",
     "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && vue-tsc --noEmit -p tsconfig.vitest.json && tsc --noEmit -p tsconfig.node.json",
@@ -26,6 +27,8 @@
     "build:demo": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode demo",
     "build:playgama": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode playgama",
     "package:playgama": "node scripts/package-playgama.mjs",
+    "package:playgama-dunes": "node scripts/package-playgama.mjs --solo dunes",
+    "package:playgama-sand": "node scripts/package-playgama.mjs --solo sand",
     "build:yandex": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode yandex",
     "package:yandex": "node scripts/package-yandex.mjs"
   },

@@ -3,6 +3,68 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.37.0] — 27/10/2026
+
+Dunes, le test web (lot 19 du chemin vers 5) : un mode calme de la matière du Sable, où l'on
+pose le sable depuis une main de trois pièces, prêt pour son test dans le bac à sable de
+Playgama contre le Sable seul. Dunes ne vit que dans ses versions de test : le jeu complet ne
+le montre nulle part tant que le test n'a pas décidé.
+
+### Ajouté
+
+- **Dunes** :
+  - un plateau de 9 × 12 cases de 6 × 6 grains ; trois pièces en main, glissées sur le plateau
+    (ou touchées puis posées d'un toucher, ou au clavier : 1 à 3, les flèches, Espace) ;
+    posée, la pièce s'effrite en grains qui coulent et se tassent ; une couleur qui relie les
+    deux murs s'efface, comme dans le Sable ; ni chrono ni pièce qui tombe : la partie s'arrête
+    quand plus aucune pièce de la main ne rentre et qu'aucun échange ne reste ;
+  - la promesse de la main : une des trois pièces au moins rentre toujours (vérifié sur
+    10 000 mains) ; une main qui ne rentre plus nulle part avant qu'on y ait touché (le sable a
+    bougé) est redonnée ;
+  - un échange de la main au départ, un de plus à chaque objectif atteint, trois au plus (R au
+    clavier) ;
+  - une seule partie, un objectif à la fois (D-1, D-2…) : des zones à effacer, des points à
+    marquer, le Ver des dunes à vaincre (D-5, D-10, puis tous les cinq niveaux) ; chaque niveau
+    apporte un élément (l'eau, le feu, la foudre, l'huile, la glace, les graines, l'acide), que
+    sa première main donne ; une quatrième couleur de sable arrive au D-6 ;
+  - l'ouverture : un lit de trois bandes de sable ; la première pièce, posée sur la marque qui
+    brille, relie les murs, puis le Ver des dunes jaillit du sable : dans les dix premières
+    secondes ;
+  - la chaîne compte les pièces posées, pas les secondes ; les grains, les réactions, les
+    effets et les sons sont ceux du Sable ; le danger, la musique et la reprise récompensée
+    (six rangées de sable s'envolent) suivent le plateau ;
+  - l'élément de la semaine vient aussi dans les Dunes, et ses actions comptent pour son
+    objectif.
+- **Les versions de test** (un mode seul, pour comparer deux versions à trafic égal) :
+  `npm run package:playgama-dunes` et `npm run package:playgama-sand` font les deux zips de
+  Playgama. Un nouveau joueur commence directement par une partie du mode (ni entraînement ni
+  titre, dans les deux) ; le menu n'a que l'accueil et l'Atelier : ni défi du jour, ni
+  Gardiens, ni course, ni carrousel des autres modes ; le slogan est le pitch du mode ; les
+  objectifs ne demandent que ce qu'on peut y faire. `npm run dev:dunes` lance Dunes seul sur
+  notre site.
+
+### Corrigé
+
+- La saison (1.36, jamais publiée) est relue au lancement sur Playgama, Yandex et CrazyGames :
+  sa clé manquait à la liste des sauvegardes. Un test exige désormais que chaque clé
+  enregistrée y soit.
+
+### Technique
+
+- La famille `dunes` : `DunesBoard` (les cases libres, les couleurs de la surface),
+  `DunesPieces`, `DunesDealer` (la promesse, la couleur la plus proche d'un lien, la
+  clémence), `DunesLevels`, `PlacementStreak`, `DunesGame` (les grains, les réactions et le
+  Ver du Sable, composés sans pièce qui tombe), `DunesSession`, `DunesController`,
+  `DunesStage` et son glisser-déposer ; le rendu, les effets et les sons du Sable servent sans
+  changer de comportement (types élargis : `LandedPiece`, `SandEventSource`).
+- `Edition` : `solo`, `soloEdition`, `offersDaily` ; un mode à l'essai (`prototype`) n'apparaît
+  que dans la version qui le nomme ; `firstGameOf`, `hubPagesOf` ; les objectifs reçoivent leur
+  lieu (`ObjectivePlace` : les modes ouverts, un défi du jour ou non).
+- Tests : la promesse sur 10 000 mains, l'ouverture, la pose, l'échange, la fin et la reprise,
+  le Ver ; un bot de courbe joue les Dunes (trois joueurs, six parties chacun) ; parcours de
+  bout en bout de la version Dunes (au doigt, à la souris, au clavier), audits
+  d'accessibilité, tailles clés, russe.
+
 ## [1.36.0] — 27/10/2026
 
 Événements et saison 1 (lot 18 du chemin vers 5) : chaque semaine, un élément du Sable à

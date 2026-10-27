@@ -34,6 +34,28 @@ dans l'entraînement, une seule partie depuis la 1.33 (le choc au premier éclai
 écran-titre ni menu, sans pub ; les menus s'ouvrent à la fin ou quand il le passe depuis la
 pause. Le profil, gardé par `bridge.storage`, retient qu'il est fait.
 
+## Le test des Dunes (1.37)
+
+Deux jeux du bac à sable, chacun avec un seul mode, comparés à trafic égal (le lot 19 du cahier
+des charges) :
+
+```bash
+npm run package:playgama-dunes   # release/lumirift-playgama-dunes-<version>.zip
+npm run package:playgama-sand    # release/lumirift-playgama-sand-<version>.zip
+```
+
+- Chaque zip passe les mêmes contrôles que la version complète (taille, chemins, Bridge, aucune
+  autre requête).
+- Dans les deux, un nouveau joueur commence directement par une partie du mode, sans
+  entraînement ni titre ; le menu n'a que l'accueil et l'Atelier ; ni défi du jour, ni
+  Gardiens, ni course, ni carrousel des autres modes.
+- Sur la console : deux jeux distincts (le test compare leurs tableaux de bord), **les mêmes
+  covers**, le même texte de fiche à un mot près, la même langue, le même trafic acheté
+  (environ 1 000 parties chacun, environ 300 $ pour les deux : 400 parties coûtent
+  50 $). Les covers actuelles montrent l'Œil de la Tour, qui n'est dans aucune des deux :
+  une cover de sable, commune aux deux, est à choisir avant l'envoi.
+- La porte et sa lecture : [PREUVE.md](PREUVE.md), section 4.
+
 ## Exigences et leur contrôle
 
 | Exigence                                                                                                                 | Statut | Preuve                                                                                                                                   |

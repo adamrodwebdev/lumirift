@@ -60,3 +60,19 @@ Une ligne par session, remplie pendant qu'elle se déroule.
 - Aucune plainte sur les pubs dans les dix sessions.
 
 Une porte qui échoue fait reprendre la fonction une fois, ou l'abandonner ; jamais la forcer.
+
+## 4. Le test des Dunes (1.37)
+
+Sans traceur, deux jeux du bac à sable de Playgama comparés sur leurs tableaux de bord : Dunes
+seul et le Sable seul (voir [PLAYGAMA.md](PLAYGAMA.md)), les mêmes covers, le même trafic.
+
+- **Porte** : sur plus de 1 000 parties de chacun, les Dunes battent le Sable en temps de jeu
+  moyen **et** en part des sessions de plus de 3 minutes.
+- **Lecture** : une ligne par jeu dans la feuille de mesures (parties, temps moyen, sessions
+  au-delà de 3 minutes, jour du relevé). Ne comparer que des chiffres pris le même jour, après
+  le même trafic : un bac à sable fait la moyenne de toutes ses parties depuis le début.
+- **Si le tableau de bord ne donne pas les sessions de plus de 3 minutes**, le dire avant de
+  conclure : la porte ne se juge alors que sur le temps moyen, et les dix sessions d'inconnus
+  disent le reste.
+- **Après** : si la porte passe, les Dunes mènent la version des magasins et rejoignent
+  l'entraînement ; sinon elles sont retirées (leur dossier `families/dunes` et leurs entrées).

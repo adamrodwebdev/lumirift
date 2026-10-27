@@ -45,6 +45,10 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   plus souvent et donne son objectif ; les points de chaque partie montent la piste de la
   saison (de l'expérience et des nouveautés, une couronne pour l'ensemble). Une avant-saison
   dès maintenant, la saison 1 « Braises » le 14 décembre, les suivantes prêtes en données.
+- **Dunes, à l'essai** (1.37) : le sable posé depuis une main de trois pièces, sur un plateau
+  de 9 × 12 cases ; une couleur qui relie les murs s'efface, sans chrono ; les éléments et le
+  Ver des dunes. Il ne vit que dans ses versions de test (voir « Version Playgama ») jusqu'à
+  ce que le test du bac à sable décide de son sort.
 - **Le cadeau du jour** : un calendrier de sept jours (de l'expérience, une apparence le
   septième), qui s'ouvre de lui-même au premier passage de la journée ; un jour manqué ne
   fait rien perdre, une semaine d'absence vaut un cadeau de retour.
@@ -129,6 +133,7 @@ npm run dev
 | Commande             | Rôle                                                                     |
 | -------------------- | ------------------------------------------------------------------------ |
 | `npm run dev`        | Serveur de développement avec rechargement à chaud                       |
+| `npm run dev:dunes`  | Le même, Dunes seul (la version de son test, sur notre site)             |
 | `npm run build`      | Vérification des types puis build de production (`dist/`)                |
 | `npm run preview`    | Sert le build de production (port 4173)                                  |
 | `npm test`           | Tests unitaires (Vitest)                                                 |
@@ -194,6 +199,14 @@ npm run package:playgama                          # build, contrôles, zip dans 
 node scripts/crazygames-media.mjs --covers-only   # covers dans release/playgama-media/
 ```
 
+Le test des Dunes (1.37) : deux versions d'un seul mode, au même trafic, comparées sur les
+tableaux de bord de Playgama.
+
+```bash
+npm run package:playgama-dunes   # Dunes seul : release/lumirift-playgama-dunes-<version>.zip
+npm run package:playgama-sand    # le Sable seul : release/lumirift-playgama-sand-<version>.zip
+```
+
 Détail des exigences, de leur contrôle et du formulaire : [docs/PLAYGAMA.md](docs/PLAYGAMA.md).
 
 ### Version CrazyGames
@@ -255,7 +268,8 @@ src/
   campaign/      Niveaux, objectifs, étoiles, améliorations, défi des Gardiens
   showcase/      Scènes mises en scène (boucle de l'accueil, vidéos des portails)
   families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface ;
-                 race : la course, une session de sessions qui change de monde
+                 race : la course, une session de sessions qui change de monde ;
+                 dunes : le sable posé (à l'essai), composé des grains et du Ver du Sable
   progression/   Expérience, objectifs, cosmétiques, ensembles, cadeaux du jour, profil
   seasons/       Les saisons en données, leur calendrier (UTC), leur piste, l'objectif de la semaine
   fx/, render/   Particules, secousses, sons ; palette et motifs partagés
