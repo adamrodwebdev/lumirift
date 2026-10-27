@@ -2,6 +2,7 @@ import { Tone } from '@/core/Tone';
 import type { ElementTone } from './Elements';
 import type { PieceType } from '@/families/falling/pieces/PieceType';
 import type { ElementPace, ScriptedPiece } from './SandGame';
+import type { SandBed } from './SandBed';
 
 /**
  * The first level's show: within about a minute the player sees what no
@@ -32,6 +33,11 @@ export const PRACTICE_ELEMENTS: readonly ElementTone[] = [
   Tone.Seed,
 ];
 export const PRACTICE_PACE: ElementPace = { after: 2, chance: 0.35 };
+/**
+ * The practice opens on a bed of sand (1.33): the elements have something to
+ * work on at once, and the pile starts high enough for the danger to show.
+ */
+export const PRACTICE_BED: SandBed = { share: 0.2, variant: 2 };
 
 /** The pairs that react, in the order they play: the shock, the blaze, the vine. */
 const PAIRS: readonly (readonly [ElementTone, ElementTone])[] = [
@@ -52,9 +58,29 @@ export const PAIRS_SCRIPT: readonly ScriptedPiece[] = PAIRS.flatMap(([first, sec
   { at: k * 3 + 2, tone: second, type: SQUARE, above: true },
 ]);
 
-/** The training's encounter: a bolt every other piece, until the Dune Wyrm is struck. */
-export const BOLTS_SCRIPT: readonly ScriptedPiece[] = Array.from({ length: 40 }, (_, k) => ({
-  at: k * 2 + 1,
-  tone: Tone.Lightning,
-  type: SQUARE,
-}));
+/**
+ * The Wyrm's fight (level 2-7 and its weekly challenge): from the start, the
+ * elements that hurt it, lightning above all (1.33). Before, they came with
+ * the game's levels, and lightning only after five links: too late, the sand
+ * it throws up won first.
+ */
+export const WYRM_ELEMENTS: readonly ElementTone[] = [Tone.Lightning, Tone.Water, Tone.Fire];
+export const WYRM_PACE: ElementPace = { after: 2, chance: 0.3 };
+
+/** The Wyrm of the training surfaces after this long (ms), whatever the player does: by 30 s. */
+export const HOOK_WYRM_MS = 25_000;
+
+/**
+ * The training's pieces (1.33): a bolt first, over the water set on the bed,
+ * so that it shocks the sand wherever it lands; the blaze and the vine in
+ * pairs, each second piece right above the first; then a bolt every other
+ * piece, so that one is never far when the Wyrm comes out.
+ */
+export const HOOK_SCRIPT: readonly ScriptedPiece[] = [
+  { at: 1, tone: Tone.Lightning, type: SQUARE },
+  { at: 3, tone: Tone.Oil, type: LONG },
+  { at: 4, tone: Tone.Fire, type: SQUARE, above: true },
+  { at: 6, tone: Tone.Seed, type: LONG },
+  { at: 7, tone: Tone.Water, type: SQUARE, above: true },
+  ...Array.from({ length: 40 }, (_, k) => ({ at: 9 + k * 2, tone: Tone.Lightning, type: SQUARE })),
+];

@@ -19,8 +19,10 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 | **Placement** | Mosaïque : grille 8 × 8, pièces à poser, cinq jokers                                      | Céramique       |
 | **Volume**    | Tour : le puits s'enroule en cylindre de verre                                            | Verre courbé    |
 
-- **Campagne** : 30 niveaux en cinq chapitres à travers tous les modes, des étoiles à
-  gagner et **dix améliorations** à acheter avec elles.
+- **Campagne** : 34 niveaux en cinq chapitres à travers tous les modes, des étoiles à
+  gagner et **dix améliorations** à acheter avec elles. Sa courbe est mesurée : des joueurs
+  simulés (débutant, habitué, expert) jouent chaque niveau, qui doit rester dans la bande
+  de sa fiche de rythme ; au premier chapitre, la menace ralentit près du haut du puits.
 - **Défi du jour** : chaque jour, un mode et les mêmes pièces pour tout le monde, deux
   minutes, résultat à partager.
 - **Défi des Gardiens** : chaque semaine, un Gardien de la faille ouvert à tous depuis
@@ -48,9 +50,10 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 - **Écran titre vivant** : une boucle de vraies parties montre, avant même de jouer, ce
   qu'aucun autre jeu de blocs n'a : les éléments du Sable, les puits qui se retournent,
   basculent et se reflètent, les quatre Gardiens de la faille.
-- **Sur les portails** (CrazyGames, Playgama, Yandex Games) : un nouveau joueur arrive directement dans un
-  entraînement en deux étapes, le Sable vivant puis le Ver des dunes, guidé à l'écran et
-  passable ; les menus s'ouvrent ensuite. Notre site garde son écran titre.
+- **Sur les portails** (CrazyGames, Playgama, Yandex Games) : un nouveau joueur arrive directement dans
+  l'entraînement, une seule partie guidée et passable : le premier éclair brise le sable où
+  qu'il tombe, l'embrasement et la liane suivent, le Ver des dunes surgit avant 30 s ; les
+  menus s'ouvrent ensuite. Notre site garde son écran titre.
 - **Menu en quatre pages** (Accueil, Modes, Carte, Atelier) : onglets sous le pouce ou rail
   en paysage, glissement d'une page à l'autre, rien à faire défiler ; les fenêtres sont des
   feuilles qui tiennent à l'écran, et la fin de partie se dévoile pas à pas.
@@ -106,17 +109,18 @@ npm run dev
 
 ## Commandes de développement
 
-| Commande             | Rôle                                                               |
-| -------------------- | ------------------------------------------------------------------ |
-| `npm run dev`        | Serveur de développement avec rechargement à chaud                 |
-| `npm run build`      | Vérification des types puis build de production (`dist/`)          |
-| `npm run preview`    | Sert le build de production (port 4173)                            |
-| `npm test`           | Tests unitaires (Vitest)                                           |
-| `npm run test:e2e`   | Parcours et audits d'accessibilité (Playwright, mobile et bureau)  |
-| `npm run lint`       | ESLint (règles TypeScript strictes, typées)                        |
-| `npm run format`     | Prettier                                                           |
-| `npm run lighthouse` | Audit Lighthouse du build, mobile (`-- --desktop` pour le bureau)  |
-| `npm run verify`     | Lint, format, types, tests et build : à passer avant chaque commit |
+| Commande             | Rôle                                                                     |
+| -------------------- | ------------------------------------------------------------------------ |
+| `npm run dev`        | Serveur de développement avec rechargement à chaud                       |
+| `npm run build`      | Vérification des types puis build de production (`dist/`)                |
+| `npm run preview`    | Sert le build de production (port 4173)                                  |
+| `npm test`           | Tests unitaires (Vitest)                                                 |
+| `npm run test:curve` | Courbe de la campagne : des bots jouent chaque niveau (quelques minutes) |
+| `npm run test:e2e`   | Parcours et audits d'accessibilité (Playwright, mobile et bureau)        |
+| `npm run lint`       | ESLint (règles TypeScript strictes, typées)                              |
+| `npm run format`     | Prettier                                                                 |
+| `npm run lighthouse` | Audit Lighthouse du build, mobile (`-- --desktop` pour le bureau)        |
+| `npm run verify`     | Lint, format, types, tests et build : à passer avant chaque commit       |
 
 Les tests de bout en bout et Lighthouse utilisent le build : lancez `npm run build` avant.
 Les images de partage (`public/og-image.png`, icônes) se régénèrent avec

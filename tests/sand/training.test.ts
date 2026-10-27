@@ -2,20 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { SeededRandom } from '@/core/Random';
 import { Tone } from '@/core/Tone';
 import { createSandSession, type SandSession } from '@/families/sand';
+import { HOOK_WYRM_MS } from '@/families/sand/engine/Showcase';
 import { GRAINS_PER_CELL } from '@/families/sand/engine/SandGrid';
-import type { TrainingStage } from '@/session/GameSession';
 
 const G = GRAINS_PER_CELL;
 const STEP = 16;
 /** Minutes of play simulated frame by frame: a slower machine (the CI) needs more than 5 s. */
 const SIMULATION_TIMEOUT_MS = 30_000;
+/** The first bolt breaks the soaked slab: more than one band of sand at once. */
+const SHOCK_GRAINS = 600;
 
-/** A training step's session, started. */
-function training(stage: TrainingStage, seed = 1): SandSession {
+/** The training's game, started. */
+function training(seed = 1): SandSession {
   const session = createSandSession('sand', {
     random: new SeededRandom(seed),
     timeLimitMs: null,
-    training: stage,
+    training: 'hook',
   }) as SandSession;
   session.start();
   return session;
@@ -23,7 +25,7 @@ function training(stage: TrainingStage, seed = 1): SandSession {
 
 /** A beginner: each piece dropped two seconds after it appears, where it appears. */
 function beginner(session: SandSession) {
-  let dropAt = 0;
+  let dropAt = 2000;
   let now = 0;
   session.onGame('spawn', () => (dropAt = now + 2000));
   return (ms: number) => {
@@ -35,33 +37,48 @@ function beginner(session: SandSession) {
   };
 }
 
-describe('The portals’ training in the Sand (1.29)', () => {
-  it('stages the elements: a prepared well, the pairs first, no clock, no level to climb', () => {
-    const session = training('elements');
+/** Slides the piece in play `cells` to a side, as far as it goes. */
+function slide(session: SandSession, cells: number): void {
+  for (let k = 0; k < Math.abs(cells); k++) {
+    if (!session.execute({ type: 'move', direction: cells < 0 ? -1 : 1 })) return;
+  }
+}
+
+describe('The portals’ training in the Sand (1.29, one game since 1.33)', () => {
+  it('stages the hook: a soaked bed, a bolt first, no clock, no level to climb', () => {
+    const session = training();
     expect(session.view.grid.sandHeight()).toBeGreaterThan(0.3 * session.view.grid.height);
-    expect(session.view.active?.tone).toBe(Tone.Water);
-    session.execute({ type: 'hardDrop' });
     expect(session.view.active?.tone).toBe(Tone.Lightning);
     const ids = session.indicators().map((indicator) => indicator.id);
     expect(ids).not.toContain('timeLeft');
     expect(ids).not.toContain('level');
   });
 
+  it('shocks the bed with the first bolt, wherever it lands and however long it waits', () => {
+    for (let cells = -5; cells <= 5; cells++) {
+      for (const drops of [true, false]) {
+        const session = training();
+        const strikes: { kind: string; grains: number }[] = [];
+        session.onGame('strike', ({ kind, grains }) => strikes.push({ kind, grains }));
+        slide(session, cells);
+        if (drops) session.execute({ type: 'hardDrop' });
+        for (let t = 0; t < 20_000 && strikes.length === 0; t += STEP) session.update(STEP);
+        expect(strikes[0]?.kind).toBe('shock');
+        expect(strikes[0]!.grains).toBeGreaterThan(SHOCK_GRAINS);
+      }
+    }
+  });
+
   it(
-    'shows a beginner the shock, the blaze and the vine in twenty seconds, then two zones linked',
+    'shows a beginner the blaze and the vine after the shock, within twenty seconds',
     () => {
       for (const seed of [1, 2, 3, 4]) {
-        const session = training('elements', seed);
+        const session = training(seed);
         const seen = new Set<string>();
         session.onGame('strike', ({ kind }) => seen.add(kind));
         session.onGame('react', ({ kind }) => seen.add(kind));
-        let regions = 0;
-        session.onGame('clear', (event) => (regions += event.regions));
-        const play = beginner(session);
-        play(20_000);
+        beginner(session)(20_000);
         expect([...seen]).toEqual(expect.arrayContaining(['shock', 'blaze', 'sprout']));
-        for (let t = 20_000; t < 90_000 && regions < 2; t += 1000) play(1000);
-        expect(regions).toBeGreaterThanOrEqual(2);
       }
     },
     SIMULATION_TIMEOUT_MS,
@@ -70,7 +87,7 @@ describe('The portals’ training in the Sand (1.29)', () => {
   it(
     'is never lost: whenever a piece cannot come in, the bottom of the sand empties',
     () => {
-      const session = training('elements');
+      const session = training();
       let rescues = 0;
       let warned = false;
       let pressure = 0;
@@ -93,106 +110,122 @@ describe('The portals’ training in the Sand (1.29)', () => {
     SIMULATION_TIMEOUT_MS,
   );
 
-  it('lets the Dune Wyrm be struck only once it has come out, soon, even by a player who does not aim', () => {
-    for (const seed of [1, 2, 3, 4, 5]) {
-      const session = training('wyrm', seed);
+  it(
+    'brings the Dune Wyrm out on its own clock, before half a minute, then lets it be struck',
+    () => {
+      for (const seed of [1, 2, 3]) {
+        const session = training(seed);
+        const moves: { type: string; at: number }[] = [];
+        let now = 0;
+        session.onGame('boss', ({ event }) => moves.push({ type: event.type, at: now }));
+        const play = beginner(session);
+        for (; now < 60_000 && !moves.some((move) => move.type === 'hurt'); now += 500) {
+          play(500);
+        }
+        const surge = moves.find((move) => move.type === 'surge')!;
+        expect(surge.at).toBeGreaterThan(HOOK_WYRM_MS);
+        expect(surge.at).toBeLessThan(30_000);
+        const hurt = moves.find((move) => move.type === 'hurt')!;
+        expect(hurt.at).toBeGreaterThan(surge.at);
+      }
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
+
+  it(
+    'lets a player who follows the guide strike its head as it comes out',
+    () => {
+      const session = training();
+      const hits: string[] = [];
+      session.onGame('boss', ({ event }) => {
+        if (event.type === 'hurt') hits.push(event.hit);
+      });
+      for (let t = 0; t < 40_000 && hits.length === 0; t += STEP) {
+        const bolt = session.view.active;
+        const worm = session.view.worm!;
+        const target = worm.warnAt ?? (worm.exposed ? Math.round(worm.headX) : null);
+        if (bolt?.tone === Tone.Lightning && target !== null) {
+          slide(session, Math.round((target - (bolt.x + G)) / G));
+          if (worm.exposed) session.execute({ type: 'hardDrop' });
+        } else if (bolt && bolt.tone !== Tone.Lightning) {
+          session.execute({ type: 'hardDrop' });
+        }
+        session.update(STEP);
+      }
+      expect(hits).toEqual(['boltHead']);
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
+
+  it(
+    'sends the struck Wyrm away for good when the training is won',
+    () => {
+      const session = training();
+      const play = beginner(session);
       const moves: string[] = [];
       session.onGame('boss', ({ event }) => moves.push(event.type));
-      const play = beginner(session);
-      for (let t = 0; t < 40_000 && !moves.includes('hurt'); t += 500) play(500);
-      expect(moves).toContain('hurt');
-      expect(moves.indexOf('surge')).toBeGreaterThanOrEqual(0);
-      expect(moves.indexOf('surge')).toBeLessThan(moves.indexOf('hurt'));
-    }
-  });
+      for (let t = 0; t < 60_000 && !moves.includes('hurt'); t += 500) play(500);
+      expect(session.tease('duneWorm')).toBeGreaterThan(0);
+      const after: string[] = [];
+      session.onGame('boss', ({ event }) => after.push(event.type));
+      for (let t = 0; t < 15_000; t += STEP) session.update(STEP);
+      expect(session.view.worm!.out).toBe(false);
+      expect(after).not.toContain('warn');
+      expect(session.view.active).toBeNull();
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
 
-  it('lets a player who follows the guide strike its head as it comes out', () => {
-    const session = training('wyrm');
-    const hits: string[] = [];
-    session.onGame('boss', ({ event }) => {
-      if (event.type === 'hurt') hits.push(event.hit);
-    });
-    for (let t = 0; t < 10_000 && hits.length === 0; t += STEP) {
-      const bolt = session.view.active;
-      const worm = session.view.worm!;
-      const target = worm.warnAt ?? (worm.exposed ? Math.round(worm.headX) : null);
-      if (bolt?.tone === Tone.Lightning && target !== null) {
-        const cells = Math.round((target - (bolt.x + G)) / G);
-        for (let k = 0; k < Math.abs(cells); k++) {
-          session.execute({ type: 'move', direction: cells < 0 ? -1 : 1 });
-        }
-        if (worm.exposed) session.execute({ type: 'hardDrop' });
+  it(
+    'guides each piece of the elements, then each move of the Wyrm',
+    () => {
+      const session = training();
+      const lines: string[] = [];
+      for (let rank = 1; rank <= 7; rank++) {
+        lines.push(`${session.guide()?.text}:${session.guide()?.action}`);
+        session.execute({ type: 'hardDrop' });
+        for (let t = 0; t < 1500; t += STEP) session.update(STEP);
       }
-      session.update(STEP);
-    }
-    expect(hits).toEqual(['boltHead']);
-  });
+      expect(lines[0]).toBe('training.guide.dropLightning:drop');
+      expect(lines[1]).toBe('training.guide.link:move');
+      expect(lines.slice(2, 4)).toEqual([
+        'training.guide.placeOil:move',
+        'training.guide.dropFire:drop',
+      ]);
+      expect(lines.slice(5, 7)).toEqual([
+        'training.guide.placeSeed:move',
+        'training.guide.dropWater:drop',
+      ]);
 
-  it('sends the struck Wyrm away for good when the step is won', () => {
-    const session = training('wyrm');
-    const play = beginner(session);
-    const moves: string[] = [];
-    session.onGame('boss', ({ event }) => moves.push(event.type));
-    for (let t = 0; t < 40_000 && !moves.includes('hurt'); t += 500) play(500);
-    expect(session.tease('duneWorm')).toBeGreaterThan(0);
-    const after: string[] = [];
-    session.onGame('boss', ({ event }) => after.push(event.type));
-    for (let t = 0; t < 15_000; t += STEP) session.update(STEP);
-    expect(session.view.worm!.out).toBe(false);
-    expect(after).not.toContain('warn');
-    expect(session.view.active).toBeNull();
-  });
+      const said = new Set<string>();
+      const play = beginner(session);
+      const moves: string[] = [];
+      session.onGame('boss', ({ event }) => moves.push(event.type));
+      for (let t = 0; t < 60_000 && !moves.includes('hurt'); t += STEP) {
+        said.add(session.guide()?.text ?? 'none');
+        play(STEP);
+      }
+      expect([...said]).toEqual(
+        expect.arrayContaining(['training.guide.warn', 'training.guide.exposed']),
+      );
+      session.tease('duneWorm');
+      expect(session.guide()?.text).toBe('training.guide.hit');
+      // Outside the training, no guide.
+      const free = createSandSession('sand', { random: new SeededRandom(1), timeLimitMs: null });
+      expect(free.guide?.()).toBeNull();
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
 
-  it('guides each piece of the elements, and each move of the Wyrm', () => {
-    const elements = training('elements');
-    const lines: string[] = [];
-    for (let rank = 1; rank <= 9; rank++) {
-      lines.push(`${elements.guide()?.text}:${elements.guide()?.action}`);
-      elements.execute({ type: 'hardDrop' });
-      for (let t = 0; t < 1500; t += STEP) elements.update(STEP);
-    }
-    expect(lines.slice(0, 2)).toEqual([
-      'training.guide.placeWater:move',
-      'training.guide.dropLightning:drop',
-    ]);
-    expect(lines[2]).toBe('training.guide.link:move');
-    expect(lines.slice(3, 5)).toEqual([
-      'training.guide.placeOil:move',
-      'training.guide.dropFire:drop',
-    ]);
-    expect(lines.slice(6, 8)).toEqual([
-      'training.guide.placeSeed:move',
-      'training.guide.dropWater:drop',
-    ]);
-
-    const wyrm = training('wyrm');
-    const said = new Set<string>();
-    const play = beginner(wyrm);
-    const moves: string[] = [];
-    wyrm.onGame('boss', ({ event }) => moves.push(event.type));
-    for (let t = 0; t < 40_000 && !moves.includes('hurt'); t += STEP) {
-      said.add(wyrm.guide()?.text ?? 'none');
-      play(STEP);
-    }
-    expect([...said]).toEqual(
-      expect.arrayContaining([
-        'training.guide.roam',
-        'training.guide.warn',
-        'training.guide.exposed',
-      ]),
-    );
-    wyrm.tease('duneWorm');
-    expect(wyrm.guide()?.text).toBe('training.guide.hit');
-    // Outside the training, no guide.
-    const free = createSandSession('sand', { random: new SeededRandom(1), timeLimitMs: null });
-    expect(free.guide?.()).toBeNull();
-  });
-
-  it('keeps the fight’s words for the fights: the guide alone speaks in the training', () => {
-    const session = training('wyrm');
-    const notices: string[] = [];
-    session.events.on('notice', ({ id }) => notices.push(id));
-    beginner(session)(15_000);
-    expect(notices.filter((id) => id.startsWith('boss.'))).toEqual([]);
-  });
+  it(
+    'keeps the fight’s words for the fights: the guide alone speaks in the training',
+    () => {
+      const session = training();
+      const notices: string[] = [];
+      session.events.on('notice', ({ id }) => notices.push(id));
+      beginner(session)(40_000);
+      expect(notices.filter((id) => id.startsWith('boss.'))).toEqual([]);
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
 });

@@ -548,7 +548,7 @@
       "bigClear": "Clear {n} lines at once",
       "survive": "Survive {time}",
       "win": "Beat the {ai}",
-      "shape": "Complete the silhouette",
+      "fill": "Fill {n} of the silhouette",
       "regions": "Clear {n} region | Clear {n} regions"
     },
     "starRule": {
@@ -771,16 +771,13 @@
     "running": "Rift surge: time slowed"
   },
   "training": {
-    "title": "Training · step {n}/{total}",
-    "step": "Step {n}/{total}",
+    "name": "Training",
     "goal": {
-      "livingSand": "Link 2 regions",
       "firstEncounter": "Drive off the Wyrm"
     },
     "stepDone": "Step complete!",
     "done": "Training complete!",
     "lesson": {
-      "livingSand": "The elements react to each other: use them to break the sand.",
       "firstEncounter": "The Dune Wyrm has dived back into the sand. It awaits you at level 2-7: the campaign starts at 1-1."
     },
     "continue": "Continue",

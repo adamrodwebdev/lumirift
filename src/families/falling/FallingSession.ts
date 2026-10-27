@@ -148,6 +148,10 @@ export class FallingSession implements GameSession<FallingCommand> {
     return this.game.mode.boss?.() ?? null;
   }
 
+  filled(): number {
+    return this.game.mode.filled?.() ?? 0;
+  }
+
   get revivable(): boolean {
     return this.game.revivable;
   }

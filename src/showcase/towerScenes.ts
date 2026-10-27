@@ -5,6 +5,9 @@ import { TOWER_WELL, TowerMode } from '@/families/volume/TowerMode';
 import { autoplay, FixedRandom } from './autoplay';
 import type { Scene } from './Scene';
 
+/** The Eye has fixed its gaze on the bomb by then (ms). */
+const EYE_FIXES_MS = 1300;
+
 /**
  * The Eye of the Tower charging its gaze over the glass cylinder; the AI's I
  * clears the bottom ring all the way round, and the bomb in it blinds the Eye.
@@ -28,7 +31,8 @@ export function towerEye(): Scene {
     }),
     'volume',
   );
-  const hand = autoplay(session);
+  // The AI waits for the Eye to fix its gaze on the bomb before it drops the I.
+  const hand = autoplay(session, EYE_FIXES_MS);
   return {
     session,
     drive: hand.drive,

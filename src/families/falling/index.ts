@@ -1,5 +1,6 @@
 import { SeededRandom } from '@/core/Random';
 import type { GameSession, SessionOptions } from '@/session/GameSession';
+import { Mercy } from '@/session/Mercy';
 import type { FallingModeId, ModeId } from '@/session/ModeId';
 import { isAiLevel } from './ai/AiPlayer';
 import { DuelSession } from './DuelSession';
@@ -54,10 +55,11 @@ const modeOptions = (options: SessionOptions): ModeOptions => ({
  */
 function createDuelSession(options: SessionOptions): DuelSession {
   const seed = options.random.nextInt(2 ** 32);
-  // Upgrades help the player only, never the AI.
+  // Upgrades and mercy help the player only, never the AI.
   const player = new Game(new DuelMode(modeOptions(options)), {
     random: new SeededRandom(seed),
     lineClearDelayMs: LINE_CLEAR_DELAY_MS,
+    mercy: Mercy.of('falling', options.mercy ?? 0),
     ...(options.boosts ? { boosts: options.boosts } : {}),
   });
   const opponent = new Game(new DuelMode({ timeLimitMs: options.timeLimitMs }), {
@@ -81,6 +83,7 @@ export function createSoloSession(modeId: ModeId, options: SessionOptions): Fall
     new Game(mode, {
       random: options.random,
       lineClearDelayMs: LINE_CLEAR_DELAY_MS,
+      mercy: Mercy.of('falling', options.mercy ?? 0),
       ...(options.boosts ? { boosts: options.boosts } : {}),
     }),
   );

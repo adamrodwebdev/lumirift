@@ -33,7 +33,8 @@ export class TideMode extends AbstractMode {
   }
 
   protected override tick(game: Game, deltaMs: number): void {
-    this.untilRise -= deltaMs;
+    // Near the top, the early campaign's mercy holds the tide back.
+    this.untilRise -= deltaMs * game.mercyPace;
     if (this.untilRise > 0) return;
     this.risen++;
     this.interval = Math.max(TIDE_MIN_INTERVAL_MS, this.interval - TIDE_INTERVAL_STEP_MS);

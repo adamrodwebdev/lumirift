@@ -46,8 +46,15 @@ export default defineConfig(({ mode }) => {
       reportCompressedSize: true,
     },
     test: {
-      include: ['tests/**/*.test.ts'],
       environment: 'node',
+      projects: [
+        {
+          extends: true,
+          test: { name: 'unit', include: ['tests/**/*.test.ts'], exclude: ['tests/curve/**'] },
+        },
+        // The campaign's curve (1.33): bots play every level, minutes of games; a step of its own.
+        { extends: true, test: { name: 'curve', include: ['tests/curve/**/*.test.ts'] } },
+      ],
     },
   };
 });

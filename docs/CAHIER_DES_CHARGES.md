@@ -5,6 +5,7 @@
 | 1.30    | 26/10/2026 | La version Yandex Games                                                                                                                                                                                                               |
 | 1.31    | 26/10/2026 | Preuve et pubs : une politique de pubs, la reprise rare et utile, le verre du puits qui se brise selon l'ambiance, l'essai d'une apparence, le kit de preuve ; lots 23 et 24 (§ 9, § 9 bis).                                          |
 | 1.32    | 26/10/2026 | Commandes au doigt : module tactile (coups lus comme les téléphones, garde contre les chutes accidentelles, crans), gestes, boutons ou les deux, gaucher, vibrations discrètes, guide des gestes ; porte de traces (§ 9 bis, lot 23). |
+| 1.33    | 26/10/2026 | Accroche et courbe : le bot de courbe et ses bandes, la clémence du début de campagne, des niveaux réglés sur la mesure, l'entraînement en un seul jeu (§ 9 bis, lot 16).                                                             |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -924,16 +925,18 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   - **Compte** : un contrat (ЕЛС ou régie РСЯ) est exigé avant la modération ; un seul pour
     tous les jeux du compte. **VK** attend un avis juridique (sanctions de l'Union européenne).
 
-- **Premier lancement sur les portails (1.29)** : un nouveau joueur (aucune partie jouée,
-  entraînement ni fait ni passé) arrive directement dans un **entraînement en deux étapes**,
+- **Premier lancement sur les portails (1.29, un seul jeu depuis la 1.33)** : un nouveau joueur
+  (aucune partie jouée, entraînement ni fait ni passé) arrive directement dans l'**entraînement**,
   sans logo animé, écran-titre ni menu (`Platform.firstRun`). Notre site et la démo gardent
   leur écran-titre.
-  - **Le sable vivant** : puits préparé en couches d'une cellule, chacune coupée d'une autre
-    couleur ; les pièces viennent par paires qui réagissent (eau puis éclair, huile puis feu,
-    graine puis eau), puis du sable. But : relier 2 zones.
-  - **La première rencontre** : le Ver des dunes surgit vers 2,5 s ; des éclairs jusqu'à ce
-    qu'un coup le touche, et seulement une fois sorti du sable ; il replonge (le spectacle de
-    la fin du 1-1) et donne rendez-vous au 2-7.
+  - **L'accroche** : un puits préparé en couches d'une cellule, chacune coupée d'une autre
+    couleur ; les trois du haut forment une dalle d'une seule couleur sous une nappe d'eau. La
+    première pièce est un éclair : où qu'il tombe, même si le joueur attend, il frappe l'eau et
+    la dalle se brise (le choc). Suivent l'huile puis le feu (l'embrasement), la graine puis
+    l'eau (la liane), puis un éclair une pièce sur deux.
+  - **La rencontre** : le Ver des dunes surgit de lui-même vers 28 s, quoi que fasse le joueur ;
+    un éclair sur sa tête, une fois sorti du sable, le chasse ; il replonge (le spectacle de la
+    fin du 1-1) et donne rendez-vous au 2-7. Plus de fenêtre au milieu de la première minute.
   - **Règles** : ni chrono ni défaite (le fond du puits se vide dès qu'une pièce ne peut plus
     entrer, six rangées), ni pub, ni étoiles, ni record, ni surcharge, ni alarme de danger
     (`pressure()` nulle) ; l'expérience compte.
@@ -941,9 +944,8 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
     ou le geste ; il remplace les compteurs du tableau de bord (en haut sur téléphone, sous
     l'objectif à côté du puits en paysage), garde la hauteur de sa plus longue phrase et se
     masque d'une croix. Les annonces du combat se taisent.
-  - **Pause** : « Reprendre » et « Passer l'entraînement ». **Fin** : la leçon de l'étape,
-    « Continuer » ; après la seconde, « Niveau 1-1 » et « Menu ». Fait ou passé, il ne
-    revient plus (`Profile.trained`).
+  - **Pause** : « Reprendre » et « Passer l'entraînement ». **Fin** : la leçon, « Niveau 1-1 »
+    et « Menu ». Fait ou passé, il ne revient plus (`Profile.trained`).
 
 - **CrazyGames (1.2)** : build dédié (`npm run package:crazygames`), médias (covers et vidéos,
   `scripts/crazygames-media.mjs`) et contrôle de chaque exigence du portail dans
@@ -1628,11 +1630,18 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
          ModeCarousel, ModeArt, PlayerBar, ObjectivesCard
 ```
 
-- **Entraînement des portails (1.29)** : `campaign/Training` (les deux étapes, hors
+- **Entraînement des portails (1.29)** : `campaign/Training` (un seul jeu depuis la 1.33, hors
   campagne), `TrainingRun` (sorte de partie : pas de record, pas de pub, l'arbitre de la
-  campagne sans étoiles), `SandGuide` (la ligne du guide, lue du jeu à chaque image),
-  `SandBed` (le puits préparé), `GuideCard` et `InputHint` (l'interface). `GameEnding` mène
-  d'une étape à l'autre et marque la fin (`Profile.finishTraining`).
+  campagne sans étoiles), `SandGuide` (la ligne du guide, lue du jeu à chaque image : les
+  éléments, puis le Ver dès qu'il fend le sable), `SandBed` (le puits préparé, sa dalle sous
+  l'eau), `GuideCard` et `InputHint` (l'interface). `GameEnding` marque la fin
+  (`Profile.finishTraining`).
+- **Courbe de la campagne (1.33)** : `campaign/curve` (`CurveBot` joue un niveau,
+  `CurveMeter` mesure et `CurveReport` rend compte, un joueur par famille derrière
+  `CurvePlayer`, `CurveLoadout` les améliorations d'un habitué, `CurveBands` le jugement),
+  `BeatCharts` (les fiches de rythme), `session/Mercy` (la clémence, lue par chaque moteur).
+  Le projet Vitest `curve` (`npm run test:curve`) joue toute la campagne et mille fois
+  l'accroche ; la CI aussi.
 - Chaque moteur lit les `Boosts` qui le concernent (vitesse de chute, aperçu, délai de pose,
   bonus de points, seconde chance, jokers de départ, feu, fenêtre du Rythme, délai des
   rangées reçues) ; sans `Boosts`, il joue exactement comme avant.
@@ -1707,19 +1716,19 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Livré (1.3)                                                  |
 | 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames (1.2), Playgama (1.4), Yandex Games (1.30) livrés |
 | 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                                                        |
-| 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, essai                            | Prévu                                                        |
-| 16  | Accroche et courbe (1.34) : entraînement 2.0, bot de courbe, clémence                                      | Prévu                                                        |
+| 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, essai                            | Livré (1.31)                                                 |
+| 16  | Accroche et courbe (1.33) : entraînement 2.0, bot de courbe, clémence                                      | Livré (1.33)                                                 |
 | 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Prévu                                                        |
 | 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Prévu                                                        |
 | 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Prévu                                                        |
 | 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
 | 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
 | 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
-| 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Prévu                                                        |
-| 24  | Course contre la montre (1.33) : le monde change toutes les 40 s, Gardiens surprises                       | Prévu                                                        |
+| 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Livré (1.32)                                                 |
+| 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Prévu                                                        |
 
-Ordre de sortie (décidé le 26/10/2026) : lot 15 (1.31), lots 23 (1.32) et 24 (1.33), puis
-lots 16 à 20 (1.34 à 1.38), lot 21 (2.0) et lot 22.
+Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
+lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
 
 Lighthouse est mesuré à **chaque lot** à partir du lot 3 : aucune régression sous 98 en
 Performance (95 jusqu'à la 1.19.0), ni sous 95 dans les trois autres catégories.
@@ -1767,13 +1776,27 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
   - Porte : une ligne 1.31 par canal vivant dans la feuille de mesures, temps de jeu moyen et
     pubs par partie au moins égaux à la 1.30, aucune plainte sur les pubs dans les dix
     sessions.
-- **Lot 16 · 1.34 Accroche et courbe.** L'entraînement 2.0 ouvre sur un tableau où la première
+- **Lot 16 · 1.33 Accroche et courbe.** L'entraînement 2.0 ouvre sur un tableau où la première
   pièce déclenche une chaîne de chocs où qu'elle tombe, et le Ver surgit avant 50 s. Une fiche
   de rythme par niveau ; un bot de courbe à trois niveaux de joueur (`CurveBot`,
   `CurveReport` : temps sous pression, temps mort, quasi-défaites, pic) ; un débutant frôle la
   défaite dès les niveaux 2-3, avec une clémence près du haut (`MercyRule`) qui s'efface au
   chapitre 4 ; les signaux de danger sous les pics simulés. Porte : dix inconnus voient un choc
   et le Ver avant 60 s ; 80 % des joueurs du bac à sable passent la minute.
+  - Livré en 1.33 (26/10/2026). Le bot joue chaque niveau six fois pour chaque joueur
+    (débutant : l'IA du duel plus lente, une pièce sur vingt posée n'importe où ; habitué : l'IA
+    facile ; expert : l'IA forte ; au Sable et à la Mosaïque, des joueurs à eux), avec les
+    améliorations qu'un habitué a achetées à chaque chapitre. La mesure a corrigé : le combat
+    du Ver (2-7), que personne ne gagnait (ses éruptions semaient des grains de toutes les
+    couleurs, la foudre n'arrivait qu'après cinq liens) ; le 1-5 (quatre lignes d'un coup :
+    aucun débutant) ; la silhouette parfaite du 3-4 (8 % pour le meilleur bot) ; les duels 4-6
+    et 5-6 ; le 5-1, trop long et plat ; le 5-5. La pratique 1-2 s'ouvre sur un lit de sable
+    pour que les signaux du danger s'y entendent ; leurs seuils restent à 70 et 85 % : les pics
+    simulés des niveaux 1-2 à 1-4 les dépassent pour la moitié des débutants au moins.
+    L'entraînement devient un seul jeu : le Ver sort à 28 s sans dépendre du joueur, et la
+    fenêtre entre deux étapes quitte la première minute. Les deux derniers combats (5-6, 5-7)
+    restent l'examen de ceux qui maîtrisent le jeu : l'expert les gagne, l'habitué s'en
+    approche.
 - **Lot 17 · 1.35 Cadeaux et collections.** Un calendrier de sept jours (`DailyGifts`,
   `GiftService`, `DailyGiftDialog`) : de l'expérience les jours 1 à 6, une apparence le
   jour 7 ; un jour manqué met le cycle en pause, sans rien reprendre ; le doublement par pub
@@ -1839,7 +1862,7 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
     par cas à 60 et 120 Hz, aucune chute accidentelle en 20 000 traces ; sur une page occupée,
     dans un navigateur qui fusionne les échantillons, 97,5 % pour un glissé suivi aussitôt
     d'un coup (son dernier cran se perd dans le saut), le reste à 99 % au moins.
-- **Lot 24 · 1.33 Course contre la montre.** Un mode chronométré où la faille change de monde
+- **Lot 24 · 1.34 Course contre la montre.** Un mode chronométré où la faille change de monde
   toutes les 40 s entre le puits, le Sable et la Tour (jamais la Mosaïque, sans gravité),
   chaque monde sur un plateau neuf ; seul le chrono termine la partie.
   - Le chrono part de 90 s (une partie de débutant dure environ 2 min 30, vérifié par le bot)
@@ -1949,3 +1972,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.30    | 26/10/2026 | La version Yandex Games : SDK v2, données du joueur, pauses, cadre 2:1, langues voisines vers le russe, visuels, objectif en portrait (§ 2.1, § 3.7, § 4.2, § 4.4).    |
 | 1.31    | 26/10/2026 | Preuve et pubs : une politique de pubs, la reprise rare et utile, le verre du puits qui se brise, l'essai d'une apparence, le kit de preuve ; lots 23 et 24 (§ 9 bis). |
 | 1.32    | 26/10/2026 | Commandes au doigt : `PhoneGestures`, gestes, boutons ou les deux, gaucher, vibrations discrètes, guide des gestes, porte de traces (§ 9 bis, lot 23).                 |
+| 1.33    | 26/10/2026 | Accroche et courbe : `CurveBot` et ses bandes, `BeatCharts`, `Mercy`, niveaux réglés, entraînement en un seul jeu (§ 9 bis, lot 16).                                   |

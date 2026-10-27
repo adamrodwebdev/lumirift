@@ -8,22 +8,16 @@ export interface LiveState {
   readonly durationMs: number;
   /** Damage done to the level's boss (0 without one). */
   readonly bossDamage: number;
+  /** How much of the shape to fill is filled, in percent (0 without one). */
+  readonly fill: number;
 }
 
-export const GOAL_KINDS = [
-  'lines',
-  'score',
-  'bigClear',
-  'survive',
-  'win',
-  'shape',
-  'boss',
-] as const;
+export const GOAL_KINDS = ['lines', 'score', 'bigClear', 'survive', 'win', 'fill', 'boss'] as const;
 export type GoalKind = (typeof GOAL_KINDS)[number];
 
 export interface Goal {
   readonly kind: GoalKind;
-  /** Lines, points, lines at once, or milliseconds to survive (unused for win and shape). */
+  /** Lines, points, lines at once, milliseconds to survive, percent filled (unused for win). */
   readonly target: number;
 }
 
@@ -68,10 +62,10 @@ export const GOAL_RULES: Readonly<Record<GoalKind, GoalRule>> = {
     progress: () => 0,
     wonAtEnd: (reason) => reason === 'victory',
   },
-  shape: {
-    live: false,
-    progress: () => 0,
-    wonAtEnd: (reason) => reason === 'shapeComplete',
+  fill: {
+    live: true,
+    progress: (state) => state.fill,
+    wonAtEnd: (_reason, state, goal) => reached(state.fill, goal),
   },
   boss: {
     live: true,

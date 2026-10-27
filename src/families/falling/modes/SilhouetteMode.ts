@@ -25,7 +25,7 @@ export class SilhouetteMode extends AbstractMode {
   /** Board indices (y × width + x) of the cells to fill. */
   private targetCells = new Set<number>();
   private used = 0;
-  private filled = 0;
+  private inside = 0;
   private outside = 0;
 
   constructor(options: ModeOptions = {}) {
@@ -55,7 +55,7 @@ export class SilhouetteMode extends AbstractMode {
       let delta = 0;
       for (const cell of piece.cells()) {
         if (this.targetCells.has(cell.y * board.width + cell.x)) {
-          this.filled++;
+          this.inside++;
           delta += SILHOUETTE_INSIDE_POINTS;
         } else {
           this.outside++;
@@ -67,13 +67,17 @@ export class SilhouetteMode extends AbstractMode {
   }
 
   override afterLock(game: Game): void {
-    if (this.filled >= this.area) {
+    if (this.inside >= this.area) {
       game.adjustScore(SILHOUETTE_PERFECT_BONUS);
       game.notify('perfect', SILHOUETTE_PERFECT_BONUS);
       game.finish('shapeComplete');
     } else if (this.used >= this.pieceLimit) {
       game.finish('outOfPieces');
     }
+  }
+
+  filled(): number {
+    return this.inside / this.area;
   }
 
   override subtitleKey(): string {
@@ -83,7 +87,7 @@ export class SilhouetteMode extends AbstractMode {
   protected override ownIndicators(): Indicator[] {
     return [
       { id: 'piecesLeft', value: Math.max(0, this.pieceLimit - this.used), format: 'count' },
-      { id: 'filled', value: (this.filled / this.area) * 100, format: 'percent' },
+      { id: 'filled', value: this.filled() * 100, format: 'percent' },
       { id: 'outside', value: this.outside, format: 'count' },
     ];
   }

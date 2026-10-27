@@ -107,7 +107,15 @@ describe('A boss level of Sand', () => {
     game.update(STEP_MS);
     expect(onOver).toHaveBeenCalledWith({ reason: 'victory' });
     const goal = { kind: 'boss' as const, target: WORM_HEALTH };
-    const state = { lines: 0, clears: 0, bestAtOnce: 0, score: 0, durationMs: 1, bossDamage: 40 };
+    const state = {
+      lines: 0,
+      clears: 0,
+      bestAtOnce: 0,
+      score: 0,
+      durationMs: 1,
+      bossDamage: 40,
+      fill: 0,
+    };
     expect(GOAL_RULES.boss.progress(state, goal)).toBe(40);
     expect(GOAL_RULES.boss.wonAtEnd('victory', state, goal)).toBe(true);
     expect(GOAL_RULES.boss.wonAtEnd('blockOut', state, goal)).toBe(false);

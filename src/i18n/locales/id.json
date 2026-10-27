@@ -548,7 +548,7 @@
       "bigClear": "Hapus {n} baris sekaligus",
       "survive": "Bertahan {time}",
       "win": "Kalahkan {ai}",
-      "shape": "Lengkapi siluet",
+      "fill": "Isi siluet hingga {n}",
       "regions": "Hapus {n} area"
     },
     "starRule": {
@@ -771,16 +771,13 @@
     "running": "Lonjakan: waktu melambat"
   },
   "training": {
-    "title": "Latihan · tahap {n}/{total}",
-    "step": "Tahap {n}/{total}",
+    "name": "Latihan",
     "goal": {
-      "livingSand": "Hubungkan 2 area",
       "firstEncounter": "Usir Cacing Pasir"
     },
     "stepDone": "Tahap selesai!",
     "done": "Latihan selesai!",
     "lesson": {
-      "livingSand": "Elemen saling bereaksi: gunakan untuk memecah pasir.",
       "firstEncounter": "Cacing Pasir kembali menyelam. Ia menunggumu di level 2-7: kampanye dimulai dari level 1-1."
     },
     "continue": "Lanjut",

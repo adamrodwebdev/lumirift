@@ -1,33 +1,32 @@
 import type { GameSession, SessionOptions, TrainingStage } from '@/session/GameSession';
+import { Mercy } from '@/session/Mercy';
 import type { ModeId } from '@/session/ModeId';
 import { SandGame, type SandOptions } from './engine/SandGame';
 import {
-  BOLTS_SCRIPT,
-  PAIRS_SCRIPT,
+  HOOK_SCRIPT,
+  HOOK_WYRM_MS,
+  PRACTICE_BED,
   PRACTICE_ELEMENTS,
   PRACTICE_PACE,
   SHOWCASE,
+  WYRM_ELEMENTS,
+  WYRM_PACE,
 } from './engine/Showcase';
 import { SandSession } from './SandSession';
 
 /**
- * The portals' training, staged in the Sand (1.29): a prepared well, the
- * pieces in their order, no wind, no defeat. The elements react in pairs;
- * then the Dune Wyrm surfaces soon, a bolt never far.
+ * The portals' training, staged in the Sand (1.33): a prepared well, the
+ * pieces in their order, no wind, no defeat. The first bolt shocks the bed
+ * wherever it lands; the elements react in pairs; the Dune Wyrm surfaces
+ * on its own clock, a bolt never far.
  */
 const TRAINING_GAMES: Readonly<Record<TrainingStage, Omit<SandOptions, 'random'>>> = {
-  elements: {
+  hook: {
     hazards: false,
-    bed: { share: 0.36, variant: 0 },
-    script: PAIRS_SCRIPT,
-    forgiving: true,
-  },
-  wyrm: {
-    hazards: false,
-    bed: { share: 0.42, variant: 1 },
-    script: BOLTS_SCRIPT,
+    bed: { share: 0.36, variant: 0, water: 3 },
+    script: HOOK_SCRIPT,
     boss: 'duneWorm',
-    bossDelayMs: 2500,
+    bossDelayMs: HOOK_WYRM_MS,
     bossSeenFirst: true,
     forgiving: true,
   },
@@ -54,10 +53,18 @@ export function createSandSession(modeId: ModeId, options: SessionOptions): Game
       hazards: options.calm !== true,
       ...(options.showcase ? { script: SHOWCASE } : {}),
       ...(options.practice
-        ? { wind: false, elements: PRACTICE_ELEMENTS, elementPace: PRACTICE_PACE }
+        ? {
+            wind: false,
+            elements: PRACTICE_ELEMENTS,
+            elementPace: PRACTICE_PACE,
+            bed: PRACTICE_BED,
+          }
         : {}),
-      ...(options.boss === 'duneWorm' ? { boss: 'duneWorm' as const } : {}),
+      ...(options.boss === 'duneWorm'
+        ? { boss: 'duneWorm' as const, elements: WYRM_ELEMENTS, elementPace: WYRM_PACE }
+        : {}),
       ...(options.boosts ? { boosts: options.boosts } : {}),
+      mercy: Mercy.of('sand', options.mercy ?? 0),
     }),
   );
 }

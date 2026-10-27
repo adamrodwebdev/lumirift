@@ -3,6 +3,66 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.33.0] — 26/10/2026
+
+Accroche et courbe (lot 16 du chemin vers 5) : la première minute montre le meilleur du jeu
+quel que soit le premier geste, et chaque niveau de la campagne est mesuré par des joueurs
+simulés au lieu d'être deviné. La mesure a trouvé des murs (le Ver des dunes, que personne ne
+battait ; la silhouette parfaite ; les quatre lignes d'un coup au cinquième niveau) et des
+niveaux plats ; ils sont réglés, et un test échoue si l'un d'eux sort de sa bande.
+
+### Ajouté
+
+- **Le bot de courbe** (`CurveBot`, `CurveReport`) : un débutant, un habitué et un expert
+  jouent chaque niveau six fois, avec les améliorations qu'un habitué a achetées à chaque
+  chapitre ; le rapport compte le temps sous pression (la moitié du puits ou plus), le temps
+  mort, les quasi-défaites (un danger critique survécu), le pic et la fin. Les joueurs : l'IA
+  du duel (le débutant plus lent, une pièce sur vingt posée n'importe où), un joueur de Sable
+  qui étend une couleur vers les deux murs et vise le Ver avec la foudre, un joueur de
+  Mosaïque qui pare les pierres du Golem et presse un joker quand rien ne rentre.
+- **Une fiche de rythme par niveau** (`BEAT_CHARTS`) : son idée, l'émotion visée, son rôle
+  dans la dent de scie du chapitre et l'intensité de chaque tiers ; les bandes (`CurveBands`)
+  qui la vérifient : victoires minimales par joueur selon le rôle, intensité à deux crans
+  près, quasi-défaites et signaux de danger là où la fiche les demande, temps mort sous 20 %.
+  `npm run test:curve` joue la campagne (3 min 30 sur quatre cœurs) ; la CI aussi.
+- **La clémence du début de campagne** : près du haut du puits (dès 60 %), la menace ralentit :
+  la chute et la marée jusqu'à 40 % de leur vitesse, les lignes reçues en duel, la chute et le
+  Ver dans le Sable jusqu'à la moitié. Pleine au chapitre 1, des deux tiers au chapitre 2, d'un
+  tiers au chapitre 3, absente ensuite ; jamais hors de la campagne. Un débutant frôle la
+  défaite dès le 1-3 (une partie sur deux) sans la subir.
+
+### Modifié
+
+- **L'entraînement des portails tient en une partie** : le premier éclair tombe sur une nappe
+  d'eau posée sur le lit de sable et brise toute la couche d'une couleur dessous, où qu'il
+  tombe et même si le joueur attend ; l'embrasement et la liane suivent ; le Ver des dunes sort
+  de lui-même vers 28 s, un éclair une pièce sur deux. Plus de fenêtre entre deux étapes dans
+  la première minute ; l'objectif s'appelle « Entraînement ». Vérifié sur 1 000 parties.
+- **Des niveaux réglés sur la mesure** :
+  - 1-2 : la pratique des éléments commence sur un lit de sable, pour que le danger s'entende ;
+  - 1-5 : effacer 2 lignes d'un coup (4 avant : aucun débutant n'y arrivait) ;
+  - 2-7 : le Ver des dunes se combat avec la foudre, l'eau et le feu dès le début ; ses
+    éruptions projettent le sable de la surface, et non plus des grains de toutes les couleurs
+    qui empêchaient tout lien ; un lien qui le traverse le blesse de 7 (5 avant) ;
+  - 3-4 : remplir 85 % de la silhouette (la remplir entière avant : 8 % de réussite pour le
+    meilleur bot) ;
+  - 4-6 contre l'IA moyenne (la forte avant), 5-6 contre la forte (l'experte avant,
+    imbattable même pour l'expert simulé) ;
+  - 5-1 : 15 lignes en 3 min (22 en 4 avant : près de 3 min de calme plat) ;
+  - 5-5 : tenir 2 min 30 (3 min avant).
+- L'IA de la Tour prend le chemin le plus court autour du cylindre ; dans la scène de l'Œil
+  de l'écran titre, elle attend que l'Œil fixe la bombe.
+
+### Technique
+
+- `session/Mercy` (règle par famille et force par chapitre), lue par la chute, la marée, le
+  duel, le Sable et le Ver ; `campaign/curve` (bot, mesure, joueurs par famille, bandes,
+  améliorations d'un habitué) ; `BeatCharts`.
+- L'objectif « remplir » (`fill`) remplace « compléter la silhouette » ; les sessions disent
+  la part de la forme remplie (`filled()`), l'état suivi par l'objectif se lit au même endroit
+  pour l'écran et le bot (`liveStateOf`).
+- Vitest en deux projets : `unit` (`npm test`) et `curve` (`npm run test:curve`).
+
 ## [1.32.0] — 26/10/2026
 
 Les commandes au doigt (lot 23 du chemin vers 5) : un module tactile maison pour le puits, le

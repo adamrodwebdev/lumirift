@@ -1,6 +1,7 @@
 import { Emitter } from '@/core/Emitter';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import { ComboGauge, type ComboView } from '@/session/ComboGauge';
+import { Mercy } from '@/session/Mercy';
 import { inDanger } from '@/session/Tension';
 import type { RandomSource } from '@/core/Random';
 import { Tone } from '@/core/Tone';
@@ -138,6 +139,8 @@ export interface SandOptions {
   readonly bossDelayMs?: number;
   /** The Guardian cannot be hurt before it has come out once: the player sees it first (the training). */
   readonly bossSeenFirst?: boolean;
+  /** The early campaign's mercy: the fall and the Wyrm slow near the top (none by default). */
+  readonly mercy?: Mercy;
   /** A prepared well: bands of sand to work on (the home's reel, the portals' training). */
   readonly bed?: SandBed;
   /** Never lost (the portals' training): each time a piece cannot come in, the bottom empties. */
@@ -178,6 +181,7 @@ export class SandGame {
   private _level = 1;
   private _elapsedMs = 0;
   private readonly boosts: Boosts;
+  private readonly mercy: Mercy;
   private readonly windy: boolean;
   private readonly script: ReadonlyMap<number, ScriptedPiece>;
   /** Pieces dealt so far and the centre (in grains) of the last one that landed. */
@@ -209,6 +213,7 @@ export class SandGame {
     if (options.bed) layBed(this.grid, options.bed);
     this.timeLimitMs = options.timeLimitMs ?? null;
     this.boosts = options.boosts ?? NO_BOOSTS;
+    this.mercy = options.mercy ?? Mercy.NONE;
     const hazards = options.hazards ?? true;
     this.windy = hazards && (options.wind ?? true);
     this.script = new Map((options.script ?? []).map((piece) => [piece.at, piece]));
@@ -553,7 +558,8 @@ export class SandGame {
   private applyGravity(deltaMs: number): boolean {
     const row = this.softDropping
       ? this.gravity.softDropIntervalMs(this._level)
-      : this.gravity.rowIntervalMs(this._level) / this.boosts.gravityScale;
+      : this.gravity.rowIntervalMs(this._level) /
+        (this.boosts.gravityScale * this.mercy.pace(this.pressure()));
     const interval = row / GRAINS_PER_CELL;
     let fell = false;
     this.fallAccumulator += deltaMs;
@@ -642,7 +648,10 @@ export class SandGame {
 
   /** The Guardian moves and acts; flames and blazes against it hurt it. */
   private bossStep(worm: DuneWorm): void {
-    for (const event of worm.update(STEP_MS)) this.onBoss(event);
+    // Near the top, the early campaign's mercy slows the Wyrm too.
+    for (const event of worm.update(STEP_MS * this.mercy.pace(this.pressure()))) {
+      this.onBoss(event);
+    }
     if (this.stormUntil > 0 && this._elapsedMs >= this.stormUntil) {
       this.stormUntil = 0;
       this.grid.calm();

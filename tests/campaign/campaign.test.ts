@@ -16,6 +16,7 @@ const state = (patch: Partial<LiveState> = {}): LiveState => ({
   score: 0,
   bossDamage: 0,
   durationMs: 0,
+  fill: 0,
   ...patch,
 });
 

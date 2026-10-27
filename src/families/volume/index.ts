@@ -2,6 +2,7 @@ import { FallingSession } from '@/families/falling/FallingSession';
 import { Game } from '@/families/falling/game/Game';
 import { LINE_CLEAR_DELAY_MS } from '@/families/falling/rules/Timings';
 import type { GameSession, SessionOptions } from '@/session/GameSession';
+import { Mercy } from '@/session/Mercy';
 import type { ModeId } from '@/session/ModeId';
 import { TowerMode } from './TowerMode';
 
@@ -23,6 +24,7 @@ export function createVolumeSession(modeId: ModeId, options: SessionOptions): Ga
     new Game(mode, {
       random: options.random,
       lineClearDelayMs: LINE_CLEAR_DELAY_MS,
+      mercy: Mercy.of('volume', options.mercy ?? 0),
       ...(options.boosts ? { boosts: options.boosts } : {}),
     }),
     'volume',

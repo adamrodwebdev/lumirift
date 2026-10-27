@@ -9,11 +9,13 @@ import { expect, test } from '@playwright/test';
 test('a new player on a portal starts in the training, and may pass it', async ({ page }) => {
   await page.goto('/');
   const goal = page.getByRole('group', { name: 'Goal' });
-  await expect(goal).toContainText('Step 1/2');
-  await expect(goal).toContainText('Link 2 regions');
+  await expect(goal).toContainText('Training');
+  await expect(goal).toContainText('Drive off the Wyrm');
   await expect(page.getByRole('tab', { name: 'Home' })).toHaveCount(0);
-  // The guide says what to do with the piece in play, beside the well, never over it.
-  const guide = page.getByText('Place the water on the sand.').filter({ visible: true });
+  // The guide says what to do with the piece in play (a bolt over the water first), beside the well, never over it.
+  const guide = page
+    .getByText('Lightning on water shatters the sand around it: drop it!')
+    .filter({ visible: true });
   await expect(guide).toBeVisible();
   const well = await page.getByRole('img', { name: 'Sand well' }).boundingBox();
   const line = await guide.boundingBox();

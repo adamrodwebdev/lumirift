@@ -65,4 +65,6 @@ export interface GameMode {
   subtitleKey(): string | null;
   /** The Guardian of a boss level and how it stands (the Tower's Eye); absent otherwise. */
   boss?(): BossStatus | null;
+  /** The share of the shape to fill that is filled (0 to 1), in a mode that has one (the Silhouette). */
+  filled?(): number;
 }

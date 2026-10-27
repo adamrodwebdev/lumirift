@@ -16,6 +16,9 @@ jobs:
       - run: npm ci
       # Lint, format, types, unit tests and production build.
       - run: npm run verify
+      # The campaign's curve: bots play every level, each must stay in its band;
+      # the training's opening must hold in 1,000 games.
+      - run: npm run test:curve
       # Journeys and accessibility audits on the build, phone and desktop (installed Chrome).
       - run: npm run test:e2e
       # Fails below 98 in Performance, or below 95 in the three other required categories.

@@ -20,12 +20,15 @@ export function painted(rows: readonly string[]): string[] {
   );
 }
 
-/** The falling family's best AI, quick to think, plays the session. */
-export function autoplay(session: FallingSession): {
+/** The falling family's best AI plays the session, quick to think unless the scene asks it to wait. */
+export function autoplay(
+  session: FallingSession,
+  thinkMs = 90,
+): {
   readonly drive: (deltaMs: number) => void;
   readonly dispose: () => void;
 } {
-  const player = new AiPlayer(session, { ...AI_PROFILES.expert, thinkMs: 90 }, new SeededRandom(4));
+  const player = new AiPlayer(session, { ...AI_PROFILES.expert, thinkMs }, new SeededRandom(4));
   const detach = player.attach();
   return { drive: (delta) => player.update(delta), dispose: detach };
 }

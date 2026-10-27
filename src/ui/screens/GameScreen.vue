@@ -9,7 +9,7 @@ import { newRecord } from '@/fx/sounds';
 import type { GoalProgress } from '@/campaign/CampaignRun';
 import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import type { CampaignLevel } from '@/campaign/Levels';
-import { TRAINING, trainingRank, type TrainingStep } from '@/campaign/Training';
+import type { TrainingStep } from '@/campaign/Training';
 import type { BreakMoment } from '@/platform/Platform';
 import type { BestLine } from '@/progression/BestLine';
 import type { Ending } from '@/run/GameEnding';
@@ -200,7 +200,7 @@ const goalCard = computed(() => {
     };
   if (props.training)
     return {
-      label: t('training.step', { n: trainingRank(props.training), total: TRAINING.length }),
+      label: t('training.name'),
       text: t(`training.goal.${props.training.id}`),
       goal: props.training.goal,
     };
@@ -219,11 +219,7 @@ const TITLE: Readonly<Record<RunKindId, () => string>> = {
   guardian: () => `${t('guardianChallenge.title')} · ${bossName()}`,
   daily: () => `${t('daily.title')} · ${modeName.value}`,
   free: () => modeName.value,
-  training: () =>
-    t('training.title', {
-      n: run.kind.training ? trainingRank(run.kind.training) : 1,
-      total: TRAINING.length,
-    }),
+  training: () => t('training.name'),
 };
 const title = computed(() => TITLE[run.kind.id]());
 

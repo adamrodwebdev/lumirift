@@ -16,6 +16,16 @@ export interface Placement {
 }
 
 /**
+ * The slides to try, in columns: from wall to wall; around a cylinder (the
+ * Tower), the shortest first, so that a spot reached both ways is reached
+ * the short way.
+ */
+function shiftsOf(board: ReadonlyBoard): number[] {
+  const range = Array.from({ length: 2 * board.width + 1 }, (_, k) => k - board.width);
+  return board.wraps ? range.sort((a, b) => Math.abs(a) - Math.abs(b)) : range;
+}
+
+/**
  * Lists every placement reachable by turning the piece at the top of the
  * well, sliding it sideways and dropping it: exactly the moves the AI will
  * then play, so every plan it picks can be carried out.
@@ -23,11 +33,12 @@ export interface Placement {
 export function searchPlacements(board: ReadonlyBoard, piece: Piece): Placement[] {
   const placements: Placement[] = [];
   const seen = new Set<string>();
+  const shifts = shiftsOf(board);
   let turned = piece;
   for (let rotation = 0; rotation < 4; rotation++) {
     if (rotation > 0) turned = turned.rotated(1);
     if (!board.fits(turned)) continue;
-    for (let dx = -board.width; dx <= board.width; dx++) {
+    for (const dx of shifts) {
       if (!slides(board, turned, dx)) continue;
       const shifted = turned.moved(dx, 0);
       let drop = 0;
@@ -35,10 +46,11 @@ export function searchPlacements(board: ReadonlyBoard, piece: Piece): Placement[
       const landed = shifted.moved(0, drop);
       const key = landed
         .cells()
-        .map((cell) => `${cell.x},${cell.y}`)
+        .map((cell) => `${board.column(cell.x)},${cell.y}`)
         .sort()
         .join(' ');
-      // The O piece looks the same in all four orientations: count each spot once.
+      // The O piece looks the same in all four orientations, and a spot of the
+      // Tower is the same whichever way round it is reached: count each once.
       if (seen.has(key)) continue;
       seen.add(key);
       const after = board.clone();

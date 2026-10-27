@@ -72,6 +72,8 @@ const duel = (id: string, variant: AiLevel): CampaignLevel => ({
  * The campaign: five chapters of six levels, every mode of the game, each
  * chapter ending with a duel against a stronger AI; from chapter 2, a Guardian
  * of the rift (a boss) guards the way out after the duel. Played in order.
+ * Tuned by the curve bot (1.33): each level stays in the band its beat chart
+ * sets (`BEAT_CHARTS`, `CurveBands`).
  */
 export const LEVELS: readonly CampaignLevel[] = [
   // 1. Premiers blocs
@@ -91,7 +93,7 @@ export const LEVELS: readonly CampaignLevel[] = [
   { ...timed('1-2', 'sand', 3, { kind: 'lines', target: 3 }), practice: true },
   timed('1-3', 'classic', 2.5, { kind: 'lines', target: 10 }),
   timed('1-4', 'mirror', 3, { kind: 'lines', target: 12 }),
-  timed('1-5', 'classic', 3, { kind: 'bigClear', target: 4 }),
+  timed('1-5', 'classic', 3, { kind: 'bigClear', target: 2 }),
   duel('1-6', 'rookie'),
   // 2. Courants
   timed(
@@ -124,7 +126,8 @@ export const LEVELS: readonly CampaignLevel[] = [
     chapter: 3,
     modeId: 'silhouette',
     timeLimitMs: null,
-    goal: { kind: 'shape', target: 1 },
+    // Most of the shape: a perfect fill is a feat for the record (the Silhouette's bonus).
+    goal: { kind: 'fill', target: 85 },
     stars: { kind: 'fast', twoMs: 2 * MIN, threeMs: 1.2 * MIN },
   },
   timed('3-5', 'chroma', 4, { kind: 'lines', target: 20 }),
@@ -140,29 +143,29 @@ export const LEVELS: readonly CampaignLevel[] = [
   timed('4-3', 'tower', 3, { kind: 'lines', target: 5 }),
   timed('4-4', 'tower', 4, { kind: 'lines', target: 10 }),
   timed('4-5', 'sand', 4, { kind: 'lines', target: 7 }),
-  duel('4-6', 'hard'),
+  duel('4-6', 'normal'),
   // The third Guardian: the Eye of the Tower, blinded by the bombs of its gaze.
   {
     ...timed('4-7', 'tower', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
     boss: 'towerEye',
   },
   // 5. Le Rift
-  timed('5-1', 'fusion', 4, { kind: 'lines', target: 22 }),
+  timed('5-1', 'fusion', 3, { kind: 'lines', target: 15 }),
   timed('5-2', 'mirror', 4, { kind: 'lines', target: 28 }),
   timed('5-3', 'mosaic', 4, { kind: 'lines', target: 20 }),
   timed('5-4', 'tower', 4, { kind: 'lines', target: 14 }),
   timed(
     '5-5',
     'tide',
-    3,
-    { kind: 'survive', target: 3 * MIN },
+    2.5,
+    { kind: 'survive', target: 2.5 * MIN },
     {
       kind: 'lines',
       two: 15,
       three: 25,
     },
   ),
-  duel('5-6', 'expert'),
+  duel('5-6', 'hard'),
   // The last Guardian: the Heart of the Rift, wounded by its own shards.
   {
     ...timed('5-7', 'classic', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
