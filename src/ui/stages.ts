@@ -18,6 +18,8 @@ const FAMILY_STAGES: Readonly<Partial<Record<FamilyId, StageLoader>>> = {
   volume: () => import('@/families/volume/ui/TowerStage.vue'),
   // The race (1.34) swaps the stages of its worlds: `familyStage`.
   rift: () => import('@/families/race/ui/RaceStage.vue'),
+  // Dunes (1.37): the Sand's grains, the Mosaic's hand.
+  dunes: () => import('@/families/dunes/ui/DunesStage.vue'),
 };
 
 /** The families whose stages a family plays inside its own: the race's worlds. */

@@ -8,6 +8,7 @@ import { MemoryStorage } from '@/services/KeyValueStorage';
 import { CAMPAIGN_KEY, CampaignService } from '@/services/CampaignService';
 import { NO_BOOSTS } from '@/session/Boosts';
 import { levelOpening, modeOpen } from '@/campaign/ModeUnlocks';
+import { isPrototype } from '@/session/ModeCatalog';
 import { MODE_IDS } from '@/session/ModeId';
 
 const state = (patch: Partial<LiveState> = {}): LiveState => ({
@@ -43,7 +44,11 @@ describe('Campaign levels', () => {
 
   it('visits every mode of the game, or opens it (the race, once its three worlds were seen)', () => {
     const played = new Set(LEVELS.map((level) => level.modeId));
-    for (const mode of MODE_IDS) expect(played.has(mode) || levelOpening(mode) !== null).toBe(true);
+    // A mode on test (Dunes, 1.37) has no level yet: it lives in its own build.
+    for (const mode of MODE_IDS) {
+      if (isPrototype(mode)) expect(played.has(mode)).toBe(false);
+      else expect(played.has(mode) || levelOpening(mode) !== null).toBe(true);
+    }
     const race = levelOpening('race')!;
     for (const world of ['classic', 'sand', 'tower'] as const) {
       expect(LEVELS.slice(0, LEVELS.indexOf(race)).some((level) => level.modeId === world)).toBe(

@@ -25,6 +25,8 @@ export const MERCY_RULES: Readonly<Record<FamilyId, MercyRule>> = {
   placement: { slowest: 1 },
   // The race is not the campaign: its worlds keep their pace.
   rift: { slowest: 1 },
+  // Dunes (1.37), calm: its Wyrm slows near the top, as in the Sand (its hands keep a promise).
+  dunes: { slowest: 0.5 },
 };
 
 /** The mercy strength of a campaign chapter (0 past the last listed). */

@@ -1,7 +1,7 @@
 import { shallowRef, type Ref } from 'vue';
-import type { ModeId } from '@/session/ModeId';
 import type { Cosmetic, CosmeticKind } from '@/progression/Cosmetics';
 import type { GameReport } from '@/progression/GameReport';
+import type { ObjectivePlace } from '@/progression/Objectives';
 import {
   Profile,
   type GameProgress,
@@ -23,7 +23,8 @@ export class ProfileService {
 
   constructor(
     private readonly storage: KeyValueStorage,
-    private readonly modes: () => readonly ModeId[],
+    /** Where the objectives are played: the open modes, a daily challenge or not. */
+    private readonly place: () => ObjectivePlace,
   ) {
     this.profile = Profile.parse(readJson(storage, PROFILE_KEY));
     this.state = shallowRef(this.profile.snapshot);
@@ -78,13 +79,13 @@ export class ProfileService {
   }
 
   objectivesFor(day: string): readonly ObjectiveProgress[] {
-    const objectives = this.profile.objectivesFor(day, this.modes());
+    const objectives = this.profile.objectivesFor(day, this.place());
     this.save();
     return objectives;
   }
 
   recordGame(report: GameReport, day: string): GameProgress {
-    const progress = this.profile.recordGame(report, day, this.modes());
+    const progress = this.profile.recordGame(report, day, this.place());
     this.save();
     return progress;
   }

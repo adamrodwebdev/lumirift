@@ -91,6 +91,10 @@
       "name": "Balapan Retakan",
       "pitch": "Berpacu dengan waktu di sumur, pasir, dan menara: setiap baris menambah waktu, dan tiap 40 detik retakan berpindah dunia.",
       "tagline": "Tiga dunia, satu jam"
+    },
+    "dunes": {
+      "name": "Gumuk Pasir",
+      "pitch": "Letakkan pasir dari tangan: hubungkan kedua dinding dengan satu warna."
     }
   },
   "hud": {
@@ -128,7 +132,8 @@
     "best": "Rekor",
     "newBest": "Rekor baru!",
     "nextBeat": "Detak berikutnya",
-    "cycle": "Siklus"
+    "cycle": "Siklus",
+    "swaps": "Tukar"
   },
   "notice": {
     "closeCall": "Nyaris! +{value}",
@@ -226,7 +231,8 @@
       "tease": "Sesuatu bergerak di bawah pasir…"
     },
     "surge": "Lonjakan: +{value}",
-    "continued": "Giliranmu: tidak ada yang jatuh sebelum kamu bergerak."
+    "continued": "Giliranmu: tidak ada yang jatuh sebelum kamu bergerak.",
+    "dunesGoal": "Level D-{value} selesai!"
   },
   "wellWords": {
     "combo": "KOMBO ×{n}"
@@ -1023,6 +1029,60 @@
     "reward": "+{n} poin",
     "done": "Target tercapai: +{n} poin",
     "label": "{week}, {left}: {goal} ({done} dari {target}). {season}, tingkat {tier}: buka musim.",
-    "goalDone": "Target pekan tercapai! +{n} poin musim"
+    "goalDone": "Target pekan tercapai! +{n} poin musim",
+    "featuredDunes": {
+      "water": "Pekan ini, Gumuk Pasir lebih sering memberi kepingan air, sejak level pertama.",
+      "fire": "Pekan ini, Gumuk Pasir lebih sering memberi kepingan api, sejak level pertama.",
+      "oil": "Pekan ini, Gumuk Pasir lebih sering memberi kepingan minyak, sejak level pertama.",
+      "ice": "Pekan ini, Gumuk Pasir lebih sering memberi kepingan es, sejak level pertama.",
+      "lightning": "Pekan ini, Gumuk Pasir lebih sering memberi petir, sejak level pertama.",
+      "seed": "Pekan ini, Gumuk Pasir lebih sering memberi benih, sejak level pertama.",
+      "acid": "Pekan ini, Gumuk Pasir lebih sering memberi asam, sejak level pertama."
+    },
+    "inDunes": "Semua permainan Gumuk Pasir dihitung."
+  },
+  "dunes": {
+    "board": "Papan Gumuk Pasir",
+    "hand": "Tiga kepingan",
+    "piece": "Kepingan {n}",
+    "cells": "{n} kotak",
+    "empty": "Slot kosong",
+    "stuckPiece": "tidak muat di mana pun",
+    "noRoom": "Tak muat",
+    "fits": "Muat",
+    "onlyOne": "Hanya satu kepingan yang muat",
+    "stuck": "Tidak ada kepingan yang muat: tukar semuanya",
+    "swap": "Tukar",
+    "swapsLeft": "sisa {n}",
+    "swapsNone": "habis",
+    "swapLabel": "Tukar semua kepingan (sisa {n})",
+    "swapKey": "Tukar semua kepingan",
+    "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak.",
+    "level": "Level D-{n}",
+    "goal": {
+      "regions": "Hapus {n} area",
+      "score": "Raih {n} poin"
+    },
+    "element": {
+      "water": "Air",
+      "fire": "Api",
+      "oil": "Minyak",
+      "ice": "Es",
+      "lightning": "Petir",
+      "seed": "Benih",
+      "acid": "Asam"
+    },
+    "tips": {
+      "opening": "Letakkan kepingan di tanda yang menyala: warnanya menghubungkan kedua dinding.",
+      "calm": "Satu dari tiga kepingan selalu muat. Tanpa batas waktu: santai saja.",
+      "earnSwap": "Capai target berikutnya untuk mendapat satu kali tukar.",
+      "water": "Air mengisi cekungan, lalu mengeras menjadi warna di sekitarnya.",
+      "fire": "Api membakar warna tempatnya mendarat.",
+      "oil": "Minyak mengapung di air; api membuatnya berkobar.",
+      "ice": "Es diam di tempat, membekukan air, dan meleleh oleh api.",
+      "lightning": "Petir menyambar ke bawah kolomnya: bidik air untuk sengatan.",
+      "seed": "Siram benih: ia tumbuh jadi jembatan warnanya.",
+      "acid": "Asam menggerus pasir di bawahnya."
+    }
   }
 }

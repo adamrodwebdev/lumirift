@@ -43,9 +43,20 @@ export interface Objective {
  * A kind of objective: which tiers it can fill, how it is set for the day,
  * and how much a game advances it. Adding a kind means adding a rule.
  */
+/**
+ * Where the day's objectives are played: the modes open to the player, and
+ * whether a daily challenge exists (a test build of one mode has none, 1.37).
+ */
+export interface ObjectivePlace {
+  readonly modes: readonly ModeId[];
+  readonly daily: boolean;
+}
+
 interface ObjectiveRule {
   readonly kind: ObjectiveKind;
   readonly tiers: readonly ObjectiveTier[];
+  /** It can be met there; absent: everywhere. */
+  offered?(place: ObjectivePlace): boolean;
   create(tier: ObjectiveTier, random: RandomSource, modes: readonly ModeId[]): Objective;
   advance(report: GameReport, objective: Objective): number;
 }
@@ -97,6 +108,7 @@ const RULES: readonly ObjectiveRule[] = [
   {
     kind: 'daily',
     tiers: ['easy'],
+    offered: (place) => place.daily,
     create: (tier) => ({ kind: 'daily', tier, target: 1 }),
     advance: (report) => (report.daily ? 1 : 0),
   },
@@ -111,6 +123,7 @@ const RULES: readonly ObjectiveRule[] = [
   {
     kind: 'duel',
     tiers: ['hard'],
+    offered: (place) => place.modes.includes('duel'),
     create: (tier) => ({ kind: 'duel', tier, target: 1 }),
     advance: (report) =>
       report.modeId === 'duel' &&
@@ -132,13 +145,16 @@ export function advance(objective: Objective, report: GameReport): number {
  * The three objectives of a day, one per tier, all of different kinds. The
  * same for everybody on a given day: they come from the day's key.
  */
-export function objectivesOfDay(day: string, modes: readonly ModeId[]): Objective[] {
+export function objectivesOfDay(day: string, place: ObjectivePlace): Objective[] {
   const random = SeededRandom.fromString(`objectives:${day}`);
   const used = new Set<ObjectiveKind>();
   return OBJECTIVE_TIERS.map((tier) => {
-    const choices = RULES.filter((rule) => rule.tiers.includes(tier) && !used.has(rule.kind));
+    const choices = RULES.filter(
+      (rule) =>
+        rule.tiers.includes(tier) && !used.has(rule.kind) && (rule.offered?.(place) ?? true),
+    );
     const rule = choices[random.nextInt(choices.length)]!;
     used.add(rule.kind);
-    return rule.create(tier, random, modes);
+    return rule.create(tier, random, place.modes);
   });
 }

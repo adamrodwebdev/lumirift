@@ -68,6 +68,15 @@ const FAMILY_PRESENTATIONS: Readonly<Record<FamilyId, Presentation>> = {
     clearNotice: 'notice.lines',
     stageShows: ['timeLeft'],
   },
+  // Dunes (1.37): the Mosaic's board and hand, the Sand's regions; its stage shows the
+  // level and the regions (its goal card), the swaps (their button): the phone keeps its room.
+  dunes: {
+    layout: 'mosaic',
+    touchHelp: ['dunes.helpTouch'],
+    coachGoal: null,
+    clearNotice: 'notice.regions',
+    stageShows: ['level', 'regions', 'swaps'],
+  },
 };
 
 /** The modes laid out their own way: the duel shows the opponent's well beside the player's. */

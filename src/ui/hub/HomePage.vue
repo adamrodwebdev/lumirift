@@ -6,7 +6,7 @@ import { useFormat } from '@/app/useFormat';
 import { dayKey, timeLeft } from '@/core/Day';
 import { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import { guardianLevel, type CampaignLevel } from '@/campaign/Levels';
-import { allowsLevel, allowsMode, nextPlay } from '@/platform/Edition';
+import { allowsLevel, allowsMode, nextPlay, offersDaily } from '@/platform/Edition';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { GUARDIAN_XP } from '@/progression/Experience';
 import { guardianBonusOpen } from '@/progression/Profile';
@@ -54,16 +54,23 @@ const { edition } = platform;
 const touch = isTouchScreen();
 
 const today = clock();
-// The daily challenge only draws among the modes this edition opens.
-const daily = new DailyChallenge(
-  today,
-  catalog.dailyEligible().filter((id) => allowsMode(edition, id)),
-);
+/**
+ * The daily challenge, among the modes this edition opens; none in a test
+ * build of one mode (1.37: its two builds stay alike).
+ */
+const daily = offersDaily(edition)
+  ? new DailyChallenge(
+      today,
+      catalog.dailyEligible().filter((id) => allowsMode(edition, id)),
+    )
+  : null;
 /** Time left before the next daily challenge (local midnight). */
 const dailyLeft = (() => {
-  const left = timeLeft(daily.endsAt, today);
+  const left = timeLeft(daily?.endsAt ?? today, today);
   return { h: left.hours, m: left.minutes };
 })();
+/** A test build of one mode (1.37): no reel of the other modes, its own pitch for a tagline. */
+const solo = edition.solo;
 
 /** The week's Guardian, open to every player (but not past what an edition offers: the demo). */
 const guardian = new GuardianChallenge(today);
@@ -177,10 +184,11 @@ onMounted(async () => {
   observer.observe(canvas);
   scene.resize();
   sync();
-  // Then the reel, whose code is the games': loaded once the title is up.
+  // Then the reel, whose code is the games': loaded once the title is up (never
+  // in a test build of one mode: it plays the others).
   const box = liveBox.value;
   const stage = reelStage.value;
-  if (!box || !stage) return;
+  if (!box || !stage || solo) return;
   reel = await createHomeReel(stage, TonePalette.fromElement(document.documentElement), {
     profile: reelProfile,
     dark: () => theme.resolved.value === 'dark',
@@ -209,8 +217,9 @@ onBeforeUnmount(() => {
     <canvas ref="sceneCanvas" class="home__scene" aria-hidden="true" />
     <div class="home__content">
       <!-- The two challenges side by side: the day's, and the week's Guardian. -->
-      <div class="challenges">
+      <div v-if="daily || guardianOpen" class="challenges">
         <button
+          v-if="daily"
           type="button"
           class="challenge"
           @click="emit('daily', daily, $event.currentTarget as Element)"
@@ -271,7 +280,7 @@ onBeforeUnmount(() => {
           </span>
           <span class="logo__kicker" aria-hidden="true">{{ LOGO[2].toUpperCase() }}</span>
         </h1>
-        <p class="tagline">{{ t('title.tagline') }}</p>
+        <p class="tagline">{{ solo ? t(`modes.${solo}.pitch`) : t('title.tagline') }}</p>
         <p v-if="edition.id === 'demo'" class="home__demo" role="note">
           <strong>{{ t('demo.title') }}</strong> {{ t('demo.banner') }}
         </p>
@@ -279,7 +288,7 @@ onBeforeUnmount(() => {
 
       <!-- Real games playing their best moments; the title says the rest. -->
       <div ref="liveBox" class="home__live" aria-hidden="true">
-        <div v-show="liveShown" class="reel__captions">
+        <div v-show="liveShown && !solo" class="reel__captions">
           <Transition name="reel-caption" mode="out-in">
             <p
               v-if="caption"

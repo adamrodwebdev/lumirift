@@ -12,6 +12,8 @@ import type { GameSession, SessionEventMap } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 
 const MODES: readonly ModeId[] = ['classic', 'sand', 'mosaic', 'tower'];
+/** Where the objectives are played: these modes, and a daily challenge. */
+const PLACE = { modes: MODES, daily: true };
 
 const report = (patch: Partial<GameReport> = {}): GameReport => ({
   modeId: 'classic',
@@ -81,14 +83,29 @@ describe('Experience', () => {
 
 describe('Objectives', () => {
   it('gives three objectives a day, one per tier, of different kinds, the same for all', () => {
-    const day = objectivesOfDay('20261012', MODES);
+    const day = objectivesOfDay('20261012', PLACE);
     expect(day.map((o) => o.tier)).toEqual(['easy', 'medium', 'hard']);
     expect(new Set(day.map((o) => o.kind)).size).toBe(3);
-    expect(objectivesOfDay('20261012', MODES)).toEqual(day);
+    expect(objectivesOfDay('20261012', PLACE)).toEqual(day);
     const week = Array.from({ length: 30 }, (_, i) =>
-      objectivesOfDay(`202611${String(i + 1).padStart(2, '0')}`, MODES),
+      objectivesOfDay(`202611${String(i + 1).padStart(2, '0')}`, PLACE),
     );
     expect(new Set(week.flat().map((o) => o.kind)).size).toBeGreaterThan(5);
+  });
+
+  it('asks a test build of one mode only what it can do: no daily challenge, no duel (1.37)', () => {
+    const solo = { modes: ['dunes'] as const, daily: false };
+    const days = Array.from({ length: 60 }, (_, i) =>
+      objectivesOfDay(
+        `2026${String(11 + Math.floor(i / 30)).padStart(2, '0')}${String((i % 30) + 1).padStart(2, '0')}`,
+        solo,
+      ),
+    ).flat();
+    expect(days.map((o) => o.kind)).not.toContain('daily');
+    expect(days.map((o) => o.kind)).not.toContain('duel');
+    const played = days.filter((o) => o.kind === 'playMode').map((o) => o.mode);
+    expect(played.length).toBeGreaterThan(0);
+    expect(new Set(played)).toEqual(new Set(['dunes']));
   });
 });
 
@@ -109,8 +126,8 @@ describe('Profile', () => {
   it('adds up the real play of every game, kept with the save (the ads’ grace reads it)', () => {
     const profile = new Profile();
     expect(profile.snapshot.playedMs).toBe(0);
-    profile.recordGame(report({ durationMs: 95_000 }), '20261026', MODES);
-    profile.recordGame(report({ durationMs: 30_500 }), '20261026', MODES);
+    profile.recordGame(report({ durationMs: 95_000 }), '20261026', PLACE);
+    profile.recordGame(report({ durationMs: 30_500 }), '20261026', PLACE);
     expect(profile.snapshot.playedMs).toBe(125_500);
     expect(Profile.parse(JSON.parse(JSON.stringify(profile.snapshot))).snapshot.playedMs).toBe(
       125_500,
@@ -123,9 +140,9 @@ describe('Profile', () => {
   it('earns experience and completes the objectives of the day', () => {
     const profile = new Profile();
     const day = '20261012';
-    const objectives = profile.objectivesFor(day, MODES);
+    const objectives = profile.objectivesFor(day, PLACE);
     expect(objectives).toHaveLength(3);
-    const progress = profile.recordGame(report(), day, MODES);
+    const progress = profile.recordGame(report(), day, PLACE);
     expect(progress.total).toBeGreaterThan(0);
     expect(profile.snapshot.games).toBe(1);
     expect(profile.snapshot.xp).toBe(progress.total);
@@ -136,7 +153,7 @@ describe('Profile', () => {
 
   it("doubles a game's experience once, for a watched rewarded ad", () => {
     const profile = new Profile();
-    const progress = profile.recordGame(report(), '20261012', MODES);
+    const progress = profile.recordGame(report(), '20261012', PLACE);
     const doubled = profile.doubleExperience(progress);
     expect(doubled.total).toBe(progress.total * 2);
     expect(doubled.xp.at(-1)).toEqual({ source: 'bonus', amount: progress.total });
@@ -155,7 +172,7 @@ describe('Profile', () => {
       completed += profile.recordGame(
         report({ daily: true, reason: 'victory', variant: 'expert' }),
         day,
-        MODES,
+        PLACE,
       ).completed.length;
     }
     expect(completed).toBeLessThanOrEqual(3);
@@ -166,7 +183,7 @@ describe('Profile', () => {
     const profile = new Profile();
     const daily = report({ daily: true });
     const bonus = (day: string) =>
-      profile.recordGame(daily, day, MODES).xp.some((line) => line.source === 'daily');
+      profile.recordGame(daily, day, PLACE).xp.some((line) => line.source === 'daily');
     expect(bonus('20261010')).toBe(true);
     expect(bonus('20261010')).toBe(false);
     expect(bonus('20261011')).toBe(true);
@@ -179,14 +196,14 @@ describe('Profile', () => {
     const profile = new Profile();
     const challenge = report({ guardian: true, modeId: 'sand' });
     const bonus = (day: string) =>
-      profile.recordGame(challenge, day, MODES).xp.find((line) => line.source === 'guardian')
+      profile.recordGame(challenge, day, PLACE).xp.find((line) => line.source === 'guardian')
         ?.amount ?? 0;
     expect(bonus('20261019')).toBe(GUARDIAN_XP);
     expect(bonus('20261019')).toBe(0);
     expect(bonus('20261020')).toBe(GUARDIAN_XP);
     // An ordinary game never pays it.
     expect(
-      profile.recordGame(report(), '20261021', MODES).xp.some((line) => line.source === 'guardian'),
+      profile.recordGame(report(), '20261021', PLACE).xp.some((line) => line.source === 'guardian'),
     ).toBe(false);
     const saved = Profile.parse(JSON.parse(JSON.stringify(profile.snapshot)));
     expect(saved.snapshot.guardianDay).toBe('20261020');
@@ -204,7 +221,7 @@ describe('Profile', () => {
           .recordGame(
             report({ durationMs: 400_000, clears: 40, lines: 60 }),
             `202610${10 + i}`,
-            MODES,
+            PLACE,
           )
           .unlocked.map((c) => c.id),
       );
@@ -222,7 +239,7 @@ describe('Profile', () => {
       profile.recordGame(
         report({ durationMs: 400_000, clears: 40, lines: 60 }),
         `202610${10 + i}`,
-        MODES,
+        PLACE,
       );
     const fresh = newCosmetics(profile.snapshot);
     expect(fresh.map((cosmetic) => cosmetic.id)).toContain('neon');
@@ -284,10 +301,10 @@ describe('Cosmetics', () => {
 describe('ProfileService', () => {
   it('saves every change on the device and reads it back', () => {
     const storage = new MemoryStorage();
-    const service = new ProfileService(storage, () => MODES);
+    const service = new ProfileService(storage, () => PLACE);
     service.recordGame(report(), '20261012');
     expect(storage.get(PROFILE_KEY)).toContain('"games":1');
-    const again = new ProfileService(storage, () => MODES);
+    const again = new ProfileService(storage, () => PLACE);
     expect(again.current.games).toBe(1);
     expect(again.current.xp).toBe(service.current.xp);
   });
@@ -295,13 +312,13 @@ describe('ProfileService', () => {
   it('remembers the looks the player has seen', () => {
     const storage = new MemoryStorage();
     storage.set(PROFILE_KEY, JSON.stringify({ xp: 300, seen: ['material.crystal'] }));
-    const service = new ProfileService(storage, () => MODES);
+    const service = new ProfileService(storage, () => PLACE);
     const fresh = newCosmetics(service.current);
     expect(fresh.map((cosmetic) => cosmetic.id)).toEqual(
       expect.arrayContaining(['neon', 'aurora']),
     );
     service.markSeen(fresh);
     expect(newCosmetics(service.current)).toEqual([]);
-    expect(newCosmetics(new ProfileService(storage, () => MODES).current)).toEqual([]);
+    expect(newCosmetics(new ProfileService(storage, () => PLACE).current)).toEqual([]);
   });
 });

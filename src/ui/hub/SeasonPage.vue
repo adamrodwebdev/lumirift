@@ -23,7 +23,16 @@ const emit = defineEmits<{ close: [] }>();
 
 const { t } = useI18n();
 const format = useFormat();
-const { seasons, profile, clock, audio } = useServices();
+const { seasons, profile, clock, audio, platform } = useServices();
+/**
+ * Where the week's element is dealt, in words: free games of Sand, or Dunes
+ * in its test build (1.37; its name takes a case in Russian, so a sentence each).
+ */
+const EVENT_WORDS = {
+  sand: { featured: 'events.featured', counts: 'events.inSand' },
+  dunes: { featured: 'events.featuredDunes', counts: 'events.inDunes' },
+} as const;
+const eventWords = EVENT_WORDS[platform.edition.solo === 'dunes' ? 'dunes' : 'sand'];
 const words = useSeasonText();
 const text = useProgressText();
 const titleId = useId();
@@ -205,7 +214,7 @@ const onKey = (event: KeyboardEvent) => {
                 </small>
               </span>
               <p class="season__featured">
-                {{ t(`events.featured.${week.event.element}`) }} {{ t('events.inSand') }}
+                {{ t(`${eventWords.featured}.${week.event.element}`) }} {{ t(eventWords.counts) }}
               </p>
             </div>
           </section>

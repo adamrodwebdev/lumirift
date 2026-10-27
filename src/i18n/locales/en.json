@@ -91,6 +91,10 @@
       "name": "Rift Race",
       "pitch": "Race the clock through the well, the Sand and the Tower: every line buys time, and every 40 s the Rift shifts.",
       "tagline": "Three worlds, one clock"
+    },
+    "dunes": {
+      "name": "Dunes",
+      "pitch": "Put sand down from your hand: link both walls with a single colour."
     }
   },
   "hud": {
@@ -128,7 +132,8 @@
     "best": "Record",
     "newBest": "New record!",
     "nextBeat": "Next beat",
-    "cycle": "Cycle"
+    "cycle": "Cycle",
+    "swaps": "Swaps"
   },
   "notice": {
     "closeCall": "Close call! +{value}",
@@ -226,7 +231,8 @@
       "tease": "Something stirs beneath the sand…"
     },
     "surge": "Rift surge: +{value}",
-    "continued": "Your move: nothing falls until you play."
+    "continued": "Your move: nothing falls until you play.",
+    "dunesGoal": "Level D-{value} cleared!"
   },
   "wellWords": {
     "combo": "COMBO ×{n}"
@@ -1023,6 +1029,60 @@
     "reward": "+{n} point | +{n} points",
     "done": "Goal reached: +{n} point | Goal reached: +{n} points",
     "label": "{week}, {left}: {goal} ({done} of {target}). {season}, tier {tier}: open the season.",
-    "goalDone": "Week’s goal reached! +{n} season point | Week’s goal reached! +{n} season points"
+    "goalDone": "Week’s goal reached! +{n} season point | Week’s goal reached! +{n} season points",
+    "featuredDunes": {
+      "water": "This week, Dunes deals water pieces more often, from the first level.",
+      "fire": "This week, Dunes deals fire pieces more often, from the first level.",
+      "oil": "This week, Dunes deals oil pieces more often, from the first level.",
+      "ice": "This week, Dunes deals ice pieces more often, from the first level.",
+      "lightning": "This week, Dunes deals lightning more often, from the first level.",
+      "seed": "This week, Dunes deals seeds more often, from the first level.",
+      "acid": "This week, Dunes deals acid more often, from the first level."
+    },
+    "inDunes": "It counts in every game of Dunes."
+  },
+  "dunes": {
+    "board": "Dunes board",
+    "hand": "Your three pieces",
+    "piece": "Piece {n}",
+    "cells": "{n} cell | {n} cells",
+    "empty": "Empty slot",
+    "stuckPiece": "fits nowhere",
+    "noRoom": "No room",
+    "fits": "Fits",
+    "onlyOne": "Only one piece fits",
+    "stuck": "No piece fits: swap your hand",
+    "swap": "Swap",
+    "swapsLeft": "{n} left",
+    "swapsNone": "none left",
+    "swapLabel": "Swap your hand ({n} left)",
+    "swapKey": "Swap the hand",
+    "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell.",
+    "level": "Level D-{n}",
+    "goal": {
+      "regions": "Clear {n} region | Clear {n} regions",
+      "score": "Score {n} point | Score {n} points"
+    },
+    "element": {
+      "water": "Water",
+      "fire": "Fire",
+      "oil": "Oil",
+      "ice": "Ice",
+      "lightning": "Lightning",
+      "seed": "Seed",
+      "acid": "Acid"
+    },
+    "tips": {
+      "opening": "Drop the piece on the glowing mark: its colour links both walls.",
+      "calm": "One of your three pieces always fits. No timer: take your time.",
+      "earnSwap": "Reach the next goal to earn a swap.",
+      "water": "Water fills the hollows, then sets in the colour around it.",
+      "fire": "Fire burns the colour it lands on.",
+      "oil": "Oil floats on water; fire sets it ablaze.",
+      "ice": "Ice holds still, freezes water and melts in fire.",
+      "lightning": "Lightning strikes down its column: aim at water for a shock.",
+      "seed": "Water a seed: it grows into a bridge of its colour.",
+      "acid": "Acid eats the sand under it."
+    }
   }
 }

@@ -135,7 +135,7 @@ describe('A boss level of the classic well', () => {
 
   it('gives the Rift ambiance to the player who defeats it', () => {
     const modes: readonly ModeId[] = ['classic'];
-    const service = new ProfileService(new MemoryStorage(), () => modes);
+    const service = new ProfileService(new MemoryStorage(), () => ({ modes, daily: true }));
     const progress = service.recordGame(
       {
         modeId: 'classic',

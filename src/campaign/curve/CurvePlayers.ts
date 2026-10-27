@@ -1,3 +1,4 @@
+import { DunesSession } from '@/families/dunes';
 import { DuelSession, FallingSession } from '@/families/falling';
 import { AiPlayer } from '@/families/falling/ai/AiPlayer';
 import { SilhouetteAiPlayer } from '@/families/falling/ai/SilhouetteAiPlayer';
@@ -7,6 +8,7 @@ import { SandSession } from '@/families/sand';
 import type { GameSession } from '@/session/GameSession';
 import type { FamilyId, ModeId } from '@/session/ModeId';
 import type { CurvePlayerFactory, CurveSeat } from './CurvePlayer';
+import { DUNES_SKILLS, DunesCurvePlayer } from './DunesCurvePlayer';
 import { FALLING_SKILLS, FallingCurvePlayer } from './FallingCurvePlayer';
 import { bigClearValue, clearValue } from './MosaicChoice';
 import { MOSAIC_SKILLS, MosaicCurvePlayer } from './MosaicCurvePlayer';
@@ -67,5 +69,9 @@ export const CURVE_PLAYERS: Readonly<Record<FamilyId, CurvePlayerFactory>> = {
     return new RaceCurvePlayer(session, (world) =>
       CURVE_PLAYERS[world.family]({ session: world, skill, random, goal: null }),
     );
+  },
+  dunes: ({ session, skill, random }) => {
+    if (!(session instanceof DunesSession)) throw new Error(`"${session.modeId}" is not Dunes`);
+    return new DunesCurvePlayer(session, DUNES_SKILLS[skill], random);
   },
 };

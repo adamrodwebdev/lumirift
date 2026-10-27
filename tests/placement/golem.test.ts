@@ -169,7 +169,7 @@ describe('A boss level of Mosaic', () => {
 
   it('gives its Kintsugi to the player who defeats it', () => {
     const modes: readonly ModeId[] = ['mosaic'];
-    const service = new ProfileService(new MemoryStorage(), () => modes);
+    const service = new ProfileService(new MemoryStorage(), () => ({ modes, daily: true }));
     const progress = service.recordGame(
       {
         modeId: 'mosaic',

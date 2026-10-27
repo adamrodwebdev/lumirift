@@ -10,7 +10,10 @@ const look = (kind: CosmeticKind, id: string) =>
 
 describe('WornLook', () => {
   it('wears a look tried for an ad for one game, then the player’s own again', () => {
-    const profile = new ProfileService(new MemoryStorage(), () => MODE_IDS);
+    const profile = new ProfileService(new MemoryStorage(), () => ({
+      modes: MODE_IDS,
+      daily: true,
+    }));
     const worn = new WornLook(profile);
     expect(worn.current.value.ambiance).toBe('night');
 
@@ -27,7 +30,10 @@ describe('WornLook', () => {
   });
 
   it('ends a worn trial when the game screen is left, never one not worn yet', () => {
-    const profile = new ProfileService(new MemoryStorage(), () => MODE_IDS);
+    const profile = new ProfileService(new MemoryStorage(), () => ({
+      modes: MODE_IDS,
+      daily: true,
+    }));
     const worn = new WornLook(profile);
     worn.tryOn(look('material', 'neon'));
     worn.gameLeft();

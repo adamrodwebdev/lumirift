@@ -1,5 +1,5 @@
 import type { KeyValueStorage } from '@/services/KeyValueStorage';
-import { FULL_EDITION } from '../Edition';
+import { FULL_EDITION, type Edition } from '../Edition';
 import type { AdHooks, Platform } from '../Platform';
 import { SAVED_KEYS } from '../savedKeys';
 
@@ -119,7 +119,6 @@ export class BridgeStorage implements KeyValueStorage {
  */
 export class PlaygamaPlatform implements Platform {
   readonly id = 'playgama';
-  readonly edition = FULL_EDITION;
   /** A new player plays the training before any menu (the user's rule for portals). */
   readonly firstRun = 'training';
   // Playgama forbids links to other sites (and returns false for them).
@@ -148,6 +147,8 @@ export class PlaygamaPlatform implements Platform {
   private constructor(
     private readonly bridge: PlaygamaBridge | null,
     readonly storage: BridgeStorage,
+    /** The whole game, or one mode alone (a sandbox test build, 1.37). */
+    readonly edition: Edition,
   ) {
     this.locale = bridge?.platform.language || null;
     this.audioEnabled = bridge?.platform.isAudioEnabled ?? true;
@@ -183,6 +184,7 @@ export class PlaygamaPlatform implements Platform {
 
   static async create(
     bridge: PlaygamaBridge | null = typeof window === 'undefined' ? null : (window.bridge ?? null),
+    edition: Edition = FULL_EDITION,
   ): Promise<PlaygamaPlatform> {
     let sdk = bridge;
     if (sdk) {
@@ -192,7 +194,7 @@ export class PlaygamaPlatform implements Platform {
         sdk = null;
       }
     }
-    return new PlaygamaPlatform(sdk, await BridgeStorage.load(sdk));
+    return new PlaygamaPlatform(sdk, await BridgeStorage.load(sdk), edition);
   }
 
   get muted(): boolean {

@@ -40,3 +40,10 @@ export class SandPiece {
     return new SandPiece(this.type, this.tone, this.x, this.y, rotation);
   }
 }
+
+/**
+ * A piece of sand where it crumbles, whatever its game: the falling piece
+ * as it locks, or a piece of Dunes put down (1.37). What the effects and the
+ * sounds of a landing need.
+ */
+export type LandedPiece = Pick<SandPiece, 'tone' | 'x' | 'y' | 'localCells'>;

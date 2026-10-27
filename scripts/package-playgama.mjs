@@ -1,13 +1,23 @@
 // Builds the Playgama version, checks it against the platform's measurable
 // requirements (and its partners'), and zips it for upload.
 // Usage: npm run package:playgama   →  release/lumirift-playgama-<version>.zip
+// A sandbox test build of one mode alone (1.37): `--solo dunes` or `--solo sand`
+//   →  release/lumirift-playgama-dunes-<version>.zip (npm run package:playgama-dunes).
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
-const OUT = 'dist-playgama';
+const SOLOS = ['dunes', 'sand'];
+const soloAt = process.argv.indexOf('--solo');
+const solo = soloAt >= 0 ? process.argv[soloAt + 1] : null;
+if (solo !== null && !SOLOS.includes(solo)) {
+  console.error(`✗ --solo takes one of: ${SOLOS.join(', ')}`);
+  process.exit(1);
+}
+const MODE = solo ? `playgama-${solo}` : 'playgama';
+const OUT = `dist-${MODE}`;
 const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
-const ZIP = join('release', `lumirift-playgama-${version}.zip`);
+const ZIP = join('release', `lumirift-${MODE}-${version}.zip`);
 const MB = 1024 * 1024;
 /** The only external file a Playgama build may load. */
 const BRIDGE = 'https://bridge.playgama.com/v2/stable/playgama-bridge.js';
@@ -24,7 +34,7 @@ const SITE_ONLY = [
 
 const run = (command, args) => execFileSync(command, args, { stdio: 'inherit', shell: true });
 
-run('npx', ['vite', 'build', '--mode', 'playgama']);
+run('npx', ['vite', 'build', '--mode', MODE]);
 for (const file of SITE_ONLY) rmSync(join(OUT, file), { force: true });
 
 const files = [];

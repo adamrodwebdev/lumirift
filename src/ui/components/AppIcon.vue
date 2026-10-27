@@ -30,6 +30,8 @@ const PATHS = {
   play: 'M8 5l11 7-11 7z',
   back: 'M10 6l-6 6 6 6M4 12h16',
   restart: 'M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5',
+  // Two arrows passing each other: Dunes' swap of the hand (1.37).
+  swap: 'M4 8h15l-4-4M20 16H5l4 4',
   bomb: 'M11 21a7 7 0 1 1 0-14 7 7 0 0 1 0 14zM15.5 8.5L18 6M17 3l1 2M20 6l2-1M19 9l2 1',
   undo: 'M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',
   cube: 'M5 5h14v14H5z',

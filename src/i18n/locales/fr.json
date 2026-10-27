@@ -91,6 +91,10 @@
       "name": "Course de la faille",
       "pitch": "Courez contre la montre dans le puits, le sable et la tour : chaque ligne rapporte du temps, et la faille change de monde toutes les 40 s.",
       "tagline": "Trois mondes, un seul chrono"
+    },
+    "dunes": {
+      "name": "Dunes",
+      "pitch": "Posez le sable de votre main : reliez les deux murs d’une même couleur."
     }
   },
   "hud": {
@@ -128,7 +132,8 @@
     "best": "Record",
     "newBest": "Nouveau record !",
     "nextBeat": "Prochain battement",
-    "cycle": "Cycle"
+    "cycle": "Cycle",
+    "swaps": "Échanges"
   },
   "notice": {
     "closeCall": "De justesse ! +{value}",
@@ -226,7 +231,8 @@
       "tease": "Quelque chose bouge sous le sable…"
     },
     "surge": "Surcharge : +{value}",
-    "continued": "À vous : rien ne tombe avant votre geste."
+    "continued": "À vous : rien ne tombe avant votre geste.",
+    "dunesGoal": "Niveau D-{value} réussi !"
   },
   "wellWords": {
     "combo": "COMBO ×{n}"
@@ -1023,6 +1029,60 @@
     "reward": "+{n} point | +{n} points",
     "done": "Objectif atteint : +{n} point | Objectif atteint : +{n} points",
     "label": "{week}, {left} : {goal} ({done} sur {target}). {season}, palier {tier} : ouvrir la saison.",
-    "goalDone": "Objectif de la semaine atteint ! +{n} point de saison | Objectif de la semaine atteint ! +{n} points de saison"
+    "goalDone": "Objectif de la semaine atteint ! +{n} point de saison | Objectif de la semaine atteint ! +{n} points de saison",
+    "featuredDunes": {
+      "water": "Cette semaine, les Dunes donnent plus souvent des pièces d’eau, dès le premier niveau.",
+      "fire": "Cette semaine, les Dunes donnent plus souvent des pièces de feu, dès le premier niveau.",
+      "oil": "Cette semaine, les Dunes donnent plus souvent des pièces d’huile, dès le premier niveau.",
+      "ice": "Cette semaine, les Dunes donnent plus souvent des pièces de glace, dès le premier niveau.",
+      "lightning": "Cette semaine, les Dunes donnent plus souvent la foudre, dès le premier niveau.",
+      "seed": "Cette semaine, les Dunes donnent plus souvent des graines, dès le premier niveau.",
+      "acid": "Cette semaine, les Dunes donnent plus souvent de l’acide, dès le premier niveau."
+    },
+    "inDunes": "Toutes les parties des Dunes comptent."
+  },
+  "dunes": {
+    "board": "Plateau des Dunes",
+    "hand": "Vos trois pièces",
+    "piece": "Pièce {n}",
+    "cells": "{n} case | {n} cases",
+    "empty": "Emplacement vide",
+    "stuckPiece": "ne rentre nulle part",
+    "noRoom": "Bloquée",
+    "fits": "Ça rentre",
+    "onlyOne": "Une seule pièce rentre",
+    "stuck": "Aucune pièce ne rentre : échangez votre main",
+    "swap": "Échanger",
+    "swapsLeft": "{n} restant | {n} restants",
+    "swapsNone": "aucun",
+    "swapLabel": "Échanger votre main ({n} restant) | Échanger votre main ({n} restants)",
+    "swapKey": "Échanger la main",
+    "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case.",
+    "level": "Niveau D-{n}",
+    "goal": {
+      "regions": "Effacez {n} zone | Effacez {n} zones",
+      "score": "Marquez {n} point | Marquez {n} points"
+    },
+    "element": {
+      "water": "Eau",
+      "fire": "Feu",
+      "oil": "Huile",
+      "ice": "Glace",
+      "lightning": "Foudre",
+      "seed": "Graine",
+      "acid": "Acide"
+    },
+    "tips": {
+      "opening": "Posez la pièce sur la marque qui brille : sa couleur relie les deux murs.",
+      "calm": "Une de vos trois pièces rentre toujours. Pas de chrono : prenez votre temps.",
+      "earnSwap": "Atteignez l’objectif suivant pour gagner un échange.",
+      "water": "L’eau remplit les creux, puis prend la couleur qui l’entoure.",
+      "fire": "Le feu brûle la couleur sur laquelle il tombe.",
+      "oil": "L’huile flotte sur l’eau ; le feu l’embrase.",
+      "ice": "La glace tient bon, gèle l’eau et fond au feu.",
+      "lightning": "La foudre frappe sa colonne : visez l’eau pour électrocuter.",
+      "seed": "Arrosez une graine : elle pousse en pont de sa couleur.",
+      "acid": "L’acide ronge le sable dessous."
+    }
   }
 }

@@ -22,7 +22,7 @@ import PlayerChip from '../components/PlayerChip.vue';
 import AtelierPage from '../hub/AtelierPage.vue';
 import DailyGiftDialog from '../hub/DailyGiftDialog.vue';
 import HomePage from '../hub/HomePage.vue';
-import { HUB_ICONS, HUB_PAGES, type HubPage } from '../hub/hubPages';
+import { HUB_ICONS, hubPagesOf, type HubPage } from '../hub/hubPages';
 import MapPage from '../hub/MapPage.vue';
 import ModesPage from '../hub/ModesPage.vue';
 import { useSwipe } from '../hub/useSwipe';
@@ -50,7 +50,11 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const format = useFormat();
-const { settings, campaign, profile, gifts, seasons } = useServices();
+const { settings, campaign, profile, gifts, seasons, platform } = useServices();
+/** The menu's pages: all four, or a test build's home and Atelier (1.37). */
+const HUB_PAGES = hubPagesOf(platform.edition);
+/** A test build of one mode shows no campaign: no stars to count. */
+const campaignShown = HUB_PAGES.includes('map');
 /** The season's page loads when it first opens (1.36). */
 const SeasonPage = defineAsyncComponent(() => import('../hub/SeasonPage.vue'));
 const landscape = useLandscape();
@@ -61,6 +65,8 @@ const go = (target: number) => {
   const next = HUB_PAGES[Math.min(HUB_PAGES.length - 1, Math.max(0, target))];
   if (next) page.value = next;
 };
+/** To a page by its name (the player's chip opens the Atelier, the stars the map). */
+const goTo = (id: HubPage) => go(HUB_PAGES.indexOf(id));
 
 // --- The season's page (1.36), over the pages, from the week's event ---------
 
@@ -221,14 +227,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="hub" :class="{ 'hub--rising': rising }">
+  <div class="hub" :class="{ 'hub--rising': rising }" :style="{ '--pages': HUB_PAGES.length }">
     <header class="hub__top">
-      <PlayerChip @atelier="go(3)" />
+      <PlayerChip @atelier="goTo('atelier')" />
       <button
+        v-if="campaignShown"
         type="button"
         class="stars"
         :aria-label="t('hub.stars', { n: stars, max: MAX_STARS })"
-        @click="go(2)"
+        @click="goTo('map')"
       >
         <AppIcon name="star" :size="18" />
         <span>{{ format.number(stars) }}</span>
@@ -274,18 +281,20 @@ onMounted(() => {
           @season="openSeason"
         />
         <section v-else v-bind="panel('home')" class="page" />
-        <ModesPage
-          v-if="built.has('modes')"
-          v-bind="panel('modes')"
-          @play="(modeId, variant, origin) => emit('play', modeId, variant, origin)"
-        />
-        <section v-else v-bind="panel('modes')" class="page" />
-        <MapPage
-          v-if="built.has('map')"
-          v-bind="panel('map')"
-          @play="(level, origin) => emit('level', level, origin)"
-        />
-        <section v-else v-bind="panel('map')" class="page" />
+        <template v-if="campaignShown">
+          <ModesPage
+            v-if="built.has('modes')"
+            v-bind="panel('modes')"
+            @play="(modeId, variant, origin) => emit('play', modeId, variant, origin)"
+          />
+          <section v-else v-bind="panel('modes')" class="page" />
+          <MapPage
+            v-if="built.has('map')"
+            v-bind="panel('map')"
+            @play="(level, origin) => emit('level', level, origin)"
+          />
+          <section v-else v-bind="panel('map')" class="page" />
+        </template>
         <AtelierPage
           v-if="built.has('atelier')"
           v-bind="panel('atelier')"
@@ -422,14 +431,14 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   display: flex;
-  width: 400%;
-  transform: translate3d(calc(var(--index) * -25% + var(--drag)), 0, 0);
+  width: calc(var(--pages) * 100%);
+  transform: translate3d(calc(var(--index) * -100% / var(--pages) + var(--drag)), 0, 0);
   transition: transform 420ms var(--ease-out);
   will-change: transform;
 }
 
 .hub__track > * {
-  flex: 0 0 25%;
+  flex: 0 0 calc(100% / var(--pages));
 }
 
 .hub__track--dragging,
@@ -449,7 +458,7 @@ onMounted(() => {
 .tabs {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--pages), minmax(0, 1fr));
   gap: var(--space-1);
   height: 4rem;
   padding: var(--space-1);
@@ -467,7 +476,7 @@ onMounted(() => {
   top: var(--space-1);
   bottom: var(--space-1);
   left: var(--space-1);
-  width: calc((100% - 5 * var(--space-1)) / 4);
+  width: calc((100% - (var(--pages) + 1) * var(--space-1)) / var(--pages));
   border-radius: 1.125rem;
   background: linear-gradient(
     180deg,
@@ -593,7 +602,7 @@ onMounted(() => {
 
   .tabs {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(var(--pages), minmax(0, 1fr));
     width: 4.875rem;
     height: min(100%, 20rem);
   }
@@ -602,7 +611,7 @@ onMounted(() => {
     right: var(--space-1);
     bottom: auto;
     width: auto;
-    height: calc((100% - 5 * var(--space-1)) / 4);
+    height: calc((100% - (var(--pages) + 1) * var(--space-1)) / var(--pages));
     transform: translate3d(0, calc(var(--position) * (100% + var(--space-1))), 0);
   }
 }

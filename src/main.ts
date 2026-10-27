@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import { APP_SERVICES, createBrowserServices } from './app/AppServices';
+import { firstGameOf } from './app/firstGame';
 import { createPlatform } from './platform/createPlatform';
 import { createAppI18n } from './i18n';
 import { preloadStage } from './ui/stages';
@@ -19,13 +20,14 @@ const services = createBrowserServices(platform);
 // The messages of the player's language only (fetched early by the page itself).
 const i18n = await createAppI18n(services.settings.current.locale);
 
-// A new player on a portal starts straight in the training (App.vue): its game,
+// A new player on a portal starts straight in a game (App.vue): its game,
 // family and stage download now, behind the title card, never over a blank screen.
-if (platform.firstRun === 'training' && services.profile.needsTraining) {
+const firstGame = firstGameOf(platform, services.profile.needsTraining);
+if (firstGame) {
   await Promise.all([
     import('./ui/screens/GameScreen.vue'),
-    services.catalog.preload('sand'),
-    preloadStage(services.catalog.get('sand')),
+    services.catalog.preload(firstGame.modeId),
+    preloadStage(services.catalog.get(firstGame.modeId)),
   ]);
 }
 createApp(App).provide(APP_SERVICES, services).use(i18n).mount('#app');

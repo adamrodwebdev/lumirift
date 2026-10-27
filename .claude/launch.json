@@ -20,6 +20,26 @@
       "port": 5176
     },
     {
+      "name": "lumirift-dunes",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--mode", "dunes", "--port", "5177", "--strictPort"],
+      "port": 5177
+    },
+    {
+      "name": "lumirift-playgama-dunes",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "preview",
+        "--mode",
+        "playgama-dunes",
+        "--port",
+        "4182",
+        "--strictPort"
+      ],
+      "port": 4182
+    },
+    {
       "name": "lumirift-crazygames",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["vite", "preview", "--mode", "crazygames", "--port", "4180", "--strictPort"],

@@ -123,7 +123,7 @@ describe('A boss level of Sand', () => {
 
   it('remembers the defeated Guardian and gives its cosmetic', () => {
     const modes: readonly ModeId[] = ['sand'];
-    const service = new ProfileService(new MemoryStorage(), () => modes);
+    const service = new ProfileService(new MemoryStorage(), () => ({ modes, daily: true }));
     const progress = service.recordGame(
       {
         modeId: 'sand',

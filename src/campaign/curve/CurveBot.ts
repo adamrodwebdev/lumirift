@@ -1,4 +1,5 @@
 import { SeededRandom } from '@/core/Random';
+import { createDunesSession } from '@/families/dunes';
 import { createFallingSession } from '@/families/falling';
 import { createPlacementSession } from '@/families/placement';
 import { createRaceSession } from '@/families/race';
@@ -107,6 +108,7 @@ const SESSIONS: Readonly<Record<FamilyId, SessionFactory>> = {
   placement: createPlacementSession,
   volume: createVolumeSession,
   rift: createRaceSession,
+  dunes: createDunesSession,
 };
 
 /** The bot with the real games and players, playing on `today` with a regular's upgrades. */

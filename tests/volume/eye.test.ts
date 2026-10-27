@@ -148,7 +148,7 @@ describe('A boss level of the Tower', () => {
 
   it('gives its Iris shards to the player who defeats it', () => {
     const modes: readonly ModeId[] = ['tower'];
-    const service = new ProfileService(new MemoryStorage(), () => modes);
+    const service = new ProfileService(new MemoryStorage(), () => ({ modes, daily: true }));
     const progress = service.recordGame(
       {
         modeId: 'tower',

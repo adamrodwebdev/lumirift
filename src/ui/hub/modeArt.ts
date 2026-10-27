@@ -306,6 +306,16 @@ export const MODE_ART: Readonly<Record<ModeId, readonly ArtShape[]>> = {
       [6, 3],
     ]),
   ],
+  // Dunes (1.37): layers of settled sand, a pair put down over them, crumbling.
+  dunes: [
+    path('M12 72 Q34 58 56 66 T110 62 V72 Z', 10),
+    path('M12 62 Q40 50 66 56 T110 52', 8),
+    blocks(8, [
+      [5, 2],
+      [6, 2],
+    ]),
+    path('M54 32 L52 40 M62 32 L63 41 M70 32 L72 39', 8, true),
+  ],
   // The race's clock, its hand near the top, over the three worlds it turns through.
   race: [
     { kind: 'ellipse', cx: 60, cy: 30, rx: 22, ry: 22 },

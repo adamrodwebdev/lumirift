@@ -4,10 +4,10 @@ import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePoo
 import { ScreenShake } from '@/fx/ScreenShake';
 import { shade, type TonePalette } from '@/render/TonePalette';
 import type { WormEvent } from '../engine/DuneWorm';
-import type { GrainSample, SandEventMap } from '../engine/SandGame';
-import type { SandPiece } from '../engine/SandPiece';
+import type { GrainSample, SandEventMap, SandEventSource } from '../engine/SandGame';
+import type { LandedPiece } from '../engine/SandPiece';
 import { GRAINS_PER_CELL, SAND_TONES } from '../engine/SandGrid';
-import type { SandSession, SandView } from '../SandSession';
+import type { SandView } from '../SandSession';
 
 const POPUP_MS = 900;
 const GRAVITY = 500;
@@ -72,7 +72,7 @@ export class SandEffects {
     return this.profile().motion;
   }
 
-  attach(session: SandSession): () => void {
+  attach(session: SandEventSource): () => void {
     const offs = [
       session.onGame('clear', ({ samples, points, regions, multiplier }) =>
         this.onClear(samples, points, regions, multiplier),
@@ -367,7 +367,7 @@ export class SandEffects {
     }
   }
 
-  private onLock(piece: SandPiece): void {
+  private onLock(piece: LandedPiece): void {
     if (piece.tone === Tone.Lightning) return;
     if (this.profile().particles === 0) return;
     const color = this.toneColor(piece.tone, 0.4);

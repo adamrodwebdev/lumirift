@@ -13,9 +13,11 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
 };
 
 // Relative base: the build can be served from any sub-folder or game portal.
-// `--mode crazygames` builds the CrazyGames version into dist-crazygames/.
+// `--mode crazygames` builds the CrazyGames version into dist-crazygames/; a
+// test build of one mode alone (1.37), `--mode playgama-dunes`, into dist-playgama-dunes/.
 export default defineConfig(({ mode }) => {
-  const platform = loadEnv(mode, process.cwd(), 'VITE_').VITE_PLATFORM;
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  const platform = env.VITE_PLATFORM;
   return {
     base: './',
     define: { __APP_VERSION__: JSON.stringify(pkg.version) },
@@ -40,7 +42,7 @@ export default defineConfig(({ mode }) => {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },
     build: {
-      outDir: platform ? `dist-${platform}` : 'dist',
+      outDir: ['dist', platform, env.VITE_SOLO].filter(Boolean).join('-'),
       target: 'es2022',
       cssCodeSplit: true,
       reportCompressedSize: true,

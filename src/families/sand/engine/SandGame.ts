@@ -1,4 +1,4 @@
-import { Emitter } from '@/core/Emitter';
+import { Emitter, type Listener } from '@/core/Emitter';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import { ComboGauge, type ComboView } from '@/session/ComboGauge';
 import { Mercy } from '@/session/Mercy';
@@ -19,7 +19,7 @@ import {
   type ScriptedPiece,
 } from './SandDealer';
 import { GRAINS_PER_CELL, SandGrid } from './SandGrid';
-import { SandPiece } from './SandPiece';
+import { SandPiece, type LandedPiece } from './SandPiece';
 import {
   FIRE_MAX_GRAINS,
   SandReactions,
@@ -62,7 +62,7 @@ export interface SandEventMap {
   move: { readonly piece: SandPiece };
   rotate: { readonly piece: SandPiece };
   hardDrop: { readonly piece: SandPiece; readonly distance: number };
-  lock: { readonly piece: SandPiece };
+  lock: { readonly piece: LandedPiece };
   /** Regions of one colour linking the walls vanished; `regions` at once. */
   clear: {
     readonly regions: number;
@@ -117,6 +117,14 @@ export interface SandEventMap {
   /** The next chapter's Guardian passes under the sand (the campaign's teaser). */
   tease: Readonly<Record<string, never>>;
   over: { readonly reason: SandOverReason };
+}
+
+/**
+ * Anything that publishes the events of a game of grains: what the Sand's
+ * effects and sounds listen to (a game of Sand, or of Dunes, 1.37).
+ */
+export interface SandEventSource {
+  onGame<K extends keyof SandEventMap>(type: K, listener: Listener<SandEventMap[K]>): () => void;
 }
 
 export interface SandOptions {
