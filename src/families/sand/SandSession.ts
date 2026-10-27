@@ -25,13 +25,14 @@ import { SandGuide } from './SandGuide';
  * games: fire's burns and lightning's bolts have events of their own; seeds
  * sprouting and acid eating a grain are reactions. Water and oil meet fire
  * too rarely (under once a game), and ice freezes water only for those who
- * aim it (a newcomer took six times as long): pouring one counts.
+ * aim it (a newcomer took six times as long): pouring one counts. Dunes
+ * counts the same deeds (1.37).
  */
-const DEED_OF: Readonly<Partial<Record<ReactionKind, ElementName>>> = {
+export const DEED_OF: Readonly<Partial<Record<ReactionKind, ElementName>>> = {
   sprout: 'seed',
   dissolve: 'acid',
 };
-const POURED: Readonly<Partial<Record<Tone, ElementName>>> = {
+export const POURED: Readonly<Partial<Record<Tone, ElementName>>> = {
   [Tone.Water]: 'water',
   [Tone.Oil]: 'oil',
   [Tone.Ice]: 'ice',

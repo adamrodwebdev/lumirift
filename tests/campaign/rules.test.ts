@@ -69,7 +69,7 @@ describe('rules out of the interface', () => {
         bestCombo: 1,
       },
       day,
-      ['tower'],
+      { modes: ['tower'], daily: true },
     );
     expect(guardianBonusOpen(profile.snapshot, day)).toBe(false);
     expect(guardianBonusOpen(profile.snapshot, dayKey(new Date(2026, 9, 23)))).toBe(true);

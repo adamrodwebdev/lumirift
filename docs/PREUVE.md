@@ -60,3 +60,31 @@ Une ligne par session, remplie pendant qu'elle se déroule.
 - Aucune plainte sur les pubs dans les dix sessions.
 
 Une porte qui échoue fait reprendre la fonction une fois, ou l'abandonner ; jamais la forcer.
+
+## 4. Le test des Dunes (1.37)
+
+Sans traceur, deux jeux du bac à sable de Playgama comparés sur leurs tableaux de bord : Dunes
+seul et le Sable seul (voir [PLAYGAMA.md](PLAYGAMA.md)), les mêmes covers.
+
+**Décision du 27/10/2026 : aucune dépense avant que le jeu rapporte.** Le test ne s'achète pas
+(les 300 $ de trafic prévus sont abandonnés) : on investira les bénéfices, on ne dépense pas
+sans solde. Le test se joue sur des parties gratuites :
+
+- les dix sessions d'inconnus, sur **chacune** des deux versions (la grille de la section 2,
+  plus le temps joué et le passage des 3 minutes) ;
+- les parties que les deux jeux du bac à sable reçoivent sans achat (le lien partagé par
+  l'utilisateur, s'il le souhaite) ;
+- le test payant (environ 1 000 parties de chacun) attend les premiers revenus.
+
+- **Porte** : les Dunes battent le Sable en temps de jeu moyen **et** en part des sessions de
+  plus de 3 minutes, sur les sessions d'inconnus et les parties gratuites ; avec si peu de
+  parties, le verdict reste provisoire, et le test payant le confirmera quand le jeu
+  rapportera.
+- **Lecture** : une ligne par jeu dans la feuille de mesures (parties, temps moyen, sessions
+  au-delà de 3 minutes, jour du relevé). Ne comparer que des chiffres pris le même jour, après
+  le même trafic : un bac à sable fait la moyenne de toutes ses parties depuis le début.
+- **Si le tableau de bord ne donne pas les sessions de plus de 3 minutes**, le dire avant de
+  conclure : la porte ne se juge alors que sur le temps moyen, et les dix sessions d'inconnus
+  disent le reste.
+- **Après** : si la porte passe, les Dunes mènent la version des magasins et rejoignent
+  l'entraînement ; sinon elles sont retirées (leur dossier `families/dunes` et leurs entrées).

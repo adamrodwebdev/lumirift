@@ -90,7 +90,6 @@ export interface Platform {
 /** Our own site: no portal, nothing to report, no ads. */
 export class WebPlatform implements Platform {
   readonly id: PlatformId = 'web';
-  readonly edition: Edition = FULL_EDITION;
   readonly firstRun: FirstRun = 'title';
   readonly allowsExternalLinks = true;
   /** On our own site, Escape closes a window, as everywhere on the web. */
@@ -101,6 +100,9 @@ export class WebPlatform implements Platform {
   readonly locale = null;
   readonly storage = null;
   readonly muted = false;
+
+  /** The whole game, or one mode alone (a test build, 1.37). */
+  constructor(readonly edition: Edition = FULL_EDITION) {}
 
   onMuteChange(): () => void {
     return () => undefined;
@@ -135,5 +137,8 @@ export class WebPlatform implements Platform {
  */
 export class DemoPlatform extends WebPlatform {
   override readonly id: PlatformId = 'demo';
-  override readonly edition: Edition = DEMO_EDITION;
+
+  constructor() {
+    super(DEMO_EDITION);
+  }
 }

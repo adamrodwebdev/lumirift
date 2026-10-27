@@ -3,6 +3,9 @@ dist/
 dist-crazygames/
 dist-demo/
 dist-playgama/
+dist-playgama-dunes/
+dist-playgama-sand/
+dist-dunes/
 dist-yandex/
 release/
 coverage/

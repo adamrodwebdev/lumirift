@@ -12,24 +12,26 @@ import type { SandView } from '../SandSession';
 /**
  * Each colour of sand has its own texture, so colour never carries the
  * information alone: a checkerboard, horizontal stripes, vertical stripes, dots.
+ * Dunes' hand draws its pieces with them too (1.37).
  */
-const TEXTURES: Readonly<Partial<Record<Tone, (x: number, y: number, frame: number) => boolean>>> =
-  {
-    [Tone.ChromaA]: (x, y) => ((x + y) & 1) === 0,
-    [Tone.ChromaB]: (_x, y) => y % 3 === 0,
-    [Tone.ChromaC]: (x) => x % 3 === 0,
-    [Tone.ChromaD]: (x, y) => x % 3 === 1 && y % 3 === 1,
-    [Tone.Water]: (x, y, frame) => (x + y + (frame >> 2)) % 4 === 0,
-    [Tone.Fire]: (x, y, frame) => (x * 7 + y * 13 + frame) % 5 === 0,
-    // Oil: a slow sheen; ice: a still crystal mesh; seeds: specks; acid: bubbling;
-    // the blaze flickers fast; lightning crackles.
-    [Tone.Oil]: (x, y, frame) => (x * 2 + y + (frame >> 4)) % 7 === 0,
-    [Tone.Ice]: (x, y) => (x + y) % 4 === 0 || (x - y + 64) % 4 === 0,
-    [Tone.Seed]: (x, y) => (x * 3 + y * 5) % 7 === 0,
-    [Tone.Acid]: (x, y, frame) => (x * 5 + y * 11 + (frame >> 1)) % 6 === 0,
-    [Tone.Blaze]: (x, y, frame) => (x * 7 + y * 3 + frame * 3) % 4 === 0,
-    [Tone.Lightning]: (x, y, frame) => (x * 3 + y * 7 + frame * 5) % 4 !== 0,
-  };
+export const TEXTURES: Readonly<
+  Partial<Record<Tone, (x: number, y: number, frame: number) => boolean>>
+> = {
+  [Tone.ChromaA]: (x, y) => ((x + y) & 1) === 0,
+  [Tone.ChromaB]: (_x, y) => y % 3 === 0,
+  [Tone.ChromaC]: (x) => x % 3 === 0,
+  [Tone.ChromaD]: (x, y) => x % 3 === 1 && y % 3 === 1,
+  [Tone.Water]: (x, y, frame) => (x + y + (frame >> 2)) % 4 === 0,
+  [Tone.Fire]: (x, y, frame) => (x * 7 + y * 13 + frame) % 5 === 0,
+  // Oil: a slow sheen; ice: a still crystal mesh; seeds: specks; acid: bubbling;
+  // the blaze flickers fast; lightning crackles.
+  [Tone.Oil]: (x, y, frame) => (x * 2 + y + (frame >> 4)) % 7 === 0,
+  [Tone.Ice]: (x, y) => (x + y) % 4 === 0 || (x - y + 64) % 4 === 0,
+  [Tone.Seed]: (x, y) => (x * 3 + y * 5) % 7 === 0,
+  [Tone.Acid]: (x, y, frame) => (x * 5 + y * 11 + (frame >> 1)) % 6 === 0,
+  [Tone.Blaze]: (x, y, frame) => (x * 7 + y * 3 + frame * 3) % 4 === 0,
+  [Tone.Lightning]: (x, y, frame) => (x * 3 + y * 7 + frame * 5) % 4 !== 0,
+};
 /** A vine (sand that holds still) shows leaf-like diagonal veins over its colour. */
 const VINE_TEXTURE = (x: number, y: number) => (x + 2 * y) % 5 === 0;
 /**

@@ -1753,7 +1753,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 16  | Accroche et courbe (1.33) : entraînement 2.0, bot de courbe, clémence                                      | Livré (1.33)                                                 |
 | 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Livré (1.35)                                                 |
 | 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Livré (1.36)                                                 |
-| 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Prévu                                                        |
+| 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Livré (1.37), en test                                        |
 | 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
 | 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
 | 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
@@ -1909,6 +1909,37 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
   gagnés en jouant ; les éléments et le Ver. Porte : sur plus de 1 000 parties, deux builds de
   bac à sable (environ 300 $ de trafic), il bat le Sable en temps de jeu et en sessions de plus
   de 3 minutes ; sinon il est abandonné.
+  - **Livré en 1.37** (27/10/2026), selon les maquettes validées (plateau et main sur
+    téléphone et ordinateur, état de danger). Décisions de l'utilisateur, le même jour : **une
+    seule partie, un objectif à la fois** (D-1, D-2…, le Ver aux niveaux de boss) ; **Dunes
+    seulement dans sa version de test** (caché du jeu complet) ; les deux versions de test
+    (Dunes seul, Sable seul) n'ont que **l'accueil et l'Atelier**, Jouer lance le mode, sans
+    entraînement. Les choix au-delà de la spécification :
+    - la promesse n'a pas besoin d'un solveur : une pièce qui rentre se lit sur les cases
+      libres (vérifié sur 10 000 mains) ; prouver les trois pièces dans un ordre, comme la
+      Mosaïque, demanderait de simuler le sable à chaque essai ; une main qui ne rentre plus
+      avant qu'on y touche (le sable a bougé) est redonnée ;
+    - **trois couleurs de sable, la quatrième au D-6** : mesurées par le bot, quatre couleurs dès
+      le départ finissaient la plupart des parties en deux minutes ; la main donne plus souvent
+      la couleur la plus proche d'un lien le long de la surface (20 % des pièces de sable,
+      60 % près du haut, puis 10 et 45 % au D-10), les grosses pièces viennent plus souvent
+      à mesure que la partie monte, les petites près du haut (la clémence) ;
+    - les échanges : un au départ, un par objectif atteint, trois au plus ; la touche R (S
+      descend avec ZQSD/WASD) ;
+    - le feu brûle 700 grains au plus (les 1 500 du Sable prendraient 40 % du plateau) ; la
+      chaîne compte les pièces, avec deux pièces de grâce ; la reprise libère six rangées ;
+    - l'ouverture : un lit de trois bandes, une marque qui brille où la première paire relie les
+      murs ; le Ver des dunes se montre dès le premier objectif atteint, combat au D-5 ;
+    - sur un écran bas, la ligne d'aide s'efface (chaque élément est annoncé à son arrivée) et
+      le danger de la main se dit à côté de l'échange : le plateau garde 42 % de la hauteur
+      d'un 320 × 568 ; sur ordinateur, l'échange suit la place des jokers de la Mosaïque ;
+    - les versions de test : un nouveau joueur commence directement par une partie du mode
+      dans les deux ; ni défi du jour, ni carrousel des autres modes ; le slogan est le pitch
+      du mode ; la page de la saison nomme les Dunes ;
+    - mesure du bot (six parties par joueur) : un débutant tient 9 à 15 minutes, un habitué 2,5 à
+      12,5, un expert 2,4 à 7 (le rythme des bots compte plus que leur adresse) ; tous
+      atteignent le Ver du D-5 et le battent presque toujours. Le test du bac à sable et les
+      sessions d'inconnus corrigeront la courbe.
 - **Lot 20 · 1.38 Niveaux générés.** Un générateur par famille sur une graine
   (`LevelGenerator`), qui ne garde que les niveaux dans la bande du bot de courbe ; les
   chapitres 6 à 10 ; de 34 à plus de 300 niveaux, livrés en données ; un paquet tous les
@@ -1997,6 +2028,12 @@ progression n'est pas vendue (les étoiles achètent des améliorations) ; le mo
 Dunes, sur 9 × 12 cases ; le test web reçoit environ 300 $ de trafic ; l'avis juridique est
 financé tout de suite. Les canaux ouvrent sur preuve : catalogue Playgama, lancement Yandex
 (après le choix du contrat), GameDistribution, CrazyGames, puis Google Play.
+
+**Décision du 27/10/2026.** Aucune dépense avant que le jeu rapporte : le trafic acheté pour le
+test des Dunes (environ 300 $) est abandonné, comme toute dépense d'acquisition, jusqu'aux
+premiers revenus ; on investira les bénéfices. Le test se joue sur des parties gratuites (les dix
+sessions d'inconnus sur chaque version, les parties gratuites du bac à sable) ; son verdict reste
+provisoire, le test payant le confirmera quand le jeu rapportera.
 
 **Décisions du 26/10/2026, second tour.** Les lots 23 et 24 sortent juste après la 1.31 : les
 sessions d'inconnus jouent sur des commandes sûres et le nouvel entraînement peut montrer un

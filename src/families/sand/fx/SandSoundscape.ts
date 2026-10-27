@@ -2,9 +2,9 @@ import { Tone } from '@/core/Tone';
 import { PlayerVoice } from '@/fx/PlayerVoice';
 import * as sounds from '@/fx/sounds';
 import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
+import type { SandEventSource } from '../engine/SandGame';
 import type { ReactionKind } from '../engine/SandReactions';
 import type { Haptics } from '@/services/Haptics';
-import type { SandSession } from '../SandSession';
 
 const REACTION_SOUNDS: Readonly<Partial<Record<ReactionKind, SoundRecipe>>> = {
   blaze: sounds.blaze,
@@ -27,7 +27,7 @@ export class SandSoundscape {
     private readonly haptics: Haptics,
   ) {}
 
-  attach(session: SandSession): () => void {
+  attach(session: SandEventSource): () => void {
     const { audio, haptics } = this;
     const offs = [
       session.onGame('move', () => audio.play(this.voice.move())),

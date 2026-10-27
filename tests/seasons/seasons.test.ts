@@ -194,7 +194,9 @@ describe('The week’s goal', () => {
     expect(advance(goal, game())).toBe(0);
     for (let day = 1; day <= 60; day++) {
       const key = `202611${String(day % 30 || 30).padStart(2, '0')}`;
-      expect(objectivesOfDay(key, ['sand', 'classic']).map((o) => o.kind)).not.toContain('element');
+      expect(
+        objectivesOfDay(key, { modes: ['sand', 'classic'], daily: true }).map((o) => o.kind),
+      ).not.toContain('element');
     }
   });
 });
@@ -275,7 +277,7 @@ describe('SeasonService', () => {
   it('gives the track’s rewards through the profile, and keeps the season across a reload', () => {
     const storage = new MemoryStorage();
     const clock = new FrozenClock(utc('2026-12-16T18:00:00Z'));
-    const profiles = new ProfileService(storage, () => ['sand']);
+    const profiles = new ProfileService(storage, () => ({ modes: ['sand'], daily: true }));
     const seasons = new SeasonService(storage, profiles, clock.now);
     expect(seasons.view).toMatchObject({ span: { season: { id: 'embers' } }, tier: 0, ready: 0 });
     seasons.recordGame(game({ fire: 35 }), 1400);
@@ -288,7 +290,7 @@ describe('SeasonService', () => {
 
     const again = new SeasonService(
       storage,
-      new ProfileService(storage, () => ['sand']),
+      new ProfileService(storage, () => ({ modes: ['sand'], daily: true })),
       clock.now,
     );
     expect(again.view).toMatchObject({ points: 1400 + WEEKLY_GOAL_POINTS, tier: 5, ready: 0 });
@@ -298,7 +300,11 @@ describe('SeasonService', () => {
   it('shows a lagging save as the calendar stands: the week’s goal fresh, a new season empty', () => {
     const storage = new MemoryStorage();
     const clock = new FrozenClock(utc('2027-01-20T12:00:00Z'));
-    const seasons = new SeasonService(storage, new ProfileService(storage, () => []), clock.now);
+    const seasons = new SeasonService(
+      storage,
+      new ProfileService(storage, () => ({ modes: [], daily: true })),
+      clock.now,
+    );
     seasons.recordGame(game({ fire: 40 }), 300);
     expect(seasons.view.week).toMatchObject({ done: true, deeds: 35 });
     clock.set(utc('2027-01-25T00:00:00Z'));

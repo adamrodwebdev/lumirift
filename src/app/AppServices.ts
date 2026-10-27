@@ -6,7 +6,7 @@ import { DRAG_SPEED } from '@/families/falling/input/phone/GestureTuning';
 import { DEFAULT_REPEAT } from '@/families/falling/input/RepeatTiming';
 import { detectLocale } from '@/i18n/locales';
 import { modeOpen } from '@/campaign/ModeUnlocks';
-import { allowsMode } from '@/platform/Edition';
+import { allowsMode, offersDaily } from '@/platform/Edition';
 import { WebPlatform, type Platform } from '@/platform/Platform';
 import { ModeCatalog } from '@/session/ModeCatalog';
 import { AmbianceController } from '@/services/AmbianceController';
@@ -80,13 +80,15 @@ export function createBrowserServices(
   if (platform.locale) settings.chooseLocale(detectLocale([platform.locale], platform));
   const catalog = new ModeCatalog();
   const campaign = new CampaignService(storage);
-  // Objectives only ask for modes the player can reach: in this edition, and open in the campaign.
-  const profile = new ProfileService(storage, () =>
-    catalog
+  // Objectives only ask for modes the player can reach (in this edition, open in the
+  // campaign), and for the daily challenge only where there is one.
+  const profile = new ProfileService(storage, () => ({
+    modes: catalog
       .list()
       .map((mode) => mode.id)
       .filter((id) => allowsMode(platform.edition, id) && modeOpen(id, campaign.model)),
-  );
+    daily: offersDaily(platform.edition),
+  }));
   const look = new WornLook(profile);
   new AmbianceController(look, settings, document.documentElement);
   const clock = () => new Date();

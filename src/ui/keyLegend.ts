@@ -66,6 +66,15 @@ const BY_FAMILY: Readonly<Record<FamilyId, readonly RowSpec[]>> = {
     row('keys.cancel', fixed('Backspace')),
     minor(row('controls.pause', fixed('KeyP'))),
   ],
+  // Dunes (1.37): the Mosaic's hand, and R to swap it (S moves down with WASD).
+  dunes: [
+    row('keys.pick', fixed('Digit1', 'Digit2', 'Digit3')),
+    row('keys.aim', fixed('ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowRight')),
+    row('keys.place', fixed('Space')),
+    row('dunes.swapKey', fixed('KeyR')),
+    row('keys.cancel', fixed('Backspace')),
+    minor(row('controls.pause', fixed('KeyP'))),
+  ],
 };
 
 /** The rift surge, in every mode that has one (see `surgeTuningFor`); its button shows its key. */

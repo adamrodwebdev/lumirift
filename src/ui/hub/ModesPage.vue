@@ -52,7 +52,10 @@ const entryOf = (mode: ModeDescriptor) => {
 
 const banner = computed(() => entryOf(catalog.get(BANNER)));
 const modes = computed(() => {
-  const all = catalog.list();
+  // A mode on test (Dunes) is not shown at all where the build does not open it.
+  const all = catalog
+    .list()
+    .filter((mode) => !mode.prototype || allowsMode(platform.edition, mode.id));
   const ordered = [
     ...FEATURED.map((id) => all.find((mode) => mode.id === id)!),
     ...all.filter((mode) => !FEATURED.includes(mode.id) && mode.id !== BANNER),

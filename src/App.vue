@@ -11,10 +11,11 @@ import {
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
+import { firstGameOf } from '@/app/firstGame';
 import { loadMessages } from '@/i18n';
 import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import type { CampaignLevel } from '@/campaign/Levels';
-import { TRAINING, type TrainingStep } from '@/campaign/Training';
+import type { TrainingStep } from '@/campaign/Training';
 import type { DailyChallenge } from '@/session/DailyChallenge';
 import type { ModeId } from '@/session/ModeId';
 import SettingsDialog from '@/ui/components/SettingsDialog.vue';
@@ -53,14 +54,15 @@ const { settings, audio, platform, catalog, profile } = useServices();
 const NONE = { daily: null, guardian: null, variant: null, level: null, training: null } as const;
 let gameId = 0;
 /**
- * A new player on a portal starts straight in the training: no title screen,
- * no menu until it is over (1.29; its game was downloaded behind the title
- * card, see main.ts). Everywhere else, the title screen and its menus.
+ * A new player on a portal starts straight in a game: the training, or a test
+ * build's one mode (`firstGameOf`); no title screen, no menu until it is over
+ * (1.29; its game was downloaded behind the title card, see main.ts).
+ * Everywhere else, the title screen and its menus.
  */
-const firstStep = platform.firstRun === 'training' && profile.needsTraining ? TRAINING[0] : null;
+const firstGame = firstGameOf(platform, profile.needsTraining);
 const screen = shallowRef<Screen>(
-  firstStep
-    ? { kind: 'game', id: ++gameId, ...NONE, modeId: firstStep.modeId, training: firstStep }
+  firstGame
+    ? { kind: 'game', id: ++gameId, ...NONE, ...firstGame }
     : { kind: 'hub', returning: false },
 );
 /** The menu's page, kept while a game runs: the player comes back where they left. */

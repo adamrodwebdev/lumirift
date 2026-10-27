@@ -35,6 +35,7 @@ import {
   OBJECTIVE_XP,
   objectivesOfDay,
   type Objective,
+  type ObjectivePlace,
 } from './Objectives';
 
 export interface ObjectiveProgress {
@@ -243,12 +244,12 @@ export class Profile {
   }
 
   /** The objectives of the day; a new day brings new ones. */
-  objectivesFor(day: string, modes: readonly ModeId[]): readonly ObjectiveProgress[] {
+  objectivesFor(day: string, place: ObjectivePlace): readonly ObjectiveProgress[] {
     if (this.data.objectivesDay !== day) {
       this.data = {
         ...this.data,
         objectivesDay: day,
-        objectives: objectivesOfDay(day, modes).map((objective) => ({
+        objectives: objectivesOfDay(day, place).map((objective) => ({
           objective,
           progress: 0,
           done: false,
@@ -259,7 +260,7 @@ export class Profile {
   }
 
   /** Counts a finished game: experience, objectives, streak, unlocks. */
-  recordGame(report: GameReport, day: string, modes: readonly ModeId[]): GameProgress {
+  recordGame(report: GameReport, day: string, place: ObjectivePlace): GameProgress {
     const before = this.data;
     const unlockedBefore = new Set(COSMETICS.filter((c) => this.isUnlocked(c)).map(cosmeticKey));
     const levelBefore = this.level;
@@ -283,7 +284,7 @@ export class Profile {
     }
 
     const completed: Objective[] = [];
-    const objectives = this.objectivesFor(day, modes).map((entry) => {
+    const objectives = this.objectivesFor(day, place).map((entry) => {
       if (entry.done) return entry;
       const progress = Math.min(
         entry.objective.target,

@@ -32,6 +32,8 @@ import { PROFILE_KEY, ProfileService } from '@/services/ProfileService';
 import type { ModeId } from '@/session/ModeId';
 
 const MODES: readonly ModeId[] = ['classic', 'sand', 'mosaic', 'tower'];
+/** Where the objectives are played: these modes, and a daily challenge. */
+const PLACE = { modes: MODES, daily: true };
 
 const game = (patch: Partial<GameReport> = {}): GameReport => ({
   modeId: 'classic',
@@ -49,7 +51,7 @@ const game = (patch: Partial<GameReport> = {}): GameReport => ({
 /** A player who has played once, on `day`. */
 const played = (day = '20261026'): Profile => {
   const profile = new Profile();
-  profile.recordGame(game(), day, MODES);
+  profile.recordGame(game(), day, PLACE);
   return profile;
 };
 
@@ -246,7 +248,7 @@ describe('Back after a week away', () => {
   it('brings a gift of welcome with the day’s, and the ads’ grace again', () => {
     const profile = played('20261001');
     profile.visit('20261001');
-    profile.recordGame(game({ durationMs: 600_000 }), '20261001', MODES);
+    profile.recordGame(game({ durationMs: 600_000 }), '20261001', PLACE);
     profile.visit('20261007');
     expect(profile.snapshot.welcomeBack).toBe(false);
     profile.visit('20261014');
@@ -276,7 +278,7 @@ describe('The daily streak', () => {
     const profile = new Profile();
     const daily = (day: string) =>
       profile
-        .recordGame(game({ daily: true }), day, MODES)
+        .recordGame(game({ daily: true }), day, PLACE)
         .xp.find((line) => line.source === 'streak');
     expect(daily('20261029')).toBeUndefined();
     expect(daily('20261030')).toBeUndefined();
@@ -361,7 +363,7 @@ describe('GiftService', () => {
   it('claims on the clock’s day, once, even across a reload of the page', () => {
     const storage = new MemoryStorage();
     const clock = new FrozenClock(new Date(2026, 9, 31, 23, 58));
-    const service = () => new ProfileService(storage, () => MODES);
+    const service = () => new ProfileService(storage, () => PLACE);
     const profiles = service();
     profiles.recordGame(game(), '20261031');
     const gifts = new GiftService(profiles, clock.now);

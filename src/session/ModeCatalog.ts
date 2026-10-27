@@ -17,6 +17,11 @@ export interface ModeDescriptor {
   readonly defaultVariant?: string;
   /** The player's record shows beside the score during a game (outside the campaign). */
   readonly showsBest?: boolean;
+  /**
+   * A mode on test (Dunes, 1.37): it lives only in a build made for it (a
+   * sandbox test), never in the full game's menus, objectives or campaign.
+   */
+  readonly prototype?: boolean;
 }
 
 /** Modes in menu order. */
@@ -42,7 +47,19 @@ const DESCRIPTORS: readonly ModeDescriptor[] = [
   { id: 'mosaic', family: 'placement', result: 'score', dailyEligible: true, showsBest: true },
   { id: 'tower', family: 'volume', result: 'score', dailyEligible: true },
   { id: 'race', family: 'rift', result: 'score', dailyEligible: false },
+  {
+    id: 'dunes',
+    family: 'dunes',
+    result: 'score',
+    dailyEligible: false,
+    showsBest: true,
+    prototype: true,
+  },
 ];
+
+/** A mode on test (Dunes, 1.37): only a build made for it opens it (see `Edition`). */
+export const isPrototype = (id: ModeId): boolean =>
+  DESCRIPTORS.some((mode) => mode.id === id && mode.prototype === true);
 
 /** Each family is a separate chunk, downloaded the first time one of its modes is played. */
 const LOADERS = new Map<FamilyId, FamilyLoader>([
@@ -54,6 +71,7 @@ const LOADERS = new Map<FamilyId, FamilyLoader>([
   ],
   ['volume', () => import('@/families/volume').then((family) => family.createVolumeSession)],
   ['rift', () => import('@/families/race').then((family) => family.createRaceSession)],
+  ['dunes', () => import('@/families/dunes').then((family) => family.createDunesSession)],
 ]);
 
 /**

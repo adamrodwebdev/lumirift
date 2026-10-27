@@ -7,6 +7,9 @@ const PORTAL = /portal\.spec\.ts/;
 /** The Yandex Games build, its SDK replaced by a stand-in in the test itself. */
 const YANDEX_PORT = 4179;
 const YANDEX = /yandex\.spec\.ts/;
+/** Dunes alone (1.37), the build of its sandbox test on our own site: the mode lives there only. */
+const DUNES_PORT = 4181;
+const DUNES = /dunes\.spec\.ts/;
 
 /**
  * End-to-end journeys on the production build, at the two sizes of the
@@ -30,7 +33,7 @@ export default defineConfig({
   projects: [
     {
       name: 'mobile',
-      testIgnore: [PORTAL, YANDEX],
+      testIgnore: [PORTAL, YANDEX, DUNES],
       use: {
         ...devices['Pixel 7'],
         viewport: { width: 390, height: 844 },
@@ -39,7 +42,7 @@ export default defineConfig({
     },
     {
       name: 'desktop',
-      testIgnore: [PORTAL, YANDEX],
+      testIgnore: [PORTAL, YANDEX, DUNES],
       use: { viewport: { width: 1280, height: 800 }, channel: 'chrome' },
     },
     {
@@ -47,6 +50,25 @@ export default defineConfig({
       testMatch: PORTAL,
       use: {
         baseURL: `http://localhost:${PORTAL_PORT}/`,
+        viewport: { width: 1280, height: 800 },
+        channel: 'chrome',
+      },
+    },
+    {
+      name: 'dunes-mobile',
+      testMatch: DUNES,
+      use: {
+        ...devices['Pixel 7'],
+        baseURL: `http://localhost:${DUNES_PORT}/`,
+        viewport: { width: 390, height: 844 },
+        channel: 'chrome',
+      },
+    },
+    {
+      name: 'dunes-desktop',
+      testMatch: DUNES,
+      use: {
+        baseURL: `http://localhost:${DUNES_PORT}/`,
         viewport: { width: 1280, height: 800 },
         channel: 'chrome',
       },
@@ -70,6 +92,12 @@ export default defineConfig({
     {
       command: `npx vite build --mode crazygames --logLevel warn && npx vite preview --mode crazygames --port ${PORTAL_PORT} --strictPort`,
       port: PORTAL_PORT,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+    },
+    {
+      command: `npx vite build --mode dunes --logLevel warn && npx vite preview --mode dunes --port ${DUNES_PORT} --strictPort`,
+      port: DUNES_PORT,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
     },
