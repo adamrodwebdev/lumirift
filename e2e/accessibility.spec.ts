@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { freezeTime, play, playUntil } from './gameTime';
 
 /*
  * Automatic WCAG 2.2 AA audits (axe-core) of every screen and dialog, in
@@ -91,28 +92,34 @@ for (const theme of ['dark'] as const) {
         .click();
       await modesPage(page).getByRole('button', { name: 'Jouer' }).click();
       await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
-      await audit(page);
-      const play = async (ms: number) => {
-        for (let t = 0; t < ms; t += 100) await page.clock.fastForward(100);
+      // The game's time moves only with the test's frames (gameTime.ts); an audit runs
+      // on the page's own timers, so time flows while it runs, then stands still again.
+      await freezeTime(page);
+      const auditRace = async () => {
+        await page.clock.resume();
+        await audit(page);
+        await freezeTime(page);
       };
+      await auditRace();
       // The second shift: announced with its Guardian, then the Guardian's card.
-      await play(78_500);
-      await expect(page.locator('.shift')).toBeVisible();
-      await audit(page);
-      await play(4_000);
-      await expect(page.getByRole('status', { name: /Œil de la Tour/ })).toBeVisible();
-      await audit(page);
+      const shift = page.locator('.shift');
+      await play(page, 75_000);
+      await playUntil(page, 5_000, () => shift.isVisible());
+      await expect(shift).toBeVisible();
+      await auditRace();
+      const guardian = page.getByRole('status', { name: /Œil de la Tour/ });
+      await playUntil(page, 6_000, () => guardian.isVisible());
+      await expect(guardian).toBeVisible();
+      await auditRace();
       await page.keyboard.press('KeyP');
-      await expect(page.getByRole('dialog', { name: 'Pause' })).toBeVisible();
-      await audit(page);
-      await page
-        .getByRole('dialog', { name: 'Pause' })
-        .getByRole('button', { name: 'Reprendre' })
-        .click();
-      await play(40_000);
-      await expect(page.getByRole('dialog', { name: 'Partie terminée' })).toBeVisible({
-        timeout: 10_000,
-      });
+      const pause = page.getByRole('dialog', { name: 'Pause' });
+      await expect(pause).toBeVisible();
+      await auditRace();
+      await pause.getByRole('button', { name: 'Reprendre' }).click();
+      const over = page.getByRole('dialog', { name: 'Partie terminée' });
+      await playUntil(page, 60_000, () => over.isVisible());
+      await expect(over).toBeVisible();
+      await page.clock.resume();
       await audit(page);
     });
 
