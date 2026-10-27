@@ -46,6 +46,7 @@ const ROTATE = row('controls.rotateCw', every('rotateCw'));
 // Turning the other way can step aside where room is short: the keys window lists every key.
 const ROTATE_BACK = minor(row('controls.rotateCcw', every('rotateCcw')));
 const HOLD = row('controls.hold', main('hold'));
+const TURN = row('tower.turn', main('turnLeft', 'turnRight'));
 // The pause also has its button on screen.
 const PAUSE = minor(row('controls.pause', main('pause')));
 
@@ -54,16 +55,9 @@ const BY_FAMILY: Readonly<Record<FamilyId, readonly RowSpec[]>> = {
   falling: [MOVE, SOFT_DROP, HARD_DROP, ROTATE, ROTATE_BACK, HOLD, PAUSE],
   // Sand keeps no piece aside.
   sand: [MOVE, SOFT_DROP, HARD_DROP, ROTATE, ROTATE_BACK, PAUSE],
-  volume: [
-    MOVE,
-    SOFT_DROP,
-    HARD_DROP,
-    ROTATE,
-    ROTATE_BACK,
-    HOLD,
-    row('tower.turn', main('turnLeft', 'turnRight')),
-    PAUSE,
-  ],
+  volume: [MOVE, SOFT_DROP, HARD_DROP, ROTATE, ROTATE_BACK, HOLD, TURN, PAUSE],
+  // The race's three worlds: all their keys (the hold is the well's and the Tower's, the turn the Tower's).
+  rift: [MOVE, SOFT_DROP, HARD_DROP, ROTATE, ROTATE_BACK, HOLD, TURN, PAUSE],
   placement: [
     row('keys.pick', fixed('Digit1', 'Digit2', 'Digit3')),
     row('keys.aim', fixed('ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowRight')),

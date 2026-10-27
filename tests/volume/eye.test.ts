@@ -33,7 +33,7 @@ function until(eye: TowerEye, type: string, limitMs = 30_000) {
 
 describe('The Eye of the Tower', () => {
   it('turns while it watches, charges, then strikes every column of its gaze', () => {
-    const eye = new TowerEye(20, new SeededRandom(1), 10, 1000);
+    const eye = new TowerEye(20, new SeededRandom(1), { start: 10, firstWatchMs: 1000 });
     expect(eye.gaze()).toEqual([10, 9, 11, 8, 12]);
     const charge = until(eye, 'charge');
     expect(eye.state).toBe('charge');
@@ -48,7 +48,7 @@ describe('The Eye of the Tower', () => {
   });
 
   it('is blinded by a bomb in its gaze: a heavy blow, no strike, then it opens', () => {
-    const eye = new TowerEye(20, new SeededRandom(1), 10, 0);
+    const eye = new TowerEye(20, new SeededRandom(1), { start: 10, firstWatchMs: 0 });
     eye.update(STEP);
     expect(eye.state).toBe('charge');
     eye.bombAt(12);
@@ -60,7 +60,7 @@ describe('The Eye of the Tower', () => {
   });
 
   it('sees round the tower, and a bomb out of its gaze only hurts it a little', () => {
-    const eye = new TowerEye(20, new SeededRandom(1), 0.4, 60_000);
+    const eye = new TowerEye(20, new SeededRandom(1), { start: 0.4, firstWatchMs: 60_000 });
     expect(eye.sees(19)).toBe(true);
     expect(eye.sees(2)).toBe(true);
     expect(eye.sees(10)).toBe(false);
@@ -71,7 +71,7 @@ describe('The Eye of the Tower', () => {
 
   it('is hurt by the rings cleared, widens its gaze by phase, and falls at 0', () => {
     expect([1, 2, 3, 4].map(ringDamage)).toEqual([5, 13, 21, 29]);
-    const eye = new TowerEye(20, new SeededRandom(1), 10);
+    const eye = new TowerEye(20, new SeededRandom(1), { start: 10 });
     const seen: string[] = [];
     while (!eye.defeated) {
       eye.ringsCleared(1);

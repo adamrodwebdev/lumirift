@@ -1,9 +1,10 @@
 import { CampaignRun } from '@/campaign/CampaignRun';
-import type { GuardianChallenge } from '@/campaign/GuardianChallenge';
+import { weekStart, type GuardianChallenge } from '@/campaign/GuardianChallenge';
 import type { CampaignLevel, StarRule } from '@/campaign/Levels';
 import type { TrainingStep } from '@/campaign/Training';
 import { boostsFor, levelTimeMs, type UpgradeRanks } from '@/campaign/Upgrades';
 import { mercyOfChapter } from '@/session/Mercy';
+import { dayKey } from '@/core/Day';
 import { SeededRandom } from '@/core/Random';
 import type { GameReport } from '@/progression/GameReport';
 import type { DailyChallenge } from '@/session/DailyChallenge';
@@ -19,7 +20,7 @@ export interface RunScore {
   readonly breakdown?: { readonly points: number; readonly factor: number };
 }
 
-export type RunKindId = 'free' | 'daily' | 'guardian' | 'level' | 'training';
+export type RunKindId = 'free' | 'daily' | 'guardian' | 'level' | 'training' | 'race';
 
 /**
  * The kind of game played (1.27): a free game, the day's challenge, the
@@ -52,6 +53,8 @@ export interface RunKind {
   sessionOptions(seed: number, today: Date): SessionOptions;
   /** The HUD chases the record live (in a mode that shows it beside the score). */
   chasesRecord(showsBest: boolean): boolean;
+  /** The week's record this game also counts for, on `today` (the race's), or null. */
+  weekRecordKey(today: Date): string | null;
   /** How a finished game counts. */
   score(result: SessionResult, reason: string, timeLeftMs: number): RunScore;
   /** The judge of a campaign level's goal and stars, or null outside the campaign. */
@@ -98,6 +101,10 @@ export class FreeRun implements RunKind {
     return showsBest;
   }
 
+  weekRecordKey(): null {
+    return null;
+  }
+
   score(result: SessionResult): RunScore {
     return whole(result);
   }
@@ -133,6 +140,10 @@ export class DailyRun implements RunKind {
 
   chasesRecord(showsBest: boolean): boolean {
     return showsBest;
+  }
+
+  weekRecordKey(): null {
+    return null;
   }
 
   score(result: SessionResult): RunScore {
@@ -175,6 +186,10 @@ export class GuardianRun implements RunKind {
 
   chasesRecord(): boolean {
     return false;
+  }
+
+  weekRecordKey(): null {
+    return null;
   }
 
   score(result: SessionResult, reason: string, timeLeftMs: number): RunScore {
@@ -243,6 +258,10 @@ export class LevelRun implements RunKind {
     return false;
   }
 
+  weekRecordKey(): null {
+    return null;
+  }
+
   score(result: SessionResult): RunScore {
     return whole(result);
   }
@@ -292,6 +311,10 @@ export class TrainingRun implements RunKind {
     return false;
   }
 
+  weekRecordKey(): null {
+    return null;
+  }
+
   score(result: SessionResult): RunScore {
     return whole(result);
   }
@@ -299,6 +322,44 @@ export class TrainingRun implements RunKind {
   campaignRun(): CampaignRun {
     const { id, goal } = this.training;
     return new CampaignRun({ id, goal, stars: NO_STARS }, null);
+  }
+}
+
+/**
+ * A run of the Rift Race (1.34): a free game of its own, which also counts
+ * for the week's best (by its Monday). Only its clock ends it: no continue.
+ */
+export class RaceRun implements RunKind {
+  readonly id = 'race';
+  readonly modeId = 'race';
+  readonly recordKey = 'race';
+  readonly records = true;
+  readonly level = null;
+  readonly training = null;
+  readonly boss = null;
+  readonly teaser = null;
+  readonly adBreaks = true;
+  readonly continues = false;
+  readonly progression = { daily: false, guardian: false, variant: null };
+
+  sessionOptions(seed: number, today: Date): SessionOptions {
+    return { random: new SeededRandom(seed), timeLimitMs: null, today };
+  }
+
+  chasesRecord(): boolean {
+    return false;
+  }
+
+  weekRecordKey(today: Date): string {
+    return ScoreBoard.raceWeekKey(dayKey(weekStart(today)));
+  }
+
+  score(result: SessionResult): RunScore {
+    return whole(result);
+  }
+
+  campaignRun(): null {
+    return null;
   }
 }
 
@@ -313,11 +374,12 @@ export interface RunChoice {
   readonly training?: TrainingStep | null;
 }
 
-/** The kind of game the player chose (a training step first, then a level, a Guardian, a day's challenge). */
+/** The kind of game the player chose (a training step first, then a level, a Guardian, a day's challenge, the race). */
 export function runKindFor(choice: RunChoice, ranks: UpgradeRanks): RunKind {
   if (choice.training) return new TrainingRun(choice.training);
   if (choice.level) return new LevelRun(choice.modeId, choice.level, ranks);
   if (choice.guardian) return new GuardianRun(choice.modeId, choice.guardian);
   if (choice.daily) return new DailyRun(choice.modeId, choice.daily);
+  if (choice.modeId === 'race') return new RaceRun();
   return new FreeRun(choice.modeId, choice.variant);
 }

@@ -24,6 +24,31 @@ async function openMode(page: Page, name: string) {
   await settle(page);
 }
 
+/** The levels won before 4-4: the race is open (1.34). */
+const RACE_OPEN = [
+  ...['1-1', '1-2', '1-3', '1-4', '1-5', '1-6'],
+  ...['2-1', '2-2', '2-3', '2-4', '2-5', '2-6', '2-7'],
+  ...['3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7'],
+  ...['4-1', '4-2', '4-3'],
+];
+
+/** The race, open once the campaign has played its three worlds; Play starts it. */
+async function openRace(page: Page) {
+  await page.evaluate((won) => {
+    const stars = Object.fromEntries(won.map((id) => [id, 2]));
+    localStorage.setItem('stackrift:campaign', JSON.stringify({ stars, ranks: {} }));
+  }, RACE_OPEN);
+  await page.reload();
+  await page.locator('main').waitFor();
+  await tab(page, 'Modes').click();
+  await panel(page, 'Modes')
+    .getByRole('button', { name: /^Course de la faille/ })
+    .click();
+  await panel(page, 'Modes').getByRole('button', { name: 'Jouer' }).click();
+  await expect(page.locator('canvas[role="img"]').first()).toBeAttached();
+  await settle(page);
+}
+
 async function quitGame(page: Page) {
   await page.keyboard.press('KeyP');
   await page
@@ -117,10 +142,10 @@ async function expectReadableHud(page: Page, where: string) {
         .map((el) => `${el.className} ${size(el).toFixed(1)} px`);
     return [
       ...under(
-        '.hud__label, .stage__label, .legend__action, .opponent__label, .goal__level, .goal__text, .goal__count',
+        '.hud__label, .stage__label, .legend__action, .opponent__label, .goal__level, .goal__text, .goal__count, .world__name, .worlds__next, .clock__cap',
         14,
       ),
-      ...under('.hud__value, .hud__best-value', 16),
+      ...under('.hud__value, .hud__best-value, .clock__time', 16),
     ];
   });
   expect(small, `${where}: HUD text too small`).toEqual([]);
@@ -130,7 +155,11 @@ async function expectReadableHud(page: Page, where: string) {
 async function expectHudInside(page: Page, where: string) {
   const cut = await page.evaluate(() => {
     const vw = innerWidth;
-    return [...document.querySelectorAll('.game__score, .game__stats, .game__goal, .game__help')]
+    return [
+      ...document.querySelectorAll(
+        '.game__score, .game__stats, .game__goal, .game__help, .race__clock, .race__worlds',
+      ),
+    ]
       .filter((el) => el.checkVisibility())
       .filter((el) => {
         const box = el.getBoundingClientRect();
@@ -173,6 +202,9 @@ test('no sideways scroll from 320 to 2560 px, every 20 px, in the menu and every
     await sweep(name);
     await quitGame(page);
   }
+  await openRace(page);
+  await sweep('Course de la faille');
+  await quitGame(page);
 });
 
 interface KeySize {
@@ -288,9 +320,7 @@ for (const size of KEY_SIZES)
     }
     await page.keyboard.press('Escape');
 
-    for (const name of FAMILIES) {
-      await openMode(page, name);
-      const where = `${size.name}, ${name}`;
+    const checkGame = async (where: string) => {
       await expectFits(page, where);
       await expectHudInside(page, where);
       if (size.touch) await expectThumbSized(page, where);
@@ -301,7 +331,14 @@ for (const size of KEY_SIZES)
           size.well,
         );
       await quitGame(page);
+    };
+    for (const name of FAMILIES) {
+      await openMode(page, name);
+      await checkGame(`${size.name}, ${name}`);
     }
+    // The race (1.34): its clock, its worlds and the well of the world played.
+    await openRace(page);
+    await checkGame(`${size.name}, Course de la faille`);
     await context.close();
   });
 

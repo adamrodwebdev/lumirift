@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { FrameCap } from '@/app/FrameCap';
 import { FrameClock, MAX_FRAME_MS } from '@/app/FrameClock';
 
@@ -54,6 +54,23 @@ describe('FrameClock', () => {
     // A 120-Hz screen: one frame in two drawn, with the time of two.
     for (let i = 0; i <= 8; i++) frames.frame(i * (1000 / 120));
     expect(deltas).toEqual([0, 17, 17, 17, 17]);
+  });
+
+  it('keeps going when a part fails: the others play the frame, the next one comes', () => {
+    const frames = new ManualFrames();
+    const clock = new FrameClock(frames.request, frames.cancel);
+    const said = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const deltas: number[] = [];
+    clock.subscribe(() => {
+      throw new Error('a renderer failed');
+    });
+    clock.subscribe((delta) => deltas.push(delta));
+    clock.start();
+    frames.frame(0);
+    frames.frame(16);
+    expect(deltas).toEqual([0, 16]);
+    expect(said).toHaveBeenCalledTimes(2);
+    said.mockRestore();
   });
 
   it('stops, and lets listeners unsubscribe', () => {

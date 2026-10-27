@@ -76,6 +76,8 @@ export interface GameEventMap {
   rescue: { readonly rows: number };
   /** A lost game continues (1.31): the top of the stack blew away, these blocks with it. */
   revive: { readonly cells: readonly RemovedCell[] };
+  /** The stack overflowed and play goes on (the Rift Race, 1.34): its top blew away, these blocks with it. */
+  overflow: { readonly cells: readonly RemovedCell[] };
   /** Mode-specific announcement; `id` is a translation key suffix. */
   notice: { readonly id: string; readonly value?: number };
   over: { readonly reason: GameOverReason };

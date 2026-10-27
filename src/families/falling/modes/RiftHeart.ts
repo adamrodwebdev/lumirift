@@ -57,8 +57,15 @@ export interface HeartView {
   readonly coming: readonly RiftRow[];
 }
 
+/** How a Heart comes: when it first beats, and with how much health (a race's comes weakened). */
+export interface HeartPace {
+  /** First beat after this long, so that the player can start building (ms). */
+  readonly firstBeatMs?: number;
+  readonly health?: number;
+}
+
 export class RiftHeart implements HeartView {
-  private readonly life = new GuardianHealth();
+  private readonly life: GuardianHealth;
   private untilBeat: number;
   private _coming: RiftRow[] = [];
   private readonly events: HeartEvent[] = [];
@@ -66,14 +73,17 @@ export class RiftHeart implements HeartView {
   constructor(
     private readonly width: number,
     private readonly random: RandomSource,
-    /** First beat after this long, so that the player can start building. */
-    firstBeatMs = 8000,
+    { firstBeatMs = 8000, health }: HeartPace = {},
   ) {
     this.untilBeat = firstBeatMs;
+    this.life = new GuardianHealth(health);
   }
 
   get health(): number {
     return this.life.health;
+  }
+  get maxHealth(): number {
+    return this.life.maxHealth;
   }
   get phase(): GuardianPhase {
     return this.life.phase;

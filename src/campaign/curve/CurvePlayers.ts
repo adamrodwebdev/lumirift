@@ -2,6 +2,7 @@ import { DuelSession, FallingSession } from '@/families/falling';
 import { AiPlayer } from '@/families/falling/ai/AiPlayer';
 import { SilhouetteAiPlayer } from '@/families/falling/ai/SilhouetteAiPlayer';
 import { PlacementSession } from '@/families/placement';
+import { RaceSession } from '@/families/race';
 import { SandSession } from '@/families/sand';
 import type { GameSession } from '@/session/GameSession';
 import type { FamilyId, ModeId } from '@/session/ModeId';
@@ -9,6 +10,7 @@ import type { CurvePlayerFactory, CurveSeat } from './CurvePlayer';
 import { FALLING_SKILLS, FallingCurvePlayer } from './FallingCurvePlayer';
 import { bigClearValue, clearValue } from './MosaicChoice';
 import { MOSAIC_SKILLS, MosaicCurvePlayer } from './MosaicCurvePlayer';
+import { RaceCurvePlayer } from './RaceCurvePlayer';
 import { SAND_SKILLS, SandCurvePlayer } from './SandCurvePlayer';
 
 /** The player's own well: its side of a duel, or the session itself. */
@@ -29,12 +31,11 @@ const BUILT_CLEAR = 3;
  * or more make every player build for them; a silhouette is filled, not
  * cleared.
  */
-function fallingAi({ skill, random, level }: CurveSeat, own: FallingSession): AiPlayer {
+function fallingAi({ skill, random, goal }: CurveSeat, own: FallingSession): AiPlayer {
   const profile = FALLING_SKILLS[skill];
-  if (level.modeId === 'silhouette') return new SilhouetteAiPlayer(own, profile, random);
-  const { goal } = level;
-  const builds = goal.kind === 'bigClear' && goal.target >= BUILT_CLEAR;
-  const attacks = builds || (profile.attacks && !NO_ATTACKS.has(level.modeId));
+  if (own.modeId === 'silhouette') return new SilhouetteAiPlayer(own, profile, random);
+  const builds = goal?.kind === 'bigClear' && goal.target >= BUILT_CLEAR;
+  const attacks = builds || (profile.attacks && !NO_ATTACKS.has(own.modeId));
   return new AiPlayer(own, { ...profile, attacks }, random);
 }
 
@@ -52,13 +53,19 @@ export const CURVE_PLAYERS: Readonly<Record<FamilyId, CurvePlayerFactory>> = {
       throw new Error(`"${session.modeId}" is not a Sand game`);
     return new SandCurvePlayer(session, SAND_SKILLS[skill], random);
   },
-  placement: ({ session, skill, random, level }) => {
+  placement: ({ session, skill, random, goal }) => {
     if (!(session instanceof PlacementSession)) {
       throw new Error(`"${session.modeId}" is not a Mosaic game`);
     }
-    const { goal } = level;
-    const value = goal.kind === 'bigClear' ? bigClearValue(goal.target) : clearValue;
+    const value = goal?.kind === 'bigClear' ? bigClearValue(goal.target) : clearValue;
     const mosaic = MOSAIC_SKILLS[skill];
     return new MosaicCurvePlayer(session, mosaic.thinkMs, mosaic.choice(random, value));
+  },
+  // The race: the player of each world in turn, seated again at every shift.
+  rift: ({ session, skill, random }) => {
+    if (!(session instanceof RaceSession)) throw new Error(`"${session.modeId}" is not a race`);
+    return new RaceCurvePlayer(session, (world) =>
+      CURVE_PLAYERS[world.family]({ session: world, skill, random, goal: null }),
+    );
   },
 };

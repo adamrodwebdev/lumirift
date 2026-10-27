@@ -152,6 +152,14 @@ export class FallingSession implements GameSession<FallingCommand> {
     return this.game.mode.filled?.() ?? 0;
   }
 
+  dismiss(): void {
+    this.game.mode.dismiss?.();
+  }
+
+  remains(): number {
+    return this.game.board.blockCount();
+  }
+
   get revivable(): boolean {
     return this.game.revivable;
   }
@@ -174,6 +182,7 @@ export class FallingSession implements GameSession<FallingCommand> {
     );
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));
+    events.on('overflow', () => this.events.emit('overflow', {}));
     events.on('closeCall', (event) => this.events.emit('closeCall', event));
     events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('flip', ({ lines }) => this.events.emit('notice', { id: 'flip', value: lines }));

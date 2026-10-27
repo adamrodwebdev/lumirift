@@ -90,15 +90,20 @@ export class FrameClock {
   }
 
   private readonly tick = (time: number): void => {
-    if (!this.cap.admits(time)) {
-      this.handle = this.requestFrame(this.tick);
-      return;
-    }
+    // The next frame first: a part that fails (a renderer) never stops the game.
+    this.handle = this.requestFrame(this.tick);
+    if (!this.cap.admits(time)) return;
     const real = this.last === null ? 0 : Math.min(time - this.last, MAX_FRAME_MS);
     this.last = time;
     this.pace += (this.paceTarget - this.pace) * (1 - Math.exp(-real / PACE_EASE_MS));
     const delta = real * Math.min(this.scaleFor(real), this.pace);
-    for (const listener of [...this.listeners]) listener(delta, real);
-    this.handle = this.requestFrame(this.tick);
+    for (const listener of [...this.listeners]) {
+      try {
+        listener(delta, real);
+      } catch (error) {
+        // Said, not hidden; the other parts play the frame all the same.
+        console.error(error);
+      }
+    }
   };
 }

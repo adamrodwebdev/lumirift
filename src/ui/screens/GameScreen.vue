@@ -34,7 +34,7 @@ import RecordBurst from '../components/RecordBurst.vue';
 import SurgeLayer from '../components/SurgeLayer.vue';
 import KeyLegend from '../components/KeyLegend.vue';
 import PauseDialog from '../components/PauseDialog.vue';
-import { presentationFor } from '../presentation';
+import { familyPresentation, presentationFor } from '../presentation';
 import { stageFor } from '../stages';
 import { SURGE } from '../surgeControl';
 import { GAME_SURFACE } from '../useGameSurface';
@@ -144,6 +144,10 @@ const hand = computed(() =>
 /** A duel names its opponent over the opponent's well already. */
 const shownSubtitle = computed(() => (layout === 'duel' ? null : subtitle.value));
 const muted = computed(() => settings.current.muted);
+/** The counters under the score, but those the stage draws itself (the race's clock). */
+const stats = computed(() =>
+  indicators.value.slice(1).filter((item) => !presentation.stageShows.includes(item.id)),
+);
 const toggleMute = () => settings.toggleMute();
 const help = presentation.touchHelp;
 /** The keys stay drawn beside the game for the first games. */
@@ -220,6 +224,7 @@ const TITLE: Readonly<Record<RunKindId, () => string>> = {
   daily: () => `${t('daily.title')} · ${modeName.value}`,
   free: () => modeName.value,
   training: () => t('training.name'),
+  race: () => modeName.value,
 };
 const title = computed(() => TITLE[run.kind.id]());
 
@@ -314,8 +319,9 @@ const listen = (current: GameSession) => {
   unsubscribe = [
     events.on('clear', ({ lines, combo }) => {
       if (coach?.cleared()) coachUpdate();
-      // The Sand clears regions (linking the walls), the other families lines.
-      const text = t(presentation.clearNotice, lines);
+      // The Sand clears regions (linking the walls), the other families lines; the race, its world's.
+      const board = current.boardFamily?.();
+      const text = t((board ? familyPresentation(board) : presentation).clearNotice, lines);
       announce(
         combo > 0 ? `${text} · ${t('notice.combo', { n: combo + 1 })}` : text,
         lines >= 2 || combo > 0,
@@ -354,6 +360,14 @@ const showEnding = (ending: Ending, reason: string, teaserMs: number) => {
     value: format.result(ending.kind, ending.amount),
     best: format.result(ending.kind, ending.best),
     isNewBest: ending.isNewBest,
+    ...(ending.week
+      ? {
+          week: {
+            best: format.result(ending.kind, ending.week.best),
+            isNewBest: ending.week.isNewBest,
+          },
+        }
+      : {}),
     progress: ending.progress,
     ...(ending.campaign ? { campaign: ending.campaign } : {}),
     ...(ending.training ? { training: ending.training } : {}),
@@ -533,6 +547,7 @@ const SHARE: Readonly<Record<RunKindId, (value: string, url: string) => string>>
   free: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
   level: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
   training: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
+  race: (value, url) => t('share.mode', { mode: modeName.value, value, url }),
 };
 const onShare = async () => {
   if (!run.session || !outcome.value) return;
@@ -605,7 +620,7 @@ onBeforeUnmount(() => {
     <HudPanel
       v-if="!training"
       class="game__stats"
-      :indicators="indicators.slice(1)"
+      :indicators="stats"
       :main-first="false"
       :urgent="timeUrgent ? ['timeLeft'] : []"
     />
@@ -783,6 +798,24 @@ onBeforeUnmount(() => {
 }
 
 /*
+ * The race (1.34): its clock atop the band, between pause and sound, the
+ * worlds and the phase under it, the score between the hold and the next
+ * pieces, then the counters, whose row keeps the room of the Guardian's card
+ * (shown in their place): nothing moves when a Guardian comes or goes.
+ */
+.game[data-layout='race'] {
+  grid-template-rows: auto auto auto calc(var(--hud-size) * 3.2) minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'pause clock sound'
+    'worlds worlds worlds'
+    'hold score next'
+    'stats stats stats'
+    'well well well'
+    'padm padm padm'
+    'pada pada pada';
+}
+
+/*
  * Portrait, a level's goal beside a hold box (the falling family, the Tower,
  * the duel): the hold, the Flip's button and the surge on one side, the next
  * pieces on the other, left the goal 30 to 120 px of a phone (its level on
@@ -815,6 +848,24 @@ onBeforeUnmount(() => {
   }
 }
 
+/* Where the Guardian's card takes the counters' place (portrait, a short landscape window). */
+@media (orientation: portrait), (orientation: landscape) and (height < 30rem) {
+  .game[data-layout='race']:has(.race__guardian) .game__stats {
+    visibility: hidden;
+  }
+}
+
+/* Portrait: balanced sides, so that the clock and the score stay in the middle, with or without a hold box. */
+@media (orientation: portrait) {
+  .game[data-layout='race'] {
+    grid-template-columns: minmax(min-content, 1fr) auto minmax(min-content, 1fr);
+  }
+
+  .game[data-layout='race'] :deep(.stage__hold) {
+    justify-self: start;
+  }
+}
+
 /* Each family has its own light behind the game; it drifts slowly. */
 .game[data-family='sand'] {
   --family-1: rgb(255 181 71 / 0.2);
@@ -826,9 +877,16 @@ onBeforeUnmount(() => {
   --family-2: rgb(184 242 92 / 0.1);
 }
 
-.game[data-family='volume'] {
+.game[data-family='volume'],
+.game:has([data-race-world='tower']) {
   --family-1: rgb(61 224 255 / 0.2);
   --family-2: rgb(91 140 255 / 0.16);
+}
+
+/* The race's light is its world's. */
+.game:has([data-race-world='sand']) {
+  --family-1: rgb(255 181 71 / 0.2);
+  --family-2: rgb(255 122 77 / 0.14);
 }
 
 .game::before,
@@ -1098,6 +1156,46 @@ onBeforeUnmount(() => {
       'hold well next side'
       'help well next side'
       'padm well pada pada';
+  }
+
+  /*
+   * The race: the clock and the worlds atop the dashboard, the Guardian's
+   * card atop the next pieces, the rules in a word under them.
+   */
+  .game[data-layout='race'] {
+    grid-template-rows: repeat(7, minmax(0, auto)) minmax(0, 1fr);
+    grid-template-areas:
+      'pause well sound'
+      'clock well guardian'
+      'worlds well next'
+      'score well next'
+      'stats well next'
+      'hold well next'
+      'help well note'
+      'padm well pada';
+  }
+
+  /*
+   * The race on a short landscape screen (a phone): the hold box goes under
+   * the next pieces, so that the clock, the worlds, the score and the
+   * counters (or the Guardian's card) keep the left column.
+   */
+  @media (height < 30rem) {
+    .game[data-layout='race'] {
+      grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
+      grid-template-areas:
+        'pause well sound'
+        'clock well next'
+        'worlds well next'
+        'score well next'
+        'stats well hold'
+        'help well hold'
+        'padm well pada';
+    }
+
+    .game[data-layout='race'] :deep(.stage__hold) {
+      justify-self: start;
+    }
   }
 
   /*

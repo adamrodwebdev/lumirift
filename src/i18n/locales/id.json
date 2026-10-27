@@ -85,6 +85,11 @@
     "tower": {
       "name": "Menara",
       "pitch": "Sumur menggulung menjadi silinder kaca: satu baris mengelilingi seluruhnya."
+    },
+    "race": {
+      "name": "Balapan Retakan",
+      "pitch": "Berpacu dengan waktu di sumur, pasir, dan menara: setiap baris menambah waktu, dan tiap 40 detik retakan berpindah dunia.",
+      "tagline": "Tiga dunia, satu jam"
     }
   },
   "hud": {
@@ -121,7 +126,8 @@
     "windIn": "Embusan angin berikutnya",
     "best": "Rekor",
     "newBest": "Rekor baru!",
-    "nextBeat": "Detak berikutnya"
+    "nextBeat": "Detak berikutnya",
+    "cycle": "Siklus"
   },
   "notice": {
     "closeCall": "Nyaris! +{value}",
@@ -289,7 +295,9 @@
       "note": "Sesekali saja, tidak di setiap kekalahan.",
       "noAd": "Belum ada iklan saat ini. Coba lagi, atau main lagi."
     },
-    "soClose": "Nyaris: {n} poin lagi menuju rekor"
+    "soClose": "Nyaris: {n} poin lagi menuju rekor",
+    "weekBest": "Terbaik minggu ini",
+    "week": "Minggu ini: {value}"
   },
   "share": {
     "daily": "Lumirift · Tantangan harian {date} ({mode}): {value}. Giliranmu: {url}",
@@ -629,11 +637,11 @@
   },
   "demo": {
     "title": "Demo.",
-    "banner": "Lima mode permainan bebas (Klasik, Pasir, Mozaik, Menara, Duel) dan bab pertama kampanye. Game lengkap punya tiga belas mode dan tiga puluh level.",
+    "banner": "Lima mode permainan bebas (Klasik, Pasir, Mozaik, Menara, Duel) dan bab pertama kampanye. Game lengkap punya empat belas mode dan tiga puluh empat level.",
     "fullGame": "Game lengkap"
   },
   "title": {
-    "tagline": "13 cara memecahkan balok.",
+    "tagline": "14 cara memecahkan balok.",
     "play": "Main",
     "level": "Level {level} · {mode}",
     "space": "{key} untuk main",
@@ -797,5 +805,67 @@
       "missed": "Ia menyelam lagi… Awasi retakan berikutnya.",
       "hit": "Kena! Cacing Pasir kembali menyelam."
     }
+  },
+  "race": {
+    "clock": "Sisa waktu {time}, paling lama {cap} detik",
+    "cap": "Maksimal {n} dtk",
+    "worlds": "Dunia dalam balapan",
+    "world": {
+      "well": "Sumur",
+      "sand": "Pasir",
+      "tower": "Menara"
+    },
+    "now": "sekarang",
+    "in": "dalam {time}",
+    "nextIn": "{world} dalam {time}",
+    "rule": {
+      "well": "Penuhi baris untuk menghapusnya",
+      "sand": "Area terhapus saat satu warna menghubungkan kedua dinding",
+      "tower": "Satu baris mengelilingi seluruh menara"
+    },
+    "shifts": "Retakan berpindah dunia",
+    "announce": "Retakan berpindah dunia: {world}.",
+    "speedUp": "Lebih cepat!",
+    "double": "Baris bernilai ganda sampai penyapuan",
+    "gain": {
+      "clear": "+{s} dtk",
+      "combo": "+{s} dtk · kombo ×{n}",
+      "hit": "+{s} dtk · kena",
+      "defeat": "+{s} dtk · Penjaga kalah!",
+      "shift": "+{s} dtk · dunia baru",
+      "overflow": "−{s} dtk · meluap",
+      "points": "+{n}"
+    },
+    "guardian": {
+      "kicker": "Penjaga · sisa {s} dtk",
+      "left": "{s} dtk",
+      "worth": "kena +{hit} dtk · kalah +{beaten} dtk",
+      "detail": "Tiap serangan +{hit} dtk, dikalahkan +{beaten} dtk. Pergi dalam {s} dtk, tanpa kerugian.",
+      "joins": {
+        "riftHeart": "Jantung Retakan ikut bertarung",
+        "duneWorm": "Cacing Pasir ikut bertarung",
+        "towerEye": "Mata Menara ikut bertarung"
+      },
+      "how": {
+        "riftHeart": "Hapus pecahan di reruntuhannya.",
+        "duneWorm": "Serang kepalanya saat muncul.",
+        "towerEye": "Hapus baris di bawah tatapannya."
+      },
+      "beaten": {
+        "riftHeart": "Jantung Retakan dikalahkan!",
+        "duneWorm": "Cacing Pasir dikalahkan!",
+        "towerEye": "Mata Menara dikalahkan!"
+      },
+      "gone": {
+        "riftHeart": "Jantung Retakan telah pergi.",
+        "duneWorm": "Cacing Pasir telah pergi.",
+        "towerEye": "Mata Menara telah pergi."
+      }
+    },
+    "note": "Hanya waktu yang mengakhiri balapan. Luapan memotong {cost} dtk, tak pernah menyisakan kurang dari {floor} dtk, dan separuh atas papan tersapu.",
+    "hurrah": "Waktu habis!",
+    "hurrahPoints": "Ledakan terakhir: +{n}",
+    "locked": "Terbuka di level {level}",
+    "new": "Baru"
   }
 }

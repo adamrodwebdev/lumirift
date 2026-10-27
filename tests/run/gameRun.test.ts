@@ -13,6 +13,7 @@ import {
   FreeRun,
   GuardianRun,
   LevelRun,
+  RaceRun,
   runKindFor,
   TrainingRun,
   type RunKind,
@@ -208,6 +209,29 @@ describe('GameRun', () => {
       '20261022',
     );
     expect(ending.rewardOffered).toBe(false);
+  });
+
+  it('counts a race for its record and the week’s, by the week’s Monday', async () => {
+    const { run, scores, game } = setUp(new RaceRun(), { showsBest: false });
+    // The 22nd of October 2026 is a Thursday: its week starts on Monday the 19th.
+    scores.record('race', 900);
+    scores.record('race:20261019', 300);
+    scores.record('race:20261012', 5000);
+    const over = vi.fn();
+    run.events.on('over', over);
+    await run.start();
+    game().points = 400;
+    game().end('timeUp');
+    const { ending } = over.mock.calls[0]![0] as { ending: NonNullable<typeof run.last> };
+    expect(ending).toMatchObject({
+      amount: 400,
+      best: 900,
+      isNewBest: false,
+      week: { best: 400, isNewBest: true },
+    });
+    expect(scores.best('race:20261019')).toBe(400);
+    // Only the clock ends a race: nothing to continue.
+    expect(new RaceRun().continues).toBe(false);
   });
 
   it('counts the Guardian challenge with its factor, never chasing it in points', async () => {
@@ -497,6 +521,9 @@ describe('RunKind', () => {
     expect(runKindFor({ ...choice, daily, guardian, level: null }, {}).id).toBe('guardian');
     expect(runKindFor({ ...choice, daily, guardian: null, level: null }, {}).id).toBe('daily');
     expect(runKindFor({ ...choice, daily: null, guardian: null, level: null }, {}).id).toBe('free');
+    expect(
+      runKindFor({ ...choice, modeId: 'race', daily: null, guardian: null, level: null }, {}),
+    ).toBeInstanceOf(RaceRun);
   });
 
   it('keeps the record each kind counts for, and what the progression hears', () => {
@@ -511,5 +538,7 @@ describe('RunKind', () => {
     expect(new GuardianRun(guardian.modeId, guardian).recordKey).toBe(`guardian:${guardian.key}`);
     expect(new LevelRun(level.modeId, level, {}).records).toBe(false);
     expect(new FreeRun('duel', 'hard').sessionOptions(3, new Date()).variant).toBe('hard');
+    expect(new FreeRun('classic').weekRecordKey()).toBeNull();
+    expect(new RaceRun().weekRecordKey(new Date(2026, 10, 1))).toBe('race:20261026');
   });
 });

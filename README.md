@@ -1,7 +1,8 @@
 # Lumirift
 
-Le jeu de blocs qui tombent, réinventé : les règles que vous connaissez, **13 modes** que
-vous n'avez jamais joués, en quatre familles. Dans le navigateur, mobile d'abord, en
+Le jeu de blocs qui tombent, réinventé : les règles que vous connaissez, **14 modes** que
+vous n'avez jamais joués, en quatre familles et une course qui les traverse. Dans le
+navigateur, mobile d'abord, en
 **français, anglais, indonésien et russe**, avec son identité « Rift » (indigo, faille dorée,
 blocs gemmes) et sa musique générative. Gratuit, sans inscription,
 aucune donnée ne quitte l'appareil.
@@ -18,11 +19,18 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 | **Sable**     | Sable : les pièces se désagrègent en grains ; éléments, vent et combo jusqu'à ×10         | Grains          |
 | **Placement** | Mosaïque : grille 8 × 8, pièces à poser, cinq jokers                                      | Céramique       |
 | **Volume**    | Tour : le puits s'enroule en cylindre de verre                                            | Verre courbé    |
+| **Faille**    | Course de la faille : contre la montre, à travers le puits, le Sable et la Tour           | Celle du monde  |
 
 - **Campagne** : 34 niveaux en cinq chapitres à travers tous les modes, des étoiles à
   gagner et **dix améliorations** à acheter avec elles. Sa courbe est mesurée : des joueurs
   simulés (débutant, habitué, expert) jouent chaque niveau, qui doit rester dans la bande
   de sa fiche de rythme ; au premier chapitre, la menace ralentit près du haut du puits.
+- **Course de la faille** : un chrono parti de 1:30 (99 s au plus), et toutes les 40 s la
+  faille change de monde, du puits au Sable puis à la Tour, chaque fois sur un plateau neuf
+  qui rapporte 10 s. Les lignes rapportent du temps (double pendant l'annonce du changement),
+  un débordement en coûte sans finir la partie ; un Gardien du monde peut entrer en jeu pour
+  25 s, et chaque cycle accélère la chute et multiplie le score. Record personnel et record de
+  la semaine ; le mode s'ouvre au niveau 4-4 de la campagne.
 - **Défi du jour** : chaque jour, un mode et les mêmes pièces pour tout le monde, deux
   minutes, résultat à partager.
 - **Défi des Gardiens** : chaque semaine, un Gardien de la faille ouvert à tous depuis
@@ -201,11 +209,12 @@ Exigences et leur contrôle, fiche en quatre langues et étapes de publication :
 ## Qualité
 
 - TypeScript strict, ESLint `strictTypeChecked`, Prettier.
-- Plus de 500 tests unitaires : moteurs, modes, IA, effets et sons, services, progression,
-  parité des traductions.
-- Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 13
-  modes, une partie complète, défi du jour, réglages retenus, menu (onglets, glissement,
-  carte, Atelier), clavier seul ; le premier lancement d'un portail, sur le build
+- Près de 700 tests unitaires : moteurs, modes, IA, effets et sons, services, progression,
+  parité des traductions ; et un projet à part, `npm run test:curve`, où des joueurs simulés
+  jouent toute la campagne et 24 courses de la faille.
+- Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 14
+  modes, une partie complète, une course de la faille jusqu'à sa fin, défi du jour, réglages
+  retenus, menu (onglets, glissement, carte, Atelier), clavier seul ; le premier lancement d'un portail, sur le build
   CrazyGames ; le build Yandex Games avec un faux SDK (chargement, pauses, langue,
   sauvegarde, cadre sans menu ni sélection) ; en russe, la langue la plus longue, chaque page et chaque
   famille de jeu de 320 px au bureau, en portrait et en paysage, sans rien de coupé.
@@ -234,7 +243,8 @@ src/
                  déroulé et sa fin réglée ; l'écran ne fait que dessiner
   campaign/      Niveaux, objectifs, étoiles, améliorations, défi des Gardiens
   showcase/      Scènes mises en scène (boucle de l'accueil, vidéos des portails)
-  families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface
+  families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface ;
+                 race : la course, une session de sessions qui change de monde
   progression/   Expérience, objectifs, cosmétiques, profil
   fx/, render/   Particules, secousses, sons ; palette et motifs partagés
   services/      Réglages, records, profil, thème, ambiance, audio, partage

@@ -41,6 +41,7 @@ const DESCRIPTORS: readonly ModeDescriptor[] = [
   { id: 'sand', family: 'sand', result: 'score', dailyEligible: true },
   { id: 'mosaic', family: 'placement', result: 'score', dailyEligible: true, showsBest: true },
   { id: 'tower', family: 'volume', result: 'score', dailyEligible: true },
+  { id: 'race', family: 'rift', result: 'score', dailyEligible: false },
 ];
 
 /** Each family is a separate chunk, downloaded the first time one of its modes is played. */
@@ -52,6 +53,7 @@ const LOADERS = new Map<FamilyId, FamilyLoader>([
     () => import('@/families/placement').then((family) => family.createPlacementSession),
   ],
   ['volume', () => import('@/families/volume').then((family) => family.createVolumeSession)],
+  ['rift', () => import('@/families/race').then((family) => family.createRaceSession)],
 ]);
 
 /**

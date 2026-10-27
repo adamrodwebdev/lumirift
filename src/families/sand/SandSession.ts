@@ -2,7 +2,7 @@ import { Emitter, type Listener } from '@/core/Emitter';
 import type { ComboView } from '@/session/ComboGauge';
 import { CONTINUE_FREES } from '@/session/ContinueRule';
 import type { BossId, BossStatus, GuideLine, TrainingStage } from '@/session/GameSession';
-import { WORM_HEALTH, type DuneWorm } from './engine/DuneWorm';
+import type { DuneWorm } from './engine/DuneWorm';
 import type { FallingCommand } from '@/families/falling/FallingSession';
 import type {
   GameSession,
@@ -13,7 +13,7 @@ import type {
 } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import type { PieceSpec, SandEventMap, SandGame } from './engine/SandGame';
-import type { SandGrid } from './engine/SandGrid';
+import { GRAINS_PER_CELL, type SandGrid } from './engine/SandGrid';
 import type { SandPiece } from './engine/SandPiece';
 import { SandGuide } from './SandGuide';
 
@@ -146,7 +146,16 @@ export class SandSession implements GameSession<FallingCommand> {
     const worm = this.game.worm;
     // A worm passing by in a teaser is not a fight.
     if (!worm || this.game.isTeasing) return null;
-    return { id: 'duneWorm', health: worm.health, maxHealth: WORM_HEALTH };
+    return { id: 'duneWorm', health: worm.health, maxHealth: worm.maxHealth };
+  }
+
+  dismiss(): void {
+    this.game.dismissBoss();
+  }
+
+  /** The cells of sand left in the well. */
+  remains(): number {
+    return Math.round(this.game.grid.grainCount() / (GRAINS_PER_CELL * GRAINS_PER_CELL));
   }
 
   get revivable(): boolean {
@@ -192,6 +201,7 @@ export class SandSession implements GameSession<FallingCommand> {
     events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
     events.on('notice', (event) => this.events.emit('notice', event));
+    events.on('overflow', () => this.events.emit('overflow', {}));
     events.on('closeCall', (event) => this.events.emit('closeCall', event));
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));
     // The Guardian speaks through notices: each of its moves is named the first time.

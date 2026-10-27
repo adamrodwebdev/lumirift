@@ -161,6 +161,10 @@ const beats = computed(() => !props.continueCard);
         <span v-if="!outcome.campaign && outcome.isNewBest" class="score__badge">
           {{ t('over.newBest') }}
         </span>
+        <!-- The race: the week's best, beaten (its own record is not). -->
+        <span v-else-if="outcome.week?.isNewBest" class="score__badge">
+          {{ t('over.weekBest') }}
+        </span>
         <span class="score__label">{{
           outcome.guardian ? t('guardianChallenge.score') : t('over.result')
         }}</span>
@@ -183,6 +187,9 @@ const beats = computed(() => !props.continueCard);
             {{
               t(outcome.guardian ? 'guardianChallenge.best' : 'over.best', { value: outcome.best })
             }}
+          </span>
+          <span v-if="outcome.week && !outcome.week.isNewBest" class="score__best">
+            {{ t('over.week', { value: outcome.week.best }) }}
           </span>
           <span v-if="outcome.closeTo" class="close" aria-hidden="true">
             <i :style="{ transform: `scaleX(${outcome.closeTo.fill})` }" />

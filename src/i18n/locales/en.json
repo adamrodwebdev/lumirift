@@ -85,6 +85,11 @@
     "tower": {
       "name": "Tower",
       "pitch": "The well rolls into a glass cylinder: a line goes all the way round."
+    },
+    "race": {
+      "name": "Rift Race",
+      "pitch": "Race the clock through the well, the Sand and the Tower: every line buys time, and every 40 s the Rift shifts.",
+      "tagline": "Three worlds, one clock"
     }
   },
   "hud": {
@@ -121,7 +126,8 @@
     "windIn": "Next gust of wind",
     "best": "Record",
     "newBest": "New record!",
-    "nextBeat": "Next beat"
+    "nextBeat": "Next beat",
+    "cycle": "Cycle"
   },
   "notice": {
     "closeCall": "Close call! +{value}",
@@ -289,7 +295,9 @@
       "note": "Once in a while, never at every defeat.",
       "noAd": "No ad available right now. Try again, or play on."
     },
-    "soClose": "So close: one point to the record | So close: {n} points to the record"
+    "soClose": "So close: one point to the record | So close: {n} points to the record",
+    "weekBest": "Best of the week",
+    "week": "This week: {value}"
   },
   "share": {
     "daily": "Lumirift · Daily challenge, {date} ({mode}): {value}. Your turn: {url}",
@@ -629,11 +637,11 @@
   },
   "demo": {
     "title": "Demo.",
-    "banner": "Five modes in free play (Classic, Sand, Mosaic, Tower, Duel) and the first chapter of the campaign. The full game has thirteen modes and thirty levels.",
+    "banner": "Five modes in free play (Classic, Sand, Mosaic, Tower, Duel) and the first chapter of the campaign. The full game has fourteen modes and thirty-four levels.",
     "fullGame": "Full game"
   },
   "title": {
-    "tagline": "13 ways to break a block.",
+    "tagline": "14 ways to break a block.",
     "play": "Play",
     "level": "Level {level} · {mode}",
     "space": "{key} to play",
@@ -797,5 +805,67 @@
       "missed": "It dives back down… Watch for the next cracks.",
       "hit": "Hit! The Wyrm dives back down."
     }
+  },
+  "race": {
+    "clock": "{time} left, {cap} seconds at most",
+    "cap": "{n} s at most",
+    "worlds": "The worlds of the run",
+    "world": {
+      "well": "Well",
+      "sand": "Sand",
+      "tower": "Tower"
+    },
+    "now": "now",
+    "in": "in {time}",
+    "nextIn": "{world} in {time}",
+    "rule": {
+      "well": "Clear full lines",
+      "sand": "Regions clear when a colour links both walls",
+      "tower": "A line goes all the way round the tower"
+    },
+    "shifts": "The Rift shifts",
+    "announce": "The Rift shifts to: {world}.",
+    "speedUp": "Speed up!",
+    "double": "Lines count double until the wipe",
+    "gain": {
+      "clear": "+{s} s",
+      "combo": "+{s} s · combo ×{n}",
+      "hit": "+{s} s · hit",
+      "defeat": "+{s} s · Guardian beaten!",
+      "shift": "+{s} s · new world",
+      "overflow": "−{s} s · overflow",
+      "points": "+{n}"
+    },
+    "guardian": {
+      "kicker": "Guardian · {s} s left",
+      "left": "{s} s",
+      "worth": "hit +{hit} s · beaten +{beaten} s",
+      "detail": "Each hit +{hit} s, beaten +{beaten} s. Gone in {s} s, it costs nothing.",
+      "joins": {
+        "riftHeart": "The Heart of the Rift joins",
+        "duneWorm": "The Dune Wyrm joins",
+        "towerEye": "The Eye of the Tower joins"
+      },
+      "how": {
+        "riftHeart": "Clear the shards in its rubble.",
+        "duneWorm": "Strike its head when it bursts out.",
+        "towerEye": "Clear lines in its gaze."
+      },
+      "beaten": {
+        "riftHeart": "The Heart of the Rift is defeated!",
+        "duneWorm": "The Dune Wyrm is defeated!",
+        "towerEye": "The Eye of the Tower is defeated!"
+      },
+      "gone": {
+        "riftHeart": "The Heart of the Rift is gone.",
+        "duneWorm": "The Dune Wyrm is gone.",
+        "towerEye": "The Eye of the Tower is gone."
+      }
+    },
+    "note": "Only the clock ends the run. An overflow costs {cost} s, never leaving less than {floor} s, and clears the top half of the board.",
+    "hurrah": "Time!",
+    "hurrahPoints": "Last hurrah: +{n}",
+    "locked": "Opens at level {level}",
+    "new": "New"
   }
 }

@@ -186,7 +186,7 @@ au SDK journalisé. Le « débutant » est un joueur simulé qui lâche chaque p
 | Réactif, fluide                                         | ✅      | Voir performances ; relance en 0,2 s                                                                                    |
 | Défi et rythme équilibrés                               | ✅      | 1.18 : après la démonstration du 1-1, le 1-2 fait pratiquer les éléments ; le Classique attend le 1-3                   |
 | Mise en page, interface adaptée à l'appareil            | ✅      | Toutes les tailles d'iframe ; portrait et paysage ; gestes au doigt                                                     |
-| Plusieurs profils de joueurs                            | ✅      | Campagne, défi du jour, 13 modes, duel contre l'IA, quatre boss                                                         |
+| Plusieurs profils de joueurs                            | ✅      | Campagne, défi du jour, 14 modes dont une course contre la montre, duel contre l'IA, quatre boss                        |
 | Scénario intéressant, si le jeu en a un                 | ✅      | La faille et ses quatre Gardiens donnent un fil ; pas d'histoire racontée                                               |
 | Pas de tâche répétitive                                 | ✅      | Chaque niveau change de mode ou d'objectif                                                                              |
 | Unique, facile à enrichir, entretenu                    | ✅      | Nom et iconographie propres ; niveaux et boss en données ; six versions cette semaine                                   |

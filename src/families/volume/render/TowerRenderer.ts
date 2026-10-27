@@ -722,6 +722,8 @@ export class TowerRenderer {
 
   private rebuildSprites(): void {
     const size = Math.ceil(this.projection.rowHeight);
-    this.sprites = this.palette && size > 0 ? new GlassSprites(size, this.palette) : null;
+    // Too small a tower (its box not laid out yet: a world of the race just opening) draws nothing.
+    this.sprites =
+      this.palette && size >= GlassSprites.MIN_SIZE ? new GlassSprites(size, this.palette) : null;
   }
 }

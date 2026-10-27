@@ -306,6 +306,18 @@ export const MODE_ART: Readonly<Record<ModeId, readonly ArtShape[]>> = {
       [6, 3],
     ]),
   ],
+  // The race's clock, its hand near the top, over the three worlds it turns through.
+  race: [
+    { kind: 'ellipse', cx: 60, cy: 30, rx: 22, ry: 22 },
+    path('M60 30 V14 M60 30 L72 37', 3),
+    blocks(1, [
+      [1, 7],
+      [2, 7],
+      [2, 6],
+    ]),
+    path('M46 78 Q53 68 60 74 T74 72', 9),
+    { kind: 'ellipse', cx: 102, cy: 74, rx: 10, ry: 3 },
+  ],
   tower: [
     { kind: 'ellipse', cx: 60, cy: 14, rx: 26, ry: 6 },
     { kind: 'ellipse', cx: 60, cy: 66, rx: 26, ry: 6 },
