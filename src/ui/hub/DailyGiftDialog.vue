@@ -5,7 +5,7 @@ import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
 import { bonus } from '@/fx/sounds';
 import { COLLECTIONS, type Collection } from '@/progression/Collections';
-import { findCosmetic, type MaterialId, type ShatterId } from '@/progression/Cosmetics';
+import { findCosmeticByKey, type MaterialId, type ShatterId } from '@/progression/Cosmetics';
 import { GIFT_DAYS, WELCOME_BACK_XP, type Gift } from '@/progression/DailyGifts';
 import { nextStreakBonus, STREAK_BONUSES } from '@/progression/Experience';
 import { justClaimed, type GiftCalendar, type GiftDay } from '@/progression/GiftCalendar';
@@ -80,7 +80,7 @@ const claimWords = computed(() => {
 const doubled = computed(() => (today.value.gift.kind === 'xp' ? today.value.gift.amount * 2 : 0));
 
 /** A set's ambiance, its prize. */
-const prizeOf = (set: Collection) => findCosmetic('ambiance', set.reward)!;
+const prizeOf = (set: Collection) => findCosmeticByKey(set.reward)!;
 /** The sets complete now: a gift may complete one (its look, or the level its experience brings). */
 const completeSets = () => COLLECTIONS.filter((set) => profile.isUnlocked(prizeOf(set)));
 

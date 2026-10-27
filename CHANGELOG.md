@@ -3,6 +3,73 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.36.0] — 27/10/2026
+
+Événements et saison 1 (lot 18 du chemin vers 5) : chaque semaine, un élément du Sable à
+l'honneur et son objectif ; des saisons de six semaines et leur piste de paliers. Une
+avant-saison s'ouvre dès cette version ; la saison 1, « Braises », ouvre le 14 décembre à
+minuit UTC ; les saisons 2 (« Marées ») et 3 (« Orage ») sont prêtes, en données.
+
+### Ajouté
+
+- **L'élément de la semaine** :
+  - chaque semaine (du lundi, minuit UTC : la même semaine sur tous les appareils), un élément
+    du Sable revient plus souvent dans ses parties libres, dès le premier niveau (trois fois
+    son poids, et les éléments un peu plus souvent) ; la campagne, les défis et la course n'en
+    changent pas ;
+  - son objectif compte ce qu'il fait dans toutes les parties du Sable : le feu brûle le
+    sable, la foudre tombe, les graines poussent en lianes, l'acide ronge des grains ; l'eau,
+    l'huile et la glace comptent les pièces versées (leurs réactions sont trop rares, ou
+    réservées à qui vise). Atteint, +150 points de saison.
+- **Les saisons** : les points viennent de l'expérience de chaque partie (objectifs compris)
+  et de l'objectif de la semaine ; ils montent une piste de paliers (300 points chacun) :
+  de l'expérience sur la plupart, une nouveauté sur trois, récupérées une à une ou toutes à
+  la fois. Les paliers laissés à la fin d'une saison sont donnés à la visite suivante : rien
+  n'est perdu.
+- **L'avant-saison** (du 26 octobre au 13 décembre) : dix paliers d'expérience et les
+  Étincelles de la faille. **La saison 1 « Braises »** (du 14 décembre au 24 janvier) : trente
+  paliers, les Flammèches, l'ambiance Braises et le Verre de braise ; réunis, l'ensemble
+  Braises donne le Verre du phénix.
+- **Après une saison**, ses nouveautés passent en tête du cadeau du 7e jour (la saison la plus
+  récente d'abord), et son ensemble reste à compléter dans l'Atelier.
+- **Des nouveautés décrites en données** : les ambiances (leurs deux lueurs et leur défaite),
+  les éclats (leurs couleurs, leur vol) et le verre de saison (un motif, braises, ondes ou
+  éclair, allumé dans la couleur de la pièce). Les saisons 2 et 3 sont écrites ainsi : changer
+  de saison est une sortie de données.
+- **Sur l'accueil, l'événement de la semaine** : son élément, le temps restant, son objectif et
+  sa barre, l'anneau du palier de la saison (un point d'or quand une récompense attend). Il
+  ouvre **la page de la saison** : le palier et les points, l'événement, la piste (une liste
+  sur un téléphone, un ruban sur un grand écran, ouverte sur le palier en cours), l'ensemble et
+  sa couronne, la saison suivante et ses nouveautés ; Retour ou Échap la referment.
+- La fin de partie dit ce qu'elle a rapporté à la saison : ses points, un palier atteint,
+  l'objectif de la semaine.
+
+### Modifié
+
+- L'Atelier ne montre les nouveautés d'une saison qu'à partir de son début ; un ensemble de
+  saison dit la couronne qu'il donne.
+- L'accueil sur un écran bas : l'événement se resserre ; sur les plus bas (un téléphone en
+  largeur), l'aide du clavier, les durées des défis et leurs pastilles s'effacent et Jouer
+  perd son icône. Le cadeau et les objectifs tiennent sur une ligne : dans une colonne
+  étroite, « Objectifs du jour » s'efface (les points et le compte restent, un lecteur d'écran
+  lit tout).
+
+### Technique
+
+- `seasons/` : `SeasonData` (les saisons et leurs nouveautés, en données), `EventCalendar`
+  (semaines et saisons en UTC), `SeasonTrack`, `WeeklyGoals`, `SeasonProgress` ;
+  `SeasonService` ; l'objectif de la semaine est une sorte d'objectif (`element`).
+- La session commune annonce les actions des éléments (`element`), le rapport de partie les
+  compte ; les parties libres reçoivent l'élément de la semaine (`featuredElement`), que le
+  Sable distribue (`DealRules.featured`).
+- `SeasonGlassSprites`, la feuille des ambiances de saison générée depuis leurs données, leurs
+  défaites et leurs éclats aussi ; `achievementsOf` dans son module (`Achievements`).
+- Tests : le calendrier franchit chaque frontière de semaine et de saison dans cinq fuseaux ;
+  les données, la piste, la progression, le service, l'ordre du cadeau ; un test de courbe
+  mesure les objectifs de la semaine (8 à 20 minutes de Sable pour un habitué) ; parcours de
+  bout en bout des saisons (Auckland et Los Angeles le 14 décembre), audits d'accessibilité,
+  tailles clés, balayage de 320 à 2 560 px, russe.
+
 ## [1.35.0] — 27/10/2026
 
 Cadeaux et collections (lot 17 du chemin vers 5) : une raison de revenir chaque jour. Un

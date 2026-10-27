@@ -1,4 +1,5 @@
 import { Tone } from '@/core/Tone';
+import type { ElementName } from '@/session/Elements';
 
 /*
  * The elements of the sand well: how each kind of grain moves and how long it
@@ -84,6 +85,17 @@ export const WEIGHT: Readonly<Record<ElementTone, number>> = {
   [Tone.Ice]: 1.5,
   [Tone.Seed]: 1.5,
   [Tone.Acid]: 1,
+};
+
+/** Each element's tone, by the name the common contract gives it (1.36). */
+export const ELEMENT_TONES: Readonly<Record<ElementName, ElementTone>> = {
+  water: Tone.Water,
+  fire: Tone.Fire,
+  oil: Tone.Oil,
+  ice: Tone.Ice,
+  lightning: Tone.Lightning,
+  seed: Tone.Seed,
+  acid: Tone.Acid,
 };
 
 /** The elements of an endless game at this level. */

@@ -41,6 +41,10 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   paliers (3, 7, 14 et 30 jours) ; **Atelier** de matières, d'ambiances et de signatures de
   bris, tous cosmétiques, et ses **ensembles** : quatre apparences réunies débloquent une
   ambiance.
+- **Les saisons et l'élément de la semaine** : chaque semaine, un élément du Sable revient
+  plus souvent et donne son objectif ; les points de chaque partie montent la piste de la
+  saison (de l'expérience et des nouveautés, une couronne pour l'ensemble). Une avant-saison
+  dès maintenant, la saison 1 « Braises » le 14 décembre, les suivantes prêtes en données.
 - **Le cadeau du jour** : un calendrier de sept jours (de l'expérience, une apparence le
   septième), qui s'ouvre de lui-même au premier passage de la journée ; un jour manqué ne
   fait rien perdre, une semaine d'absence vaut un cadeau de retour.
@@ -219,7 +223,8 @@ Exigences et leur contrôle, fiche en quatre langues et étapes de publication :
   jouent toute la campagne et 24 courses de la faille.
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 14
   modes, une partie complète, une course de la faille jusqu'à sa fin, défi du jour, le
-  calendrier des cadeaux sur une horloge réglée (minuit, retour en arrière), réglages
+  calendrier des cadeaux sur une horloge réglée (minuit, retour en arrière), l'ouverture d'une
+  saison à minuit UTC vue d'Auckland et de Los Angeles, réglages
   retenus, menu (onglets, glissement, carte, Atelier), clavier seul ; le premier lancement d'un portail, sur le build
   CrazyGames ; le build Yandex Games avec un faux SDK (chargement, pauses, langue,
   sauvegarde, cadre sans menu ni sélection) ; en russe, la langue la plus longue, chaque page et chaque
@@ -252,6 +257,7 @@ src/
   families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface ;
                  race : la course, une session de sessions qui change de monde
   progression/   Expérience, objectifs, cosmétiques, ensembles, cadeaux du jour, profil
+  seasons/       Les saisons en données, leur calendrier (UTC), leur piste, l'objectif de la semaine
   fx/, render/   Particules, secousses, sons ; palette et motifs partagés
   services/      Réglages, records, profil, thème, ambiance, audio, partage
   ui/            Écrans (menu, jeu), pages du menu (hub/), composants ; la présentation et

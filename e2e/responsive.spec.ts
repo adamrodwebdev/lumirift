@@ -13,6 +13,11 @@ const FAMILIES = ['Classique', 'Duel', 'Sable', 'Mosaïque', 'Tour'] as const;
 const TABS = ['Accueil', 'Modes', 'Carte', 'Atelier'] as const;
 
 const tab = (page: Page, name: string) => page.getByRole('tab', { name });
+/** The week's event on the home (1.36), on a day of Season 1. */
+const weekEvent = (page: Page) =>
+  page.getByRole('tabpanel', { name: 'Accueil' }).getByRole('button', { name: /^Semaine/ });
+/** A Wednesday of Season 1's first week, at noon UTC (1.36). */
+const SEASON_DAY = new Date('2026-12-16T12:00:00Z');
 const panel = (page: Page, name: string) => page.getByRole('tabpanel', { name });
 
 async function openMode(page: Page, name: string) {
@@ -181,8 +186,10 @@ test('no sideways scroll from 320 to 2560 px, every 20 px, in the menu and every
   page,
 }, info) => {
   test.skip(info.project.name !== 'desktop', 'One sweep is enough');
-  test.setTimeout(300_000);
+  test.setTimeout(360_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  // A day of Season 1 (1.36): the week's event on the home, the season's page to sweep.
+  await page.clock.setFixedTime(SEASON_DAY);
   await page.goto('/');
   await page.locator('main').waitFor();
   const sweep = async (where: string) => {
@@ -197,6 +204,10 @@ test('no sideways scroll from 320 to 2560 px, every 20 px, in the menu and every
     await tab(page, name).click();
     await sweep(name);
   }
+  await tab(page, 'Accueil').click();
+  await weekEvent(page).click();
+  await sweep('Saison 1 · Braises');
+  await page.keyboard.press('Escape');
   for (const name of FAMILIES) {
     await openMode(page, name);
     await sweep(name);
@@ -225,7 +236,7 @@ const KEY_SIZES: readonly KeySize[] = [
   { name: 'a 400 % zoom', width: 320, height: 256, scale: 4 },
 ];
 
-async function openAt(browser: Browser, size: KeySize, controls?: 'buttons') {
+async function openAt(browser: Browser, size: KeySize, controls?: 'buttons', at?: Date) {
   const context = await browser.newContext({
     baseURL: 'http://localhost:4177/',
     viewport: { width: size.width, height: size.height },
@@ -241,11 +252,39 @@ async function openAt(browser: Browser, size: KeySize, controls?: 'buttons') {
       controls,
     );
   const page = await context.newPage();
+  if (at) await page.clock.setFixedTime(at);
   await page.goto('/');
   await page.locator('main').waitFor();
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   return { context, page };
 }
+
+for (const size of KEY_SIZES)
+  test(`at ${size.name}: the week’s event and the season’s page fit and read well`, async ({
+    browser,
+  }, info) => {
+    test.skip(info.project.name !== 'desktop', 'Own contexts: once is enough');
+    test.setTimeout(120_000);
+    const { context, page } = await openAt(browser, size, undefined, SEASON_DAY);
+    // Rewards waiting: their claim buttons are in the page too.
+    await page.evaluate(() =>
+      localStorage.setItem(
+        'stackrift:season',
+        JSON.stringify({ season: 'embers', points: 1700, claimed: [1, 2], week: '20261214' }),
+      ),
+    );
+    await page.reload();
+    await page.locator('main').waitFor();
+    await settle(page);
+    await expectFits(page, `${size.name}, home and its event`);
+    if (size.touch) await expectThumbSized(page, `${size.name}, home and its event`);
+    await weekEvent(page).click();
+    await expect(page.getByRole('region', { name: 'Saison 1 · Braises' })).toBeVisible();
+    await settle(page);
+    await expectFits(page, `${size.name}, season`);
+    if (size.touch) await expectThumbSized(page, `${size.name}, season`);
+    await context.close();
+  });
 
 for (const size of KEY_SIZES)
   test(`at ${size.name}: the menu, its windows and every family fit and read well`, async ({

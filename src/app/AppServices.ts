@@ -14,6 +14,7 @@ import { WornLook } from '@/services/WornLook';
 import { AudioEngine } from '@/services/audio/AudioEngine';
 import { CampaignService } from '@/services/CampaignService';
 import { GiftService } from '@/services/GiftService';
+import { SeasonService } from '@/services/SeasonService';
 import { Haptics } from '@/services/Haptics';
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
 import { ProfileService } from '@/services/ProfileService';
@@ -31,6 +32,8 @@ export interface AppServices {
   readonly profile: ProfileService;
   /** The gift calendar (1.35): one gift a day of play. */
   readonly gifts: GiftService;
+  /** The seasons and the week's event (1.36): points, the track's rewards, the week's goal. */
+  readonly seasons: SeasonService;
   /** What the player wears now: their equipment, or a look tried for one game (1.31). */
   readonly look: WornLook;
   /** Campaign stars and upgrades. */
@@ -93,6 +96,7 @@ export function createBrowserServices(
     scores: new ScoreBoard(storage),
     profile,
     gifts: new GiftService(profile, clock),
+    seasons: new SeasonService(storage, profile, clock),
     look,
     campaign,
     share: new ShareService(navigator),

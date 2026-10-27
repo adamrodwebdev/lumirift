@@ -1,3 +1,4 @@
+import type { ElementName } from '@/session/Elements';
 import type { GameSession } from '@/session/GameSession';
 import type { BossId } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
@@ -22,6 +23,8 @@ export interface GameReport {
   readonly bestCombo: number;
   /** The Guardian defeated in this game, if any. */
   readonly boss?: BossId;
+  /** Each element's deeds in this game (1.36): the week's goal counts its element's. */
+  readonly elements?: Readonly<Partial<Record<ElementName, number>>>;
 }
 
 /**
@@ -34,15 +37,21 @@ export class GameTracker {
   private lines = 0;
   private bestAtOnce = 0;
   private bestCombo = 0;
-  private readonly off: () => void;
+  private readonly deeds: Partial<Record<ElementName, number>> = {};
+  private readonly offs: readonly (() => void)[];
 
   constructor(session: GameSession) {
-    this.off = session.events.on('clear', ({ lines, combo }) => {
-      this.clears++;
-      this.lines += lines;
-      this.bestAtOnce = Math.max(this.bestAtOnce, lines);
-      this.bestCombo = Math.max(this.bestCombo, combo + 1);
-    });
+    this.offs = [
+      session.events.on('clear', ({ lines, combo }) => {
+        this.clears++;
+        this.lines += lines;
+        this.bestAtOnce = Math.max(this.bestAtOnce, lines);
+        this.bestCombo = Math.max(this.bestCombo, combo + 1);
+      }),
+      session.events.on('element', ({ element }) => {
+        this.deeds[element] = (this.deeds[element] ?? 0) + 1;
+      }),
+    ];
   }
 
   /** The counts so far, while the game runs (the campaign follows its goal with them). */
@@ -70,10 +79,11 @@ export class GameTracker {
       lines: this.lines,
       bestAtOnce: this.bestAtOnce,
       bestCombo: this.bestCombo,
+      ...(Object.keys(this.deeds).length > 0 ? { elements: { ...this.deeds } } : {}),
     };
   }
 
   dispose(): void {
-    this.off();
+    for (const off of this.offs) off();
   }
 }

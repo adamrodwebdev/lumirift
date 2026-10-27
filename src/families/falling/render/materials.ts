@@ -1,8 +1,10 @@
 import type { MaterialId } from '@/progression/Cosmetics';
 import { mixRgb, parseHex, shade, type Rgb, type TonePalette } from '@/render/TonePalette';
 import type { Tone } from '../pieces/PieceType';
+import { SEASON_MATERIALS, type SeasonMaterialId } from '@/seasons/SeasonData';
 import { BlockSprites } from './BlockSprites';
 import { CrystalSprites } from './CrystalSprites';
+import { SeasonGlassSprites } from './SeasonGlassSprites';
 
 type Engraved = Exclude<Tone, 0>;
 const rgba = ({ r, g, b }: Rgb, alpha: number) => `rgb(${r} ${g} ${b} / ${alpha})`;
@@ -219,7 +221,7 @@ class KintsugiSprites extends BlockSprites {
 
 type SpriteFactory = new (size: number, palette: TonePalette) => BlockSprites;
 
-const MATERIAL_SPRITES: Readonly<Record<MaterialId, SpriteFactory>> = {
+const MATERIAL_SPRITES: Readonly<Record<Exclude<MaterialId, SeasonMaterialId>, SpriteFactory>> = {
   crystal: CrystalSprites,
   neon: NeonSprites,
   paper: PaperSprites,
@@ -230,11 +232,13 @@ const MATERIAL_SPRITES: Readonly<Record<MaterialId, SpriteFactory>> = {
   kintsugi: KintsugiSprites,
 };
 
-/** The blocks of a material at a given size. */
+/** The blocks of a material at a given size; a season's are its glass, from its data (1.36). */
 export function blockSprites(
   material: MaterialId,
   size: number,
   palette: TonePalette,
 ): BlockSprites {
-  return new MATERIAL_SPRITES[material](size, palette);
+  const season = SEASON_MATERIALS.find((look) => look.id === material);
+  if (season) return new SeasonGlassSprites(size, palette, season);
+  return new MATERIAL_SPRITES[material as Exclude<MaterialId, SeasonMaterialId>](size, palette);
 }

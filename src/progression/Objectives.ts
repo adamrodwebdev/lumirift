@@ -1,4 +1,5 @@
 import { SeededRandom, type RandomSource } from '@/core/Random';
+import type { ElementName } from '@/session/Elements';
 import type { ModeId } from '@/session/ModeId';
 import { MIN_GAME_MS } from './Experience';
 import type { GameReport } from './GameReport';
@@ -22,6 +23,7 @@ export const OBJECTIVE_KINDS = [
   'survive',
   'daily',
   'duel',
+  'element',
 ] as const;
 export type ObjectiveKind = (typeof OBJECTIVE_KINDS)[number];
 
@@ -33,6 +35,8 @@ export interface Objective {
   /** A mode to play (`playMode`), or the lines to clear at once (`bigClear`). */
   readonly mode?: ModeId;
   readonly size?: number;
+  /** The element whose deeds count (`element`: the week's goal, 1.36). */
+  readonly element?: ElementName;
 }
 
 /**
@@ -95,6 +99,14 @@ const RULES: readonly ObjectiveRule[] = [
     tiers: ['easy'],
     create: (tier) => ({ kind: 'daily', tier, target: 1 }),
     advance: (report) => (report.daily ? 1 : 0),
+  },
+  {
+    // The week's goal (1.36): never one of a day's; the season sets it (`weeklyObjective`).
+    kind: 'element',
+    tiers: [],
+    create: (tier) => ({ kind: 'element', tier, target: 1, element: 'fire' }),
+    advance: (report, objective) =>
+      objective.element ? (report.elements?.[objective.element] ?? 0) : 0,
   },
   {
     kind: 'duel',

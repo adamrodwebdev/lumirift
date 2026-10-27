@@ -8,6 +8,7 @@ import {
   type ObjectiveProgress,
   type ProfileData,
 } from '@/progression/Profile';
+import type { SeasonReward } from '@/seasons/SeasonTrack';
 import { readJson, type KeyValueStorage } from './KeyValueStorage';
 
 export const PROFILE_KEY = 'stackrift:profile';
@@ -67,6 +68,12 @@ export class ProfileService {
   /** The gift of `day` is claimed: its experience twice when an ad was watched. */
   claimGift(day: string, doubled: boolean): void {
     this.profile.claimGift(day, doubled);
+    this.save();
+  }
+
+  /** A season's reward is the player's (1.36): its experience or its look. */
+  receive(reward: SeasonReward): void {
+    this.profile.receive(reward);
     this.save();
   }
 

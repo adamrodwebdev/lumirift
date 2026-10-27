@@ -1,6 +1,7 @@
 import type { Emitter } from '@/core/Emitter';
 import type { Boosts } from './Boosts';
 import type { RandomSource } from '@/core/Random';
+import type { ElementName } from './Elements';
 import type { FamilyId, ModeId } from './ModeId';
 
 export type SessionState = 'ready' | 'running' | 'paused' | 'over';
@@ -43,6 +44,8 @@ export interface SessionEventMap {
   notice: { readonly id: string; readonly value?: number };
   /** The board overflowed and play went on, its top blown away (`overflowGoesOn`, the Rift Race). */
   overflow: Readonly<Record<string, never>>;
+  /** An element did its deed (1.36): fire burnt sand, a bolt struck… The week's goal counts them. */
+  element: { readonly element: ElementName };
   over: { readonly reason: string };
 }
 
@@ -69,6 +72,8 @@ export interface SessionOptions {
   readonly overflowGoesOn?: boolean;
   /** The gentle version of the mode, to teach it: none of its hazards (the Sand's wind and elements). */
   readonly calm?: boolean;
+  /** The week's element (1.36): a free game of the Sand deals it from the start, and more often. */
+  readonly featuredElement?: ElementName;
   /** The mode opens on its best moments, scripted (the first level of the campaign). */
   readonly showcase?: boolean;
   /** The mode's practice after its show: what was shown, dealt by chance, without the extra hazards (no wind in Sand). */

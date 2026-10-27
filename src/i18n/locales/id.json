@@ -453,7 +453,8 @@
     "combo": "Rangkai {size} penghapusan",
     "survive": "Bertahan {size} menit dalam satu permainan",
     "daily": "Selesaikan tantangan harian",
-    "duel": "Kalahkan AI normal atau yang lebih kuat"
+    "duel": "Kalahkan AI normal atau yang lebih kuat",
+    "element": "Target pekan: {n}"
   },
   "progress": {
     "title": "Kemajuan",
@@ -495,7 +496,13 @@
       "obsidian": "Obsidian",
       "gold": "Emas",
       "dunes": "Sisik pasir",
-      "kintsugi": "Kintsugi"
+      "kintsugi": "Kintsugi",
+      "cinder": "Kaca bara",
+      "phoenix": "Kaca phoenix",
+      "tideglass": "Kaca pasang",
+      "pearl": "Kaca mutiara",
+      "stormglass": "Kaca badai",
+      "tempest": "Kaca topan"
     },
     "ambiance": {
       "night": "Malam",
@@ -508,21 +515,29 @@
       "synthwave": "Synthwave",
       "lantern": "Lentera",
       "gilded": "Sepuh emas",
-      "sanctum": "Sanktum"
+      "sanctum": "Sanktum",
+      "embers": "Bara",
+      "lagoon": "Laguna",
+      "thunderhead": "Awan badai"
     },
     "shatter": {
       "shards": "Serpihan",
       "confetti": "Konfeti",
       "petals": "Kelopak",
       "gold": "Daun emas",
-      "iris": "Serpihan iris"
+      "iris": "Serpihan iris",
+      "riftspark": "Percik celah",
+      "ember": "Bara api",
+      "ripple": "Riak",
+      "static": "Percik listrik"
     },
     "unlock": {
       "default": "Gratis",
       "level": "Level {n}",
       "streak": "Beruntun {n} hari di tantangan",
       "objectives": "{n} tujuan selesai",
-      "collection": "Lengkapi set {name}"
+      "collection": "Lengkapi set {name}",
+      "season": "Di jalur {name}, lalu dari hadiah hari ke-7"
     },
     "tapToWear": "Ketuk lagi untuk memakai",
     "clickToWear": "Klik lagi untuk memakai",
@@ -918,6 +933,96 @@
     },
     "trophies": {
       "name": "Trofi Penjaga"
+    },
+    "embers": {
+      "name": "Bara"
+    },
+    "tides": {
+      "name": "Pasang"
+    },
+    "storm": {
+      "name": "Badai"
+    },
+    "crown": {
+      "progress": "{done} dari {total}: lengkapi untuk membuka {name}.",
+      "complete": "Lengkap! {name} jadi milikmu: pakai dari tab Blok."
     }
+  },
+  "seasons": {
+    "title": "Musim {n} · {name}",
+    "preseason": {
+      "name": "Pramusim"
+    },
+    "embers": {
+      "name": "Bara"
+    },
+    "tides": {
+      "name": "Pasang"
+    },
+    "storm": {
+      "name": "Badai"
+    },
+    "left": "sisa {d} hr {h} j",
+    "daysLeft": "sisa {n} hari",
+    "tier": "Tingkat {n}",
+    "of": "dari {n}",
+    "points": "{done} / {next} poin",
+    "maxed": "Jalur tuntas: {n} poin",
+    "sources": "Poin datang dari setiap permainan, tujuan, dan acara pekan ini.",
+    "claim": "Ambil",
+    "claimAll": "Ambil semua ({n})",
+    "claimLabel": "Ambil tingkat {n}: {reward}",
+    "claimed": "Sudah diambil",
+    "locked": "Di {n} poin",
+    "xp": "+{n} XP",
+    "track": "Tingkat musim ini",
+    "set": "Set {name}: kumpulkan tampilannya, dan {crown} jadi milikmu.",
+    "setDone": "Set lengkap: {crown} jadi milikmu.",
+    "next": "Berikutnya: {name}, mulai {date}.",
+    "soon": "Musim berikutnya segera hadir.",
+    "open": "Buka musim",
+    "back": "Kembali",
+    "gain": "{name}: +{n} poin",
+    "tierUp": "Tingkat {n} tercapai: ambil hadiahnya",
+    "ready": "{n} hadiah menunggu",
+    "xpBadge": "XP",
+    "plus": "+{n}"
+  },
+  "events": {
+    "week": {
+      "water": "Pekan air",
+      "fire": "Pekan api",
+      "oil": "Pekan minyak",
+      "ice": "Pekan es",
+      "lightning": "Pekan petir",
+      "seed": "Pekan benih",
+      "acid": "Pekan asam"
+    },
+    "goal": {
+      "water": "Tuang {n} kepingan air",
+      "fire": "Bakar pasir dengan api {n} kali",
+      "oil": "Tuang {n} kepingan minyak",
+      "ice": "Tuang {n} kepingan es",
+      "lightning": "Jatuhkan {n} petir",
+      "seed": "Tumbuhkan {n} sulur",
+      "acid": "Gerus {n} butir pasir dengan asam"
+    },
+    "featured": {
+      "water": "Pekan ini, permainan bebas Pasir lebih sering memberi kepingan air, sejak level pertama.",
+      "fire": "Pekan ini, permainan bebas Pasir lebih sering memberi kepingan api, sejak level pertama.",
+      "oil": "Pekan ini, permainan bebas Pasir lebih sering memberi kepingan minyak, sejak level pertama.",
+      "ice": "Pekan ini, permainan bebas Pasir lebih sering memberi kepingan es, sejak level pertama.",
+      "lightning": "Pekan ini, permainan bebas Pasir lebih sering memberi petir, sejak level pertama.",
+      "seed": "Pekan ini, permainan bebas Pasir lebih sering memberi benih, sejak level pertama.",
+      "acid": "Pekan ini, permainan bebas Pasir lebih sering memberi asam, sejak level pertama."
+    },
+    "inSand": "Semua permainan Pasir dihitung.",
+    "left": "sisa {d} hr",
+    "lastDay": "hari terakhir",
+    "progress": "{done}/{target}",
+    "reward": "+{n} poin",
+    "done": "Target tercapai: +{n} poin",
+    "label": "{week}, {left}: {goal} ({done} dari {target}). {season}, tingkat {tier}: buka musim.",
+    "goalDone": "Target pekan tercapai! +{n} poin musim"
   }
 }

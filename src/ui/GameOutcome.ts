@@ -1,5 +1,5 @@
 import type { GameProgress } from '@/progression/Profile';
-import type { CampaignResult, TrainingResult } from '@/run/GameEnding';
+import type { CampaignResult, SeasonGain, TrainingResult } from '@/run/GameEnding';
 import type { ResultKind } from '@/session/GameSession';
 
 export type { CampaignResult } from '@/run/GameEnding';
@@ -25,6 +25,8 @@ export interface GameOutcome {
   readonly guardian?: { readonly points: string; readonly factor: string | null };
   /** The record was close (the score three quarters of it or more): the points missing, the bar's fill. */
   readonly closeTo?: { readonly gap: number; readonly fill: number };
+  /** While a season runs (1.36): its title, and what this game brought it. */
+  readonly season?: SeasonGain & { readonly title: string };
 }
 
 /** A game whose end is not settled yet (a continue on offer): nothing earned to show. */

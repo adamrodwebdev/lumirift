@@ -41,6 +41,7 @@ import { GAME_SURFACE } from '../useGameSurface';
 import { useKeyBindings } from '../useKeyBindings';
 import { useKeyLabels } from '../useKeyLabels';
 import { useCampaignText } from '../useCampaignText';
+import { useProgressText } from '../useProgressText';
 import { isTouchScreen } from '../useOrientation';
 import { useSurge } from './useSurge';
 import { useTension } from './useTension';
@@ -69,6 +70,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const format = useFormat();
+const progressText = useProgressText();
 const {
   catalog,
   scores,
@@ -82,6 +84,7 @@ const {
   clock: today,
   ads,
   look,
+  seasons,
 } = useServices();
 const descriptor = catalog.get(props.modeId);
 
@@ -97,6 +100,7 @@ const run = new GameRun(runKindFor(props, campaign.current.ranks), descriptor.sh
   platform,
   ads,
   today,
+  season: seasons,
   campaign: {
     record: (outcome) => campaign.record(outcome),
     starsOf: (levelId) => campaign.model.starsOf(levelId),
@@ -369,6 +373,14 @@ const showEnding = (ending: Ending, reason: string, teaserMs: number) => {
         }
       : {}),
     progress: ending.progress,
+    ...(ending.season && seasons.view.span
+      ? {
+          season: {
+            ...ending.season,
+            title: progressText.seasonTitle(seasons.view.span.season.id),
+          },
+        }
+      : {}),
     ...(ending.campaign ? { campaign: ending.campaign } : {}),
     ...(ending.training ? { training: ending.training } : {}),
     ...(ending.guardian

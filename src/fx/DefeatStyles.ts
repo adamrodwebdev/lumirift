@@ -1,4 +1,5 @@
 import type { AmbianceId } from '@/progression/Cosmetics';
+import { SEASON_AMBIANCES } from '@/seasons/SeasonData';
 
 /** What the stack breaks into at a defeat. */
 export type DefeatMatter = 'dust' | 'ribbon' | 'bubble' | 'ember' | 'mote' | 'petal' | 'shard';
@@ -34,6 +35,11 @@ export const DEFEAT_STYLES: Readonly<Record<AmbianceId, DefeatStyle>> = {
   lantern: { matter: 'ember', burst: 'rise', drift: 'rise', opensVoid: false },
   gilded: { matter: 'dust', burst: 'burst', drift: 'rise', opensVoid: false },
   sanctum: { matter: 'shard', burst: 'spiral', drift: 'drift', opensVoid: true },
+  // The seasons' ambiances (1.36), from their data.
+  ...(Object.fromEntries(SEASON_AMBIANCES.map((look) => [look.id, look.defeat.style])) as Record<
+    (typeof SEASON_AMBIANCES)[number]['id'],
+    DefeatStyle
+  >),
 };
 
 /** Grains of matter bursting out of the stack, and drifting behind the window. */

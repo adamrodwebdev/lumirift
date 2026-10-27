@@ -133,6 +133,8 @@ export interface SandOptions {
   readonly elementPace?: ElementPace;
   /** The elements dealt, whatever the level (by default they come level after level). */
   readonly elements?: readonly ElementTone[];
+  /** The week's element (a free game, 1.36): dealt from the start, and more often. */
+  readonly featured?: ElementTone;
   /** Pieces dealt at a given rank whatever happens (the first level's show, a tutorial). */
   readonly script?: readonly ScriptedPiece[];
   /** A Guardian of the rift lives in this well (a boss level). */
@@ -237,6 +239,7 @@ export class SandGame {
         elements: options.elements ?? null,
         script: this.script,
         fireBonus: this.boosts.fireBonus,
+        featured: hazards ? (options.featured ?? null) : null,
       },
       () => this._level,
     );

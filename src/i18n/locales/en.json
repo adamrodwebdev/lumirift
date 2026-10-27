@@ -453,7 +453,8 @@
     "combo": "Chain {size} clears",
     "survive": "Survive {size} minutes in one game",
     "daily": "Finish the daily challenge",
-    "duel": "Beat the normal AI or a stronger one"
+    "duel": "Beat the normal AI or a stronger one",
+    "element": "Week’s goal: {n}"
   },
   "progress": {
     "title": "Progress",
@@ -495,7 +496,13 @@
       "obsidian": "Obsidian",
       "gold": "Gold",
       "dunes": "Dune scales",
-      "kintsugi": "Kintsugi"
+      "kintsugi": "Kintsugi",
+      "cinder": "Cinder glass",
+      "phoenix": "Phoenix glass",
+      "tideglass": "Tide glass",
+      "pearl": "Pearl glass",
+      "stormglass": "Storm glass",
+      "tempest": "Tempest glass"
     },
     "ambiance": {
       "night": "Night",
@@ -508,21 +515,29 @@
       "synthwave": "Synthwave",
       "lantern": "Lanterns",
       "gilded": "Gilded",
-      "sanctum": "Sanctum"
+      "sanctum": "Sanctum",
+      "embers": "Embers",
+      "lagoon": "Lagoon",
+      "thunderhead": "Thunderhead"
     },
     "shatter": {
       "shards": "Shards",
       "confetti": "Confetti",
       "petals": "Petals",
       "gold": "Gold leaf",
-      "iris": "Iris shards"
+      "iris": "Iris shards",
+      "riftspark": "Rift sparks",
+      "ember": "Ember sparks",
+      "ripple": "Ripples",
+      "static": "Static"
     },
     "unlock": {
       "default": "Free",
       "level": "Level {n}",
       "streak": "{n}-day daily streak",
       "objectives": "{n} objectives done",
-      "collection": "Complete the set {name}"
+      "collection": "Complete the set {name}",
+      "season": "On the {name} track, then from the day-7 gift"
     },
     "tapToWear": "Tap again to wear",
     "clickToWear": "Click again to wear",
@@ -918,6 +933,96 @@
     },
     "trophies": {
       "name": "Guardians’ trophies"
+    },
+    "embers": {
+      "name": "Embers"
+    },
+    "tides": {
+      "name": "Tides"
+    },
+    "storm": {
+      "name": "Storm"
+    },
+    "crown": {
+      "progress": "{done} of {total}: complete it to unlock {name}.",
+      "complete": "Complete! {name} is yours: wear it from the Blocks shelf."
     }
+  },
+  "seasons": {
+    "title": "Season {n} · {name}",
+    "preseason": {
+      "name": "Preseason"
+    },
+    "embers": {
+      "name": "Embers"
+    },
+    "tides": {
+      "name": "Tides"
+    },
+    "storm": {
+      "name": "Storm"
+    },
+    "left": "{d} d {h} h left",
+    "daysLeft": "{n} day left | {n} days left",
+    "tier": "Tier {n}",
+    "of": "of {n}",
+    "points": "{done} / {next} points",
+    "maxed": "Track complete: {n} points",
+    "sources": "Points come from every game, the objectives and the week’s event.",
+    "claim": "Claim",
+    "claimAll": "Claim all ({n})",
+    "claimLabel": "Claim tier {n}: {reward}",
+    "claimed": "Claimed",
+    "locked": "At {n} points",
+    "xp": "+{n} XP",
+    "track": "The season’s tiers",
+    "set": "The {name} set: gather its looks, and {crown} is yours.",
+    "setDone": "Set complete: {crown} is yours.",
+    "next": "Next: {name}, from {date}.",
+    "soon": "The next season is on its way.",
+    "open": "Open the season",
+    "back": "Back",
+    "gain": "{name}: +{n} point | {name}: +{n} points",
+    "tierUp": "Tier {n} reached: claim its reward",
+    "ready": "{n} reward to claim | {n} rewards to claim",
+    "xpBadge": "XP",
+    "plus": "+{n}"
+  },
+  "events": {
+    "week": {
+      "water": "Water week",
+      "fire": "Fire week",
+      "oil": "Oil week",
+      "ice": "Ice week",
+      "lightning": "Lightning week",
+      "seed": "Seed week",
+      "acid": "Acid week"
+    },
+    "goal": {
+      "water": "Pour {n} water piece | Pour {n} water pieces",
+      "fire": "Burn sand with fire {n} time | Burn sand with fire {n} times",
+      "oil": "Pour {n} oil piece | Pour {n} oil pieces",
+      "ice": "Pour {n} ice piece | Pour {n} ice pieces",
+      "lightning": "Strike {n} bolt | Strike {n} bolts",
+      "seed": "Grow {n} vine | Grow {n} vines",
+      "acid": "Eat away {n} grain of sand with acid | Eat away {n} grains of sand with acid"
+    },
+    "featured": {
+      "water": "This week, free games of Sand deal water pieces more often, from the first level.",
+      "fire": "This week, free games of Sand deal fire pieces more often, from the first level.",
+      "oil": "This week, free games of Sand deal oil pieces more often, from the first level.",
+      "ice": "This week, free games of Sand deal ice pieces more often, from the first level.",
+      "lightning": "This week, free games of Sand deal lightning more often, from the first level.",
+      "seed": "This week, free games of Sand deal seeds more often, from the first level.",
+      "acid": "This week, free games of Sand deal acid more often, from the first level."
+    },
+    "inSand": "It counts in every game of Sand.",
+    "left": "{d} d left",
+    "lastDay": "last day",
+    "progress": "{done}/{target}",
+    "reward": "+{n} point | +{n} points",
+    "done": "Goal reached: +{n} point | Goal reached: +{n} points",
+    "label": "{week}, {left}: {goal} ({done} of {target}). {season}, tier {tier}: open the season.",
+    "goalDone": "Week’s goal reached! +{n} season point | Week’s goal reached! +{n} season points"
   }
 }

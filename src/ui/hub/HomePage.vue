@@ -16,6 +16,7 @@ import { BOSS_IDS } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import type { SceneId } from '@/showcase/Scene';
 import AppIcon from '../components/AppIcon.vue';
+import EventBanner from './EventBanner.vue';
 import { isTouchScreen } from '../useOrientation';
 import type { HubScene } from './HubScene';
 import { createHomeReel, createHubScene } from './loadArt';
@@ -40,6 +41,8 @@ const emit = defineEmits<{
   level: [level: CampaignLevel, origin: Element];
   /** The gift calendar, opened from its pill (1.35). */
   gift: [];
+  /** The season's page, opened from the week's event (1.36). */
+  season: [origin: Element];
 }>();
 
 const { t } = useI18n();
@@ -250,6 +253,9 @@ onBeforeUnmount(() => {
           </span>
         </button>
       </div>
+
+      <!-- The week's event and the season's tier (1.36). -->
+      <EventBanner class="home__event" @open="(origin) => emit('season', origin)" />
 
       <div class="home__title">
         <h1 class="logo">
@@ -823,9 +829,9 @@ onBeforeUnmount(() => {
 }
 
 /* The day's gift beside the day's objectives (1.35). */
+/* One row, whatever the width: the objectives' words give way first (1.36). */
 .home__daily {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   gap: var(--space-2);
   max-width: 100%;
@@ -883,6 +889,7 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
   min-height: var(--touch);
   padding: 0 var(--space-4);
   border: 1px solid var(--border);
@@ -899,7 +906,20 @@ onBeforeUnmount(() => {
 
 .goals__dots {
   display: inline-flex;
+  flex: none;
   gap: 0.25rem;
+}
+
+/* A narrow column: the dots and the count say it, a screen reader reads it all (1.36). */
+@container cta (inline-size < 18.5rem) {
+  .goals__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 .goals__dots i {
@@ -920,10 +940,11 @@ onBeforeUnmount(() => {
     --logo: min(9.6cqw, 19.8cqh);
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.6fr) minmax(0, 0.95fr);
-    grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
     grid-template-areas:
       'title live .'
       'title live daily'
+      'title live event'
       'title live cta'
       'title live .';
     align-items: center;
@@ -943,6 +964,12 @@ onBeforeUnmount(() => {
   .challenges {
     grid-area: daily;
     flex-direction: column;
+    justify-self: center;
+    width: min(100%, 17rem);
+  }
+
+  .home__event {
+    grid-area: event;
     justify-self: center;
     width: min(100%, 17rem);
   }
@@ -1048,6 +1075,49 @@ onBeforeUnmount(() => {
  * A tiny window (a 400 % zoom, 320 × 256): one column that scrolls, every
  * word whole; the live reel steps aside.
  */
+/* A very short menu (a phone, or a window, on its side): Play speaks for itself, without its key (1.36). */
+@container pages (height < 22rem) {
+  .home__hint {
+    display: none;
+  }
+}
+
+/*
+ * Shorter still (a small phone on its side), when the home does not scroll (a
+ * 400 % zoom scrolls, and keeps it all): each challenge without its time left,
+ * which it shows when opened.
+ */
+@container hub (height >= 20rem) {
+  @container pages (height < 19.5rem) {
+    .home__content {
+      row-gap: 0.3rem;
+    }
+
+    .challenge {
+      min-height: 2.75rem;
+    }
+
+    .challenge__text small:last-child {
+      display: none;
+    }
+
+    /* No room for the pills on the cards' edges: they would sit on the week's event. */
+    .challenge__bonus {
+      display: none;
+    }
+
+    /* Play, still the largest target, a little lower and without its icon: its words keep one line each (Russian). */
+    .play {
+      min-height: 4.1rem;
+      padding-inline-start: var(--space-3);
+    }
+
+    .play__icon {
+      display: none;
+    }
+  }
+}
+
 @container hub (height < 20rem) {
   .home__content {
     display: flex;

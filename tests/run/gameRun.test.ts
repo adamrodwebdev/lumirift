@@ -29,6 +29,7 @@ import type {
 } from '@/session/GameSession';
 import { MemoryStorage } from '@/services/KeyValueStorage';
 import { ScoreBoard } from '@/services/ScoreBoard';
+import { SeasonService } from '@/services/SeasonService';
 
 /** A game played by hand: its score, its clock, its clears. */
 class FakeSession {
@@ -120,7 +121,13 @@ const OPEN: AdTuning = {
 /** A run with its doors stubbed; the last session it created, to play by hand. */
 function setUp(
   kind: RunKind,
-  { showsBest = true, rewarded = false, stopsOnAutoPause = false, tuning = OPEN } = {},
+  {
+    showsBest = true,
+    rewarded = false,
+    stopsOnAutoPause = false,
+    tuning = OPEN,
+    at = new Date(2026, 9, 22),
+  } = {},
 ) {
   const scores = new ScoreBoard(new MemoryStorage());
   const sessions: FakeSession[] = [];
@@ -163,7 +170,9 @@ function setUp(
       () => ({ playedMs: 0, adFree: false }),
       () => 0,
     ),
-    today: () => new Date(2026, 9, 22),
+    // By default before the first season (1.36): a game brings it nothing.
+    season: new SeasonService(new MemoryStorage(), { receive: vi.fn() }, () => at),
+    today: () => at,
     seed: () => 7,
   };
   const run = new GameRun(kind, showsBest, ports);
@@ -209,6 +218,18 @@ describe('GameRun', () => {
       '20261022',
     );
     expect(ending.rewardOffered).toBe(false);
+  });
+
+  it('brings a running season its experience as points, and features the week’s element', async () => {
+    // The 28th of October 2026: the preseason's first week, lightning's.
+    const { run, game } = setUp(new FreeRun('sand'), { at: new Date(Date.UTC(2026, 9, 28, 12)) });
+    const over = vi.fn();
+    run.events.on('over', over);
+    await run.start();
+    expect(game().options.featuredElement).toBe('lightning');
+    game().end('topOut');
+    const { ending } = over.mock.calls[0]![0] as { ending: NonNullable<typeof run.last> };
+    expect(ending.season).toEqual({ points: 20, tier: 0, tierUp: false, weekDone: false });
   });
 
   it('counts a race for its record and the week’s, by the week’s Monday', async () => {

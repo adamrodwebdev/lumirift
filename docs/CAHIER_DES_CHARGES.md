@@ -8,6 +8,7 @@
 | 1.33    | 26/10/2026 | Accroche et courbe : le bot de courbe et ses bandes, la clémence du début de campagne, des niveaux réglés sur la mesure, l'entraînement en un seul jeu (§ 9 bis, lot 16).                                                             |
 | 1.34    | 27/10/2026 | Course contre la montre : la Course de la faille, ses mondes toutes les 40 s, son chrono et ses gains, les Gardiens du monde, le record de la semaine, ouverte au niveau 4-4 (§ 9 bis, lot 24).                                       |
 | 1.35    | 27/10/2026 | Cadeaux et collections : le calendrier de sept jours, le retour après une semaine, la série affichée et ses paliers, les ensembles de l'Atelier et leurs quatre ambiances (§ 3.6, § 9 bis, lot 17).                                   |
+| 1.36    | 27/10/2026 | Événements et saisons : l'élément de la semaine et son objectif, l'avant-saison, la saison 1 « Braises » et les saisons 2 et 3 en données, la page de la saison (§ 3.6, § 9 bis, lot 18).                                             |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -772,6 +773,11 @@ l'appareil** (`stackrift:profile`), comme les records.
 - **Série** : jours d'affilée avec un défi du jour terminé (meilleure série gardée) ;
   affichée sur l'accueil tant qu'elle court (depuis la 1.35, une flamme et son compte sur la
   carte du défi du jour), avec ses paliers.
+- **Saisons et élément de la semaine (1.36)** : chaque semaine (du lundi, minuit UTC), un
+  élément du Sable plus fréquent dans ses parties libres et un objectif (+150 points de
+  saison) ; des saisons de six semaines dont les points (l'expérience des parties) montent une
+  piste de paliers : de l'expérience, des nouveautés, et la couronne de l'ensemble de la
+  saison. Une avant-saison du 26 octobre au 13 décembre 2026, puis Braises, Marées et Orage.
 - **Cadeau du jour (1.35)** : un calendrier de sept jours, un cadeau par jour local réclamé
   (de l'expérience, une apparence le septième jour), qui s'ouvre de lui-même à la première
   visite du menu de la journée une fois la première partie jouée ; un jour manqué met le cycle
@@ -1746,7 +1752,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, essai                            | Livré (1.31)                                                 |
 | 16  | Accroche et courbe (1.33) : entraînement 2.0, bot de courbe, clémence                                      | Livré (1.33)                                                 |
 | 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Livré (1.35)                                                 |
-| 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Prévu                                                        |
+| 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Livré (1.36)                                                 |
 | 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Prévu                                                        |
 | 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
 | 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
@@ -1865,6 +1871,37 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
   du 14/12/2026 au 24/01/2027) avec une piste gratuite d'apparences et une piste premium,
   d'apparences seules, là où le port d'achats existe ; les saisons 2 et 3 en données. Porte : la
   saison 1 ouvre et ferme à l'heure.
+  - **Livré en 1.36** (27/10/2026), selon les maquettes validées (bandeau de l'accueil, page de
+    la saison sur téléphone et ordinateur). Décisions de l'utilisateur, le même jour : une
+    **avant-saison** dès la sortie (du 26 octobre au 13 décembre, dix paliers d'expérience et
+    les Étincelles de la faille) ; **après une saison**, ses nouveautés passent en tête du
+    cadeau du 7e jour et son ensemble donne sa couronne ; des **nouveautés décrites en
+    données** (ambiances, éclats, verre de saison), les saisons 2 « Marées » et 3 « Orage »
+    écrites ainsi. Les choix au-delà de la spécification :
+    - les semaines vont du lundi, minuit UTC : tous les appareils sont dans la même semaine
+      (le défi des Gardiens garde ses semaines locales) ;
+    - les objectifs de la semaine, mesurés par le bot de courbe (un test les tient entre 8 et
+      20 minutes de Sable pour un habitué, 30 au plus pour un débutant) : le feu brûle le sable
+      (35 fois), la foudre tombe (25), les graines poussent (70), l'acide ronge des grains
+      (2 000) ; l'eau (35), l'huile (28) et la glace (30) comptent les pièces versées, leurs
+      réactions étant trop rares (moins d'une par partie) ou réservées à qui vise (le gel :
+      six fois plus long pour un débutant) ; +150 points de saison ;
+    - l'élément de la semaine vient dès le premier niveau, trois fois son poids, et les
+      éléments 5 % plus souvent, dans les seules parties libres : la campagne, les défis et la
+      course gardent des records comparables ;
+    - les points de saison sont l'expérience des parties (objectifs, défi, série compris), pas
+      celle du cadeau ni de la piste ; un palier coûte 300 points (250 en avant-saison) ;
+      l'expérience des paliers monte de 100 à 300 (100 à 200 en avant-saison) ; les
+      nouveautés aux paliers 5, 15 et 30 ; la couronne vient de l'ensemble ;
+    - les paliers laissés à la fin d'une saison sont donnés à la visite suivante ;
+    - l'Atelier ne montre les nouveautés d'une saison qu'à son début (ni Marées ni Orage des
+      mois à l'avance) ;
+    - la piste premium reste cachée partout : le port d'achats n'existe pas encore ;
+    - la page de la saison s'ouvre par-dessus les pages du menu (Retour, Échap), dans son
+      propre fichier ; elle annonce la saison suivante avec ses nouveautés ;
+    - l'accueil garde un seul écran sur les petits téléphones : l'événement se resserre, et sur
+      les plus bas l'aide du clavier, les durées et pastilles des défis et l'icône de Jouer
+      s'effacent.
 - **Lot 19 · 1.37 Dunes, le test web.** Un mode calme de la famille Sable : trois pièces en
   main, glissées sur un plateau de 9 × 12 cases où elles s'effritent ; une couleur qui relie
   les deux murs s'efface ; ni chrono ni chute ; une des trois pièces rentre toujours (prouvé
@@ -2041,3 +2078,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.33    | 26/10/2026 | Accroche et courbe : `CurveBot` et ses bandes, `BeatCharts`, `Mercy`, niveaux réglés, entraînement en un seul jeu (§ 9 bis, lot 16).                                   |
 | 1.34    | 27/10/2026 | Course contre la montre : `families/race`, le point de contrôle de 10 s mesuré par le bot, ouverture au 4-4, débordement qui continue (§ 5, § 9 bis, lot 24).          |
 | 1.35    | 27/10/2026 | Cadeaux et collections : `DailyGifts`, `GiftCalendar`, `GiftService`, les ensembles et leurs ambiances, la série et ses paliers, le retour (§ 3.6, § 9 bis, lot 17).   |
+| 1.36    | 27/10/2026 | Événements et saisons : `seasons/` (calendrier UTC, piste, objectif de la semaine, nouveautés en données), avant-saison, saisons 1 à 3 (§ 3.6, § 9 bis, lot 18).       |

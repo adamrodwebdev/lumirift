@@ -1,6 +1,7 @@
 import type { ShatterId } from '@/progression/Cosmetics';
+import { SEASON_SHATTERS } from '@/seasons/SeasonData';
 import { CHROMA_TONES, Tone } from '../pieces/PieceType';
-import { shade, type TonePalette } from '@/render/TonePalette';
+import { parseHex, shade, type TonePalette } from '@/render/TonePalette';
 
 const random = (min: number, max: number) => min + Math.random() * (max - min);
 const pick = <T>(items: readonly T[]): T => items[Math.floor(Math.random() * items.length)]!;
@@ -67,4 +68,16 @@ export const SHATTER_STYLES: Readonly<Record<ShatterId, ShatterStyle>> = {
     lift: 1.4,
     textured: false,
   },
+  // The seasons' shatters (1.36), from their data: their colours, lightly shaded.
+  ...(Object.fromEntries(
+    SEASON_SHATTERS.map((look): [string, ShatterStyle] => [
+      look.id,
+      {
+        colour: () => shade(parseHex(pick(look.colours)), random(-0.12, 0.12)),
+        spin: look.spin,
+        lift: look.lift,
+        textured: false,
+      },
+    ]),
+  ) as Record<(typeof SEASON_SHATTERS)[number]['id'], ShatterStyle>),
 };

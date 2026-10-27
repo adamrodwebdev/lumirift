@@ -299,13 +299,13 @@ describe('The daily streak', () => {
 });
 
 describe('The collections', () => {
-  it('gather looks of the game, and crown each one with an ambiance of its own', () => {
+  it('gather looks of the game, and crown each one with a look of its own', () => {
     const keys = new Set(COSMETICS.map(cosmeticKey));
     const prizes = COLLECTIONS.map((collection) => collection.reward);
     expect(new Set(prizes).size).toBe(COLLECTIONS.length);
     for (const collection of COLLECTIONS) {
       for (const key of collection.items) expect(keys.has(key), key).toBe(true);
-      expect(findCosmetic('ambiance', collection.reward)?.unlock).toEqual({
+      expect(findCosmeticByKey(collection.reward)?.unlock).toEqual({
         by: 'collection',
         value: collection.id,
       });
