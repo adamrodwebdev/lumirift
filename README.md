@@ -37,8 +37,13 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   l'accueil ; ses points, multipliés par une victoire rapide, font le record de la semaine, et
   le premier essai de chaque jour rapporte de l'XP.
 - **Duel** contre une IA, cinq niveaux calés sur la vitesse de vrais joueurs.
-- **Progression** : expérience et niveaux, trois objectifs du jour, série de défis ;
-  **Atelier** de matières, d'ambiances et de signatures de bris, tous cosmétiques.
+- **Progression** : expérience et niveaux, trois objectifs du jour, série de défis et ses
+  paliers (3, 7, 14 et 30 jours) ; **Atelier** de matières, d'ambiances et de signatures de
+  bris, tous cosmétiques, et ses **ensembles** : quatre apparences réunies débloquent une
+  ambiance.
+- **Le cadeau du jour** : un calendrier de sept jours (de l'expérience, une apparence le
+  septième), qui s'ouvre de lui-même au premier passage de la journée ; un jour manqué ne
+  fait rien perdre, une semaine d'absence vaut un cadeau de retour.
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde.
 - **La tension de l'échec** : en danger, la musique presse et un cœur bat, le verre du
@@ -213,7 +218,8 @@ Exigences et leur contrôle, fiche en quatre langues et étapes de publication :
   parité des traductions ; et un projet à part, `npm run test:curve`, où des joueurs simulés
   jouent toute la campagne et 24 courses de la faille.
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 14
-  modes, une partie complète, une course de la faille jusqu'à sa fin, défi du jour, réglages
+  modes, une partie complète, une course de la faille jusqu'à sa fin, défi du jour, le
+  calendrier des cadeaux sur une horloge réglée (minuit, retour en arrière), réglages
   retenus, menu (onglets, glissement, carte, Atelier), clavier seul ; le premier lancement d'un portail, sur le build
   CrazyGames ; le build Yandex Games avec un faux SDK (chargement, pauses, langue,
   sauvegarde, cadre sans menu ni sélection) ; en russe, la langue la plus longue, chaque page et chaque
@@ -245,7 +251,7 @@ src/
   showcase/      Scènes mises en scène (boucle de l'accueil, vidéos des portails)
   families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface ;
                  race : la course, une session de sessions qui change de monde
-  progression/   Expérience, objectifs, cosmétiques, profil
+  progression/   Expérience, objectifs, cosmétiques, ensembles, cadeaux du jour, profil
   fx/, render/   Particules, secousses, sons ; palette et motifs partagés
   services/      Réglages, records, profil, thème, ambiance, audio, partage
   ui/            Écrans (menu, jeu), pages du menu (hub/), composants ; la présentation et

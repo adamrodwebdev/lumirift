@@ -3,6 +3,67 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.35.0] — 27/10/2026
+
+Cadeaux et collections (lot 17 du chemin vers 5) : une raison de revenir chaque jour. Un
+calendrier de sept jours de cadeaux, des ensembles d'apparences qui débloquent quatre nouvelles
+ambiances, la série du défi du jour enfin affichée avec ses paliers, et un cadeau de retour
+après une semaine d'absence.
+
+### Ajouté
+
+- **Le cadeau du jour** :
+  - sept jours de cadeaux : +50, +60, +70, +80, +90 et +100 XP, puis une apparence le
+    septième jour, la première que le joueur n'a pas dans une liste qui part de loin dans les
+    niveaux (Obsidienne, Cosmos, Pétales…), les prix des objectifs en dernier ; 250 XP quand il
+    les a toutes. Jamais un trophée de Gardien, l'or de la série ou le prix d'un ensemble ;
+  - un cadeau par jour local, jamais deux : ni après un rechargement, ni quand l'horloge recule
+    (un vol vers l'ouest) ; un jour manqué met le cycle en pause, sans rien reprendre ;
+  - le calendrier s'ouvre de lui-même à la première visite du menu de la journée, jamais
+    avant la première partie d'un nouveau joueur (sur les portails, le premier cadeau vient à
+    la fin de l'entraînement) ; ensuite, un point d'or sur l'onglet Accueil et un bouton cadeau
+    à côté des objectifs du jour ;
+  - sur Playgama et Yandex Games, l'expérience du jour doublée contre une pub récompensée, au
+    choix du joueur et après la grâce des nouveaux joueurs ; jamais sur une apparence ;
+  - après le cadeau, la semaine reste affichée jusqu'à la fermeture, le jour coché d'un
+    tampon, avec le cadeau de demain ; un ensemble que le cadeau complète le dit (« L'ensemble
+    Arcade est complet : l'ambiance Synthwave est à vous aussi ! ») ;
+  - sur un téléphone, une feuille qui monte du bas, quatre jours par ligne ; sur un ordinateur,
+    une fenêtre centrée, les sept jours sur une ligne, celui du cadeau plus large ; sur un
+    téléphone tenu en largeur, les sept jours sur une ligne et les boutons à côté de la série :
+    la fenêtre tient sans défiler, en russe aussi ;
+  - de retour d'une partie, il attend que le menu soit monté (0,9 s) ; un joueur déjà occupé
+    (un geste, une touche) n'est pas interrompu, ni une fenêtre qu'il vient d'ouvrir
+    recouverte : le calendrier attend la visite suivante, son point d'or sur l'onglet.
+- **Le retour** : un joueur qui a déjà joué et revient après sept jours sans visite reçoit
+  +150 XP avec le cadeau du jour, et la grâce des pubs repart de zéro.
+- **La série du défi du jour** : sa flamme et son compte sur la carte du défi ; +75, +150, +300
+  et +600 XP à 3, 7, 14 et 30 jours d'affilée, de nouveau à chaque nouvelle série ; la fenêtre
+  du cadeau dit le palier suivant, et qu'un jour manqué ne fait rien perdre.
+- **Les ensembles de l'Atelier** : un quatrième rayon, « Ensembles », montre quatre ensembles
+  de quatre apparences (Arcade, Jardin de nuit, Trésor, Trophées des Gardiens) et leur
+  avancée, la scène portant l'ambiance promise ; un ensemble complet débloque son ambiance :
+  Synthwave, Lanternes, Dorure ou Sanctuaire, chacune avec ses lueurs et sa défaite.
+
+### Modifié
+
+- Le rayon des ambiances (onze désormais) passe à quatre colonnes.
+- La grâce des pubs compte le temps de jeu depuis le retour d'un joueur absent une semaine.
+
+### Technique
+
+- Règles pures : `DailyGifts` (cadeaux, ordre des apparences), `GiftCalendar` (cadeau prêt,
+  ouverture, série en cours, semaine juste reçue), `Collections`, `STREAK_BONUSES` ;
+  `Day.daysBetween`.
+- `Profile` : `visit`, `markGiftShown`, `claimGift` ; ses données gagnent `gifts`, `gifted`,
+  `lastVisit`, `welcomeBack` et `graceFromMs`, relues avec prudence ; une apparence offerte
+  compte partout (`Achievements.gifted`).
+- `GiftService`, sur l'horloge injectée (le jour lu à chaque appel) ; `DailyGiftDialog`.
+- Tests : le cycle sur une horloge figée (minuit, fin de mois, fin d'année, horloge qui recule,
+  rechargement, pause, retour, paliers, ensembles) ; parcours de bout en bout du calendrier et
+  des ensembles ; audits d'accessibilité ; les autres parcours ferment le calendrier quand il
+  se lève (`closeDailyGift`).
+
 ## [1.34.0] — 27/10/2026
 
 Course contre la montre (lot 24 du chemin vers 5) : la Course de la faille, un mode
