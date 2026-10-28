@@ -439,8 +439,14 @@ Règles détaillées :
 - **Choix fondés sur les jeux du genre** (Block Blast, 1010!, Woodoku, Blockudoku) : le
   reproche le plus fréquent est la **main impossible**, d'où la distribution équitable ;
   le barème croissant et le combo qui tolère une main sans effacement suivent les jeux du
-  genre (leurs barèmes exacts ne sont pas publiés). La barre des jokers les regroupe par
-  type, avec le nombre détenu.
+  genre (leurs barèmes exacts ne sont pas publiés).
+- **La barre des jokers** (1.38.1) montre toujours **cinq emplacements**, un par type :
+  allumés avec le nombre détenu, en pointillé tant que le joker n'est pas gagné ; touché ou
+  survolé, un emplacement en pointillé dit comment le gagner (« Bombe : effacez 4 lignes d'un
+  coup, ou atteignez le combo ×6 »). Sa taille ne dépend que de la largeur de l'écran : le
+  plateau ne rétrécit jamais quand un joker arrive. En paysage, sous le tableau de bord ; sur
+  un téléphone, deux lignes de cibles de 44 px ; sur un petit cadre à la souris (821 × 462),
+  une ligne d'emplacements de 36 px au plus, au-dessus des touches.
 - **Aide au jeu** : pendant qu'on vise, l'aperçu montre la pièce à sa place (ou un contour
   rouge si elle ne rentre pas) et **les lignes et colonnes qui vont s'effacer s'illuminent**.
   Une pièce qui ne rentre nulle part est grisée dans la main.

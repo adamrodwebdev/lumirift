@@ -1,6 +1,6 @@
 {
   "name": "lumirift",
-  "version": "1.38.0",
+  "version": "1.38.1",
   "private": true,
   "description": "Jeu de blocs qui tombent réinventé : 14 modes en quatre familles et une course qui les traverse, défi du jour, duel contre l’IA, en français, anglais, indonésien et russe. Vue 3, TypeScript, mobile d’abord.",
   "type": "module",

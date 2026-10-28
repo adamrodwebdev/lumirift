@@ -423,7 +423,15 @@
     "board": "Plateau de la Mosaïque",
     "hand": "Pièces à poser",
     "jokers": "Jokers",
-    "noJoker": "Effacez plusieurs lignes d’un coup pour gagner des jokers.",
+    "jokerHeld": "{name}, {n} en réserve",
+    "jokerLocked": "{name} : {how}",
+    "jokerHow": {
+      "rotate": "effacez 2 lignes d’un coup",
+      "reroll": "toutes les 25 lignes",
+      "bomb": "effacez 4 lignes d’un coup, ou atteignez le combo ×6",
+      "undo": "une grille nette, ou toutes les 10 mains",
+      "cube": "effacez 3 lignes d’un coup"
+    },
     "piece": "Pièce {n}",
     "bonus": "Cube bonus",
     "cells": "{n} case | {n} cases",
@@ -431,8 +439,7 @@
     "empty": "Emplacement vide",
     "pickPiece": "Touchez la pièce à tourner",
     "pickCell": "Touchez la case où lancer la bombe",
-    "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case.",
-    "jokerCount": "×{n}"
+    "helpTouch": "Tactile : faites glisser une pièce sur le plateau, ou touchez-la puis touchez une case."
   },
   "sand": {
     "well": "Puits de sable"

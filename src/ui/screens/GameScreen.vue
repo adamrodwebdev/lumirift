@@ -664,6 +664,7 @@ onBeforeUnmount(() => {
       :active="phase === 'playing'"
       :ghost="settings.current.ghost"
       @pause="pause"
+      @notice="announce"
     />
 
     <TapZones v-if="turnZones" />

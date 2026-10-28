@@ -423,7 +423,15 @@
     "board": "Mosaic board",
     "hand": "Pieces to place",
     "jokers": "Jokers",
-    "noJoker": "Clear several lines at once to earn jokers.",
+    "jokerHeld": "{name}, {n} in reserve",
+    "jokerLocked": "{name}: {how}",
+    "jokerHow": {
+      "rotate": "clear 2 lines at once",
+      "reroll": "every 25 lines",
+      "bomb": "clear 4 lines at once, or reach Combo ×6",
+      "undo": "a clean board, or every 10 hands",
+      "cube": "clear 3 lines at once"
+    },
     "piece": "Piece {n}",
     "bonus": "Bonus cube",
     "cells": "{n} cell | {n} cells",
@@ -431,8 +439,7 @@
     "empty": "Empty slot",
     "pickPiece": "Tap the piece to rotate",
     "pickCell": "Tap the cell to bomb",
-    "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell.",
-    "jokerCount": "×{n}"
+    "helpTouch": "Touch: drag a piece onto the board, or tap it then tap a cell."
   },
   "sand": {
     "well": "Sand well"

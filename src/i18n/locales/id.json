@@ -423,7 +423,15 @@
     "board": "Papan Mozaik",
     "hand": "Kepingan untuk dipasang",
     "jokers": "Joker",
-    "noJoker": "Hapus beberapa baris sekaligus untuk mendapatkan joker.",
+    "jokerHeld": "{name}, {n} tersedia",
+    "jokerLocked": "{name}: {how}",
+    "jokerHow": {
+      "rotate": "hapus 2 baris sekaligus",
+      "reroll": "setiap 25 baris",
+      "bomb": "hapus 4 baris sekaligus, atau capai Kombo ×6",
+      "undo": "papan bersih, atau setiap 10 putaran",
+      "cube": "hapus 3 baris sekaligus"
+    },
     "piece": "Kepingan {n}",
     "bonus": "Kubus bonus",
     "cells": "{n} kotak",
@@ -431,8 +439,7 @@
     "empty": "Slot kosong",
     "pickPiece": "Ketuk kepingan yang akan diputar",
     "pickCell": "Ketuk kotak untuk dibom",
-    "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak.",
-    "jokerCount": "×{n}"
+    "helpTouch": "Sentuh: seret kepingan ke papan, atau ketuk kepingan lalu ketuk kotak."
   },
   "sand": {
     "well": "Sumur pasir"

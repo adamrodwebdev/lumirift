@@ -27,7 +27,7 @@ const props = defineProps<{
   active: boolean;
   ghost: boolean;
 }>();
-const emit = defineEmits<{ pause: [] }>();
+const emit = defineEmits<{ pause: []; notice: [text: string] }>();
 
 if (!(props.session instanceof PlacementSession))
   throw new Error('MosaicStage needs a PlacementSession');
@@ -39,7 +39,8 @@ const { theme, settings, audio, haptics } = useServices();
 
 const JOKER_ICONS: Readonly<Record<JokerId, IconName>> = {
   rotate: 'rotateCw',
-  reroll: 'restart',
+  // The swap of the Dunes' hand: new pieces (the restart arrow mirrored the rotation's).
+  reroll: 'swap',
   bomb: 'bomb',
   undo: 'undo',
   cube: 'cube',
@@ -95,14 +96,31 @@ const detachRefresh = (
   ['deal', 'place', 'jokerGained', 'jokerUsed', 'turn', 'undo', 'bomb', 'rescue'] as const
 ).map((type) => session.onGame(type, refresh));
 
-/** One button per kind of joker, with how many are held; it uses the first of them. */
-const jokerGroups = computed(() =>
-  JOKER_IDS.filter((id) => jokers.value.includes(id)).map((id) => ({
+interface JokerSlot {
+  readonly id: JokerId;
+  /** Where the first one held sits in the inventory (-1: none held). */
+  readonly index: number;
+  readonly count: number;
+}
+
+/**
+ * One slot per kind of joker, always shown (1.38.1): lit with how many are
+ * held, dim until earned. The row keeps its size whatever is held, so the
+ * board never shrinks when a joker comes.
+ */
+const jokerSlots = computed<readonly JokerSlot[]>(() =>
+  JOKER_IDS.map((id) => ({
     id,
     index: jokers.value.indexOf(id),
     count: jokers.value.filter((held) => held === id).length,
   })),
 );
+
+/** The slot's name: how many are held, or how the joker is earned. */
+const slotLabel = ({ id, count }: JokerSlot) =>
+  count > 0
+    ? t('mosaic.jokerHeld', { name: t(`jokers.${id}`), n: format.number(count) })
+    : t('mosaic.jokerLocked', { name: t(`jokers.${id}`), how: t(`mosaic.jokerHow.${id}`) });
 
 const prompt = computed(() => {
   const id = pending.value === null ? null : jokers.value[pending.value];
@@ -415,6 +433,12 @@ const chooseJoker = (index: number) => {
   refresh();
 };
 
+/** A held joker is chosen; a dim one tells how it is earned. */
+const onJokerSlot = (slot: JokerSlot) => {
+  if (slot.count > 0) chooseJoker(slot.index);
+  else emit('notice', slotLabel(slot));
+};
+
 const DIGIT_SLOTS: Readonly<Record<string, SlotId>> = {
   Digit1: 0,
   Numpad1: 0,
@@ -466,7 +490,7 @@ const onKeyDown = (event: KeyboardEvent) => {
     if (event.target instanceof HTMLButtonElement) return;
     controller.confirm();
   } else if (code === 'KeyJ') {
-    jokerBar.value?.querySelector('button')?.focus();
+    jokerBar.value?.querySelector<HTMLElement>('.joker--held')?.focus();
   } else {
     return;
   }
@@ -542,20 +566,24 @@ onBeforeUnmount(() => {
     </div>
 
     <div ref="jokerBar" class="mosaic__jokers" role="group" :aria-label="t('mosaic.jokers')">
-      <p v-if="jokers.length === 0" class="mosaic__no-joker">{{ t('mosaic.noJoker') }}</p>
       <button
-        v-for="group in jokerGroups"
-        :key="group.id"
+        v-for="slot in jokerSlots"
+        :key="slot.id"
         type="button"
         class="joker"
-        :class="{ 'joker--pending': pending === group.index }"
-        :aria-pressed="pending === group.index"
-        @click="chooseJoker(group.index)"
+        :class="{
+          'joker--held': slot.count > 0,
+          'joker--pending': slot.count > 0 && pending === slot.index,
+        }"
+        :aria-label="slotLabel(slot)"
+        :aria-disabled="slot.count === 0 ? 'true' : undefined"
+        :aria-pressed="slot.count > 0 ? pending === slot.index : undefined"
+        :title="slotLabel(slot)"
+        @click="onJokerSlot(slot)"
       >
-        <AppIcon :name="JOKER_ICONS[group.id]" :size="20" />
-        <span>{{ t(`jokers.${group.id}`) }}</span>
-        <span v-if="group.count > 1" class="joker__count">
-          {{ t('mosaic.jokerCount', { n: group.count }) }}
+        <AppIcon :name="JOKER_ICONS[slot.id]" :size="22" />
+        <span v-if="slot.count > 1" class="joker__count" aria-hidden="true">
+          {{ format.number(slot.count) }}
         </span>
       </button>
     </div>
@@ -600,36 +628,58 @@ onBeforeUnmount(() => {
   min-height: 0;
 }
 
+/*
+ * The jokers: five slots, one per kind, always there (1.38.1). With five
+ * slots whatever is held, the bar's height depends on its width alone: the
+ * board never shrinks when a joker comes. They wrap only in a column too
+ * narrow for five (a phone in landscape).
+ */
 .mosaic__jokers {
+  --joker-size: var(--touch);
   grid-area: jokers;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--joker-size));
   justify-content: center;
   gap: var(--space-2);
-  min-height: var(--touch);
-}
-
-.mosaic__no-joker {
-  align-self: center;
-  font-size: 0.875rem;
-  color: var(--text-muted);
 }
 
 .joker {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--touch);
-  padding: 0 var(--space-3);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--joker-size);
+  height: var(--joker-size);
+  padding: 0;
   border: 1px solid var(--accent-fill);
   border-radius: 999px;
   background: var(--surface);
-  font-weight: 700;
+}
+
+/* Not earned yet: a dim outline; touched, it tells how the joker is earned. */
+.joker:not(.joker--held) {
+  border-style: dashed;
+  border-color: var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  opacity: 0.6;
+  cursor: help;
 }
 
 .joker__count {
+  position: absolute;
+  top: -0.375rem;
+  right: -0.375rem;
+  min-width: 1.375rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: var(--accent-fill);
+  color: var(--on-accent-fill);
+  box-shadow: 0 0 0 2px var(--bg);
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1.375rem;
   font-variant-numeric: tabular-nums;
-  opacity: 0.8;
+  text-align: center;
 }
 
 .joker--pending {
@@ -655,9 +705,32 @@ onBeforeUnmount(() => {
     gap: var(--space-2);
   }
 
+  /* Under the dashboard and aligned with it: its 15em, in the HUD's size, hold the five. */
   .mosaic__jokers {
-    justify-content: flex-start;
-    align-content: flex-start;
+    justify-self: end;
+    width: min(100%, 15em);
+    font-size: var(--hud-size);
+    justify-content: start;
+    align-content: start;
+    gap: 0.25rem;
+  }
+}
+
+/*
+ * Short landscape screens with a mouse (821 × 462 on CrazyGames): the five
+ * slots on one row of the narrow column, up to 36 px each, clear of the keys
+ * under them. A phone keeps its 44 px targets (two rows; no keys on touch).
+ */
+@media (orientation: landscape) and (max-height: 32rem) and (pointer: fine) {
+  .mosaic__jokers {
+    grid-template-columns: repeat(5, minmax(0, 2.25rem));
+    gap: 0.375rem;
+  }
+
+  .joker {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
   }
 }
 </style>

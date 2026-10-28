@@ -284,6 +284,27 @@ test('the Mosaic is played with the keyboard', async ({ page }) => {
   await expect(score).not.toHaveText('0');
 });
 
+test('the Mosaic shows its five jokers from the start, the dim ones telling how they are earned', async ({
+  page,
+}) => {
+  await openMode(page, 'Mosaïque');
+  // Five slots whatever is held (1.38.1): the bar never grows, the board never shrinks.
+  await expect(page.getByRole('group', { name: 'Jokers' }).getByRole('button')).toHaveCount(5);
+  // Every game starts with a Retour; the four others are still to earn.
+  const undo = page.getByRole('button', { name: 'Retour, 1 en réserve' });
+  await expect(undo).toBeEnabled();
+  const bomb = page.getByRole('button', { name: /^Bombe\s:/ });
+  await expect(bomb).toHaveAttribute('aria-disabled', 'true');
+  // A dim slot still answers the touch (aria-disabled, not disabled): it tells its rule.
+  await bomb.click({ force: true });
+  await expect(page.locator('.toast')).toHaveText(
+    /^Bombe\s:\seffacez 4 lignes d’un coup, ou atteignez le combo ×6$/,
+  );
+  // J reaches the jokers held.
+  await page.keyboard.press('KeyJ');
+  await expect(undo).toBeFocused();
+});
+
 test('a Mosaic piece is dragged from the hand to the board, or back; the record falls', async ({
   page,
 }) => {
