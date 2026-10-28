@@ -274,6 +274,66 @@ test('the week’s event and the season’s page keep their Russian words inside
   }
 });
 
+/** The map's levels that cover one another: their discs, names or stars (1.38). */
+const crowdedLevels = (page: Page) =>
+  page.evaluate(() => {
+    const levels = [...document.querySelectorAll('.map .node')].map((node) => ({
+      id: node.querySelector('.node__disc')?.textContent.trim() ?? '',
+      parts: [...node.querySelectorAll('.node__disc, .node__label, .node__stars')].map((part) =>
+        part.getBoundingClientRect(),
+      ),
+    }));
+    const cover = (a: DOMRect, b: DOMRect) =>
+      Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+      Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
+    const crowded: string[] = [];
+    levels.forEach((one, i) => {
+      for (const other of levels.slice(i + 1)) {
+        if (one.parts.some((a) => other.parts.some((b) => cover(a, b)))) {
+          crowded.push(`${one.id} and ${other.id}`);
+        }
+      }
+    });
+    return crowded;
+  });
+
+test('every chapter’s name, Guardian and levels stay whole on the map, from 320 px (1.38)', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'Own sizes: once is enough');
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  // Every level won: the map opens on the last chapter, then turns back to the first.
+  const stars: Record<string, number> = {};
+  for (let chapter = 1; chapter <= 10; chapter++)
+    for (let level = 1; level <= 7; level++) stars[`${chapter}-${level}`] = 3;
+  await page.evaluate(
+    (all) => localStorage.setItem('stackrift:campaign', JSON.stringify({ stars: all, ranks: {} })),
+    stars,
+  );
+  // The smallest phone both ways, where a chapter's seven levels once covered one another.
+  for (const [width, height] of [
+    [320, 568],
+    [568, 320],
+    [390, 844],
+  ] as const) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/');
+    await tab(page, 'Карта').click();
+    const map = panel(page, 'Карта');
+    await expect(map.getByRole('heading', { name: 'За Разломом' })).toBeVisible();
+    const back = map.getByRole('button', { name: 'Предыдущая глава' });
+    for (let chapter = 10; chapter >= 1; chapter--) {
+      await page.waitForTimeout(300);
+      const where = `${width} × ${height}: chapter ${chapter}`;
+      expect(await misfits(page), where).toEqual([]);
+      expect(await crowdedLevels(page), where).toEqual([]);
+      if (chapter > 1) await back.click();
+    }
+    await expect(back).toBeDisabled();
+  }
+});
+
 test('a level’s goal stays whole on a phone: its own row beside a hold box, one line when wide', async ({
   page,
 }, info) => {
@@ -282,7 +342,7 @@ test('a level’s goal stays whole on a phone: its own row beside a hold box, on
   await page.emulateMedia({ reducedMotion: 'reduce' });
   // Every level open: the map turns to any chapter.
   const stars: Record<string, number> = {};
-  for (let chapter = 1; chapter <= 5; chapter++)
+  for (let chapter = 1; chapter <= 10; chapter++)
     for (let level = 1; level <= 7; level++) stars[`${chapter}-${level}`] = 3;
   await page.evaluate(
     (all) => localStorage.setItem('stackrift:campaign', JSON.stringify({ stars: all, ranks: {} })),

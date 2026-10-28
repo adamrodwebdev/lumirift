@@ -1,6 +1,5 @@
 import { Emitter, type Listener } from '@/core/Emitter';
 import { CONTINUE_FREES } from '@/session/ContinueRule';
-import { GUARDIAN_HEALTH } from '@/session/GuardianHealth';
 import type {
   BossStatus,
   GameSession,
@@ -118,7 +117,7 @@ export class PlacementSession implements GameSession<MosaicCommand> {
 
   boss(): BossStatus | null {
     const golem = this.game.golem;
-    return golem ? { id: 'ceramicGolem', health: golem.health, maxHealth: GUARDIAN_HEALTH } : null;
+    return golem ? { id: 'ceramicGolem', health: golem.health, maxHealth: golem.maxHealth } : null;
   }
 
   get revivable(): boolean {

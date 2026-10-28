@@ -56,6 +56,8 @@ export default defineConfig(({ mode }) => {
         },
         // The campaign's curve (1.33): bots play every level, minutes of games; a step of its own.
         { extends: true, test: { name: 'curve', include: ['tests/curve/**/*.test.ts'] } },
+        // The level generator (1.38): a tool run by hand (`npm run generate:levels`), never in CI.
+        { extends: true, test: { name: 'generate', include: ['tests/generate/**/*.gen.ts'] } },
       ],
     },
   };

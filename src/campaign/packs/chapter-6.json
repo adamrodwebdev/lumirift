@@ -1,0 +1,72 @@
+{
+  "chapter": 6,
+  "levels": [
+    {
+      "seed": 1,
+      "level": {
+        "id": "6-1",
+        "chapter": 6,
+        "modeId": "sand",
+        "timeLimitMs": 180000,
+        "goal": { "kind": "lines", "target": 5 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 8,
+      "level": {
+        "id": "6-2",
+        "chapter": 6,
+        "modeId": "mosaic",
+        "timeLimitMs": 210000,
+        "goal": { "kind": "bigClear", "target": 3 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 3,
+      "level": {
+        "id": "6-3",
+        "chapter": 6,
+        "modeId": "tide",
+        "timeLimitMs": 150000,
+        "goal": { "kind": "survive", "target": 150000 },
+        "stars": { "kind": "lines", "two": 13, "three": 21 }
+      }
+    },
+    {
+      "seed": 1,
+      "level": {
+        "id": "6-4",
+        "chapter": 6,
+        "modeId": "tower",
+        "timeLimitMs": 120000,
+        "goal": { "kind": "lines", "target": 4 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 2,
+      "level": {
+        "id": "6-5",
+        "chapter": 6,
+        "modeId": "flip",
+        "timeLimitMs": 180000,
+        "goal": { "kind": "lines", "target": 36 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 1,
+      "level": {
+        "id": "6-6",
+        "chapter": 6,
+        "modeId": "duel",
+        "variant": "hard",
+        "timeLimitMs": null,
+        "goal": { "kind": "win", "target": 1 },
+        "stars": { "kind": "fast", "twoMs": 150000, "threeMs": 90000 }
+      }
+    }
+  ]
+}

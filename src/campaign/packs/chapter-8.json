@@ -1,0 +1,72 @@
+{
+  "chapter": 8,
+  "levels": [
+    {
+      "seed": 4,
+      "level": {
+        "id": "8-1",
+        "chapter": 8,
+        "modeId": "tower",
+        "timeLimitMs": 150000,
+        "goal": { "kind": "lines", "target": 6 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 2,
+      "level": {
+        "id": "8-2",
+        "chapter": 8,
+        "modeId": "tilt",
+        "timeLimitMs": 240000,
+        "goal": { "kind": "lines", "target": 39 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 1,
+      "level": {
+        "id": "8-3",
+        "chapter": 8,
+        "modeId": "sand",
+        "timeLimitMs": 150000,
+        "goal": { "kind": "lines", "target": 8 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 5,
+      "level": {
+        "id": "8-4",
+        "chapter": 8,
+        "modeId": "mosaic",
+        "timeLimitMs": 210000,
+        "goal": { "kind": "lines", "target": 21 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 2,
+      "level": {
+        "id": "8-5",
+        "chapter": 8,
+        "modeId": "chroma",
+        "timeLimitMs": 210000,
+        "goal": { "kind": "lines", "target": 48 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 2,
+      "level": {
+        "id": "8-6",
+        "chapter": 8,
+        "modeId": "duel",
+        "variant": "hard",
+        "timeLimitMs": null,
+        "goal": { "kind": "win", "target": 1 },
+        "stars": { "kind": "fast", "twoMs": 150000, "threeMs": 90000 }
+      }
+    }
+  ]
+}

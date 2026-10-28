@@ -1,8 +1,9 @@
-import type { AiLevel } from '@/families/falling/ai/AiPlayer';
+import type { AiLevel } from '@/families/falling/ai/AiLevels';
 import type { BossId } from '@/session/GameSession';
 import { GUARDIAN_HEALTH } from '@/session/GuardianHealth';
 import type { ModeId } from '@/session/ModeId';
 import type { Goal } from './Goals';
+import { LEVEL_PACKS } from './packs';
 
 /**
  * How a won level earns its stars (one for winning, up to three):
@@ -30,6 +31,8 @@ export interface CampaignLevel {
   readonly practice?: boolean;
   /** A Guardian of the rift to defeat: the level is a boss fight. */
   readonly boss?: BossId;
+  /** The Guardian's health, when not a full one: a rematch comes stronger (1.38). */
+  readonly bossHealth?: number;
   /** A Guardian of a later chapter shows itself once this level is won (a teaser). */
   readonly teaser?: BossId;
   readonly timeLimitMs: number | null;
@@ -37,7 +40,7 @@ export interface CampaignLevel {
   readonly stars: StarRule;
 }
 
-export const CHAPTERS = [1, 2, 3, 4, 5] as const;
+export const CHAPTERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 export type Chapter = (typeof CHAPTERS)[number];
 
 const MIN = 60_000;
@@ -69,13 +72,11 @@ const duel = (id: string, variant: AiLevel): CampaignLevel => ({
 });
 
 /**
- * The campaign: five chapters of six levels, every mode of the game, each
- * chapter ending with a duel against a stronger AI; from chapter 2, a Guardian
- * of the rift (a boss) guards the way out after the duel. Played in order.
- * Tuned by the curve bot (1.33): each level stays in the band its beat chart
- * sets (`BEAT_CHARTS`, `CurveBands`).
+ * The handmade chapters: five chapters of six levels, every mode of the
+ * game, each chapter ending with a duel against a stronger AI; from chapter
+ * 2, a Guardian of the rift (a boss) guards the way out after the duel.
  */
-export const LEVELS: readonly CampaignLevel[] = [
+const HANDMADE: readonly CampaignLevel[] = [
   // 1. Premiers blocs
   // Sand first, as a show: one idea to learn (link the walls), and within a
   // minute the elements no other game has (lightning through water, a blaze,
@@ -173,9 +174,54 @@ export const LEVELS: readonly CampaignLevel[] = [
   },
 ];
 
+/** A Guardian's rematch comes back with half its health again; the last fight with twice it. */
+const REMATCH_HEALTH = Math.round(GUARDIAN_HEALTH * 1.5);
+const FINALE_HEALTH = GUARDIAN_HEALTH * 2;
+
+/** A Guardian's fight: its mode, its clock, its health (the level's goal). */
+interface GuardianFight {
+  readonly modeId: ModeId;
+  readonly minutes: number;
+  readonly boss: BossId;
+  readonly health: number;
+}
+
+const rematch = (id: string, fight: GuardianFight): CampaignLevel => ({
+  ...timed(id, fight.modeId, fight.minutes, { kind: 'boss', target: fight.health }),
+  boss: fight.boss,
+  bossHealth: fight.health,
+});
+
+/**
+ * The Guardians' rematches (1.38), handmade: each generated chapter ends on
+ * one, stronger and on a tighter clock than its first fight; the campaign
+ * ends on the Heart of the Rift at full strength.
+ */
+const REMATCHES: readonly CampaignLevel[] = [
+  rematch('6-7', { modeId: 'sand', minutes: 3.5, boss: 'duneWorm', health: REMATCH_HEALTH }),
+  rematch('7-7', { modeId: 'mosaic', minutes: 3, boss: 'ceramicGolem', health: REMATCH_HEALTH }),
+  rematch('8-7', { modeId: 'tower', minutes: 3, boss: 'towerEye', health: REMATCH_HEALTH }),
+  rematch('9-7', { modeId: 'classic', minutes: 3.5, boss: 'riftHeart', health: REMATCH_HEALTH }),
+  rematch('10-7', { modeId: 'classic', minutes: 4, boss: 'riftHeart', health: FINALE_HEALTH }),
+];
+
+/**
+ * The campaign, played in order: the handmade chapters, then chapters 6 to
+ * 10 (1.38), six levels drawn by the generators and a Guardian's rematch
+ * each. Tuned by the curve bot (1.33): each level stays in the band its beat
+ * chart sets (`BEAT_CHARTS`, `CurveBands`).
+ */
+export const LEVELS: readonly CampaignLevel[] = [
+  ...HANDMADE,
+  ...LEVEL_PACKS.flatMap((pack) => [
+    ...pack.levels.map(({ level }) => level),
+    ...REMATCHES.filter((level) => level.chapter === pack.chapter),
+  ]),
+];
+
 export const MAX_STARS = LEVELS.length * 3;
 
-/** The level where a Guardian waits. */
+/** The level where a Guardian waits first (its rematches come later). */
 export function guardianLevel(boss: BossId): CampaignLevel | undefined {
   return LEVELS.find((level) => level.boss === boss);
 }

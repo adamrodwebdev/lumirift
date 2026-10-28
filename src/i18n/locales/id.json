@@ -565,7 +565,12 @@
       "2": "Arus",
       "3": "Mozaik",
       "4": "Pusing",
-      "5": "Retakan"
+      "5": "Retakan",
+      "6": "Pasir hisap",
+      "7": "Terakota",
+      "8": "Tatapan",
+      "9": "Detak jantung",
+      "10": "Di balik Retakan"
     },
     "chapterStars": "{n} / {max} bintang",
     "spare": "{n} bintang untuk dibelanjakan",
@@ -665,7 +670,7 @@
   },
   "demo": {
     "title": "Demo.",
-    "banner": "Lima mode permainan bebas (Klasik, Pasir, Mozaik, Menara, Duel) dan bab pertama kampanye. Game lengkap punya empat belas mode dan tiga puluh empat level.",
+    "banner": "Lima mode permainan bebas (Klasik, Pasir, Mozaik, Menara, Duel) dan bab pertama kampanye. Game lengkap punya empat belas mode dan enam puluh sembilan level.",
     "fullGame": "Game lengkap"
   },
   "title": {

@@ -63,7 +63,10 @@ export interface SessionOptions {
   readonly mercy?: number;
   /** The level the game starts at, its gravity (the Rift Race's climb, 1.34); 1 by default. */
   readonly startLevel?: number;
-  /** The Guardian comes with this much health (the Rift Race's, a third); full by default. */
+  /**
+   * The Guardian comes with this much health (the Rift Race's, a third; a
+   * campaign rematch's, more); full by default.
+   */
   readonly bossHealth?: number;
   /**
    * An overflow does not end the game (the Rift Race, 1.34): the top half of

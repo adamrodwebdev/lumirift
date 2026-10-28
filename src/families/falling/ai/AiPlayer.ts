@@ -2,14 +2,11 @@ import type { RandomSource } from '@/core/Random';
 import type { FallingSession } from '../FallingSession';
 import { Piece } from '../pieces/Piece';
 import { ATTACK_SAFE_HEIGHT, AttackEvaluator, Evaluator } from './Evaluator';
+import type { AiLevel } from './AiLevels';
 import { searchPlacements, type Placement } from './PlacementSearch';
 
-/** From a beginner to a top player, by the speeds of real players (pieces per second). */
-export const AI_LEVELS = ['rookie', 'easy', 'normal', 'hard', 'expert'] as const;
-export type AiLevel = (typeof AI_LEVELS)[number];
-
-export const isAiLevel = (value: unknown): value is AiLevel =>
-  typeof value === 'string' && (AI_LEVELS as readonly string[]).includes(value);
+// The levels live apart, light enough for the campaign's data (1.38).
+export { AI_LEVELS, isAiLevel, type AiLevel } from './AiLevels';
 
 /** How an AI level plays: how long it thinks, how fast it moves, how often it errs. */
 export interface AiProfile {

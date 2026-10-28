@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { CHAPTERS, LEVELS, type CampaignLevel } from '@/campaign/Levels';
@@ -8,27 +8,17 @@ import AppIcon from '../components/AppIcon.vue';
 import StarRow from '../components/StarRow.vue';
 import UpgradesDialog from '../components/UpgradesDialog.vue';
 import LevelDialog from './LevelDialog.vue';
+import { pathPoints, type Size } from './mapPath';
 
 /**
- * The campaign as a map: one chapter at a time, its six levels along a
- * winding path, the way travelled so far lit. A level shows its goal before
+ * The campaign as a map: one chapter at a time, its six or seven levels
+ * along a winding path, the way travelled so far lit. A level shows its goal before
  * it starts; the upgrades are bought here.
  */
 const emit = defineEmits<{ play: [level: CampaignLevel, origin: Element] }>();
 
 const { t } = useI18n();
 const { campaign, catalog, platform } = useServices();
-
-type Point = readonly [x: number, y: number];
-/**
- * Where a chapter's levels sit, in % of the path's field: zigzagging up a
- * tall screen, across a wide one (six levels, or seven with a Guardian).
- */
-const pathPoints = (count: number, wide: boolean): Point[] =>
-  Array.from({ length: count }, (_, i): Point => {
-    const t = count > 1 ? i / (count - 1) : 0;
-    return wide ? [t * 100, i % 2 ? 22 : 78] : [i % 2 ? 77 - i : 24 + i, 100 - t * 100];
-  });
 
 /** The map opens on the chapter of the next level to win. */
 const chapterIndex = ref(
@@ -93,17 +83,52 @@ const nodeLabel = ({ level, state, stars, inEdition }: (typeof view.value.levels
   return `${name}, ${status}`;
 };
 
-// --- The path: tall or wide, as its box is ----------------------------------
+// --- The path: tall or wide, its rows as far apart as its levels need -------
 
 const path = ref<HTMLElement | null>(null);
-const wide = ref(false);
-const observer = new ResizeObserver(([entry]) => {
-  if (entry) wide.value = entry.contentRect.width > entry.contentRect.height;
+const NO_SIZE: Size = { width: 0, height: 0 };
+/** The path's field and its largest level (disc, name and stars), as last laid out. */
+const measured = shallowRef({ field: NO_SIZE, node: NO_SIZE });
+/**
+ * Each element's size as the observer reports it, after the browser's own
+ * layout: no size is ever read in a way that forces one (the map is built
+ * while the menu settles, and a forced layout there blocks the page).
+ */
+const sizes = new Map<Element, Size>();
+const observer = new ResizeObserver((entries) => {
+  for (const { target, contentRect } of entries) {
+    sizes.set(target, { width: contentRect.width, height: contentRect.height });
+  }
+  let field = NO_SIZE;
+  let width = 0;
+  let height = 0;
+  for (const [element, size] of sizes) {
+    if (!element.isConnected) {
+      observer.unobserve(element);
+      sizes.delete(element);
+    } else if (element.classList.contains('path__field')) field = size;
+    else {
+      width = Math.max(width, size.width);
+      height = Math.max(height, size.height);
+    }
+  }
+  const next = { field, node: { width, height } };
+  if (JSON.stringify(next) !== JSON.stringify(measured.value)) measured.value = next;
 });
-onMounted(() => path.value && observer.observe(path.value));
+/** Watches the chapter's field and levels: once drawn, and at each new chapter. */
+const observe = () => {
+  path.value?.querySelectorAll('.path__field, .node').forEach((element) => {
+    observer.observe(element);
+  });
+};
+onMounted(observe);
+watch(() => view.value.chapter, observe, { flush: 'post' });
 onBeforeUnmount(() => observer.disconnect());
 
-const points = computed(() => pathPoints(view.value.levels.length, wide.value));
+const wide = computed(() => measured.value.field.width > measured.value.field.height);
+const points = computed(() =>
+  pathPoints(view.value.levels.length, measured.value.field, measured.value.node),
+);
 /** The way between levels: lit up to the last level opened, dotted after. */
 const ways = computed(() => {
   let lit = '';
@@ -439,10 +464,19 @@ const shopOpen = ref(false);
   box-shadow: 0 0 0 2px var(--bg);
 }
 
+/* The way passes behind a level's name and stars: a halo of the page keeps them readable. */
 .node__label {
   color: var(--text-muted);
   font-size: 0.7rem;
   font-weight: 700;
+  text-shadow:
+    0 0 2px var(--bg),
+    0 0 4px var(--bg),
+    0 0 6px var(--bg);
+}
+
+.node__stars {
+  filter: drop-shadow(0 0 2px var(--bg)) drop-shadow(0 0 2px var(--bg));
 }
 
 .node__stars :deep(.star--on svg) {
@@ -536,6 +570,21 @@ const shopOpen = ref(false);
   .node__disc {
     width: 3rem;
     height: 3rem;
+  }
+
+  /* The levels stand side by side: the Guardian's ring marks it, not its size (1.38). */
+  .node--boss .node__disc {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .node__label {
+    font-size: 0.65rem;
+  }
+
+  .node__stars :deep(svg) {
+    width: 0.65rem;
+    height: 0.65rem;
   }
 
   .path__field {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CampaignProgress } from '@/campaign/CampaignProgress';
 import { CampaignRun } from '@/campaign/CampaignRun';
 import type { LiveState } from '@/campaign/Goals';
-import { CHAPTERS, LEVELS, levelById, MAX_STARS } from '@/campaign/Levels';
+import { CHAPTERS, guardianLevel, LEVELS, levelById, MAX_STARS } from '@/campaign/Levels';
 import { boostsFor, nextRankCost, timeBonusMs, UPGRADES } from '@/campaign/Upgrades';
 import { MemoryStorage } from '@/services/KeyValueStorage';
 import { CAMPAIGN_KEY, CampaignService } from '@/services/CampaignService';
@@ -23,8 +23,8 @@ const state = (patch: Partial<LiveState> = {}): LiveState => ({
 });
 
 describe('Campaign levels', () => {
-  it('has five chapters of six levels, each with its duel, and Guardians after the duels', () => {
-    expect(LEVELS).toHaveLength(34);
+  it('has ten chapters of six levels, each with its duel, and Guardians after the duels', () => {
+    expect(LEVELS).toHaveLength(69);
     for (const chapter of CHAPTERS) {
       const levels = LEVELS.filter((level) => level.chapter === chapter && !level.boss);
       expect(levels).toHaveLength(6);
@@ -36,10 +36,23 @@ describe('Campaign levels', () => {
       { id: '3-7', chapter: 3, modeId: 'mosaic', boss: 'ceramicGolem' },
       { id: '4-7', chapter: 4, modeId: 'tower', boss: 'towerEye' },
       { id: '5-7', chapter: 5, modeId: 'classic', boss: 'riftHeart' },
+      // The rematches (1.38): stronger, the Heart at full strength last.
+      { id: '6-7', chapter: 6, modeId: 'sand', boss: 'duneWorm', bossHealth: 150 },
+      { id: '7-7', chapter: 7, modeId: 'mosaic', boss: 'ceramicGolem', bossHealth: 150 },
+      { id: '8-7', chapter: 8, modeId: 'tower', boss: 'towerEye', bossHealth: 150 },
+      { id: '9-7', chapter: 9, modeId: 'classic', boss: 'riftHeart', bossHealth: 150 },
+      { id: '10-7', chapter: 10, modeId: 'classic', boss: 'riftHeart', bossHealth: 200 },
     ]);
-    for (const guardian of guardians) expect(guardian.goal.kind).toBe('boss');
-    expect(new Set(LEVELS.map((level) => level.id)).size).toBe(34);
-    expect(MAX_STARS).toBe(102);
+    for (const guardian of guardians) {
+      expect(guardian.goal).toEqual({ kind: 'boss', target: guardian.bossHealth ?? 100 });
+    }
+    expect(new Set(LEVELS.map((level) => level.id)).size).toBe(69);
+    expect(MAX_STARS).toBe(207);
+  });
+
+  it('keeps the first fight of each Guardian for its weekly challenge, not its rematch', () => {
+    expect(guardianLevel('duneWorm')!.id).toBe('2-7');
+    expect(guardianLevel('riftHeart')!.id).toBe('5-7');
   });
 
   it('visits every mode of the game, or opens it (the race, once its three worlds were seen)', () => {

@@ -255,6 +255,7 @@ export class LevelRun implements RunKind {
       ...(level.showcase ? { showcase: true } : {}),
       ...(level.practice ? { practice: true } : {}),
       ...(level.boss ? { boss: level.boss } : {}),
+      ...(level.bossHealth === undefined ? {} : { bossHealth: level.bossHealth }),
     };
   }
 

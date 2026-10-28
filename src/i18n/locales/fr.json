@@ -565,7 +565,12 @@
       "2": "Courants",
       "3": "Mosaïques",
       "4": "Vertiges",
-      "5": "La Faille"
+      "5": "La Faille",
+      "6": "Sables mouvants",
+      "7": "Terre cuite",
+      "8": "Le Regard",
+      "9": "Battements",
+      "10": "Au-delà de la Faille"
     },
     "chapterStars": "{n} / {max} étoiles",
     "spare": "{n} étoile à dépenser | {n} étoiles à dépenser",
@@ -665,7 +670,7 @@
   },
   "demo": {
     "title": "Démo.",
-    "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet compte quatorze modes et trente-quatre niveaux.",
+    "banner": "Cinq modes en jeu libre (Classique, Sable, Mosaïque, Tour, Duel) et le premier chapitre de la campagne. Le jeu complet compte quatorze modes et soixante-neuf niveaux.",
     "fullGame": "Jeu complet"
   },
   "title": {

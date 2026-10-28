@@ -1,0 +1,72 @@
+{
+  "chapter": 10,
+  "levels": [
+    {
+      "seed": 4,
+      "level": {
+        "id": "10-1",
+        "chapter": 10,
+        "modeId": "mosaic",
+        "timeLimitMs": 150000,
+        "goal": { "kind": "lines", "target": 15 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 8,
+      "level": {
+        "id": "10-2",
+        "chapter": 10,
+        "modeId": "tower",
+        "timeLimitMs": 180000,
+        "goal": { "kind": "lines", "target": 14 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 7,
+      "level": {
+        "id": "10-3",
+        "chapter": 10,
+        "modeId": "tilt",
+        "timeLimitMs": 180000,
+        "goal": { "kind": "lines", "target": 33 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 2,
+      "level": {
+        "id": "10-4",
+        "chapter": 10,
+        "modeId": "sand",
+        "timeLimitMs": 210000,
+        "goal": { "kind": "score", "target": 25500 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 2,
+      "level": {
+        "id": "10-5",
+        "chapter": 10,
+        "modeId": "mirror",
+        "timeLimitMs": 210000,
+        "goal": { "kind": "lines", "target": 26 },
+        "stars": { "kind": "timeLeft" }
+      }
+    },
+    {
+      "seed": 1,
+      "level": {
+        "id": "10-6",
+        "chapter": 10,
+        "modeId": "duel",
+        "variant": "hard",
+        "timeLimitMs": null,
+        "goal": { "kind": "win", "target": 1 },
+        "stars": { "kind": "fast", "twoMs": 150000, "threeMs": 90000 }
+      }
+    }
+  ]
+}

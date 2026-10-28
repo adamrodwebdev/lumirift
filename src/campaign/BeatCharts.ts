@@ -1,3 +1,7 @@
+import { chartOf, slotOf } from './generator/ChapterPlan';
+import { ideaOf } from './generator/LevelGenerators';
+import { LEVEL_PACKS } from './packs';
+
 /**
  * The part a level plays in the campaign's rhythm (1.33):
  * - `show`: the game's best, at once (the first level);
@@ -7,7 +11,8 @@
  * - `test`: what was learnt, asked for;
  * - `spike`: a sharp climb in the middle of a chapter;
  * - `duel`, `boss`: a chapter's end;
- * - `finale`: the campaign's last two fights, for players who mastered the game.
+ * - `finale`: the fights for players who mastered the game: chapter 5's last two,
+ *   then every duel and every Guardian the regular cannot beat (1.38).
  */
 export type BeatRole =
   'show' | 'teach' | 'twist' | 'breather' | 'test' | 'spike' | 'duel' | 'boss' | 'finale';
@@ -52,11 +57,11 @@ const chart = (
 ): BeatChart => ({ idea, emotion, role, intensity, ...extra });
 
 /**
- * The campaign's rhythm, level by level (1.33): a sawtooth in each chapter,
- * a calm after each peak, the chapter's end as its climax. Written as the
- * design asks, checked against the bot's measures by the curve test.
+ * The handmade chapters' rhythm, level by level (1.33): a sawtooth in each
+ * chapter, a calm after each peak, the chapter's end as its climax. Written
+ * as the design asks, checked against the bot's measures by the curve test.
  */
-export const BEAT_CHARTS: Readonly<Record<string, BeatChart>> = {
+const HANDMADE_CHARTS: Readonly<Record<string, BeatChart>> = {
   // 1. Premiers blocs: the elements first, then the falling basics; a newcomer nearly loses by 1-3.
   '1-1': chart('show', 'wonder', [2, 3, 4], 'Link the walls with one colour; the elements react'),
   '1-2': chart('teach', 'curiosity', [4, 5, 6], 'The elements alone, on a bed of sand', {
@@ -123,4 +128,36 @@ export const BEAT_CHARTS: Readonly<Record<string, BeatChart>> = {
   '5-5': chart('spike', 'urgency', [4, 7, 9], 'The tide, faster'),
   '5-6': chart('finale', 'rivalry', [4, 5, 6], 'The strongest rival'),
   '5-7': chart('finale', 'dread', [4, 5, 6], 'The Heart of the Rift, wounded by its own shards'),
+};
+
+/** The Guardians' rematches (1.38): each generated chapter's climax, the Heart twice at the end. */
+const REMATCH_CHARTS: Readonly<Record<string, BeatChart>> = {
+  '6-7': chart('finale', 'dread', [4, 5, 6], 'The Dune Wyrm again, stronger, without mercy'),
+  '7-7': chart('boss', 'dread', [3, 5, 7], 'The Ceramic Golem again: more stones to parry'),
+  '8-7': chart('boss', 'dread', [4, 5, 7], 'The Eye of the Tower again, harder to blind'),
+  '9-7': chart('finale', 'dread', [4, 5, 7], 'The Heart of the Rift again, before the last fight'),
+  '10-7': chart(
+    'finale',
+    'dread',
+    [4, 6, 7],
+    'The Heart of the Rift at full strength: twice its health',
+  ),
+};
+
+/** The generated chapters' charts: each level's role in its chapter's plan (1.38). */
+const GENERATED_CHARTS: Readonly<Record<string, BeatChart>> = Object.fromEntries(
+  LEVEL_PACKS.flatMap((pack) =>
+    pack.levels.map(({ level }) => {
+      const slot = slotOf(level.id);
+      if (!slot) throw new Error(`${level.id} has no place in its chapter's plan`);
+      return [level.id, chartOf(slot, ideaOf(level))];
+    }),
+  ),
+);
+
+/** The campaign's rhythm, level by level, from the first show to the last Guardian. */
+export const BEAT_CHARTS: Readonly<Record<string, BeatChart>> = {
+  ...HANDMADE_CHARTS,
+  ...GENERATED_CHARTS,
+  ...REMATCH_CHARTS,
 };

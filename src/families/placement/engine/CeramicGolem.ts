@@ -61,7 +61,7 @@ export interface GolemView {
 }
 
 export class CeramicGolem implements GolemView {
-  private readonly life = new GuardianHealth();
+  private readonly life: GuardianHealth;
   private _targets: Cell[] = [];
   private _countdown: number = EVERY[1];
   private readonly events: GolemEvent[] = [];
@@ -69,10 +69,17 @@ export class CeramicGolem implements GolemView {
   constructor(
     private readonly grid: Grid,
     private readonly random: RandomSource,
-  ) {}
+    /** Its health: a full one by default, more in a rematch (1.38). */
+    maxHealth?: number,
+  ) {
+    this.life = new GuardianHealth(maxHealth);
+  }
 
   get health(): number {
     return this.life.health;
+  }
+  get maxHealth(): number {
+    return this.life.maxHealth;
   }
   get phase(): GuardianPhase {
     return this.life.phase;
