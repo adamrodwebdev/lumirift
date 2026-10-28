@@ -7,6 +7,9 @@ navigateur, mobile d'abord, en
 blocs gemmes) et sa musique générative. Gratuit, sans inscription,
 aucune donnée ne quitte l'appareil.
 
+**Jouer** : [Lumirift Blocks sur Playgama](https://playgama.ai/play/be4bqnmqcv), gratuit, dans
+le navigateur, sur téléphone comme sur ordinateur.
+
 Cahier des charges (règles détaillées, architecture, décisions) :
 [docs/CAHIER_DES_CHARGES.md](docs/CAHIER_DES_CHARGES.md) · Historique : [CHANGELOG.md](CHANGELOG.md) ·
 Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
@@ -304,3 +307,8 @@ src/
 
 Aucun compte, aucun traceur, aucune requête vers un service tiers. Réglages, records et
 progression sont gardés dans le stockage local du navigateur.
+
+## Crédits
+
+Conçu et dirigé par AdamRodWebDev, développé avec des assistants de code IA (_designed and
+directed by AdamRodWebDev, built with AI coding assistants_).
