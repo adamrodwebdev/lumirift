@@ -38,6 +38,8 @@ Sources (relues le 20/10/2026) : [Requirements](https://docs.crazygames.com/requ
 | Rien d'inédit face aux succès du tag         | Éléments du Sable qui réagissent entre eux (foudre et eau, huile en feu, glace, liane, acide, vapeur) montrés dès la première minute (1.12) ; gemmes-bombes dans la Tour (1.13)                                                                                                                                         |
 | Peu de raisons de revenir                    | Quatre Gardiens de la faille, un boss par chapitre, chacun avec sa riposte et son cosmétique : Ver des dunes, Golem de céramique, Œil de la Tour, Cœur de la faille (1.14–1.17)                                                                                                                                         |
 | Vitrine terne                                | Covers lumineuses autour d'un personnage (l'Œil de la Tour) ; vidéos sur les éléments et les quatre boss (1.17)                                                                                                                                                                                                         |
+| Premières minutes sans relief                | L'accueil joue les meilleurs moments du jeu en direct (1.18) ; danger, musique qui s'emballe et « Close call! » (1.19) ; combos (1.20) ; vague de la faille (1.25) ; commandes au doigt précises (1.32)                                                                                                                 |
+| Peu de contenu, peu de raisons de revenir    | Campagne réglée par un bot de courbe (1.33), puis 69 niveaux en dix chapitres et des Gardiens qui reviennent plus forts (1.38) ; course contre la montre (1.34) ; cadeau du jour et collections (1.35) ; saisons de six semaines et élément de la semaine (1.36)                                                        |
 
 ## Produire le build et les médias
 
@@ -79,13 +81,16 @@ training ». Le build CrazyGames le rejoue de bout en bout (`e2e/portal.spec.ts`
   > board, the Eye of the Tower that strikes wherever it looks, and the Heart of the Rift, wounded
   > by its own shards.
   >
-  > 13 original modes across four families: Classic, Tide, Flip, Mirror, Chroma, Fusion, Tilt,
-  > Rhythm and Silhouette; the Sand; the 8×8 Mosaic with its jokers; the Tower; and a
-  > head-to-head Duel against an AI, from Rookie to Expert.
+  > 14 original modes: Classic, Tide, Flip, Mirror, Chroma, Fusion, Tilt, Rhythm and
+  > Silhouette; the Sand; the 8×8 Mosaic with its jokers; the Tower; a head-to-head Duel against
+  > an AI, from Rookie to Expert; and the Rift Race, a race against the clock through the well,
+  > the Sand and the Tower.
   >
-  > Play a 34-level campaign that visits every mode, earn up to three stars per level and spend
-  > them on 10 upgrades. Come back for the Daily Challenge and three new objectives every day,
-  > and unlock block skins, ambiances and shatter effects, one of them from each Guardian.
+  > Play a 69-level campaign across ten chapters, where every Guardian comes back stronger; earn
+  > up to three stars per level and spend them on 10 upgrades. Come back for the Daily Challenge,
+  > the weekly Guardian challenge, three new objectives and a gift every day, and six-week
+  > seasons with their own rewards. Unlock block skins, ambiances and shatter effects, one of
+  > them from each Guardian.
   >
   > No sign-up, progress saved automatically. Play with the keyboard, or by touch on phones and
   > tablets, in portrait or landscape. Available in English, French, Indonesian and Russian.
@@ -97,7 +102,7 @@ training ». Le build CrazyGames le rejoue de bout en bout (`e2e/portal.spec.ts`
   > - Move: Left / Right arrows (or A / D)
   > - Soft drop: Down arrow (or S) — Hard drop: Space
   > - Rotate: Up arrow or X — Rotate the other way: Z
-  > - Hold: C or Shift — Flip the well (Flip mode): F
+  > - Hold: C or Shift — Flip the well (Flip mode): F — Rift surge, once its gauge is full: V
   > - Turn the Tower: Q / E
   > - Mosaic: 1–3 to pick a piece (4 for the bonus cube), arrows to aim, Enter to place, J for
   >   the jokers, Backspace to cancel
@@ -121,6 +126,50 @@ training ». Le build CrazyGames le rejoue de bout en bout (`e2e/portal.spec.ts`
   **Comptes** : non (aucune connexion).
 - **Genre** : Puzzle (blocs qui tombent). **Public** : PEGI 3 de fait (aucune violence, aucun
   achat, aucun chat).
+
+## Revue modérateur du 28/10/2026 (build 1.38.0)
+
+**Méthode.** Le paquet `release/lumirift-crazygames-1.38.0.zip` (123 fichiers, 1,39 Mo,
+chemins en `/`) est servi en local (`vite preview --mode crazygames`, SDK v3 3.8.0 en
+environnement `local`), dans Chrome sans profil, chaque appel au SDK journalisé, à 907 × 510
+sauf mention, puis à 821 × 462, 800 × 450, 1280 × 720, 1920 × 1080, 390 × 844 et 844 × 390.
+Deux joueurs simulés : un débutant qui lâche chaque pièce, et un joueur qui revient (9 minutes
+déjà jouées).
+
+| Contrôle                             | Statut     | Preuve                                                                                                                                                                                                                  |
+| ------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arrivée directe en jeu               | ✅         | L'entraînement dès l'ouverture, aucun onglet ; `gameplayStart` entre 0,5 et 0,7 s à toutes les tailles                                                                                                                  |
+| Entrée fracassante                   | ✅         | Le débutant chasse le Ver des dunes à 32 s (4 813 points, combo ×2), puis le 1-1 suit sans menu, 2,4 s plus tard                                                                                                        |
+| Événements SDK                       | ✅         | `gameplayStart` et `gameplayStop` à chaque partie et sur la pause ; ni `gameplayStop` à la perte du focus, ni `gameplayStart` au retour                                                                                 |
+| Pubs                                 | ✅         | Aucune demande avant 8 min de jeu d'un nouveau joueur, ni avant 3 min de la visite ; joueur qui revient : première midgame à 4,3 min, entre deux niveaux, sur « Try again » ; le niveau suivant attend la fin de la pub |
+| Aucune offre récompensée             | ✅         | Sur CrazyGames, ni reprise, ni cadeau ou expérience doublés, ni essai d'une ambiance contre une pub                                                                                                                     |
+| Fenêtre qui s'ouvre seule            | 🟡         | Le cadeau du jour s'ouvre sur l'accueil pour un joueur qui revient (« Claim +50 XP » et une croix) ; jamais pour un nouveau joueur                                                                                      |
+| Écran de fin                         | ✅         | « Level complete! », étoiles, expérience et points de saison ; « Level 1-2 », « Try again », « Campaign map »                                                                                                           |
+| Muet du portail, Échap, Ctrl+W       | ✅         | Le muet du SDK l'emporte sur le réglage du jeu et suit ses changements ; Échap neutralisé ; Ctrl jamais utilisé                                                                                                         |
+| Disposition du clavier               | ✅         | La légende suit la disposition du joueur (W pour « tourner dans l'autre sens » sur AZERTY)                                                                                                                              |
+| Tailles d'iframe, téléphones         | ✅         | Aucun défilement ni erreur aux sept tailles ; au téléphone, le guide au-dessus du puits, les gestes au doigt                                                                                                            |
+| Performances (processeur ralenti 4×) | ✅         | 158 images/s en médiane, 99 % sous 12,2 ms, une seule au-delà de 50 ms en 12 s                                                                                                                                          |
+| Moteurs à 144 / 165 Hz               | ✅         | Pas fixe de 16 ms : vitesse indépendante de l'écran (inchangé depuis la revue de la 1.17.2)                                                                                                                             |
+| Console, réseau, taille              | ✅         | Aucune erreur ; seuls `localhost` et `sdk.crazygames.com` ; 123 fichiers, 1,39 Mo                                                                                                                                       |
+| Musique                              | ✅         | Dès le premier geste, sur tous les écrans : calme dans les menus, plus intense dans le danger                                                                                                                           |
+| Description de la fiche              | ✅ corrigé | Disait « 13 original modes » et « 34-level campaign » : 14 modes, 69 niveaux, la course, les saisons et le défi des Gardiens ; la vague (V) ajoutée aux commandes                                                       |
+| Vidéos                               | 🟡         | En WebM (19,7 s, 16:9 et 2:3) : vérifier que le formulaire les accepte, sinon les exporter en MP4                                                                                                                       |
+| Safari, téléphone réel               | 🟡         | Pas de WebKit sur la machine : outil QA du portail et appareil                                                                                                                                                          |
+
+**La page qualité (grille E).** Tout passe, sauf deux lignes subjectives, laissées aux inconnus :
+le style face aux cinq meilleurs du tag (sombre et précieux là où les covers du tag sont vives),
+et le volume sonore, à juger à l'oreille. Le reste : arrivée en jeu, prise en main visuelle,
+objectifs à l'écran, réactivité, courbe mesurée par le bot (une tension dès le 1-3, rien de
+répétitif : chaque niveau change de mode ou d'objectif), fluidité (relance d'un clic, 2,4 s
+d'un niveau au suivant), interface par appareil, publics variés (clémence des premiers
+chapitres, durées de partie diverses), un fil (les Gardiens), graphismes nets aux deux
+densités, nom unique ; la cover (l'Œil de la Tour) est jouée par l'accueil dès la fin de
+l'entraînement.
+
+**Verdict.** Prêt techniquement. Avant de soumettre : vérifier le format des vidéos dans le
+formulaire, téléverser le dossier `dist-crazygames` dans l'outil QA du brouillon « Lumirift
+Blocks » (Safari, un vrai téléphone), et faire jouer une dizaine d'inconnus sans aide (moyenne
+au-delà de 3 minutes, un quart des parties au-delà de 3 minutes).
 
 ## Revue modérateur du 23/10/2026 (build 1.29.0, premier lancement)
 
