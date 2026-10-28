@@ -2101,6 +2101,70 @@ et 24. Le même jour : une partie reprise compte pour les records, comme chez la
 la boutique attend le contrat Yandex et forme une petite version à part, pour que la 1.31 sorte
 plus tôt.
 
+## 9 ter. La croissance sans dépense (lot 25, validé le 28/10/2026)
+
+Le plan « Lumirift Social Growth Plan », validé le 28/10/2026, fait venir des joueurs sans
+dépense : des clips courts du jeu chaque jour sur TikTok et Instagram, les trois meilleurs de la
+semaine sur YouTube, et une page à nous, adamrodwebdev.com/lumirift (dépôt du portfolio). Ce lot
+outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
+
+- **Lot 25 · 1.39 La fabrique de clips.** Une commande, `npm run clips -- --week 2026-11-02`,
+  rend les clips d'une semaine dans `release/clips/<lundi>/`, depuis les vrais moteurs, comme les
+  vidéos des portails (`scripts/showcase-frames.mjs`, `scripts/mp4-encoder.mjs`,
+  `media/scenes.ts`).
+  - Chaque clip : un MP4 de 1080 × 1920 à 30 images/s, H.264 et AAC, de 7 à 15 s. Il s'ouvre sur
+    son pic, jamais sur la mise en place, et sa dernière image rejoint la première : il boucle.
+    Aucun texte incrusté (chaque application ajoute la ligne de texte, pour le texte natif et la
+    recherche), sauf les repères A et B d'un défi. Une couverture JPEG, l'image du pic. Un
+    `manifest.json` : scène, graine, durée, temps du pic, mesures du moteur (grains brûlés,
+    foudroyés, lignes faites).
+  - Le montage suit les événements des moteurs, ceux que lit `tests/showcase/scenes.test.ts`
+    (coups et réactions comme `shock`, `blaze`, `sprout` ; l'alerte, la sortie et les blessures
+    d'un Gardien ; les lignes), jamais des temps posés à la main : une scène modifiée garde sa
+    coupe. Une première passe sans dessin note quand et où chaque pic arrive. Le clip s'ouvre
+    0,15 s avant le pic, avec un zoom de × 1,0 à × 1,15 en 150 ms tenu environ 1,2 s, revient à
+    la mise en place, rejoue le pic, puis 1 à 2 s de suite, et finit sur l'image du début.
+  - La caméra : les images sont dessinées à 3× puis recadrées en 1080 × 1920, si bien qu'un zoom
+    jusqu'à × 1,5 reste net (les canevas de la page des médias montent à 3× ; le jeu garde son
+    plafond de 2×). Le cadre suit le lieu du pic, reste dans le puits et garde l'action dans la
+    zone sûre du gabarit : hors des 15 % de droite (les boutons des applications), des 22 % du
+    bas (la légende) et des 10 % du haut (les onglets).
+  - Le son, tel que l'entend un joueur (la musique, les effets, le battement du danger). De
+    préférence rendu hors ligne, à l'image près : `AudioEngine` sur un `OfflineAudioContext`, les
+    sons de la session rejoués à leurs temps de jeu, l'ordonnanceur de `Music` piloté sur la
+    durée du clip au lieu de son `setInterval`, l'audio encodé en AAC par WebCodecs et une piste
+    audio dans `mp4-encoder.mjs`. À défaut, si cet essai dépasse une demi-journée, le son est
+    enregistré en direct, la scène avançant par pas fixes de 1/30 s à vitesse réelle. Le son
+    d'un pic tombe à moins d'une image (33 ms) de son image, vers −14 LUFS.
+  - Les scènes suivent le calendrier du jeu : le lundi, l'élément de la semaine
+    (`src/seasons/SeasonData.ts`) ; le vendredi, le Gardien du défi de la semaine
+    (`GuardianChallenge`). Semaine du 2 novembre : le feu sur l'huile (nouvelle scène), la paire
+    de défi du feu (nouvelle), une coupe plus longue du Cœur de la faille, l'éclair dans l'eau
+    (tiré de la scène `elements`). Puis l'eau et le Ver (9 novembre), la graine et le Golem (16),
+    la glace et l'Œil (23), l'huile et le Cœur (30), l'acide et le Ver (7 décembre), chaque
+    semaine construite une semaine à l'avance. Chaque nouvelle scène se met en scène par les
+    options publiques des moteurs (lit préparé, pièces scriptées, graine), a son test de pic à
+    l'heure et trois graines, pour qu'un élément qui revient ne montre jamais deux fois le même
+    clip.
+  - Les paires de défi : un même plateau, deux lâchers scriptés depuis la même graine. Le clip de
+    mise en place s'arrête sur la décision, repères A et B à l'écran ; le clip de réponse montre
+    les deux issues côte à côte, chacune avec le compte mesuré par le moteur (dans
+    `manifest.json`, que cite la légende du dimanche).
+  - Porte : la semaine 1 (clips, couvertures, manifeste) en moins de 15 minutes sur un seul
+    cœur ; deux passes aux mêmes entrées donnent les mêmes images ; chaque clip suit les règles
+    ci-dessus, son pic dans les 0,3 premières secondes, sa dernière image égale à la première ;
+    le son de chaque pic à 33 ms près de son image ; l'action de chaque pic dans la zone sûre ;
+    un test de pic par nouvelle scène ; `scripts/yandex-media.mjs` et
+    `scripts/crazygames-media.mjs` rendent toujours les mêmes vidéos des portails ; la fabrique
+    ne fait qu'écrire des fichiers, sans publication ni API de plateforme.
+  - Architecture : `scripts/clip-factory.mjs` et `npm run clips` ; `media/clips.ts`, les
+    recettes des semaines en données ; les nouvelles scènes dans `src/showcase/` avec leurs
+    tests ; la piste audio dans `scripts/mp4-encoder.mjs` ; le son hors ligne à côté de
+    `src/services/audio/`.
+  - Hors du lot : la ligne de texte, la voix, le montage, l'envoi et la programmation, qui restent
+    dans les applications et aux mains de l'utilisateur ; la page /lumirift, livrée dans le dépôt
+    du portfolio (sa version 1.8.0).
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
