@@ -24,8 +24,8 @@ moments, sur ses vrais moteurs, pour TikTok, Instagram et YouTube Shorts.
   le moteur audio sur un contexte hors ligne, la musique qui suit la tension comme en partie, le
   tout ramené vers −14 LUFS. Un son placé à 0,5 s sort à 0,5 s.
 - **La caméra garde l'action dans la zone sûre** des applications (hors des 15 % de droite, des
-  22 % du bas, des 10 % du haut) : sur le Cœur de la faille, le cadre descend pour montrer son sol
-  au-dessus de la légende.
+  22 % du bas, des 10 % du haut) : sur le Cœur de la faille, le cadre descend pour garder ses
+  coups et ses points au-dessus de la légende (la rangée du fond reste sous elle, vers 85 %).
 - **Les défis** : la question s'arrête sur la décision, A et B au-dessus du puits ; la réponse
   montre les deux puits côte à côte, chacun avec sa lettre, et le manifeste donne leurs comptes.
 - **La semaine du 2 novembre** (`media/clips.ts`) : le feu sur l'huile (lundi), le défi du feu

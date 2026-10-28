@@ -2183,7 +2183,9 @@ outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
       il revient au pic rejoué puis repart en 0,3 s ; la dernière image est la première ;
     - **la zone sûre** : le cadre garde l'écran entier et sa taille, et descend dans la marge
       si l'action tomberait sous la légende. Sur le Cœur, dont les rangées montent du sol, le
-      sol passe à 76 % de la hauteur et le haut du puits sort du cadre ;
+      point visé (ses coups, ses points) passe à 76 % de la hauteur, au-dessus de la légende ;
+      la rangée du fond reste sous elle (vers 85 %) et le haut du puits sort du cadre. Le contrôle
+      ne teste que ce point, pas l'étendue de l'action ;
     - **la question d'un défi** s'ouvre sur la décision (le feu vient d'apparaître, A et B au
       milieu du ciel, au-dessus de l'huile et de l'eau), zoomée et tenue 1,2 s, revient au début,
       puis tient la décision 2,5 s : la musique continue sous l'image arrêtée. **La réponse**
