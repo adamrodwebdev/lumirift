@@ -15,6 +15,7 @@ export function createPlacementSession(modeId: ModeId, options: SessionOptions):
       timeLimitMs: options.timeLimitMs,
       ...(options.boosts ? { boosts: options.boosts } : {}),
       ...(options.boss === 'ceramicGolem' ? { boss: options.boss } : {}),
+      ...(options.bossHealth === undefined ? {} : { bossHealth: options.bossHealth }),
     }),
   );
 }

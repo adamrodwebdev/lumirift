@@ -89,6 +89,8 @@ export interface MosaicOptions {
   readonly boosts?: Boosts;
   /** The Ceramic Golem to defeat (the boss level of the Mosaics). */
   readonly boss?: 'ceramicGolem';
+  /** The Golem's health, when not a full one (a rematch, 1.38). */
+  readonly bossHealth?: number;
   /** The first hand, whatever the dealer would draw (a staged moment). */
   readonly opening?: readonly OpeningPiece[];
 }
@@ -149,7 +151,9 @@ export class MosaicGame {
     this.inventory.sort((a, b) => JOKER_IDS.indexOf(a) - JOKER_IDS.indexOf(b));
     this.timeLimitMs = options.timeLimitMs ?? null;
     this.golem =
-      options.boss === 'ceramicGolem' ? new CeramicGolem(this.grid, options.random) : null;
+      options.boss === 'ceramicGolem'
+        ? new CeramicGolem(this.grid, options.random, options.bossHealth)
+        : null;
   }
 
   // --- Read model -----------------------------------------------------------

@@ -565,7 +565,12 @@
       "2": "Currents",
       "3": "Mosaics",
       "4": "Vertigo",
-      "5": "The Rift"
+      "5": "The Rift",
+      "6": "Quicksand",
+      "7": "Terracotta",
+      "8": "The Gaze",
+      "9": "Heartbeats",
+      "10": "Beyond the Rift"
     },
     "chapterStars": "{n} / {max} stars",
     "spare": "{n} star to spend | {n} stars to spend",
@@ -665,7 +670,7 @@
   },
   "demo": {
     "title": "Demo.",
-    "banner": "Five modes in free play (Classic, Sand, Mosaic, Tower, Duel) and the first chapter of the campaign. The full game has fourteen modes and thirty-four levels.",
+    "banner": "Five modes in free play (Classic, Sand, Mosaic, Tower, Duel) and the first chapter of the campaign. The full game has fourteen modes and sixty-nine levels.",
     "fullGame": "Full game"
   },
   "title": {

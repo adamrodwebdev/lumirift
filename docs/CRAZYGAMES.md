@@ -302,7 +302,7 @@ moins de 10 s et pèsent moins de 20 Mo).
 
 - Chargement : build de moins de 1 Mo, première partie en moins de 2 s sur ordinateur.
 - Conversion : une partie en 1 clic, guidée, sans danger au premier niveau.
-- Temps de jeu et rétention : campagne de 34 niveaux dont quatre boss, défi du jour,
+- Temps de jeu et rétention : campagne de 69 niveaux dont neuf combats de Gardiens, défi du jour,
   objectifs, série, niveaux et Atelier (nouveautés signalées, un cosmétique par boss).
 
 ## Reste à faire sur le portail

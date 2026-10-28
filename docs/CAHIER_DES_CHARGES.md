@@ -1754,7 +1754,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Livré (1.35)                                                 |
 | 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Livré (1.36)                                                 |
 | 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Livré (1.37), en test                                        |
-| 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Prévu                                                        |
+| 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Livré (1.38) : 69 niveaux                                    |
 | 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
 | 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
 | 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Livré (1.32)                                                 |
@@ -1944,6 +1944,54 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
   (`LevelGenerator`), qui ne garde que les niveaux dans la bande du bot de courbe ; les
   chapitres 6 à 10 ; de 34 à plus de 300 niveaux, livrés en données ; un paquet tous les
   quinze jours (`PackRun`).
+  - **Livré en 1.38** (28/10/2026). Décisions de l'utilisateur, le même jour : **sept niveaux
+    par chapitre** (35 nouveaux, 69 en tout, sur la carte telle qu'elle est ; la route vers 300,
+    avec des chapitres plus grands, aura sa maquette avant 2.0) ; **des revanches plus fortes**
+    pour finir chaque chapitre (le Ver des dunes, le Golem de céramique, l'Œil de la Tour, le
+    Cœur de la faille à 150 de vie, puis le Cœur à 200 pour finir la campagne) ; **pas de
+    carte de paquet** sur l'accueil (elle viendra avec le premier paquet après 2.0, `PackRun`
+    avec elle). Les choix au-delà de la spécification, tous **confirmés par l'utilisateur le
+    28/10/2026** (les deux premiers, la bande « finale » et les revanches, puis les autres après
+    la livraison) :
+    - **la bande « finale »** (l'expert en gagne au moins quatre sur six) pour les combats que
+      l'habitué du bot ne gagne jamais : les duels après le chapitre 5 (l'IA difficile ; mesuré,
+      l'habitué perd six parties sur six contre elle, et même contre la normale sur la deuxième
+      série ; l'IA experte, tirée aussi, n'est jamais gardée), la revanche du Ver (sans la
+      clémence des premiers chapitres, ses défaites d'expert viennent du plateau qui déborde, pas
+      du chrono) et celles du Cœur (aucune victoire de l'habitué, même à 125 de vie) ; qui arrive
+      au chapitre 6 a déjà battu l'IA difficile du 5-6 ;
+    - le Golem et l'Œil à 150 de vie en **3 minutes** (une de moins qu'au premier combat)
+      gardent la bande des Gardiens (un habitué les bat en quelques essais) ; le Ver en 3 min 30,
+      le Cœur du 9-7 en 3 min 30, celui du 10-7 à 200 de vie en 4 minutes ;
+    - chaque chapitre suit un plan : un calme après le Gardien, des épreuves, un pic, toutes les
+      familles (la chute deux fois, le Sable, la Mosaïque, la Tour), le duel, la revanche ; les
+      puits de chute tirent chacun entre deux modes choisis pour leur rôle, de sorte que chaque
+      mode de chute puisse revenir (sept reviennent, le Classique avec le Cœur) ;
+    - les objectifs partent des cadences d'un habitué mesurées par le bot aux améliorations du
+      chapitre 6 (par minute : 15 lignes au Classique, 12,5 au Miroir, 10 à la Mosaïque, 6 liens
+      au Sable, 4,5 anneaux à la Tour), selon la part qu'en demande le rôle (40 % pour un calme,
+      60 % pour une épreuve, 80 % pour un pic), à 15 % près dans un sens ou dans l'autre ; les
+      cibles grandissent de 8 % par chapitre, car un habitué a toutes ses améliorations au
+      chapitre 9 ;
+    - un niveau doit tenir sa bande deux fois : sur les six parties que le test de courbe rejoue
+      et sur six autres ; des trois premiers qui y arrivent, le générateur garde celui qui joue
+      le plus près de sa fiche de rythme ; aucun niveau généré ne ressemble à un autre (le
+      même mode, le même objectif, une cible à un quart près et une durée à trente secondes près :
+      « 4 anneaux » en 2 min ou en 2 min 30, c'est le même niveau pour un joueur), hors les duels,
+      d'où des chapitres générés dans l'ordre ;
+    - les pics sont la marée, la bascule et le miroir : mesuré, la Tour ne presse jamais un
+      habitué au-delà de la moitié du puits, et le Classique ou le Rythme ne lui font pas frôler
+      la défaite comme un pic le demande ; au chapitre 10, toutes les améliorations achetées,
+      seule la bascule le fait encore, et les liens du Sable sont tous pris : son Sable est une
+      épreuve de points (environ 8 000 par minute pour un habitué), son ouverture une Mosaïque
+      calme ;
+    - le défi des Gardiens de la semaine garde le premier combat de chacun ;
+    - les améliorations d'un habitué suivent les dix chapitres : cent étoiles achètent tous les
+      rangs, tous acquis au chapitre 9 ;
+    - **la carte des plus petits téléphones**, corrigée à la demande de l'utilisateur dans ce lot :
+      sur un 320 × 568, les sept niveaux d'un chapitre se couvraient ; les rangées s'écartent
+      autant qu'il le faut quand des voisins se toucheraient, le Gardien prend la taille des
+      autres sur un écran bas, et un halo garde les noms lisibles là où passe le chemin.
 - **Lot 21 · 2.0 Google Play.** L'application Android jouable hors ligne (Capacitor, AdMob et
   Play Billing derrière `Platform`), une fiche testée (titre avec les mots du genre, icône,
   captures en quatre langues), un test fermé de 12 testeurs pendant 14 jours, puis le
@@ -2020,7 +2068,9 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
     l'effondrement ni le son de la défaite. Les points : 50 par seconde au-delà du plafond,
     5 par case balayée, fois le cycle. Mesure des Gardiens (25 s, un tiers de leur vie) :
     l'expert en bat six sur dix, l'habitué leur prend un tiers de leur vie en moyenne sans en
-    battre aucun, le débutant les effleure ; leur départ ne coûte rien.
+    battre aucun, le débutant les effleure ; leur départ ne coûte rien. **Les trois écarts
+    sont confirmés par l'utilisateur le 28/10/2026** ; les Gardiens gardent un tiers de leur
+    vie.
 
 **Décisions du 26/10/2026.** La boutique ouvre en 1.31 sur Yandex (sans pub et deux packs) ;
 la reprise dégage le haut du plateau une fois par partie, sans record ; la monnaie de

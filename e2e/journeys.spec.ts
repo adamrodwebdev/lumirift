@@ -480,7 +480,7 @@ test('the menu pages follow a swipe, and the tabs follow the pages', async ({ pa
 
 test('the campaign: map, a level, its goal, then back to the map', async ({ page }) => {
   // The stars lead to the map.
-  await page.getByRole('button', { name: /sur 102. Ouvrir la carte/ }).click();
+  await page.getByRole('button', { name: /sur 207. Ouvrir la carte/ }).click();
   const map = panel(page, 'Carte');
   await expect(map.getByRole('heading', { name: 'Premiers blocs' })).toBeVisible();
   // Only the first level is open; a closed one says what opens it.

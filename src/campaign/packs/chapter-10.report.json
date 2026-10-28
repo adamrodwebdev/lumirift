@@ -1,0 +1,182 @@
+{
+  "chapter": 10,
+  "levels": [
+    {
+      "id": "10-1",
+      "seed": 4,
+      "idea": "mosaic: 15 lines in 2.5 min",
+      "distance": 3.25,
+      "selection": { "wins": { "newcomer": 2, "regular": 6, "expert": 6 }, "intensity": [3, 5, 5] },
+      "validation": {
+        "wins": { "newcomer": 3, "regular": 6, "expert": 6 },
+        "intensity": [3, 4, 5]
+      },
+      "alternatives": [
+        { "seed": 22, "idea": "mosaic: 12 lines in 3 min", "distance": 3.25 },
+        { "seed": 27, "idea": "mosaic: 14 lines in 3 min", "distance": 3.25 }
+      ],
+      "rejected": [
+        { "seed": 1, "idea": "mosaic: 12 lines in 2 min", "problems": ["like 7-1"] },
+        { "seed": 3, "idea": "mosaic: 4 lines at once in 3 min", "problems": ["like 6-2"] },
+        { "seed": 5, "idea": "mosaic: 17 lines in 2.5 min", "problems": ["like 9-3"] },
+        {
+          "seed": 6,
+          "idea": "mosaic: 4 lines at once in 2.5 min",
+          "problems": [
+            "10-1: the regular wins 0 of 6, 5 asked",
+            "10-1: the expert wins 0 of 6, 6 asked",
+            "10-1: third 2 plays at 6 for the regular, 3 charted",
+            "10-1: third 3 plays at 7 for the regular, 4 charted"
+          ]
+        },
+        { "seed": 7, "idea": "mosaic: 4 lines at once in 3.5 min", "problems": ["like 6-2"] },
+        {
+          "seed": 10,
+          "idea": "mosaic: 3 lines at once in 2.5 min",
+          "problems": ["again: 10-1: third 2 plays at 6 for the regular, 3 charted"]
+        },
+        { "seed": 13, "idea": "mosaic: 21 lines in 3 min", "problems": ["like 8-4"] },
+        { "seed": 14, "idea": "mosaic: 16 lines in 3 min", "problems": ["like 8-4"] },
+        { "seed": 15, "idea": "mosaic: 3 lines at once in 3.5 min", "problems": ["like 6-2"] },
+        { "seed": 16, "idea": "mosaic: 18 lines in 3 min", "problems": ["like 8-4"] },
+        { "seed": 18, "idea": "mosaic: 8 lines in 2 min", "problems": ["like 7-1"] },
+        { "seed": 19, "idea": "mosaic: 3 lines at once in 3 min", "problems": ["like 6-2"] },
+        { "seed": 21, "idea": "mosaic: 11 lines in 2 min", "problems": ["like 7-1"] }
+      ]
+    },
+    {
+      "id": "10-2",
+      "seed": 8,
+      "idea": "tower: 14 lines in 3 min",
+      "distance": 2.25,
+      "selection": { "wins": { "newcomer": 0, "regular": 5, "expert": 6 }, "intensity": [4, 6, 5] },
+      "validation": {
+        "wins": { "newcomer": 0, "regular": 5, "expert": 6 },
+        "intensity": [4, 6, 6]
+      },
+      "alternatives": [
+        { "seed": 27, "idea": "tower: 16 lines in 3.5 min", "distance": 2.25 },
+        { "seed": 31, "idea": "tower: 14 lines in 3.5 min", "distance": 2.25 }
+      ],
+      "rejected": [
+        { "seed": 1, "idea": "tower: 9 lines in 3.5 min", "problems": ["like 9-2"] },
+        { "seed": 2, "idea": "tower: 10 lines in 2.5 min", "problems": ["like 9-2"] },
+        { "seed": 4, "idea": "tower: 11 lines in 3 min", "problems": ["like 9-2"] },
+        { "seed": 5, "idea": "tower: 11 lines in 3.5 min", "problems": ["like 9-2"] },
+        { "seed": 9, "idea": "tower: 9 lines in 2.5 min", "problems": ["like 9-2"] },
+        { "seed": 15, "idea": "tower: 8 lines in 3 min", "problems": ["like 8-1"] },
+        { "seed": 19, "idea": "tower: 9 lines in 3 min", "problems": ["like 9-2"] },
+        { "seed": 23, "idea": "tower: 12 lines in 3.5 min", "problems": ["like 9-2"] }
+      ]
+    },
+    {
+      "id": "10-3",
+      "seed": 7,
+      "idea": "tilt: 33 lines in 3 min",
+      "distance": 4.25,
+      "selection": { "wins": { "newcomer": 0, "regular": 4, "expert": 6 }, "intensity": [5, 8, 7] },
+      "validation": {
+        "wins": { "newcomer": 0, "regular": 6, "expert": 6 },
+        "intensity": [5, 7, 7]
+      },
+      "alternatives": [
+        { "seed": 11, "idea": "tilt: 38 lines in 3 min", "distance": 5.5 },
+        { "seed": 50, "idea": "tilt: 44 lines in 3 min", "distance": 6.5 }
+      ],
+      "rejected": [
+        { "seed": 1, "idea": "tilt: 45 lines in 3.5 min", "problems": ["like 8-2"] },
+        { "seed": 2, "idea": "tide: hold 2.5 minutes", "problems": ["like 6-3"] },
+        { "seed": 3, "idea": "tilt: 39 lines in 4 min", "problems": ["like 8-2"] },
+        { "seed": 4, "idea": "tide: hold 3 minutes", "problems": ["like 6-3"] },
+        { "seed": 5, "idea": "tilt: 51 lines in 3.5 min", "problems": ["like 8-2"] },
+        { "seed": 6, "idea": "tide: hold 3 minutes", "problems": ["like 6-3"] },
+        { "seed": 8, "idea": "tilt: 34 lines in 3.5 min", "problems": ["like 8-2"] },
+        {
+          "seed": 9,
+          "idea": "tide: hold 3.5 minutes",
+          "problems": [
+            "10-3: the regular wins 0 of 6, 1 asked",
+            "10-3: the expert wins 3 of 6, 5 asked"
+          ]
+        },
+        {
+          "seed": 12,
+          "idea": "tide: hold 3.5 minutes",
+          "problems": [
+            "10-3: the regular wins 0 of 6, 1 asked",
+            "10-3: the expert wins 3 of 6, 5 asked"
+          ]
+        },
+        { "seed": 14, "idea": "tide: hold 2.5 minutes", "problems": ["like 6-3"] },
+        { "seed": 17, "idea": "tilt: 39 lines in 3.5 min", "problems": ["like 8-2"] },
+        { "seed": 18, "idea": "tide: hold 2.5 minutes", "problems": ["like 6-3"] },
+        { "seed": 20, "idea": "tilt: 29 lines in 3.5 min", "problems": ["like 7-4"] },
+        { "seed": 23, "idea": "tilt: 51 lines in 4 min", "problems": ["like 8-2"] },
+        { "seed": 25, "idea": "tilt: 34 lines in 4 min", "problems": ["like 8-2"] },
+        { "seed": 26, "idea": "tilt: 29 lines in 3 min", "problems": ["like 7-4"] },
+        { "seed": 27, "idea": "tide: hold 3 minutes", "problems": ["like 6-3"] },
+        { "seed": 29, "idea": "tilt: 44 lines in 4 min", "problems": ["like 8-2"] },
+        { "seed": 31, "idea": "tilt: 25 lines in 3 min", "problems": ["like 7-4"] },
+        {
+          "seed": 48,
+          "idea": "tide: hold 3.5 minutes",
+          "problems": [
+            "10-3: the regular wins 0 of 6, 1 asked",
+            "10-3: the expert wins 3 of 6, 5 asked"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "10-4",
+      "seed": 2,
+      "idea": "sand: 25500 points in 3.5 min",
+      "distance": 0,
+      "selection": { "wins": { "newcomer": 1, "regular": 5, "expert": 5 }, "intensity": [3, 6, 6] },
+      "validation": {
+        "wins": { "newcomer": 6, "regular": 4, "expert": 5 },
+        "intensity": [3, 4, 6]
+      },
+      "alternatives": [
+        { "seed": 1, "idea": "sand: 19500 points in 3.5 min", "distance": 0.25 },
+        { "seed": 3, "idea": "sand: 17000 points in 3.5 min", "distance": 0.25 }
+      ],
+      "rejected": []
+    },
+    {
+      "id": "10-5",
+      "seed": 2,
+      "idea": "mirror: 26 lines in 3.5 min",
+      "distance": 0.25,
+      "selection": { "wins": { "newcomer": 0, "regular": 5, "expert": 6 }, "intensity": [4, 6, 8] },
+      "validation": {
+        "wins": { "newcomer": 1, "regular": 6, "expert": 6 },
+        "intensity": [3, 4, 4]
+      },
+      "alternatives": [
+        { "seed": 3, "idea": "mirror: 25 lines in 2.5 min", "distance": 0.25 },
+        { "seed": 1, "idea": "mirror: 22 lines in 3 min", "distance": 0.5 }
+      ],
+      "rejected": []
+    },
+    {
+      "id": "10-6",
+      "seed": 1,
+      "idea": "duel: win against the hard AI",
+      "distance": 0.5,
+      "selection": { "wins": { "newcomer": 0, "regular": 0, "expert": 5 }, "intensity": [4, 5, 6] },
+      "validation": {
+        "wins": { "newcomer": 0, "regular": 0, "expert": 4 },
+        "intensity": [4, 6, 7]
+      },
+      "alternatives": [],
+      "rejected": [
+        {
+          "seed": 2,
+          "idea": "duel: win against the expert AI",
+          "problems": ["again: 10-6: the expert wins 2 of 6, 4 asked"]
+        }
+      ]
+    }
+  ]
+}

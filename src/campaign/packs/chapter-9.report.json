@@ -1,0 +1,264 @@
+{
+  "chapter": 9,
+  "levels": [
+    {
+      "id": "9-1",
+      "seed": 2,
+      "idea": "fusion: 16 lines in 3 min",
+      "distance": 1.25,
+      "selection": { "wins": { "newcomer": 0, "regular": 6, "expert": 6 }, "intensity": [3, 3, 3] },
+      "validation": {
+        "wins": { "newcomer": 0, "regular": 6, "expert": 6 },
+        "intensity": [2, 3, 3]
+      },
+      "alternatives": [
+        { "seed": 5, "idea": "fusion: 6 lines in 2 min", "distance": 3.25 },
+        { "seed": 9, "idea": "fusion: 11 lines in 2.5 min", "distance": 3.25 }
+      ],
+      "rejected": [
+        {
+          "seed": 1,
+          "idea": "silhouette: fill 90 %",
+          "problems": [
+            "9-1: the regular wins 1 of 6, 5 asked",
+            "9-1: the expert wins 5 of 6, 6 asked"
+          ]
+        },
+        {
+          "seed": 3,
+          "idea": "silhouette: fill 85 %",
+          "problems": ["again: 9-1: the regular wins 4 of 6, 5 asked"]
+        },
+        {
+          "seed": 7,
+          "idea": "fusion: 8 lines in 2 min",
+          "problems": ["again: 9-1: game 12 of the expert waits 20 % of it"]
+        }
+      ]
+    },
+    {
+      "id": "9-2",
+      "seed": 2,
+      "idea": "tower: 10 lines in 3 min",
+      "distance": 1.25,
+      "selection": { "wins": { "newcomer": 0, "regular": 6, "expert": 6 }, "intensity": [4, 6, 6] },
+      "validation": {
+        "wins": { "newcomer": 0, "regular": 6, "expert": 6 },
+        "intensity": [4, 5, 6]
+      },
+      "alternatives": [
+        { "seed": 3, "idea": "tower: 11 lines in 2.5 min", "distance": 1.25 },
+        { "seed": 1, "idea": "tower: 15 lines in 3.5 min", "distance": 2.25 }
+      ],
+      "rejected": []
+    },
+    {
+      "id": "9-3",
+      "seed": 2,
+      "idea": "mosaic: 21 lines in 2.5 min",
+      "distance": 1,
+      "selection": { "wins": { "newcomer": 0, "regular": 6, "expert": 6 }, "intensity": [3, 5, 5] },
+      "validation": {
+        "wins": { "newcomer": 0, "regular": 6, "expert": 6 },
+        "intensity": [3, 5, 5]
+      },
+      "alternatives": [
+        { "seed": 5, "idea": "mosaic: 25 lines in 2.5 min", "distance": 1.25 },
+        { "seed": 12, "idea": "mosaic: 16 lines in 2.5 min", "distance": 1.25 }
+      ],
+      "rejected": [
+        { "seed": 1, "idea": "mosaic: 3 lines at once in 3.5 min", "problems": ["like 6-2"] },
+        { "seed": 3, "idea": "mosaic: 3 lines at once in 4 min", "problems": ["like 6-2"] },
+        { "seed": 4, "idea": "mosaic: 26 lines in 3 min", "problems": ["like 8-4"] },
+        { "seed": 6, "idea": "mosaic: 20 lines in 3.5 min", "problems": ["like 8-4"] },
+        { "seed": 7, "idea": "mosaic: 19 lines in 3 min", "problems": ["like 8-4"] },
+        { "seed": 10, "idea": "mosaic: 4 lines at once in 3.5 min", "problems": ["like 6-2"] }
+      ]
+    },
+    {
+      "id": "9-4",
+      "seed": 1,
+      "idea": "sand: 5 lines in 2 min",
+      "distance": 1.25,
+      "selection": { "wins": { "newcomer": 6, "regular": 6, "expert": 6 }, "intensity": [2, 3, 4] },
+      "validation": {
+        "wins": { "newcomer": 6, "regular": 6, "expert": 6 },
+        "intensity": [2, 3, 3]
+      },
+      "alternatives": [],
+      "rejected": [
+        { "seed": 2, "idea": "sand: 10 lines in 3 min", "problems": ["like 7-3"] },
+        { "seed": 3, "idea": "sand: 6 lines in 2.5 min", "problems": ["like 6-1"] },
+        { "seed": 4, "idea": "sand: 7 lines in 3 min", "problems": ["like 8-3"] },
+        { "seed": 5, "idea": "sand: 9 lines in 3 min", "problems": ["like 8-3"] },
+        { "seed": 6, "idea": "sand: 7 lines in 2 min", "problems": ["like 8-3"] },
+        { "seed": 8, "idea": "sand: 10 lines in 2.5 min", "problems": ["like 7-3"] },
+        { "seed": 12, "idea": "sand: 9 lines in 2.5 min", "problems": ["like 8-3"] },
+        { "seed": 13, "idea": "sand: 8 lines in 3 min", "problems": ["like 8-3"] },
+        { "seed": 14, "idea": "sand: 8 lines in 2 min", "problems": ["like 8-3"] },
+        { "seed": 19, "idea": "sand: 7 lines in 2.5 min", "problems": ["like 8-3"] },
+        { "seed": 24, "idea": "sand: 12 lines in 3 min", "problems": ["like 7-3"] },
+        { "seed": 57, "idea": "sand: 6 lines in 2 min", "problems": ["like 8-3"] }
+      ]
+    },
+    {
+      "id": "9-5",
+      "seed": 24,
+      "idea": "mirror: 66 lines in 4 min",
+      "distance": 0.25,
+      "selection": { "wins": { "newcomer": 0, "regular": 2, "expert": 6 }, "intensity": [4, 7, 8] },
+      "validation": {
+        "wins": { "newcomer": 0, "regular": 4, "expert": 6 },
+        "intensity": [4, 5, 7]
+      },
+      "alternatives": [{ "seed": 57, "idea": "mirror: 57 lines in 3.5 min", "distance": 0.75 }],
+      "rejected": [
+        {
+          "seed": 1,
+          "idea": "mirror: 43 lines in 4 min",
+          "problems": ["9-5: the regular nearly loses in 1 games, 2 asked"]
+        },
+        {
+          "seed": 2,
+          "idea": "mirror: 49 lines in 3 min",
+          "problems": ["again: 9-5: the regular nearly loses in 1 games, 2 asked"]
+        },
+        {
+          "seed": 3,
+          "idea": "mirror: 38 lines in 3.5 min",
+          "problems": [
+            "again: 9-5: third 3 plays at 5 for the regular, 8 charted",
+            "again: 9-5: the regular nearly loses in 0 games, 2 asked"
+          ]
+        },
+        { "seed": 4, "idea": "tide: hold 3 minutes", "problems": ["like 6-3"] },
+        {
+          "seed": 5,
+          "idea": "mirror: 50 lines in 4 min",
+          "problems": ["again: 9-5: the regular nearly loses in 1 games, 2 asked"]
+        },
+        {
+          "seed": 6,
+          "idea": "tide: hold 3.5 minutes",
+          "problems": [
+            "9-5: the regular wins 0 of 6, 1 asked",
+            "9-5: the expert wins 3 of 6, 5 asked"
+          ]
+        },
+        { "seed": 8, "idea": "tide: hold 3 minutes", "problems": ["like 6-3"] },
+        {
+          "seed": 9,
+          "idea": "tide: hold 3.5 minutes",
+          "problems": [
+            "9-5: the regular wins 0 of 6, 1 asked",
+            "9-5: the expert wins 3 of 6, 5 asked"
+          ]
+        },
+        {
+          "seed": 12,
+          "idea": "mirror: 50 lines in 3.5 min",
+          "problems": ["again: 9-5: the regular nearly loses in 1 games, 2 asked"]
+        },
+        {
+          "seed": 13,
+          "idea": "mirror: 38 lines in 4 min",
+          "problems": [
+            "again: 9-5: third 3 plays at 5 for the regular, 8 charted",
+            "again: 9-5: the regular nearly loses in 0 games, 2 asked"
+          ]
+        },
+        {
+          "seed": 14,
+          "idea": "tide: hold 3.5 minutes",
+          "problems": [
+            "9-5: the regular wins 0 of 6, 1 asked",
+            "9-5: the expert wins 3 of 6, 5 asked"
+          ]
+        },
+        { "seed": 15, "idea": "tide: hold 2.5 minutes", "problems": ["like 6-3"] },
+        {
+          "seed": 16,
+          "idea": "mirror: 43 lines in 3 min",
+          "problems": ["9-5: the regular nearly loses in 1 games, 2 asked"]
+        },
+        {
+          "seed": 18,
+          "idea": "mirror: 33 lines in 3.5 min",
+          "problems": [
+            "again: 9-5: third 3 plays at 4 for the regular, 8 charted",
+            "again: 9-5: the regular nearly loses in 1 games, 2 asked"
+          ]
+        },
+        {
+          "seed": 20,
+          "idea": "mirror: 28 lines in 3 min",
+          "problems": [
+            "again: 9-5: third 3 plays at 4 for the regular, 8 charted",
+            "again: 9-5: the regular nearly loses in 0 games, 2 asked"
+          ]
+        },
+        {
+          "seed": 22,
+          "idea": "mirror: 37 lines in 3 min",
+          "problems": [
+            "again: 9-5: third 3 plays at 5 for the regular, 8 charted",
+            "again: 9-5: the regular nearly loses in 0 games, 2 asked"
+          ]
+        },
+        { "seed": 25, "idea": "tide: hold 2.5 minutes", "problems": ["like 6-3"] },
+        {
+          "seed": 26,
+          "idea": "tide: hold 3.5 minutes",
+          "problems": [
+            "9-5: the regular wins 0 of 6, 1 asked",
+            "9-5: the expert wins 3 of 6, 5 asked"
+          ]
+        },
+        { "seed": 34, "idea": "tide: hold 3 minutes", "problems": ["like 6-3"] },
+        {
+          "seed": 36,
+          "idea": "tide: hold 3.5 minutes",
+          "problems": [
+            "9-5: the regular wins 0 of 6, 1 asked",
+            "9-5: the expert wins 3 of 6, 5 asked"
+          ]
+        },
+        { "seed": 38, "idea": "tide: hold 3 minutes", "problems": ["like 6-3"] },
+        {
+          "seed": 40,
+          "idea": "mirror: 43 lines in 3.5 min",
+          "problems": ["9-5: the regular nearly loses in 1 games, 2 asked"]
+        },
+        { "seed": 49, "idea": "tide: hold 3 minutes", "problems": ["like 6-3"] },
+        { "seed": 56, "idea": "tide: hold 2.5 minutes", "problems": ["like 6-3"] },
+        {
+          "seed": 59,
+          "idea": "mirror: 32 lines in 3 min",
+          "problems": [
+            "again: 9-5: third 3 plays at 4 for the regular, 8 charted",
+            "again: 9-5: the regular nearly loses in 1 games, 2 asked"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "9-6",
+      "seed": 1,
+      "idea": "duel: win against the hard AI",
+      "distance": 0.5,
+      "selection": { "wins": { "newcomer": 0, "regular": 0, "expert": 5 }, "intensity": [4, 5, 6] },
+      "validation": {
+        "wins": { "newcomer": 0, "regular": 0, "expert": 4 },
+        "intensity": [4, 6, 7]
+      },
+      "alternatives": [],
+      "rejected": [
+        {
+          "seed": 2,
+          "idea": "duel: win against the expert AI",
+          "problems": ["again: 9-6: the expert wins 2 of 6, 4 asked"]
+        }
+      ]
+    }
+  ]
+}

@@ -15,7 +15,7 @@ import { alignedLines, rescueOf } from '@/campaign/curve/MosaicChoice';
 import { aimSand } from '@/campaign/curve/SandAim';
 import { GOAL_RULES } from '@/campaign/Goals';
 import { LEVELS, levelById } from '@/campaign/Levels';
-import { RANK_COSTS, type UpgradeId } from '@/campaign/Upgrades';
+import { MAX_RANK, RANK_COSTS, UPGRADE_IDS, type UpgradeId } from '@/campaign/Upgrades';
 import { SeededRandom } from '@/core/Random';
 import { Tone } from '@/core/Tone';
 import { measure } from '@/families/falling/ai/BoardFeatures';
@@ -140,7 +140,7 @@ describe('The upgrades of a regular player (1.33)', () => {
   it('grow chapter by chapter, never costing more stars than earned', () => {
     expect(loadoutFor(1)).toEqual({});
     let previous = {} as Partial<Record<UpgradeId, number>>;
-    for (let chapter = 1; chapter <= 5; chapter++) {
+    for (let chapter = 1; chapter <= 10; chapter++) {
       const ranks = loadoutFor(chapter);
       const spent = Object.values(ranks).reduce<number>(
         (sum, rank) => sum + RANK_COSTS.slice(0, rank).reduce((a, b) => a + b, 0),
@@ -152,6 +152,13 @@ describe('The upgrades of a regular player (1.33)', () => {
       }
       previous = ranks;
     }
+  });
+
+  it('owns every rank from chapter 9, a hundred stars in all (1.38)', () => {
+    const full = Object.fromEntries(UPGRADE_IDS.map((id) => [id, MAX_RANK]));
+    expect(loadoutFor(8)).not.toEqual(full);
+    expect(loadoutFor(9)).toEqual(full);
+    expect(loadoutFor(10)).toEqual(full);
   });
 });
 

@@ -3,9 +3,9 @@ import { RANK_COSTS, MAX_RANK, type UpgradeId, type UpgradeRanks } from '../Upgr
 /**
  * Stars a regular player has to spend at the start of each chapter: about
  * two for each level of the chapters before (six levels in the first,
- * seven in the others).
+ * seven in the others). From chapter 9, every rank is bought (1.38).
  */
-export const STARS_BY_CHAPTER: readonly number[] = [0, 12, 26, 40, 54];
+export const STARS_BY_CHAPTER: readonly number[] = [0, 12, 26, 40, 54, 68, 82, 96, 110, 124];
 
 /**
  * The order a player buys in, a rank at a time: what saves a game first
@@ -32,6 +32,17 @@ export const PURCHASES: readonly UpgradeId[] = [
   'phoenix',
   'feather',
   'hourglass',
+  // Then what a long campaign makes worth it (1.38): every rank, a hundred stars in all.
+  'prism',
+  'satchel',
+  'ember',
+  'metronome',
+  'anchor',
+  'spyglass',
+  'satchel',
+  'ember',
+  'prism',
+  'metronome',
 ];
 
 /**

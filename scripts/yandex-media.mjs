@@ -69,7 +69,7 @@ console.log('icon and cover written');
 
 /** A player well into the campaign: every level open, the training done. */
 const stars = {};
-for (let chapter = 1; chapter <= 5; chapter++) {
+for (let chapter = 1; chapter <= 10; chapter++) {
   for (let level = 1; level <= 7; level++) stars[`${chapter}-${level}`] = 3;
 }
 const VETERAN = {
