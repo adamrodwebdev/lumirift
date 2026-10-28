@@ -9,6 +9,9 @@
 | 1.34    | 27/10/2026 | Course contre la montre : la Course de la faille, ses mondes toutes les 40 s, son chrono et ses gains, les Gardiens du monde, le record de la semaine, ouverte au niveau 4-4 (§ 9 bis, lot 24).                                       |
 | 1.35    | 27/10/2026 | Cadeaux et collections : le calendrier de sept jours, le retour après une semaine, la série affichée et ses paliers, les ensembles de l'Atelier et leurs quatre ambiances (§ 3.6, § 9 bis, lot 17).                                   |
 | 1.36    | 27/10/2026 | Événements et saisons : l'élément de la semaine et son objectif, l'avant-saison, la saison 1 « Braises » et les saisons 2 et 3 en données, la page de la saison (§ 3.6, § 9 bis, lot 18).                                             |
+| 1.37    | 27/10/2026 | Dunes, le test web : le sable posé, trois pièces en main, sans chrono, dans sa propre version de test (§ 9 bis, lot 19).                                                                                                              |
+| 1.38    | 28/10/2026 | Niveaux générés : un générateur par famille, les chapitres 6 à 10, 69 niveaux, les revanches des Gardiens (§ 9 bis, lot 20).                                                                                                          |
+| 1.39    | 28/10/2026 | La fabrique de clips : les clips de la semaine filmés par le jeu, son compris, pour les réseaux (§ 9 ter, lot 25).                                                                                                                    |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1765,6 +1768,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
 | 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Livré (1.32)                                                 |
 | 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Livré (1.34)                                                 |
+| 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2164,6 +2168,38 @@ outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
   - Hors du lot : la ligne de texte, la voix, le montage, l'envoi et la programmation, qui restent
     dans les applications et aux mains de l'utilisateur ; la page /lumirift, livrée dans le dépôt
     du portfolio (sa version 1.8.0).
+  - **Livré en 1.39** (28/10/2026). Le son hors ligne a tenu dans la demi-journée : pas
+    d'enregistrement en direct. Les choix au-delà de la spécification :
+    - **le plateau de tournage** (`media/showcase.html?clip`), une prise par chargement : la page
+      vit sur son propre temps (`SetTime` : minuteries, images, `performance.now()`, animations
+      CSS avancés avec les images), sinon le bandeau d'un moment (700 ms) ne durait que cinq
+      images, l'enregistreur prenant 0,1 s par image ; l'écran du jeu (540 × 960) a 160 px de
+      son fond au-dessus et au-dessous, où le cadre peut descendre ;
+    - **deux prises par clip** : la première, sans image, trouve le pic et sa place ; la seconde
+      filme et enregistre le son ensemble (`TakeSound` : le moteur audio du jeu sur un
+      `OfflineAudioContext` suspendu à chaque image, la musique suivie comme par `useTension`) ;
+      le son d'une image commence donc à son temps exact ;
+    - **le zoom se fait en composant** (l'image d'un cadre fixe, agrandie), donc sans saccade ;
+      il revient au pic rejoué puis repart en 0,3 s ; la dernière image est la première ;
+    - **la zone sûre** : le cadre garde l'écran entier et sa taille, et descend dans la marge
+      si l'action tomberait sous la légende. Sur le Cœur, dont les rangées montent du sol, le
+      sol passe à 76 % de la hauteur et le haut du puits sort du cadre ;
+    - **la question d'un défi** s'ouvre sur la décision (le feu vient d'apparaître, A et B au
+      milieu du ciel, au-dessus de l'huile et de l'eau), zoomée et tenue 1,2 s, revient au début,
+      puis tient la décision 2,5 s : la musique continue sous l'image arrêtée. **La réponse**
+      montre les deux puits entiers côte à côte (sans zoom : on compare), leur lettre dessous
+      (96 px), sur un fond uni, dans la zone sûre ; le son des deux prises mêlé ;
+    - **les mêmes images à chaque passe** : Chrome dessine sans carte graphique, qui composait
+      la lueur du puits un peu différemment d'une prise à l'autre ; le manifeste donne
+      l'empreinte des images de chaque clip (deux passes de la semaine 1 : les cinq égales) ;
+    - **l'amorce de l'AAC est mesurée** en décodant le son et en le recalant sur l'original :
+      0 échantillon avec l'encodeur de Chrome sous Windows ; un son placé à 0,5 s sort à 0,5 s
+      (0,04 ms). Le niveau suit BS.1770 (un sinus de 997 Hz à −20 dBFS lit −20,0 LUFS) ;
+    - mesures de la semaine 1 : 4 minutes pour cinq clips (la porte : 15) ; de 7,7 à 10,5 s ;
+      les pics à 4,63 s (l'embrasement, l'éclair), 4,07 s (la décision) et 7,13 s (le second
+      éclat du Cœur) ; de −14,0 à −14,6 LUFS ; de 1 à 13 Mo ;
+    - les vidéos des portails ne changent pas : sans `?clip`, le plateau reste à 2× et sur
+      l'horloge réelle.
 
 ## 10. Hors périmètre (v1)
 
@@ -2236,3 +2272,6 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.34    | 27/10/2026 | Course contre la montre : `families/race`, le point de contrôle de 10 s mesuré par le bot, ouverture au 4-4, débordement qui continue (§ 5, § 9 bis, lot 24).          |
 | 1.35    | 27/10/2026 | Cadeaux et collections : `DailyGifts`, `GiftCalendar`, `GiftService`, les ensembles et leurs ambiances, la série et ses paliers, le retour (§ 3.6, § 9 bis, lot 17).   |
 | 1.36    | 27/10/2026 | Événements et saisons : `seasons/` (calendrier UTC, piste, objectif de la semaine, nouveautés en données), avant-saison, saisons 1 à 3 (§ 3.6, § 9 bis, lot 18).       |
+| 1.37    | 27/10/2026 | Dunes : `families/dunes` (main de trois pièces, promesse lue sur les cases libres, le Ver), versions de test Dunes seul et Sable seul (§ 9 bis, lot 19).               |
+| 1.38    | 28/10/2026 | Niveaux générés : `campaign/generator` (plan, générateurs par famille, tamis du bot), les packs des chapitres 6 à 10 (§ 9 bis, lot 20).                                |
+| 1.39    | 28/10/2026 | La croissance sans dépense (§ 9 ter) ; la fabrique de clips : `clip-factory.mjs`, le plateau `?clip` (`SetTime`, `TakeSound`), la piste AAC (lot 25).                  |
