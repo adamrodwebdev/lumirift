@@ -1950,9 +1950,9 @@ qui échoue fait reprendre la fonction une fois ou l'abandonner, jamais la force
     pour finir chaque chapitre (le Ver des dunes, le Golem de céramique, l'Œil de la Tour, le
     Cœur de la faille à 150 de vie, puis le Cœur à 200 pour finir la campagne) ; **pas de
     carte de paquet** sur l'accueil (elle viendra avec le premier paquet après 2.0, `PackRun`
-    avec elle). Les choix au-delà de la spécification : les deux premiers (la bande « finale »
-    et les revanches) sont **confirmés par l'utilisateur le 28/10/2026**, les autres sont à
-    confirmer :
+    avec elle). Les choix au-delà de la spécification, tous **confirmés par l'utilisateur le
+    28/10/2026** (les deux premiers, la bande « finale » et les revanches, puis les autres après
+    la livraison) :
     - **la bande « finale »** (l'expert en gagne au moins quatre sur six) pour les combats que
       l'habitué du bot ne gagne jamais : les duels après le chapitre 5 (l'IA difficile ; mesuré,
       l'habitué perd six parties sur six contre elle, et même contre la normale sur la deuxième
