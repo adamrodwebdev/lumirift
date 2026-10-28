@@ -14,7 +14,8 @@ import { BeatGrid } from './BeatGrid';
 export const CALM_BPM = 84;
 /** The scheduler looks this far ahead, on the audio clock. */
 const LOOKAHEAD_S = 0.4;
-const TICK_MS = 120;
+/** How often the music schedules its next notes (ms): an offline render ticks at this pace too. */
+export const MUSIC_TICK_MS = 120;
 /** How fast the music follows a change of intensity, and of danger (per scheduler tick). */
 const SMOOTHING = 0.08;
 const DANGER_SMOOTHING = 0.18;
@@ -70,13 +71,27 @@ export class Music {
   start(): void {
     if (this.timer !== null) return;
     this.grid.start(this.context.currentTime);
-    this.timer = setInterval(() => this.schedule(), TICK_MS);
+    this.timer = setInterval(() => this.schedule(), MUSIC_TICK_MS);
     this.schedule();
   }
 
   stop(): void {
     if (this.timer !== null) clearInterval(this.timer);
     this.timer = null;
+  }
+
+  /**
+   * Starts without a timer (an offline render, 1.39): the renderer calls
+   * `tick()` every `MUSIC_TICK_MS` of audio time instead.
+   */
+  startByHand(): void {
+    this.grid.start(this.context.currentTime);
+    this.schedule();
+  }
+
+  /** Schedules the coming notes, as the timer does every `MUSIC_TICK_MS`. */
+  tick(): void {
+    this.schedule();
   }
 
   /** 0 (a quiet pad) to 1 (everything, brighter). */
