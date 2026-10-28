@@ -35,7 +35,7 @@ const session: PlacementSession = props.session;
 
 const { t } = useI18n();
 const format = useFormat();
-const { theme, settings, audio, haptics } = useServices();
+const { theme, settings, audio, haptics, pixelRatio } = useServices();
 
 const JOKER_ICONS: Readonly<Record<JokerId, IconName>> = {
   rotate: 'rotateCw',
@@ -152,7 +152,7 @@ const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
   // Minus the 2 px frame on each side.
-  cellCss = renderer.layout(Math.min(width, height) - 4, Math.min(2, window.devicePixelRatio || 1));
+  cellCss = renderer.layout(Math.min(width, height) - 4, pixelRatio());
 });
 /**
  * Four pieces (with the cube) must fit: side by side under the board in
@@ -382,7 +382,7 @@ const moveGhost = (clientX: number, clientY: number, piece: OfferedPiece) => {
   const host = ghostHost();
   if (!ghost || !tiles || !host) return;
   const cell = tiles.size;
-  const ratio = Math.min(2, window.devicePixelRatio || 1);
+  const ratio = pixelRatio();
   ghost.width = piece.shape.width * cell;
   ghost.height = piece.shape.height * cell;
   ghost.style.width = `${ghost.width / ratio}px`;

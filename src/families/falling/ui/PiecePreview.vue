@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
+import { useServices } from '@/app/AppServices';
 import type { PieceSpec } from '../game/Game';
 import { PieceRenderer } from '../render/PieceRenderer';
 import type { MaterialId } from '@/progression/Cosmetics';
@@ -15,16 +16,12 @@ const props = defineProps<{
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
+const { pixelRatio } = useServices();
 let renderer: PieceRenderer | null = null;
 
 const draw = () => {
   if (!renderer || !props.palette) return;
-  renderer.layout(
-    props.size,
-    Math.min(2, window.devicePixelRatio || 1),
-    props.palette,
-    props.material,
-  );
+  renderer.layout(props.size, pixelRatio(), props.palette, props.material);
   renderer.render(props.spec, props.dimmed);
 };
 

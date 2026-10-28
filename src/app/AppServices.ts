@@ -47,13 +47,28 @@ export interface AppServices {
   readonly platform: Platform;
   /** The ad policy for this visit: the newcomers' grace, the interval, the rewarded offers. */
   readonly ads: AdScheduler;
+  /** How many canvas pixels a CSS pixel gets: the screen's density, capped (see `GAME_PIXEL_RATIO`). */
+  readonly pixelRatio: () => number;
 }
 
 export const APP_SERVICES: InjectionKey<AppServices> = Symbol('AppServices');
 
+/**
+ * The game's canvases draw at the screen's density, at most 2: beyond it, the
+ * fill rate costs frames for no difference a player sees. The clip factory's
+ * page (1.39) draws at 3, to crop and zoom a frame without blur.
+ */
+export const GAME_PIXEL_RATIO = 2;
+
+export interface ServiceOptions {
+  /** The canvases' highest density (`GAME_PIXEL_RATIO` in the game). */
+  readonly maxPixelRatio?: number;
+}
+
 export function createBrowserServices(
   platform: Platform = new WebPlatform(),
   storage: KeyValueStorage = platform.storage ?? BrowserStorage.local(),
+  { maxPixelRatio = GAME_PIXEL_RATIO }: ServiceOptions = {},
 ): AppServices {
   const settings = new SettingsService(storage, {
     // A portal knows the player's language; English when the game lacks it (Russian for
@@ -117,6 +132,7 @@ export function createBrowserServices(
       }),
       () => clock().getTime(),
     ),
+    pixelRatio: () => Math.min(maxPixelRatio, window.devicePixelRatio || 1),
   };
 }
 

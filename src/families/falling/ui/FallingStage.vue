@@ -60,7 +60,7 @@ const session: FallingSession = props.session;
 const ABILITY_ICONS: Readonly<Record<AbilityId, IconName>> = { flip: 'flip' };
 
 const { t } = useI18n();
-const { theme, settings, audio, haptics, look } = useServices();
+const { theme, settings, audio, haptics, look, pixelRatio } = useServices();
 /** The rift surge, the game screen's: its key and its button are here. */
 const surge = inject(SURGE, null);
 const keys = useKeyBindings();
@@ -150,11 +150,7 @@ const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
   // Minus the 2 px frame on each side.
-  cellSize.value = renderer.layout(
-    width - 4,
-    height - 4,
-    Math.min(2, window.devicePixelRatio || 1),
-  );
+  cellSize.value = renderer.layout(width - 4, height - 4, pixelRatio());
   renderer.render();
 });
 
