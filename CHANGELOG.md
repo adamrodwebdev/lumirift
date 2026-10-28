@@ -3,6 +3,32 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.38.1] — 28/10/2026
+
+La barre des jokers de la Mosaïque ne bouge plus : le plateau garde sa taille quand un joker
+arrive.
+
+### Corrigé
+
+- **Le plateau rétrécissait quand des jokers arrivaient**, sur un téléphone en portrait
+  (constaté en jeu) : les boutons des jokers passaient à la ligne et prenaient leur hauteur au
+  plateau (de 312 à 256 px à 393 × 659). La barre montre désormais **cinq emplacements, un par
+  joker**, toujours là : allumés avec le nombre détenu, en pointillé tant qu'ils ne sont pas
+  gagnés. Sa taille ne dépend plus que de la largeur de l'écran : rien ne bouge, de 320 × 568 à
+  1920 × 1080, avec 0 à 5 jokers.
+- **Téléphone en paysage** (844 × 390) : les jokers ne sortent plus de l'écran.
+- **Petits cadres en paysage à la souris** (821 × 462 sur CrazyGames) : les cinq emplacements
+  tiennent sur une ligne, au-dessus des touches.
+
+### Modifié
+
+- Un emplacement en pointillé, touché ou survolé, dit comment gagner son joker (« Bombe :
+  effacez 4 lignes d'un coup, ou atteignez le combo ×6 »), aussi pour les lecteurs d'écran ; la
+  phrase « Effacez plusieurs lignes d'un coup pour gagner des jokers » disparaît.
+- La Relance prend l'icône d'échange de la main des Dunes (⇄) : sa flèche ronde ressemblait trop
+  à celle de la Rotation, maintenant que les noms ne sont plus écrits.
+- En paysage, la barre s'aligne sous le tableau de bord.
+
 ## [1.38.0] — 28/10/2026
 
 Niveaux générés (lot 20 du chemin vers 5) : la campagne passe de 34 à 69 niveaux. Les
