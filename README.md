@@ -21,10 +21,13 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 | **Volume**    | Tour : le puits s'enroule en cylindre de verre                                            | Verre courbé    |
 | **Faille**    | Course de la faille : contre la montre, à travers le puits, le Sable et la Tour           | Celle du monde  |
 
-- **Campagne** : 34 niveaux en cinq chapitres à travers tous les modes, des étoiles à
+- **Campagne** : 69 niveaux en dix chapitres à travers tous les modes, des étoiles à
   gagner et **dix améliorations** à acheter avec elles. Sa courbe est mesurée : des joueurs
   simulés (débutant, habitué, expert) jouent chaque niveau, qui doit rester dans la bande
   de sa fiche de rythme ; au premier chapitre, la menace ralentit près du haut du puits.
+  Les chapitres 6 à 10 sont **générés** : un générateur par famille tire des niveaux d'une
+  graine, et seuls ceux que les joueurs simulés trouvent dans leur bande, sur deux séries de
+  parties, sont gardés ; chaque chapitre finit sur la revanche d'un Gardien, plus fort.
 - **Course de la faille** : un chrono parti de 1:30 (99 s au plus), et toutes les 40 s la
   faille change de monde, du puits au Sable puis à la Tour, chaque fois sur un plateau neuf
   qui rapporte 10 s. Les lignes rapportent du temps (double pendant l'annonce du changement),
@@ -130,19 +133,20 @@ npm run dev
 
 ## Commandes de développement
 
-| Commande             | Rôle                                                                     |
-| -------------------- | ------------------------------------------------------------------------ |
-| `npm run dev`        | Serveur de développement avec rechargement à chaud                       |
-| `npm run dev:dunes`  | Le même, Dunes seul (la version de son test, sur notre site)             |
-| `npm run build`      | Vérification des types puis build de production (`dist/`)                |
-| `npm run preview`    | Sert le build de production (port 4173)                                  |
-| `npm test`           | Tests unitaires (Vitest)                                                 |
-| `npm run test:curve` | Courbe de la campagne : des bots jouent chaque niveau (quelques minutes) |
-| `npm run test:e2e`   | Parcours et audits d'accessibilité (Playwright, mobile et bureau)        |
-| `npm run lint`       | ESLint (règles TypeScript strictes, typées)                              |
-| `npm run format`     | Prettier                                                                 |
-| `npm run lighthouse` | Audit Lighthouse du build, mobile (`-- --desktop` pour le bureau)        |
-| `npm run verify`     | Lint, format, types, tests et build : à passer avant chaque commit       |
+| Commande                  | Rôle                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| `npm run dev`             | Serveur de développement avec rechargement à chaud                                                 |
+| `npm run dev:dunes`       | Le même, Dunes seul (la version de son test, sur notre site)                                       |
+| `npm run build`           | Vérification des types puis build de production (`dist/`)                                          |
+| `npm run preview`         | Sert le build de production (port 4173)                                                            |
+| `npm test`                | Tests unitaires (Vitest)                                                                           |
+| `npm run test:curve`      | Courbe de la campagne : des bots jouent chaque niveau (quelques minutes)                           |
+| `npm run generate:levels` | Réécrit les chapitres générés (6 à 10, dans l'ordre) et leurs rapports, à la main (une demi-heure) |
+| `npm run test:e2e`        | Parcours et audits d'accessibilité (Playwright, mobile et bureau)                                  |
+| `npm run lint`            | ESLint (règles TypeScript strictes, typées)                                                        |
+| `npm run format`          | Prettier                                                                                           |
+| `npm run lighthouse`      | Audit Lighthouse du build, mobile (`-- --desktop` pour le bureau)                                  |
+| `npm run verify`          | Lint, format, types, tests et build : à passer avant chaque commit                                 |
 
 Les tests de bout en bout et Lighthouse utilisent le build : lancez `npm run build` avant.
 Les images de partage (`public/og-image.png`, icônes) se régénèrent avec
@@ -265,7 +269,9 @@ src/
   ads/           La politique de pubs : règles et réglages par canal, calendrier d'une visite
   run/           Une partie à l'écran : sa sorte (libre, défi, Gardien, niveau), son
                  déroulé et sa fin réglée ; l'écran ne fait que dessiner
-  campaign/      Niveaux, objectifs, étoiles, améliorations, défi des Gardiens
+  campaign/      Niveaux, objectifs, étoiles, améliorations, défi des Gardiens ; generator/ (le
+                 plan des chapitres 6 à 10, un générateur par famille, le tamis du bot) et
+                 packs/ (les chapitres générés, en données, avec leurs rapports)
   showcase/      Scènes mises en scène (boucle de l'accueil, vidéos des portails)
   families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface ;
                  race : la course, une session de sessions qui change de monde ;

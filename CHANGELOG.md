@@ -3,6 +3,82 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.38.0] — 28/10/2026
+
+Niveaux générés (lot 20 du chemin vers 5) : la campagne passe de 34 à 69 niveaux. Les
+chapitres 6 à 10 sont tirés par un générateur par famille, et le bot de courbe ne garde que les
+niveaux qui tiennent leur bande ; chacun finit sur la revanche d'un Gardien, plus fort.
+
+### Ajouté
+
+- **Cinq chapitres** : Sables mouvants, Terre cuite, Le Regard, Battements, Au-delà de la
+  Faille. Sept niveaux chacun : un calme après le Gardien, des épreuves, un pic, toutes les
+  familles (la chute deux fois, le Sable, la Mosaïque, la Tour), un duel contre l'IA difficile,
+  puis la revanche d'un Gardien. Sept modes de chute reviennent au fil des chapitres (la marée et
+  la bascule dans les pics, la fusion dans le calme), le Classique avec le Cœur.
+- **Les niveaux générés**, par chapitre (le chrono, puis l'objectif) :
+  - 6, Sables mouvants : Sable, 5 liens en 3 min ; Mosaïque, 3 lignes d'un coup en 3 min 30 ;
+    Marée, tenir 2 min 30 ; Tour, 4 anneaux en 2 min ; Renversement, 36 lignes en 3 min ;
+    duel contre l'IA difficile ;
+  - 7, Terre cuite : Mosaïque, 9 lignes en 2 min ; Rythme, 32 lignes en 2 min 30 ; Sable, 13 liens
+    en 3 min ; Bascule, 24 lignes en 3 min ; Tour, 4 anneaux en 3 min ; duel ;
+  - 8, Le Regard : Tour, 6 anneaux en 2 min 30 ; Bascule, 39 lignes en 4 min ; Sable, 8 liens en
+    2 min 30 ; Mosaïque, 21 lignes en 3 min 30 ; Chroma, 48 lignes en 3 min 30 ; duel ;
+  - 9, Battements : Fusion, 16 lignes en 3 min ; Tour, 10 anneaux en 3 min ; Mosaïque, 21 lignes
+    en 2 min 30 ; Sable, 5 liens en 2 min ; Miroir, 66 lignes en 4 min ; duel ;
+  - 10, Au-delà de la Faille : Mosaïque, 15 lignes en 2 min 30 ; Tour, 14 anneaux en 3 min ;
+    Bascule, 33 lignes en 3 min ; Sable, 25 500 points en 3 min 30 ; Miroir, 26 lignes en
+    3 min 30 ; duel.
+- **Les revanches des Gardiens** : le Ver des dunes (6-7, 150 de vie, 3 min 30), le Golem de
+  céramique (7-7, 150, 3 min), l'Œil de la Tour (8-7, 150, 3 min), le Cœur de la faille (9-7,
+  150, 3 min 30), puis le Cœur à pleine force pour finir la campagne (10-7, 200 de vie, 4 min).
+  Le défi des Gardiens de la semaine garde leur premier combat.
+- La carte compte dix chapitres et 207 étoiles ; la démo annonce soixante-neuf niveaux.
+
+### Corrigé
+
+- La carte sur les plus petits téléphones : sur un 320 × 568, les sept niveaux d'un chapitre se
+  couvraient (deux rangées trop proches pour leurs noms et leurs étoiles) ; les rangées
+  s'écartent désormais autant qu'il le faut quand des niveaux voisins se toucheraient. Sur un
+  écran bas (568 × 320), le Gardien prend la taille des autres niveaux, son anneau le
+  distingue, et les étoiles rapetissent. Le chemin passe derrière les noms et les étoiles, que
+  garde lisibles un halo de la couleur du fond.
+
+### Technique
+
+- `src/campaign/generator/` :
+  - `ChapterPlan` : le plan des chapitres 6 à 10 (le rôle, la famille et les modes possibles de
+    chaque niveau) et la fiche de rythme de chaque rôle ;
+  - `LevelGenerators` : un générateur par sorte de niveau (puits de chute, Sable, Mosaïque,
+    Tour, duel) dans un registre ; sur une graine, le mode, l'objectif, le chrono et les
+    étoiles ; les objectifs partent des cadences d'un habitué mesurées par le bot aux
+    améliorations du chapitre 6, selon la part que demande le rôle ; un objectif peut être
+    réservé aux niveaux qui le demandent (les points du Sable, environ 8 000 par minute pour un
+    habitué, au chapitre 10), sans changer les autres niveaux ;
+  - `PackSearch` : le tamis ; chaque niveau doit tenir sa bande sur les six parties du test de
+    courbe puis sur six autres ; des trois premiers qui y arrivent, il garde celui qui joue le
+    plus près de sa fiche ; un niveau déjà jugé n'est pas rejoué, et aucun niveau généré ne
+    ressemble à un autre (le même mode, le même objectif, une cible à un quart près et une durée
+    à trente secondes près), hors les duels.
+- `src/campaign/packs/` : les chapitres générés en données (`chapter-N.json`, lus et vérifiés
+  par `parseLevelPack`), le rapport de la recherche à côté (`chapter-N.report.json` : les
+  victoires de chaque joueur, l'intensité mesurée, les autres candidats, les refus et leurs
+  raisons). `npm run generate:levels` les réécrit, à la main, dans l'ordre des chapitres.
+- La vie d'un Gardien passe du niveau à sa partie (`bossHealth`, `LevelRun`) ; le Golem de
+  céramique la reçoit aussi (`CeramicGolem`, `MosaicOptions`), et sa barre lit son maximum.
+- La fiche `finale` couvre désormais les combats qu'un habitué ne gagne pas : les duels après le
+  chapitre 5 (l'IA experte, tirée aussi, n'en laisse gagner à l'expert que trop peu), la revanche
+  du Ver et celles du Cœur (l'expert en gagne au moins quatre sur six).
+- Les améliorations d'un habitué suivent dix chapitres (`STARS_BY_CHAPTER`, cent étoiles pour
+  tous les rangs, tous acquis au chapitre 9).
+- Les niveaux d'IA vivent à part (`AiLevels`), assez légers pour les données de la campagne.
+- `mapPath` : où se placent les niveaux de la carte, tirés de la taille mesurée du champ et du
+  plus grand niveau (son disque, son nom, ses étoiles).
+- Tests : un même tirage donne le même niveau, chaque niveau livré se retire de sa graine tel
+  qu'il a été gardé, les paquets refusent des données cassées, le tamis garde le plus proche de
+  sa fiche ; la courbe des chapitres 6 à 10 en CI ; en russe, les dix chapitres de la carte
+  restent entiers et sans niveaux qui se couvrent, en 320 × 568, 568 × 320 et 390 × 844.
+
 ## [1.37.0] — 27/10/2026
 
 Dunes, le test web (lot 19 du chemin vers 5) : un mode calme de la matière du Sable, où l'on
