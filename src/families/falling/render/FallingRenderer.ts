@@ -1,4 +1,3 @@
-import { paintHeat, paintRiftLight } from './WellOverlay';
 import type { FallingView } from '../FallingSession';
 import type { FallingEffects } from '../fx/FallingEffects';
 import type { Piece } from '../pieces/Piece';
@@ -114,11 +113,17 @@ export class FallingRenderer {
     ctx.fillStyle = palette.wellBackground;
     ctx.fillRect(0, 0, width, height);
     if (effects?.camera.active) {
-      // The camera: its offset, and its tilt around the well's centre (1.41).
+      // The camera: its offset, and its tilt around the well's centre (1.41). A tilt that
+      // moves the corners by less than half a pixel is not drawn, and the offset stays on
+      // whole pixels meanwhile: the blocks keep their sharp, cheap copy.
       const { x, y, angle } = effects.camera;
-      ctx.translate(width / 2 + x * cell, height / 2 + y * cell);
-      ctx.rotate(angle);
-      ctx.translate(-width / 2, -height / 2);
+      if (Math.abs(angle) * Math.hypot(width, height) < 1) {
+        ctx.translate(Math.round(x * cell), Math.round(y * cell));
+      } else {
+        ctx.translate(width / 2 + x * cell, height / 2 + y * cell);
+        ctx.rotate(angle);
+        ctx.translate(-width / 2, -height / 2);
+      }
     }
     this.drawGrid(palette.wellGrid);
     this.decor?.drawBehind?.(ctx, this.view, palette, cell, this.animated ? performance.now() : 0);
@@ -168,7 +173,7 @@ export class FallingRenderer {
     if (effects) this.painter.overlays(effects, palette, cell, this.dark, sprites);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (this.dangerEdge) this.drawDanger(palette);
-    if (effects) paintHeat(ctx, effects, palette, cell);
+    if (effects) this.painter.overlay.heat(effects, palette, cell);
     if (effects && effects.beatGlow > 0) {
       // The visual metronome: the frame of the well pulses on each beat.
       ctx.globalAlpha = 0.55 * effects.beatGlow;
@@ -182,7 +187,7 @@ export class FallingRenderer {
       );
       ctx.globalAlpha = 1;
     }
-    if (effects) paintRiftLight(ctx, effects);
+    if (effects) this.painter.overlay.riftLight(effects);
   }
 
   private drawGrid(color: string): void {

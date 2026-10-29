@@ -3,7 +3,7 @@ import { Tone } from '../pieces/PieceType';
 import { CELL_RIM, CRACK_MS, EFFECT_TIMINGS, type FallingEffects } from '../fx/FallingEffects';
 import type { BlockSprites } from './BlockSprites';
 import type { TonePalette } from '@/render/TonePalette';
-import { paintWords } from './WellOverlay';
+import { WellOverlay } from './WellOverlay';
 
 const { TRAIL_MS, FLASH_MS, WAVE_MS } = EFFECT_TIMINGS;
 
@@ -20,7 +20,12 @@ export class EffectsPainter {
   /** Reused for every textured shard: no allocation per particle and frame. */
   private readonly matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 
-  constructor(private readonly ctx: CanvasRenderingContext2D) {}
+  /** The words, the heat and the rift's light, drawn as the Tower draws them. */
+  readonly overlay: WellOverlay;
+
+  constructor(private readonly ctx: CanvasRenderingContext2D) {
+    this.overlay = new WellOverlay(ctx);
+  }
 
   /**
    * Rows that are cracking: still whole while the rift runs along them from
@@ -257,8 +262,7 @@ export class EffectsPainter {
   }
 
   private popups(effects: FallingEffects, palette: TonePalette, cell: number): void {
-    paintWords(
-      this.ctx,
+    this.overlay.words(
       effects,
       palette,
       { cell, wellWidth: effects.width * cell },

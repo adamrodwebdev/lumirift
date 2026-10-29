@@ -6,7 +6,7 @@ import {
   EFFECT_TIMINGS,
   type FallingEffects,
 } from '@/families/falling/fx/FallingEffects';
-import { paintHeat, paintRiftLight, paintWords } from '@/families/falling/render/WellOverlay';
+import { WellOverlay } from '@/families/falling/render/WellOverlay';
 import type { Piece } from '@/families/falling/pieces/Piece';
 import { ParticleKind } from '@/fx/ParticlePool';
 import { shade, type TonePalette } from '@/render/TonePalette';
@@ -45,6 +45,8 @@ export class TowerRenderer {
   /** One pattern per glass picture, for shards that keep their part of it (1.41). */
   private readonly patterns = new WeakMap<HTMLCanvasElement, CanvasPattern>();
   private readonly matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+  /** The words, the heat and the rift's light, drawn as the falling well draws them. */
+  private readonly overlay: WellOverlay;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -57,6 +59,7 @@ export class TowerRenderer {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D is not available');
     this.ctx = ctx;
+    this.overlay = new WellOverlay(ctx);
     const { board } = view;
     this.projection = new CylinderProjection(board.width, board.height - board.hiddenRows);
   }
@@ -138,8 +141,8 @@ export class TowerRenderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (eye) this.drawEyeMarker(eye, palette);
     // The well's heat and the rift's warm light, as in the falling well (1.41).
-    paintHeat(ctx, effects, palette, cell);
-    paintRiftLight(ctx, effects);
+    this.overlay.heat(effects, palette, cell);
+    this.overlay.riftLight(effects);
   }
 
   /** The next piece in red where it would appear, when the tower leaves it no room to enter. */
@@ -772,8 +775,7 @@ export class TowerRenderer {
     const { ctx, effects, projection } = this;
     const cell = projection.rowHeight;
     ctx.setTransform(1, 0, 0, 1, this.offsetX, this.offsetY);
-    paintWords(
-      ctx,
+    this.overlay.words(
       effects,
       palette,
       { cell, wellWidth: projection.radius * 2 },
