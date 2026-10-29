@@ -235,7 +235,13 @@
     "dunesGoal": "Level D-{value} selesai!"
   },
   "wellWords": {
-    "combo": "KOMBO ×{n}"
+    "combo": "KOMBO ×{n}",
+    "shout": {
+      "hot": "PANAS!",
+      "blazing": "MEMBARA!",
+      "inferno": "LAUTAN API!",
+      "riftbreaker": "PEMECAH RETAKAN!"
+    }
   },
   "controls": {
     "left": "Kiri",

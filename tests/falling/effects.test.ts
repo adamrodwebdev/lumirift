@@ -20,7 +20,7 @@ function setup(level: EffectsLevel = 'full') {
     () => effectsProfile(level, true),
     () => PALETTE,
     (points) => String(points),
-    (combo) => `COMBO ×${combo}`,
+    { combo: (n) => `COMBO ×${n}`, shout: (key) => key.toUpperCase() },
   );
   const detach = effects.attach(session);
   session.start();

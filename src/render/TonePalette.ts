@@ -1,3 +1,4 @@
+import type { ComboHeat } from '@/fx/Impact';
 import { Tone } from '@/core/Tone';
 
 export interface Rgb {
@@ -52,6 +53,8 @@ export interface EffectColors {
   readonly petals: readonly string[];
   /** The glow around the rift (cracks, big moments). */
   readonly rift: string;
+  /** A combo's heat, gold to white-hot (1.41). */
+  readonly heat: Readonly<Record<ComboHeat, string>>;
 }
 
 /** Colours of the current theme, read from the CSS tokens (`--tone-N`, `--well-*`). */
@@ -88,6 +91,12 @@ export class TonePalette {
         gold: [read('--fx-gold-light'), read('--fx-gold'), read('--fx-gold-dark')],
         petals: [read('--fx-petal'), read('--fx-petal-dark')],
         rift: read('--rift-glow'),
+        heat: {
+          gold: read('--fx-heat-gold'),
+          orange: read('--fx-heat-orange'),
+          red: read('--fx-heat-red'),
+          white: read('--fx-heat-white'),
+        },
       },
     );
   }

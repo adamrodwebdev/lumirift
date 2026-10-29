@@ -1,4 +1,5 @@
 import { FrameCap } from '@/app/FrameCap';
+import type { WellWords } from '@/families/falling/fx/FallingEffects';
 import type { EffectsProfile } from '@/fx/EffectsProfile';
 import type { TonePalette } from '@/render/TonePalette';
 import {
@@ -95,7 +96,7 @@ export interface HomeReelOptions {
   readonly dark: () => boolean;
   readonly formatPoints: (points: number) => string;
   /** The combo's word, translated ("COMBO ×3"). */
-  readonly comboWord: (combo: number) => string;
+  readonly wellWords: WellWords;
   /** Motion is off (reduced motion, no effects): one still picture of the first moment. */
   readonly still: boolean;
   /** A moment comes on screen (its caption follows). */
@@ -203,7 +204,7 @@ export class HomeReel {
         palette: () => this.palette,
         dark: this.options.dark,
         formatPoints: this.options.formatPoints,
-        comboWord: this.options.comboWord,
+        wellWords: this.options.wellWords,
       });
       this.box.append(canvas);
       if (this.width && this.height) view.layout(this.width, this.height, pixelRatio());

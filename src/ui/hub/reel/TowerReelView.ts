@@ -30,7 +30,7 @@ export class TowerReelView implements ReelView {
       context.profile,
       context.palette,
       context.formatPoints,
-      context.comboWord,
+      context.wellWords,
     );
     const mode = session.view.mode;
     const eye = mode instanceof TowerMode && mode.eye ? mode : null;

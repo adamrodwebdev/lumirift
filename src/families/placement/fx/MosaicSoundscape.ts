@@ -34,8 +34,8 @@ export class MosaicSoundscape {
     const { audio, haptics } = this;
     const offs = [
       session.onGame('place', () => {
+        // A tile set down is heard, never felt (1.41: vibrations for the weighty moments).
         audio.play(sounds.tile);
-        haptics.pulse(8);
       }),
       session.onGame('clear', ({ lines, streak }) => {
         this.later(() => audio.play(sounds.ceramicBreak(lines, streak)));

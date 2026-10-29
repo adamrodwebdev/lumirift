@@ -235,7 +235,13 @@
     "dunesGoal": "Level D-{value} cleared!"
   },
   "wellWords": {
-    "combo": "COMBO ×{n}"
+    "combo": "COMBO ×{n}",
+    "shout": {
+      "hot": "HOT!",
+      "blazing": "BLAZING!",
+      "inferno": "INFERNO!",
+      "riftbreaker": "RIFTBREAKER!"
+    }
   },
   "controls": {
     "left": "Left",
