@@ -1,4 +1,5 @@
 import { FALLING_SCENES } from '@/showcase/fallingScenes';
+import { FEEL_SCENES } from '@/showcase/feelScenes';
 import { MOSAIC_SCENES } from '@/showcase/mosaicScenes';
 import { SAND_SCENES, type FireChoice } from '@/showcase/sandScenes';
 import type { Scene } from '@/showcase/Scene';
@@ -29,5 +30,9 @@ export const SCENES = {
   fireOnOil: (variant) => SAND_SCENES.fireOnOil(variant),
   lightningInWater: (variant) => SAND_SCENES.lightningInWater(variant),
   fireChoice: (variant, choice) => SAND_SCENES.fireChoice(variant, choice),
+  feelDrop: () => FEEL_SCENES.feelDrop(),
+  feelLine: () => FEEL_SCENES.feelLine(),
+  feelRift: () => FEEL_SCENES.feelRift(),
+  feelCombo: () => FEEL_SCENES.feelCombo(),
 } as const satisfies Record<string, SceneMaker>;
 export type SceneName = keyof typeof SCENES;

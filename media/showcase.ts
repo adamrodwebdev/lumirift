@@ -13,7 +13,7 @@ import '@/styles/tokens.css';
 import '@/styles/base.css';
 import '@/styles/stage.css';
 import '@/styles/ambiances.css';
-import { CLIP_WEEKS, type ClipWeek } from './clips';
+import { CLIP_WEEKS, TAKE_SETS, type ClipWeek, type TakeRecipe } from './clips';
 import { SCENES, type FireChoice, type Scene, type SceneName } from './scenes';
 import { SetTime } from './SetTime';
 import ShowcaseView from './ShowcaseView.vue';
@@ -351,6 +351,8 @@ declare global {
       markers(labels: readonly string[] | null, under?: boolean): readonly Mark[];
       background(): string;
       week(monday: string): ClipWeek | null;
+      /** A set of plain takes (1.41), or null. */
+      takes(set: string): readonly TakeRecipe[] | null;
       /** The take's sound (one text of 32-bit float samples per channel), or null without sound. */
       audio(): Promise<string[] | null>;
     };
@@ -415,6 +417,7 @@ window.showcase = {
   markers: showMarkers,
   background: () => getComputedStyle(document.body).backgroundColor,
   week: (monday) => CLIP_WEEKS[monday] ?? null,
+  takes: (name) => TAKE_SETS[name] ?? null,
   async audio() {
     const channels = await sound?.samples();
     return channels ? channels.map(toBase64) : null;

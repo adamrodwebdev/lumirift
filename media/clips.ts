@@ -36,6 +36,34 @@ export interface ClipWeek {
   readonly clips: readonly ClipRecipe[];
 }
 
+/**
+ * A plain take (1.41): a scene filmed from its start, `ms` long, with its
+ * sound and no montage, to compare two versions of the game side by side.
+ */
+export interface TakeRecipe {
+  /** Its file name in release/clips/<set>-<label>/, without extension. */
+  readonly id: string;
+  readonly scene: SceneName;
+  readonly variant: number;
+  readonly ms: number;
+}
+
+/**
+ * The sets of plain takes (`npm run clips -- --set feel --label 1.40.0`).
+ * `feel`, the moments lot 27 is judged on: a hard drop, one line, a RIFT!, a
+ * combo of five, a ring of the Tower with its bomb, a streak of the Mosaic.
+ */
+export const TAKE_SETS: Readonly<Record<string, readonly TakeRecipe[]>> = {
+  feel: [
+    { id: 'drop', scene: 'feelDrop', variant: 0, ms: 2600 },
+    { id: 'line', scene: 'feelLine', variant: 0, ms: 2200 },
+    { id: 'rift', scene: 'feelRift', variant: 0, ms: 2800 },
+    { id: 'combo', scene: 'feelCombo', variant: 0, ms: 5200 },
+    { id: 'tower', scene: 'eye', variant: 0, ms: 3600 },
+    { id: 'mosaic', scene: 'golem', variant: 0, ms: 3600 },
+  ],
+};
+
 /** The weeks of clips, by their Monday (YYYY-MM-DD), each built a week ahead. */
 export const CLIP_WEEKS: Readonly<Record<string, ClipWeek>> = {
   '2026-11-02': {

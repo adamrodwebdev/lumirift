@@ -12,6 +12,10 @@
 // writes files: no upload, no platform API (CAHIER § 9 ter).
 // Usage: npm run clips -- --week 2026-11-02 [--clip mon-fire-on-oil]
 //        →  release/clips/<week>/
+// A set of plain takes (1.41), filmed before and after a change of the game,
+// to be seen side by side: each scene from its start, its sound, no montage.
+//        npm run clips -- --set feel --label 1.40.0 [--clip rift]
+//        →  release/clips/feel-1.40.0/
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -63,13 +67,19 @@ const arg = (name) => {
   return at > 1 ? process.argv[at + 1] : undefined;
 };
 const WEEK = arg('week');
+/** `--set <name> --label <version>`: a set of plain takes (media/clips.ts, `TAKE_SETS`). */
+const TAKE_SET = arg('set');
+const LABEL = arg('label');
 /** `--clip <id>`: that clip alone (the others in the manifest are kept). */
 const ONLY = arg('clip');
-if (!/^\d{4}-\d{2}-\d{2}$/.test(WEEK ?? '')) {
-  console.error('Usage: npm run clips -- --week YYYY-MM-DD [--clip <id>]');
+if (!/^\d{4}-\d{2}-\d{2}$/.test(WEEK ?? '') && !(TAKE_SET && /^[\w.-]+$/.test(LABEL ?? ''))) {
+  console.error(
+    'Usage: npm run clips -- --week YYYY-MM-DD [--clip <id>]\n' +
+      '       npm run clips -- --set <name> --label <version> [--clip <id>]',
+  );
   process.exit(1);
 }
-const OUT = join('release', 'clips', WEEK);
+const OUT = join('release', 'clips', TAKE_SET ? `${TAKE_SET}-${LABEL}` : WEEK);
 
 const frames = (ms) => Math.round(ms / FRAME_MS);
 const easeOut = (t) => 1 - (1 - t) ** 3;
@@ -455,12 +465,37 @@ async function answerClip(recipe) {
   };
 }
 
+/**
+ * A plain take (1.41): the scene from its start, `ms` long, the whole game
+ * screen at zoom 1, its sound; no peak, no loop. Two takes of the same scene,
+ * before and after a change, show the same moment side by side.
+ */
+async function plainTake(recipe) {
+  const count = frames(recipe.ms);
+  const shot = await film(recipe, null, {
+    from: WARM_UP + 1,
+    to: WARM_UP + count,
+    crop: (layout) => screenCrop(layout, null),
+  });
+  const view = (frame) => [zoomed(shot.pictures.get(frame), shot.crop, null, 1)];
+  return {
+    runs: [{ from: WARM_UP + 1, count, view }],
+    sound: shot.sound,
+    cover: view(WARM_UP + Math.round(count / 2)),
+    peak: null,
+    measures: shot.measures,
+    hash: shot.hash,
+  };
+}
+
 const MONTAGES = { setup: setupClip, answer: answerClip };
 
 /** One clip: filmed, cut, levelled, encoded; its cover and its manifest entry. */
 async function makeClip(recipe) {
   const started = Date.now();
-  const clip = await (MONTAGES[recipe.challenge] ?? momentClip)(recipe);
+  const clip = await (recipe.ms
+    ? plainTake(recipe)
+    : (MONTAGES[recipe.challenge] ?? momentClip)(recipe));
   const count = clip.runs.reduce((sum, run) => sum + run.count, 0);
   const seconds = count / FPS;
   const levelled = normalise(join2(clip.runs.map((run) => soundOf(clip.sound, run))), {
@@ -480,20 +515,26 @@ async function makeClip(recipe) {
   });
   writeFileSync(join(OUT, `${recipe.id}.jpg`), await encoder.still(clip.cover, { background }));
   const bytes = await encoder.save(join(OUT, `${recipe.id}.mp4`));
-  const points = [clip.peak.at, ...(clip.peak.answers ?? [])].filter(Boolean);
-  const { extent } = clip.peak;
-  const checks = {
-    length: seconds >= LENGTH.min && seconds <= LENGTH.max,
-    peakInFirst300ms: clip.peak.clipMs <= 300,
-    safe:
-      points.every(isSafe) && (!extent || (extent.top >= SAFE.top && extent.bottom <= SAFE.bottom)),
-    // Measured to a hundredth, as the meters show them.
+  // Measured to a hundredth, as the meters show them.
+  const soundChecks = {
     truePeak: Math.round(truePeak * 100) <= SOUND.truePeakDb * 100,
     decodedPeak: Math.round(decodedPeakDb * 100) <= SOUND.decodedPeakDb * 100,
   };
+  const { peak } = clip;
+  // A plain take has no peak: the apps' rules (length, hook, safe area) are the clips'.
+  const checks = peak
+    ? {
+        length: seconds >= LENGTH.min && seconds <= LENGTH.max,
+        peakInFirst300ms: peak.clipMs <= 300,
+        safe:
+          [peak.at, ...(peak.answers ?? [])].filter(Boolean).every(isSafe) &&
+          (!peak.extent || (peak.extent.top >= SAFE.top && peak.extent.bottom <= SAFE.bottom)),
+        ...soundChecks,
+      }
+    : soundChecks;
   const entry = {
     id: recipe.id,
-    day: recipe.day,
+    ...(recipe.day ? { day: recipe.day } : {}),
     video: `${recipe.id}.mp4`,
     cover: `${recipe.id}.jpg`,
     scene: recipe.scene,
@@ -501,18 +542,25 @@ async function makeClip(recipe) {
     ...(recipe.challenge ? { challenge: recipe.challenge } : {}),
     seconds: Number(seconds.toFixed(2)),
     frames: count,
-    peak: {
-      event: recipe.peak,
-      nth: recipe.nth ?? 1,
-      sceneMs: Math.round(clip.peak.frame * FRAME_MS),
-      clipMs: Math.round(clip.peak.clipMs),
-      ...(clip.peak.at
-        ? { at: { x: +clip.peak.at.x.toFixed(3), y: +clip.peak.at.y.toFixed(3) } }
-        : {}),
-      ...(extent
-        ? { extent: { top: +extent.top.toFixed(3), bottom: +extent.bottom.toFixed(3) } }
-        : {}),
-    },
+    ...(peak
+      ? {
+          peak: {
+            event: recipe.peak,
+            nth: recipe.nth ?? 1,
+            sceneMs: Math.round(peak.frame * FRAME_MS),
+            clipMs: Math.round(peak.clipMs),
+            ...(peak.at ? { at: { x: +peak.at.x.toFixed(3), y: +peak.at.y.toFixed(3) } } : {}),
+            ...(peak.extent
+              ? {
+                  extent: {
+                    top: +peak.extent.top.toFixed(3),
+                    bottom: +peak.extent.bottom.toFixed(3),
+                  },
+                }
+              : {}),
+          },
+        }
+      : {}),
     measures: clip.measures,
     sound: {
       lufs: Number(loudness(levelled).toFixed(1)),
@@ -528,7 +576,10 @@ async function makeClip(recipe) {
     .filter(([, ok]) => !ok)
     .map(([name]) => name);
   console.log(
-    `${recipe.id}: ${seconds.toFixed(1)} s, peak ${recipe.peak} at ${(entry.peak.sceneMs / 1000).toFixed(2)} s, ` +
+    `${recipe.id}: ${seconds.toFixed(1)} s, ` +
+      (entry.peak
+        ? `peak ${recipe.peak} at ${(entry.peak.sceneMs / 1000).toFixed(2)} s, `
+        : 'plain take, ') +
       `${entry.sound.lufs} LUFS, ${entry.sound.truePeakDb} dBTP, decoded ${entry.sound.decodedPeakDb} dBFS, ` +
       `priming ${priming.measured} (reported ${priming.reported}), ` +
       `${entry.megabytes} MB, ${((Date.now() - started) / 1000).toFixed(0)} s` +
@@ -537,28 +588,33 @@ async function makeClip(recipe) {
   return entry;
 }
 
+/** The recipes asked for: a week's clips, or a set of plain takes; and what the manifest says of them. */
+async function asked() {
+  if (TAKE_SET) {
+    const takes = await set.evaluate((name) => window.showcase.takes(name), TAKE_SET);
+    if (!takes) throw new Error(`No set of takes ${TAKE_SET} in media/clips.ts`);
+    return { all: takes, about: { set: TAKE_SET, label: LABEL } };
+  }
+  const week = await set.evaluate((monday) => window.showcase.week(monday), WEEK);
+  if (!week) throw new Error(`No clips for the week of ${WEEK} in media/clips.ts`);
+  return { all: week.clips, about: { week: WEEK, element: week.element, guardian: week.guardian } };
+}
+
 const started = Date.now();
 try {
   await openSet();
-  const week = await set.evaluate((monday) => window.showcase.week(monday), WEEK);
-  if (!week) throw new Error(`No clips for the week of ${WEEK} in media/clips.ts`);
-  const recipes = week.clips.filter((recipe) => !ONLY || recipe.id === ONLY);
-  if (!recipes.length) throw new Error(`No clip ${ONLY} in the week of ${WEEK}`);
+  const { all, about } = await asked();
+  const recipes = all.filter((recipe) => !ONLY || recipe.id === ONLY);
+  if (!recipes.length) throw new Error(`No clip ${ONLY} in ${TAKE_SET ?? `the week of ${WEEK}`}`);
   mkdirSync(OUT, { recursive: true });
   const file = join(OUT, 'manifest.json');
   const kept = ONLY && existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).clips : [];
   const made = [];
   for (const recipe of recipes) made.push(await makeClip(recipe));
-  const clips = week.clips
+  const clips = all
     .map(({ id }) => made.find((entry) => entry.id === id) ?? kept.find((entry) => entry.id === id))
     .filter(Boolean);
-  const manifest = {
-    week: WEEK,
-    element: week.element,
-    guardian: week.guardian,
-    video: { ...VIDEO, fps: FPS, codecs: 'H.264 + AAC' },
-    clips,
-  };
+  const manifest = { ...about, video: { ...VIDEO, fps: FPS, codecs: 'H.264 + AAC' }, clips };
   writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
   console.log(
     `${OUT}: ${made.length} clip(s) in ${((Date.now() - started) / 60_000).toFixed(1)} min`,
