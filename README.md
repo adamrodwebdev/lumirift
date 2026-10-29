@@ -247,8 +247,9 @@ npm run clips -- --week 2026-11-02 --clip mon-fire-on-oil   # un seul clip
 ```
 
 Chaque clip est un MP4 vertical (1080 × 1920, H.264 et AAC, 7 à 15 s) qui s'ouvre sur son pic et
-boucle, avec le son du jeu, sa couverture et une entrée de `manifest.json` (les mesures que
-citent les légendes). Les semaines sont des recettes dans `media/clips.ts`, les scènes dans
+boucle sans couture, avec le son du jeu (vers −14 LUFS, crêtes vraies sous −2 dBTP), sa
+couverture et une entrée de `manifest.json` (les mesures que citent les légendes, les niveaux
+du son et les contrôles). Les semaines sont des recettes dans `media/clips.ts`, les scènes dans
 `src/showcase/`. La fabrique n'écrit que des fichiers : l'envoi reste à la main.
 
 ## Qualité

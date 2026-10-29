@@ -2126,8 +2126,11 @@ outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
     (coups et réactions comme `shock`, `blaze`, `sprout` ; l'alerte, la sortie et les blessures
     d'un Gardien ; les lignes), jamais des temps posés à la main : une scène modifiée garde sa
     coupe. Une première passe sans dessin note quand et où chaque pic arrive. Le clip s'ouvre
-    0,15 s avant le pic, avec un zoom de × 1,0 à × 1,15 en 150 ms tenu environ 1,2 s, revient à
-    la mise en place, rejoue le pic, puis 1 à 2 s de suite, et finit sur l'image du début.
+    0,15 s avant le pic, avec un zoom de × 1,0 à × 1,15 en 150 ms tenu environ 1,2 s, et environ
+    2,5 s de suite ; puis il rejoue la mise en place depuis le début jusqu'à l'image qui précède
+    son ouverture (revue du 29/10/2026) : la boucle n'a pas de couture, l'image et la musique la
+    traversent, le pic passe une fois par tour. Un clip de moins de 7 s allonge sa suite, jamais
+    sa reprise au-delà du pic.
   - La caméra : les images sont dessinées à 3× puis recadrées en 1080 × 1920, si bien qu'un zoom
     jusqu'à × 1,5 reste net (les canevas de la page des médias montent à 3× ; le jeu garde son
     plafond de 2×). Le cadre suit le lieu du pic, reste dans le puits et garde l'action dans la
@@ -2139,7 +2142,8 @@ outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
     durée du clip au lieu de son `setInterval`, l'audio encodé en AAC par WebCodecs et une piste
     audio dans `mp4-encoder.mjs`. À défaut, si cet essai dépasse une demi-journée, le son est
     enregistré en direct, la scène avançant par pas fixes de 1/30 s à vitesse réelle. Le son
-    d'un pic tombe à moins d'une image (33 ms) de son image, vers −14 LUFS.
+    d'un pic tombe à moins d'une image (33 ms) de son image, vers −14 LUFS, ses crêtes vraies
+    sous −2 dBTP avant l'encodeur, l'AAC décodé à −1 dBFS ou sous (revue du 29/10/2026).
   - Les scènes suivent le calendrier du jeu : le lundi, l'élément de la semaine
     (`src/seasons/SeasonData.ts`) ; le vendredi, le Gardien du défi de la semaine
     (`GuardianChallenge`). Semaine du 2 novembre : le feu sur l'huile (nouvelle scène), la paire
@@ -2156,7 +2160,7 @@ outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
     `manifest.json`, que cite la légende du dimanche).
   - Porte : la semaine 1 (clips, couvertures, manifeste) en moins de 15 minutes sur un seul
     cœur ; deux passes aux mêmes entrées donnent les mêmes images ; chaque clip suit les règles
-    ci-dessus, son pic dans les 0,3 premières secondes, sa dernière image égale à la première ;
+    ci-dessus, son pic dans les 0,3 premières secondes, sa dernière image juste avant la première ;
     le son de chaque pic à 33 ms près de son image ; l'action de chaque pic dans la zone sûre ;
     un test de pic par nouvelle scène ; `scripts/yandex-media.mjs` et
     `scripts/crazygames-media.mjs` rendent toujours les mêmes vidéos des portails ; la fabrique
@@ -2180,12 +2184,15 @@ outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
       `OfflineAudioContext` suspendu à chaque image, la musique suivie comme par `useTension`) ;
       le son d'une image commence donc à son temps exact ;
     - **le zoom se fait en composant** (l'image d'un cadre fixe, agrandie), donc sans saccade ;
-      il revient au pic rejoué puis repart en 0,3 s ; la dernière image est la première ;
+      il repart en 0,3 s après 1,2 s, avant la coupe vers le début ;
     - **la zone sûre** : le cadre garde l'écran entier et sa taille, et descend dans la marge
-      si l'action tomberait sous la légende. Sur le Cœur, dont les rangées montent du sol, le
-      point visé (ses coups, ses points) passe à 76 % de la hauteur, au-dessus de la légende ;
-      la rangée du fond reste sous elle (vers 85 %) et le haut du puits sort du cadre. Le contrôle
-      ne teste que ce point, pas l'étendue de l'action ;
+      si l'action tomberait sous la légende. Un pic peut porter l'étendue de l'action, que le
+      cadre garde entière, le bas d'abord. Sur le Cœur, dont les rangées montent du sol, c'est
+      son plancher et les quatre rangées qui éclatent au-dessus (revue du 29/10/2026) : le
+      plancher passe à 77,5 % de la hauteur, au-dessus de la légende (la marge de 160 px est
+      alors toute prise), les rangées entre 61 et 77,5 %, et le haut du puits sort du cadre. Le
+      contrôle teste l'étendue entière (en 1.39 d'abord, un seul point visé à 76 % laissait la
+      rangée du fond vers 85 %) ;
     - **la question d'un défi** s'ouvre sur la décision (le feu vient d'apparaître, A et B au
       milieu du ciel, au-dessus de l'huile et de l'eau), zoomée et tenue 1,2 s, revient au début,
       puis tient la décision 2,5 s : la musique continue sous l'image arrêtée. **La réponse**
@@ -2197,9 +2204,19 @@ outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
     - **l'amorce de l'AAC est mesurée** en décodant le son et en le recalant sur l'original :
       0 échantillon avec l'encodeur de Chrome sous Windows ; un son placé à 0,5 s sort à 0,5 s
       (0,04 ms). Le niveau suit BS.1770 (un sinus de 997 Hz à −20 dBFS lit −20,0 LUFS) ;
-    - mesures de la semaine 1 : 4 minutes pour cinq clips (la porte : 15) ; de 7,7 à 10,5 s ;
-      les pics à 4,63 s (l'embrasement, l'éclair), 4,07 s (la décision) et 7,13 s (le second
-      éclat du Cœur) ; de −14,0 à −14,6 LUFS ; de 1 à 13 Mo ;
+    - **les crêtes vraies** (revue du 29/10/2026) : mesurées selon l'annexe 2 de BS.1770, quatre
+      fois suréchantillonnées (le sinus de 997 Hz à pleine échelle lit 0,01 dBTP), tenues sous
+      −2 dBTP par un limiteur qui anticipe de 1,5 ms et relâche en 80 ms, au lieu d'une courbe
+      douce sur les échantillons à −1 dBFS, que l'AAC dépassait ; l'AAC est décodé sur toutes ses
+      voies et ses crêtes contrôlées (−1 dBFS au plus). La piste son s'arrête avec l'image : la
+      liste d'édition coupe le bourrage du dernier bloc AAC, qui marquait le bouclage ;
+    - mesures de la semaine 1, refaite après la revue : 3,2 minutes pour cinq clips, quand la
+      porte en donne 15 ; 7,0 s (lundi, jeudi, dimanche), 7,7 s (mardi), 9,5 s (vendredi) ; les pics à 4,63 s
+      (l'embrasement, l'éclair), 4,07 s (la décision) et 7,13 s (le second éclat du Cœur) ; de
+      −14,2 à −14,5 LUFS, −2,0 dBTP avant l'encodeur, de −1,79 à −1,54 dBFS une fois décodés ; de
+      1,1 à 10,9 Mo. Au bouclage, la dernière image et la première diffèrent comme deux images qui
+      se suivent (lundi : 1,0 contre 0,6 en médiane et 6,1 au 9e décile, sur 255) ; le seul saut
+      est la coupe vers le début ;
     - les vidéos des portails ne changent pas : sans `?clip`, le plateau reste à 2× et sur
       l'horloge réelle.
 

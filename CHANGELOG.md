@@ -18,14 +18,18 @@ moments, sur ses vrais moteurs, pour TikTok, Instagram et YouTube Shorts.
   n'écrit que des fichiers.
 - **Le montage suit les moteurs**, jamais des temps posés à la main : une première prise sans
   image trouve le pic (le feu qui s'embrase, l'éclair, la blessure du Cœur) ; le clip s'ouvre
-  0,15 s avant lui avec un zoom de × 1 à × 1,15, revient au début, rejoue le pic, puis finit sur
-  sa première image : il boucle.
+  0,15 s avant lui avec un zoom de × 1 à × 1,15 et environ 2,5 s de suite, puis rejoue la scène
+  depuis le début jusqu'à l'image qui précède son ouverture : une boucle sans couture, que
+  l'image et le son traversent, le pic une fois par tour. Un clip de moins de 7 s allonge sa
+  suite, jamais sa reprise au-delà du pic.
 - **Le son du jeu** (musique, effets, battement du danger) rendu avec l'image, à l'image près :
   le moteur audio sur un contexte hors ligne, la musique qui suit la tension comme en partie, le
-  tout ramené vers −14 LUFS. Un son placé à 0,5 s sort à 0,5 s.
+  tout ramené vers −14 LUFS, ses crêtes vraies sous −2 dBTP (un limiteur qui anticipe, jamais
+  d'écrêtage) ; l'AAC décodé reste à −1 dBFS ou sous. Un son placé à 0,5 s sort à 0,5 s.
 - **La caméra garde l'action dans la zone sûre** des applications (hors des 15 % de droite, des
-  22 % du bas, des 10 % du haut) : sur le Cœur de la faille, le cadre descend pour garder ses
-  coups et ses points au-dessus de la légende (la rangée du fond reste sous elle, vers 85 %).
+  22 % du bas, des 10 % du haut) : sur le Cœur de la faille, elle cadre l'étendue de l'action,
+  du plancher aux rangées qui éclatent au-dessus, le plancher au-dessus de la légende (77,5 % de
+  la hauteur) ; le haut du puits sort du cadre.
 - **Les défis** : la question s'arrête sur la décision, A et B au-dessus du puits ; la réponse
   montre les deux puits côte à côte, chacun avec sa lettre, et le manifeste donne leurs comptes.
 - **La semaine du 2 novembre** (`media/clips.ts`) : le feu sur l'huile (lundi), le défi du feu
@@ -45,10 +49,12 @@ moments, sur ses vrais moteurs, pour TikTok, Instagram et YouTube Shorts.
   son propre temps (`SetTime` : minuteries, images, `performance.now()`, animations CSS), le
   son de la prise (`TakeSound`). Deux passes aux mêmes entrées donnent les mêmes images ; Chrome
   y dessine sans carte graphique, qui composait la lueur du puits un peu différemment d'une
-  prise à l'autre. La semaine 1 se rend en 4 minutes.
-- `scripts/mp4-encoder.mjs` écrit une piste AAC (son décalage d'amorce mesuré en décodant), zoome
-  en composant et n'envoie qu'une fois une image répétée ; `scripts/loudness.mjs` mesure selon
-  BS.1770 (vérifié : un sinus de 997 Hz à −20 dBFS lit −20,0 LUFS).
+  prise à l'autre. La semaine 1 se rend en un peu plus de 3 minutes.
+- `scripts/mp4-encoder.mjs` écrit une piste AAC (son décalage d'amorce mesuré en décodant, sa
+  durée coupée à celle de l'image, ses crêtes décodées sur toutes les voies), zoome en composant
+  et n'envoie qu'une fois une image répétée ; `scripts/loudness.mjs` mesure selon BS.1770
+  (vérifié : un sinus de 997 Hz à −20 dBFS lit −20,0 LUFS) et sa crête vraie selon l'annexe 2
+  (quatre fois suréchantillonnée : le même sinus à pleine échelle lit 0,01 dBTP).
 - Les vidéos des portails (`yandex-media.mjs`, `crazygames-media.mjs`) ne changent pas : le
   plateau sans `?clip` reste à 2× et sur l'horloge réelle.
 
