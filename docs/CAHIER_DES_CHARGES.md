@@ -2423,7 +2423,7 @@ des effets à la mesure du moment.
       jeu, pendant les 280 ms qui suivent un effacement, que l'arrêt allonge. Il garde désormais
       les pas de côté (pas plus que la largeur du puits), les tours et la réserve, et les joue
       quand la pièce suivante entre : la réserve, puis les tours, puis les pas. Ne se gardent
-      pas (à confirmer par l'utilisateur) : la chute franche et le pas vers le bas, qui, pressés
+      pas (choix de l'utilisateur, le 29/10/2026) : la chute franche et le pas vers le bas, qui, pressés
       deux fois, jetteraient la pièce suivante sans qu'on la voie ; la répétition d'une touche
       tenue, que la commande dit désormais (`repeat`) et qui reprend dès l'entrée. La porte
       voulait un e2e, mais la version de production ne peut pas mettre en scène une RIFT! :
