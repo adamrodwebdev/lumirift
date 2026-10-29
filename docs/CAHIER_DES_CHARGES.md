@@ -12,6 +12,7 @@
 | 1.37    | 27/10/2026 | Dunes, le test web : le sable posé, trois pièces en main, sans chrono, dans sa propre version de test (§ 9 bis, lot 19).                                                                                                              |
 | 1.38    | 28/10/2026 | Niveaux générés : un générateur par famille, les chapitres 6 à 10, 69 niveaux, les revanches des Gardiens (§ 9 bis, lot 20).                                                                                                          |
 | 1.39    | 28/10/2026 | La fabrique de clips : les clips de la semaine filmés par le jeu, son compris, pour les réseaux (§ 9 ter, lot 25).                                                                                                                    |
+| 1.40    | 29/10/2026 | La prise en main : la pièce suit le doigt, de côté et vers le bas, un texte reste le temps d'être lu, un seul compte des combos (§ 9 quater, lot 26).                                                                                 |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1769,7 +1770,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Livré (1.32)                                                 |
 | 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Livré (1.34)                                                 |
 | 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
-| 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Prévu                                                        |
+| 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Livré (1.40)                                                 |
 | 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Prévu                                                        |
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Prévu                                                        |
 
@@ -2272,6 +2273,27 @@ des effets à la mesure du moment.
     nombre de cases voulu) et la descente douce lâchée en mouvement (jamais de chute franche) ;
     les temps de lecture testés dans les quatre langues ; l'essai de l'utilisateur sur son
     téléphone.
+  - **Livré en 1.40** (29/10/2026). Les choix au-delà de la spécification, mesurés sur la
+    porte des gestes :
+    - la spécification voulait qu'aucun lever ne fasse tomber la pièce ; sur une page qui
+      charge une pub, un navigateur qui fusionne les échantillons ne montre un coup qu'au lever.
+      Au lever, une chute est donc un coup franc (1,6 px/ms) ou un coup plus doux (1,1 px/ms)
+      qui accélère encore (1,2 px/ms de plus en 100 ms) : relevés au lever, les coups vont à
+      1,7 px/ms au moins et accélèrent de 0,018 px/ms² au moins ; les descentes rapides
+      n'accélèrent pas de plus de 0,007, 95 fois sur 100. Le traceur de vitesse donne
+      l'accélération (la parabole des moindres carrés) ;
+    - un coup fait au moins 40 px (24 avant) : sur un écran à 60 Hz, une petite descente d'une
+      rangée lue sur deux échantillons ressemblait à un coup parti de l'arrêt ;
+    - sur une page occupée, une chute lue au lever prend le saut comme il a bougé, sans l'élan
+      supposé d'un départ arrêté (la réserve le garde) : 6 à 8 % des coups juste après un
+      déplacement y sont manqués (3 % avant), et aucune descente rapide n'y tombe par accident ;
+    - un doigt qui glisse encore quand la pièce suivante entre ne la fait pas descendre (comme
+      un coup ne fait tomber que la pièce présente au début du contact) ;
+    - les signes d'un texte se comptent comme un lecteur les voit (une lettre et ses accents en
+      un, `Intl.Segmenter`) ;
+    - les traces de la porte : la descente rapide va de 0,5 à 1,4 px/ms d'une allure régulière,
+      comme les descentes enregistrées (1,45 au plus) ; un tracé qui accélère puis ralentit
+      culminait au double de sa moyenne et ne ressemblait à aucune.
 - **Lot 27 · 1.41 Le poids et l'éclat** (détaillé avant son code). Des effets à la mesure du
   moment : un petit événement reste petit, un grand frappe. Un bloc qui se pose pèse (un léger
   écrasement, la pile qui réagit, un son qui suit la vitesse) ; un effacement est une explosion
@@ -2360,3 +2382,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.37    | 27/10/2026 | Dunes : `families/dunes` (main de trois pièces, promesse lue sur les cases libres, le Ver), versions de test Dunes seul et Sable seul (§ 9 bis, lot 19).               |
 | 1.38    | 28/10/2026 | Niveaux générés : `campaign/generator` (plan, générateurs par famille, tamis du bot), les packs des chapitres 6 à 10 (§ 9 bis, lot 20).                                |
 | 1.39    | 28/10/2026 | La croissance sans dépense (§ 9 ter) ; la fabrique de clips : `clip-factory.mjs`, le plateau `?clip` (`SetTime`, `TakeSound`), la piste AAC (lot 25).                  |
+| 1.40    | 29/10/2026 | Le ressenti (§ 9 quater) ; la prise en main : `PhoneGestures` (crans à la case, `softStep`, coup lu à l'accélération), `readingTime`, compte des combos (lot 26).      |

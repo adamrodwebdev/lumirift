@@ -102,7 +102,9 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 Sur écran tactile, Réglages, « Commandes tactiles » : jouer aux gestes, aux boutons ou aux
 deux, la vitesse du glissé, tourner selon le côté touché, le mode gaucher, les vibrations ;
 « Voir les gestes » dessine le guide. Un deuxième doigt tapé pendant un glissé tourne aussi ;
-un coup ne fait tomber que la pièce présente au début du contact.
+un coup ne fait tomber que la pièce présente au début du contact. Depuis la 1.40, la pièce suit
+le doigt à la case près, de côté comme vers le bas, et lever le doigt ne la fait jamais tomber
+d'un coup : la chute franche est un coup franc vers le bas.
 
 Ce sont les touches par défaut : chacun les change dans Réglages, « Clavier » (deux touches
 par action, échange quand une touche est déjà prise), avec la répétition des déplacements
