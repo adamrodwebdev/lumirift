@@ -1772,7 +1772,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Livré (1.34)                                                 |
 | 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
 | 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Livré (1.40)                                                 |
-| 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Prévu                                                        |
+| 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Prévu                                                        |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
@@ -2414,6 +2414,39 @@ des effets à la mesure du moment.
     - le temps d'image, le processeur ralenti quatre fois, ne gagne pas plus de 1 ms au 95e
       centile ; Lighthouse reste à 100 ;
     - l'essai de l'utilisateur sur son téléphone.
+  - **Livré en 1.41** (29/10/2026). Les mesures de la porte et les écarts :
+    - tests unitaires : 92 fichiers, 855 tests ; e2e : 175 passés (28 réservés à l'autre
+      appareil). Après la reprise des lueurs, 173 : l'ouverture de la saison 1 est tombée sous
+      la charge de la suite entière, à Auckland et à Los Angeles, puis a passé 30 fois sur 30,
+      répétée seule à quatre processus. Ce test est fragile sous charge, sans lien avec le lot ;
+    - **aucun geste perdu entre deux pièces** : le moteur perdait tout geste fait sans pièce en
+      jeu, pendant les 280 ms qui suivent un effacement, que l'arrêt allonge. Il garde désormais
+      les pas de côté (pas plus que la largeur du puits), les tours et la réserve, et les joue
+      quand la pièce suivante entre : la réserve, puis les tours, puis les pas. Ne se gardent
+      pas (à confirmer par l'utilisateur) : la chute franche et le pas vers le bas, qui, pressés
+      deux fois, jetteraient la pièce suivante sans qu'on la voie ; la répétition d'une touche
+      tenue, que la commande dit désormais (`repeat`) et qui reprend dès l'entrée. La porte
+      voulait un e2e, mais la version de production ne peut pas mettre en scène une RIFT! :
+      `tests/falling/hitStop.test.ts` joue la scène de la RIFT! avec l'horloge, l'entrée et les
+      effets branchés comme sur l'écran de jeu, et il échoue sans la correction ;
+    - **le temps d'image** : les six prises du ressenti jouées image par image sur le plateau de
+      la vitrine, à la taille d'un téléphone (390 × 844 à 3×), le processeur ralenti quatre
+      fois, la 1.40 (4f58963) et la 1.41 en alternance, deux tours de trois passages comptés.
+      Deux mesures : le travail du processeur, sur des canevas du processeur graphique comme sur
+      un téléphone (règles, effets, dessin enregistré) ; le rendu logiciel, le pire cas (les
+      canevas tramés par le processeur, vidés à chaque image). Le premier relevé a trouvé la
+      lueur des bords d'un combo floutée sur tout le pourtour à chaque image (×5 : 101 ms au 95e
+      centile en rendu logiciel, 58 en 1.40), et chaque mot refaisant son flou à chaque image.
+      Désormais, un mot est dessiné avec sa lueur à son apparition puis copié, la lueur des
+      bords est un dégradé, et la caméra reste au pixel près tant qu'elle ne penche pas.
+      Au 95e centile, toutes prises : 3,9 → 3,75 ms en travail du processeur, 57,8 → 56,2 ms en
+      rendu logiciel ; la porte (1 ms de plus au plus) tient. Seule la Tour coûte plus en rendu
+      logiciel (+13 ms : ses éclats texturés, ceux du puits depuis avant la 1.41), +0,4 ms en
+      travail du processeur ;
+    - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+      catégories à chaque passage ;
+    - les clips : `release/clips/feel-1.40.0` et `feel-1.41.0`, côte à côte sur une page privée
+      pour l'utilisateur ; reste son essai sur téléphone.
 - **Lot 28 · 1.42 Des menus qui s'enchaînent** (détaillé avant son code). Chaque changement
   d'affichage passé en revue (écrans, pages, fenêtres, pause, fin de partie, page de la saison)
   reçoit une transition : moins de 300 ms, transformations et opacité seulement, jamais un

@@ -51,6 +51,11 @@ effacement frappe, chaque combo monte, à la mesure du moment (un petit événem
   d'une pose et la fin d'un combo (`comboEnd`), la Mosaïque la fin d'une série (`streakEnd`).
   `InitialActions` garde les gestes faits avant l'entrée d'une pièce ; la répétition d'une
   touche tenue se dit (`repeat`).
+- Les lueurs floutées une fois : un mot est dessiné avec sa lueur à son apparition puis copié,
+  la lueur des bords d'un combo est un dégradé (le flou du pourtour coûtait près de 30 ms par
+  image en rendu logiciel, processeur ralenti quatre fois) ; la caméra reste au pixel près tant
+  qu'elle ne penche pas. Au 95e centile, sur les six prises du ressenti : 3,9 → 3,75 ms de travail du processeur
+  (57,8 → 56,2 ms en rendu logiciel).
 
 ## [1.40.0] — 29/10/2026
 

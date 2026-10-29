@@ -30,8 +30,9 @@ function faded(color: string): string {
  * words (points, the word of a moment, a combo's shout), a combo's heat on the
  * edges and the rift's warm light. Glows are blurred once, never per frame: a
  * word's picture is drawn with its glow when it appears, the heat's glow is a
- * gradient (a canvas blur costs its whole area on every frame, 40 ms an image
- * on a slowed phone for the heat alone). Sizes are in device pixels.
+ * gradient (a canvas blur costs its whole area on every frame: nearly 30 ms
+ * an image for the heat alone, rastered by the processor slowed four times).
+ * Sizes are in device pixels.
  */
 export class WellOverlay {
   private readonly sprites = new WeakMap<Popup, WordSprite | null>();
