@@ -59,7 +59,9 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   septième), qui s'ouvre de lui-même au premier passage de la journée ; un jour manqué ne
   fait rien perdre, une semaine d'absence vaut un cadeau de retour.
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
-  sobres, aucun), sans jamais plus de trois flashs par seconde.
+  sobres, aucun), sans jamais plus de trois flashs par seconde. À la mesure du moment (1.41) :
+  un bloc posé pèse, un effacement se tient un instant et secoue, un combo grandit, chauffe et
+  crie à ses paliers.
 - **La tension de l'échec** : en danger, la musique presse et un cœur bat, le verre du
   puits se fend d'or ; une ligne sauvée au bord du gouffre compte double. Une défaite brise
   le verre sous la pulsation rouge, ses vitres tombent, la pile éclate dans la matière de
@@ -104,7 +106,8 @@ deux, la vitesse du glissé, tourner selon le côté touché, le mode gaucher, l
 « Voir les gestes » dessine le guide. Un deuxième doigt tapé pendant un glissé tourne aussi ;
 un coup ne fait tomber que la pièce présente au début du contact. Depuis la 1.40, la pièce suit
 le doigt à la case près, de côté comme vers le bas, et lever le doigt ne la fait jamais tomber
-d'un coup : la chute franche est un coup franc vers le bas.
+d'un coup : la chute franche est un coup franc vers le bas. Depuis la 1.41, un écran tactile
+vibre par défaut, seulement aux moments qui pèsent (chute franche, effacement, combo).
 
 Ce sont les touches par défaut : chacun les change dans Réglages, « Clavier » (deux touches
 par action, échange quand une touche est déjà prise), avec la répétition des déplacements
@@ -300,7 +303,7 @@ src/
                  dunes : le sable posé (à l'essai), composé des grains et du Ver du Sable
   progression/   Expérience, objectifs, cosmétiques, ensembles, cadeaux du jour, profil
   seasons/       Les saisons en données, leur calendrier (UTC), leur piste, l'objectif de la semaine
-  fx/, render/   Particules, secousses, sons ; palette et motifs partagés
+  fx/, render/   Particules, caméra, échelle des moments, sons ; palette et motifs partagés
   services/      Réglages, records, profil, thème, ambiance, audio, partage
   ui/            Écrans (menu, jeu), pages du menu (hub/), composants ; la présentation et
                  la scène de chaque famille (presentation.ts, stages.ts)

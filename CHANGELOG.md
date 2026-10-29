@@ -3,6 +3,47 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.41.0] — 29/10/2026
+
+Le poids et l'éclat (lot 27), d'après des parties sur téléphone : chaque bloc pèse, chaque
+effacement frappe, chaque combo monte, à la mesure du moment (un petit événement reste petit).
+
+### Ajouté
+
+- **L'arrêt sur image** : le jeu se tient un instant quand un effacement se voit, rien pour une
+  ligne, 35 ms pour deux, 60 ms pour trois, 100 ms pour une RIFT!, 10 ms de plus par pas de combo
+  dès ×3 (140 ms au plus d'affilée, 250 ms au plus par seconde) ; le Sable sur deux régions et
+  plus. Un geste fait pendant l'arrêt joue juste après. Jamais dans le Rythme ni la Mosaïque.
+- **Le poids d'un bloc** : la pièce posée s'écrase sur sa base et revient en 140 ms, les rangées
+  sous elle s'enfoncent, une chute franche fait plonger la caméra selon sa hauteur et gagne un
+  coup sourd sous son son.
+- **L'élan d'un combo** : « COMBO ×N » grandit et chauffe (or, orange, rouge, blanc brûlant) ; un
+  cri aux paliers (ÇA CHAUFFE !, BRÛLANT !, BRASIER !, BRISE-FAILLE !, et en anglais, indonésien
+  et russe) ; les bords du puits rougeoient ; chaque pas joue une note plus haute de l'accord,
+  l'accord entier à ×5 et ×10 ; un combo de ×3 ou plus qui casse s'entend tomber. La Mosaïque
+  écrit sa série sur le plateau ; le badge du Sable grossit, puis se fend quand le combo casse.
+- **Des prises simples dans la fabrique de clips** (`npm run clips -- --set feel --label
+<version>`) : les six moments du ressenti, filmés avant et après, pour être vus côte à côte.
+
+### Modifié
+
+- **La secousse devient une caméra** : un trauma au carré tiré d'un bruit lisse, le même à toutes
+  les fréquences d'écran, qui continue pendant l'arrêt sur image ; la RIFT! incline le puits, et
+  sa lueur tient pendant l'arrêt puis s'éteint en 220 ms (57 avant). RIFT! entre plus grand et
+  reste 1,1 s ; les points grandissent avec leur valeur.
+- **La Tour dessine comme le puits de chute** : les mots, la fissure chaude, les éclats texturés à
+  arête claire, la lueur chaude au lieu du voile blanc, la vague qui fait le tour.
+- **Les vibrations sont allumées par défaut sur les écrans tactiles**, et rares : chute franche,
+  effacement, combo, alertes ; une pose ordinaire et une tuile de la Mosaïque ne vibrent plus. Le
+  choix du joueur est gardé ; un ancien « éteint », qui n'était que le défaut, prend le nouveau.
+
+### Technique
+
+- `FrameClock.hold` (l'arrêt sur image, borné), `src/fx/Impact.ts` (l'échelle des moments, règle
+  pure), `src/fx/Camera.ts` (remplace `ScreenShake` dans les quatre familles), `WellOverlay` (les
+  mots, la chaleur et la lueur, partagés par le puits et la Tour). Le moteur de chute dit la cause
+  d'une pose et la fin d'un combo (`comboEnd`), la Mosaïque la fin d'une série (`streakEnd`).
+
 ## [1.40.0] — 29/10/2026
 
 La prise en main (lot 26), d'après des parties sur téléphone : au doigt, la pièce suit le doigt ;

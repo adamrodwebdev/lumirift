@@ -13,6 +13,7 @@
 | 1.38    | 28/10/2026 | Niveaux générés : un générateur par famille, les chapitres 6 à 10, 69 niveaux, les revanches des Gardiens (§ 9 bis, lot 20).                                                                                                          |
 | 1.39    | 28/10/2026 | La fabrique de clips : les clips de la semaine filmés par le jeu, son compris, pour les réseaux (§ 9 ter, lot 25).                                                                                                                    |
 | 1.40    | 29/10/2026 | La prise en main : la pièce suit le doigt, de côté et vers le bas, un texte reste le temps d'être lu, un seul compte des combos (§ 9 quater, lot 26).                                                                                 |
+| 1.41    | 29/10/2026 | Le poids et l'éclat : chaque bloc pèse, chaque effacement se tient et frappe, chaque combo monte (§ 9 quater, lot 27).                                                                                                                |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -2294,7 +2295,7 @@ des effets à la mesure du moment.
     - les traces de la porte : la descente rapide va de 0,5 à 1,4 px/ms d'une allure régulière,
       comme les descentes enregistrées (1,45 au plus) ; un tracé qui accélère puis ralentit
       culminait au double de sa moyenne et ne ressemblait à aucune.
-- **Lot 27 · 1.41 Le poids et l'éclat** (détaillé le 29/10/2026, à valider avant son code). Des
+- **Lot 27 · 1.41 Le poids et l'éclat** (détaillé et validé le 29/10/2026). Des
   effets à la mesure du moment : un petit événement reste petit, un grand frappe. Un bloc qui se
   pose pèse ; un effacement est une explosion ; un combo monte. Sur le niveau d'effets complet ;
   le niveau réduit (« calme ») et le mouvement réduit restent calmes. Jugé sur des clips avant et
@@ -2493,3 +2494,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.38    | 28/10/2026 | Niveaux générés : `campaign/generator` (plan, générateurs par famille, tamis du bot), les packs des chapitres 6 à 10 (§ 9 bis, lot 20).                                |
 | 1.39    | 28/10/2026 | La croissance sans dépense (§ 9 ter) ; la fabrique de clips : `clip-factory.mjs`, le plateau `?clip` (`SetTime`, `TakeSound`), la piste AAC (lot 25).                  |
 | 1.40    | 29/10/2026 | Le ressenti (§ 9 quater) ; la prise en main : `PhoneGestures` (crans à la case, `softStep`, coup lu à l'accélération), `readingTime`, compte des combos (lot 26).      |
+| 1.41    | 29/10/2026 | Le poids et l'éclat : `FrameClock.hold`, `Impact`, `Camera`, `WellOverlay`, la Tour au niveau du puits, les prises simples de la fabrique (lot 27).                    |
