@@ -43,6 +43,7 @@ import { useKeyLabels } from '../useKeyLabels';
 import { useCampaignText } from '../useCampaignText';
 import { useProgressText } from '../useProgressText';
 import { isTouchScreen } from '../useOrientation';
+import { MessageQueue, readingMs, ReadingHold } from '../readingTime';
 import { useSurge } from './useSurge';
 import { useTension } from './useTension';
 
@@ -164,25 +165,39 @@ const showHelp = profile.current.games < FIRST_GAMES;
  */
 const coach =
   !props.training && profile.current.games === 0 && presentation.coachGoal ? new Coach() : null;
+/** The step on screen: each one stays its reading time, even when it is done at once (1.40). */
 const coachStep = ref<CoachStep | null>(coach?.step ?? null);
 const coachGoal = presentation.coachGoal ?? 'lines';
+const coachText = (step: CoachStep) =>
+  step === 'goal'
+    ? t(coachGoal === 'sand' ? 'coach.goalSand' : 'coach.goalLines')
+    : t(`coach.${step}`);
+const coachHold = new ReadingHold<CoachStep>((step) => readingMs(coachText(step)));
+coachHold.replace(coachStep.value);
 /** The goal step stays a few seconds when no line comes. */
 const COACH_GOAL_MS = 9000;
 let coachTimer: ReturnType<typeof setTimeout> | undefined;
 const coachUpdate = () => {
-  coachStep.value = coach?.step ?? null;
   clearTimeout(coachTimer);
-  if (coachStep.value === 'goal') coachTimer = setTimeout(skipCoach, COACH_GOAL_MS);
+  if (coach?.step === 'goal') coachTimer = setTimeout(skipCoach, COACH_GOAL_MS);
 };
 const skipCoach = () => {
   coach?.skip();
   coachUpdate();
+  // The player's own choice: it goes at once.
+  coachHold.replace(null);
+  coachStep.value = null;
 };
 /**
  * The training's guide (1.29): the game says what to do now, the card shows
  * it. Between two pieces it has nothing new to say: the last line stays.
  */
 const guide = shallowRef<GuideLine | null>(null);
+/** A line stays its reading time even when its step is done at once; the next one waits (1.40). */
+const guideHold = new ReadingHold<GuideLine>(
+  (line) => readingMs(t(line.text)),
+  (a, b) => a.text === b.text && a.action === b.action,
+);
 const guideLines = computed(() => session.value?.guideLines?.() ?? []);
 const guideHidden = ref(false);
 /**
@@ -278,7 +293,15 @@ let outcomeTimer: ReturnType<typeof setTimeout> | undefined;
 let unsubscribe: (() => void)[] = [];
 const goal = shallowRef<GoalProgress | null>(null);
 let toastKey = 0;
-let toastTimer: ReturnType<typeof setTimeout> | undefined;
+/** The messages over the well, each kept its reading time; a newer one waits its turn (1.40). */
+const messages = new MessageQueue<{ text: string; key: number }>(
+  (message) => readingMs(message.text),
+  (callback, ms) => {
+    const timer = setTimeout(callback, ms);
+    return () => clearTimeout(timer);
+  },
+  (message) => (toast.value = message),
+);
 
 // What the run publishes, drawn and played.
 run.events.on('phase', ({ phase: next }) => {
@@ -300,8 +323,13 @@ clock.subscribe((delta, real) => {
   const current = run.session;
   if (!current) return;
   run.update(delta);
-  const line = current.guide?.() ?? null;
-  if (line && line !== guide.value) guide.value = line;
+  // Between two pieces the guide has nothing new to say: the last line stays.
+  guideHold.update(current.guide?.() ?? guideHold.line, real);
+  if (guideHold.line !== guide.value) guide.value = guideHold.line;
+  if (coach) {
+    coachHold.update(coach.step, real);
+    if (coachHold.line !== coachStep.value) coachStep.value = coachHold.line;
+  }
   // The surge counts real time: eight seconds of it, however slow the game runs.
   surge.update(real, current.state === 'running');
   // The danger, played: the music follows it, the well cracks, the clock counts down.
@@ -312,9 +340,7 @@ clock.subscribe((delta, real) => {
 const announce = (text: string, show = true) => {
   announcement.value = text;
   if (!show) return;
-  toast.value = { text, key: ++toastKey };
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (toast.value = null), 1400);
+  messages.add({ text, key: ++toastKey });
 };
 
 /** The game's moments, told: clears, levels, notices; a close call played. */
@@ -478,6 +504,9 @@ const continued = () => {
 
 const start = async () => {
   dispose();
+  // A new game's guide starts from its own first line, at once.
+  guideHold.replace(null);
+  guide.value = null;
   tension.reset();
   recordBurst.value = 0;
   // A look tried for an ad is worn by this game, or ends if the last one wore it.
@@ -587,7 +616,7 @@ onBeforeUnmount(() => {
   look.gameLeft();
   document.removeEventListener('visibilitychange', onVisibility);
   window.removeEventListener('blur', pauseForFocus);
-  clearTimeout(toastTimer);
+  messages.clear();
   clearTimeout(outcomeTimer);
   clearTimeout(recordTimer);
   clearTimeout(coachTimer);
