@@ -1769,6 +1769,9 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Livré (1.32)                                                 |
 | 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Livré (1.34)                                                 |
 | 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
+| 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Prévu                                                        |
+| 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Prévu                                                        |
+| 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Prévu                                                        |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2219,6 +2222,69 @@ outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
       est la coupe vers le début ;
     - les vidéos des portails ne changent pas : sans `?clip`, le plateau reste à 2× et sur
       l'horloge réelle.
+
+## 9 quater. Le ressenti (lots 26 à 28, validés le 29/10/2026)
+
+Le retour de l'utilisateur après des parties sur téléphone, le 29/10/2026 : les commandes au doigt
+manquent de réponse de côté sous la pression et sont parfois trop vives quand on descend une pièce
+exprès ; chaque bloc doit peser, chaque explosion frapper, chaque combo encourager ; les menus
+doivent s'enchaîner au lieu de changer d'un coup ; un texte doit rester le temps d'être lu. Ses
+choix, le même jour : d'abord ce qui se règle vite (1.40), puis le ressenti (1.41), puis les
+transitions (1.42) ; la descente douce suit le doigt ; toutes les transitions passées en revue ;
+des effets à la mesure du moment.
+
+- **Lot 26 · 1.40 La prise en main.**
+  - Constats (le code de la 1.39) :
+    - de côté, le premier cran part après 1,33 case de doigt (une case et un tiers de zone
+      morte), de même après chaque demi-tour : un glissé d'exactement trois cases ne déplace que
+      de deux ;
+    - la descente douce part après 1,5 case vers le bas, puis la pièce tombe à 20 rangées par
+      seconde jusqu'à ce que le doigt se lève ou remonte d'une case ; un glissé lâché encore en
+      mouvement (1,1 px/ms) devient une chute franche, alors qu'une descente rapide atteint
+      1,45 px/ms ;
+    - les messages au-dessus du puits restent 1,4 s quelle que soit leur longueur ; une ligne du
+      guide est remplacée dès que son étape est faite ;
+    - le compte des combos se contredit : au troisième effacement d'affilée, le puits écrit
+      « COMBO ×2 » quand le message dit « ×3 », et il n'écrit rien au deuxième.
+  - De côté, la pièce suit le doigt arrondi à la case : le premier cran part à une demi-case, les
+    suivants à chaque case (½, 1½, 2½…). Un demi-tour se lit après un sixième de case (au lieu
+    d'un tiers) et la pièce repart à une demi-case du point de retour, ce qui garde le tremblement
+    du pouce sans effet. Un glissé de trois cases déplace de trois ; un toucher (12 px au plus)
+    ne déplace rien ; le réglage de vitesse de glisse (0,8 à 1,6) s'applique toujours.
+  - Vers le bas, la pièce suit le doigt de la même façon : une rangée par case de doigt (la
+    première à la demi-case), dans un cône de 30° autour de la verticale, et elle s'arrête quand
+    le doigt s'arrête. Une commande d'une rangée (`softStep`) dans le moteur de chute (la Tour
+    comprise) et dans celui du Sable ; le clavier et les boutons gardent la descente continue.
+  - Lever le doigt ne fait jamais tomber la pièce d'un coup : la chute franche est le coup franc
+    vers le bas (1,6 px/ms, joué à l'instant). Le coup vers le haut (la réserve) se lit toujours
+    aussi au lever.
+  - Le temps de lire : un texte à lire reste au moins 1,2 s et 55 ms par signe, entre 1,5 et
+    7 s (environ 18 signes par seconde ; le français et le russe, plus longs, gagnent leur
+    temps). Un message au-dessus du puits n'en remplace un autre qu'une fois celui-ci lu (le plus
+    récent attend, un seul en attente) ; une ligne du guide et la carte du premier jeu restent
+    leur temps de lecture même si l'étape est faite, la suivante attend, la partie continue.
+    Les mots-cris dans le puits (RIFT!, COMBO) restent brefs : on les voit, on ne les lit pas.
+  - Le compte des combos : le puits et le message disent le même nombre, dès le deuxième
+    effacement d'affilée (« COMBO ×2 »), dans le puits de chute comme dans la Tour.
+  - Porte : la porte des gestes (traces humaines, écrans à 60 et 120 Hz, page qui charge une
+    pub) passe toujours, 99 fois sur 100 la commande voulue et au plus une chute franche par
+    accident sur 500 touchers qui n'en sont pas ; avec deux cas de plus, le glissé pressé (le
+    nombre de cases voulu) et la descente douce lâchée en mouvement (jamais de chute franche) ;
+    les temps de lecture testés dans les quatre langues ; l'essai de l'utilisateur sur son
+    téléphone.
+- **Lot 27 · 1.41 Le poids et l'éclat** (détaillé avant son code). Des effets à la mesure du
+  moment : un petit événement reste petit, un grand frappe. Un bloc qui se pose pèse (un léger
+  écrasement, la pile qui réagit, un son qui suit la vitesse) ; un effacement est une explosion
+  (un arrêt sur image de quelques dizaines de millisecondes, une secousse qui frappe puis
+  s'amortit, un éclair plus long pour une RIFT!, une couche de son grave) ; un combo monte (mots
+  plus grands, couleur qui chauffe, son et vibration qui montent, un son quand la série casse) ;
+  la Mosaïque montre sa série sur le plateau ; la Tour retrouve les mots et les éclats du puits
+  de chute. Sur le niveau d'effets complet seulement ; le niveau calme et le mouvement réduit
+  restent calmes. Jugé sur des clips avant et après tournés par la fabrique de clips.
+- **Lot 28 · 1.42 Des menus qui s'enchaînent** (détaillé avant son code). Chaque changement
+  d'affichage passé en revue (écrans, pages, fenêtres, pause, fin de partie, page de la saison)
+  reçoit une transition : moins de 300 ms, transformations et opacité seulement, jamais un
+  toucher bloqué, un simple fondu avec le mouvement réduit.
 
 ## 10. Hors périmètre (v1)
 
