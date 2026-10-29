@@ -112,7 +112,7 @@ export class FallingRenderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = palette.wellBackground;
     ctx.fillRect(0, 0, width, height);
-    if (effects?.shake.active) ctx.translate(effects.shake.x * cell, effects.shake.y * cell);
+    if (effects?.camera.active) ctx.translate(effects.camera.x * cell, effects.camera.y * cell);
     this.drawGrid(palette.wellGrid);
     this.decor?.drawBehind?.(ctx, this.view, palette, cell, this.animated ? performance.now() : 0);
 

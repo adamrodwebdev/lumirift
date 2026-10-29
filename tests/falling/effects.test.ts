@@ -70,14 +70,14 @@ describe('FallingEffects', () => {
     const { session, effects } = setup();
     session.execute({ type: 'ability' });
     effects.update(16);
-    expect(effects.shake.active).toBe(true);
+    expect(effects.camera.active).toBe(true);
   });
 
   it('keeps destruction calm when effects are reduced, and skips it when off', () => {
     const reduced = setup('reduced');
     reduced.session.execute({ type: 'ability' });
     reduced.effects.update(CRACK_MS);
-    expect(reduced.effects.shake.active).toBe(false);
+    expect(reduced.effects.camera.active).toBe(false);
     const full = setup('full');
     full.session.execute({ type: 'ability' });
     full.effects.update(CRACK_MS);

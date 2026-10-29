@@ -268,9 +268,9 @@ const hintPreview = (): DunesPreview | null => {
   return hint && piece ? { ...hint, shape: piece.shape, tone: piece.tone, valid: true } : null;
 };
 
-const offFrame = props.clock.subscribe((delta) => {
+const offFrame = props.clock.subscribe((delta, real) => {
   // Effects freeze with the pause; they go on at the end, and while the Wyrm shows itself.
-  if (props.active || session.state === 'over' || game.isShowing) effects.update(delta);
+  if (props.active || session.state === 'over' || game.isShowing) effects.update(delta, real);
   if (!renderer || !canvas.value) return;
   renderer.render();
   overlay.draw(canvas.value, Math.round(cellCss * ratio()), palette.value, {

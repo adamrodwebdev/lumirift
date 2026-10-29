@@ -152,7 +152,7 @@ const sameSpecs = (a: readonly PieceSpec[], b: readonly PieceSpec[]) =>
 const offFrame = props.clock.subscribe((delta, real) => {
   input.update(props.active ? real : 0);
   if (props.active || session.state === 'over') {
-    effects.update(delta);
+    effects.update(delta, real);
     eyeEffects?.update(delta);
     soundscape.update(delta);
   }

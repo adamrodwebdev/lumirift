@@ -136,16 +136,17 @@ describe('SilhouetteMode', () => {
   it('rewards blocks inside the shape and charges blocks outside', () => {
     const { mode, game } = setup();
     const inside = [...mode.target].slice(0, 4).map((i) => ({ x: i % 10, y: Math.floor(i / 10) }));
-    game.events.emit('lock', { piece: pieceOn(inside) });
+    game.events.emit('lock', { piece: pieceOn(inside), cause: 'gravity', distance: 0 });
     expect(game.score).toBe(40);
-    game.events.emit('lock', { piece: pieceOn([{ x: 0, y: 2 }]) });
+    game.events.emit('lock', { piece: pieceOn([{ x: 0, y: 2 }]), cause: 'gravity', distance: 0 });
     expect(game.score).toBe(40 + SILHOUETTE_OUTSIDE_POINTS);
     expect(indicator(game, 'outside')).toBe(1);
   });
 
   it('ends when the pieces run out', () => {
     const { mode, game } = setup();
-    for (let i = 0; i < mode.pieceLimit; i++) game.events.emit('lock', { piece: pieceOn([]) });
+    for (let i = 0; i < mode.pieceLimit; i++)
+      game.events.emit('lock', { piece: pieceOn([]), cause: 'gravity', distance: 0 });
     mode.afterLock(game);
     expect(game.overReason).toBe('outOfPieces');
   });
@@ -153,7 +154,7 @@ describe('SilhouetteMode', () => {
   it('ends with a bonus on a perfect fill', () => {
     const { mode, game } = setup();
     const all = [...mode.target].map((i) => ({ x: i % 10, y: Math.floor(i / 10) }));
-    game.events.emit('lock', { piece: pieceOn(all) });
+    game.events.emit('lock', { piece: pieceOn(all), cause: 'gravity', distance: 0 });
     mode.afterLock(game);
     expect(game.overReason).toBe('shapeComplete');
     expect(game.score).toBe(mode.area * 10 + SILHOUETTE_PERFECT_BONUS);

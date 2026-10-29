@@ -3,7 +3,6 @@ import { AdaptiveQuality, QUALITY_BUDGETS } from '@/fx/AdaptiveQuality';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import { FlashLimiter } from '@/fx/FlashLimiter';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
-import { ScreenShake } from '@/fx/ScreenShake';
 
 const WORLD: ParticleWorld = { gravity: 60, width: 10, floor: 20 };
 
@@ -91,27 +90,6 @@ describe('AdaptiveQuality', () => {
     const quality = new AdaptiveQuality();
     run(quality, 40, 60_000);
     expect(quality.budget).toBe(QUALITY_BUDGETS.at(-1));
-  });
-});
-
-describe('ScreenShake', () => {
-  it('jolts, then settles', () => {
-    const shake = new ScreenShake(() => 1);
-    shake.kick(0.3);
-    shake.update(16);
-    expect(shake.active).toBe(true);
-    expect(shake.x).toBeGreaterThan(0);
-    shake.update(2000);
-    expect(shake.active).toBe(false);
-    expect(shake.x).toBe(0);
-  });
-
-  it('keeps the strongest of overlapping kicks', () => {
-    const shake = new ScreenShake(() => 1);
-    shake.kick(0.4);
-    shake.kick(0.1);
-    shake.update(0);
-    expect(shake.x).toBeCloseTo(0.4);
   });
 });
 

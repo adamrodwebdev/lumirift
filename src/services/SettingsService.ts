@@ -24,6 +24,11 @@ export interface Settings extends RepeatTiming {
   readonly effects: EffectsLevel;
   readonly shake: boolean;
   readonly haptics: boolean;
+  /**
+   * The player chose the vibrations (1.41). The settings are saved whole, so a
+   * stored `haptics: false` alone says nothing: it may be the old default.
+   */
+  readonly hapticsChosen: boolean;
   /** Sound effects volume, 0 to 1. */
   readonly volume: number;
   /** Music volume, 0 to 1. */
@@ -116,7 +121,7 @@ export class SettingsService {
   }
 
   allowHaptics(haptics: boolean): void {
-    this.save({ haptics });
+    this.save({ haptics, hapticsChosen: true });
   }
 
   /** The sound effects' volume (0 to 1): moving it means the player wants to hear, so it unmutes. */
@@ -165,7 +170,14 @@ export class SettingsService {
     if (typeof record.ghost === 'boolean') settings.ghost = record.ghost;
     if (isEffectsLevel(record.effects)) settings.effects = record.effects;
     if (typeof record.shake === 'boolean') settings.shake = record.shake;
-    if (typeof record.haptics === 'boolean') settings.haptics = record.haptics;
+    // The vibrations as chosen; before 1.41 only an "on" was a choice (off was the default).
+    if (record.hapticsChosen === true && typeof record.haptics === 'boolean') {
+      settings.haptics = record.haptics;
+      settings.hapticsChosen = true;
+    } else if (record.haptics === true) {
+      settings.haptics = true;
+      settings.hapticsChosen = true;
+    }
     if (typeof record.muted === 'boolean') settings.muted = record.muted;
     if (isUnit(record.volume)) settings.volume = record.volume;
     if (isUnit(record.musicVolume)) settings.musicVolume = record.musicVolume;

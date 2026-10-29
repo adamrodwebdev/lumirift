@@ -184,10 +184,10 @@ const overlay = () => {
   };
 };
 
-const offFrame = props.clock.subscribe((delta) => {
+const offFrame = props.clock.subscribe((delta, real) => {
   // Effects, and the sounds waiting for them, freeze with the pause.
   if (props.active || session.state === 'over') {
-    effects.update(delta);
+    effects.update(delta, real);
     soundscape.update(delta);
   }
   renderer?.render(overlay());

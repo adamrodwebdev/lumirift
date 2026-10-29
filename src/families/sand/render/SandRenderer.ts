@@ -153,7 +153,7 @@ export class SandRenderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = palette.wellBackground;
     ctx.fillRect(0, 0, width, height);
-    if (effects.shake.active) ctx.translate(effects.shake.x * grain, effects.shake.y * grain);
+    if (effects.camera.active) ctx.translate(effects.camera.x * grain, effects.camera.y * grain);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(this.image, 0, 0, width, height);
     this.drawFog(width, height);

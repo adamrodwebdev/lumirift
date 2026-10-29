@@ -2,7 +2,7 @@ import { AdaptiveQuality } from '@/fx/AdaptiveQuality';
 import type { EffectsProfile } from '@/fx/EffectsProfile';
 import { FlashLimiter } from '@/fx/FlashLimiter';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
-import { ScreenShake } from '@/fx/ScreenShake';
+import { Camera } from '@/fx/Camera';
 import type { ClearedRow, RemovedCell } from '../board/Board';
 import type { Cell } from '../pieces/Shapes';
 import type { FallingSession, FallingView } from '../FallingSession';
@@ -24,6 +24,8 @@ const POPUP_MS = 950;
 const WAVE_MS = 650;
 const SLOW_MOTION_MS = 120;
 const SHARDS_PER_CELL = [6, 4, 3] as const;
+/** A full trauma shifts the well this far (cells). */
+const CAMERA_SHIFT = 0.35;
 
 /**
  * A hard drop falls instead of jumping: quick over a short distance, at most
@@ -123,7 +125,8 @@ const random = (min: number, max: number) => min + Math.random() * (max - min);
  */
 export class FallingEffects {
   readonly pool = new ParticlePool(POOL_CAPACITY);
-  readonly shake = new ScreenShake();
+  /** The camera on the well: its shake, its dips, its tilt (1.41). */
+  readonly camera = new Camera(CAMERA_SHIFT);
   /** Visual offset of each board row, in cells (negative: drawn higher). */
   readonly rowOffset: Float32Array;
   readonly cracks: CrackingRow[] = [];
@@ -222,7 +225,7 @@ export class FallingEffects {
     return (
       this.pool.count > 0 ||
       this.cracks.length > 0 ||
-      this.shake.active ||
+      this.camera.active ||
       this.trails.length + this.flashes.length + this.popups.length + this.waves.length > 0 ||
       this.drops.length + this.delayed.length > 0 ||
       this.beatGlow > 0 ||
@@ -244,7 +247,8 @@ export class FallingEffects {
     return cells;
   }
 
-  update(deltaMs: number): void {
+  /** A frame: `deltaMs` of the game's time, `realMs` of the wall clock's (the camera runs on it). */
+  update(deltaMs: number, realMs = deltaMs): void {
     // The events of a hard drop all come at once, between two frames.
     this.waiting = 0;
     this.clock += deltaMs;
@@ -261,7 +265,7 @@ export class FallingEffects {
     }
     this.drops.length = write;
     this.quality.sample(deltaMs);
-    this.shake.update(deltaMs);
+    this.camera.update(realMs);
     this.wellFlash = Math.max(0, this.wellFlash - deltaMs / 260);
     this.beatGlow = Math.max(0, this.beatGlow - deltaMs / 240);
 
@@ -719,7 +723,7 @@ export class FallingEffects {
   }
 
   private kick(cells: number): void {
-    if (this.profile().shake) this.shake.kick(cells);
+    if (this.profile().shake) this.camera.kick(cells);
   }
 
   /** Lets debris land on the stack (rows that are still moving are ignored). */

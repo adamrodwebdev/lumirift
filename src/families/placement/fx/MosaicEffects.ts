@@ -3,7 +3,7 @@ import { AdaptiveQuality } from '@/fx/AdaptiveQuality';
 import type { EffectsProfile } from '@/fx/EffectsProfile';
 import { FlashLimiter } from '@/fx/FlashLimiter';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
-import { ScreenShake } from '@/fx/ScreenShake';
+import { Camera } from '@/fx/Camera';
 import { shade, type TonePalette } from '@/render/TonePalette';
 import type { GolemEvent } from '../engine/CeramicGolem';
 import type { RemovedTile } from '../engine/Grid';
@@ -71,7 +71,8 @@ const random = (min: number, max: number) => min + Math.random() * (max - min);
  */
 export class MosaicEffects {
   readonly pool = new ParticlePool(1600);
-  readonly shake = new ScreenShake();
+  /** The camera on the board: its shake (1.41: smooth, on real time). */
+  readonly camera = new Camera(0.35);
   readonly cracking: CrackingTile[] = [];
   readonly pops: Pop[] = [];
   readonly popups: Popup[] = [];
@@ -153,10 +154,11 @@ export class MosaicEffects {
     return index;
   }
 
-  update(deltaMs: number): void {
+  /** A frame: `deltaMs` of the game's time, `realMs` of the wall clock's (the camera runs on it). */
+  update(deltaMs: number, realMs = deltaMs): void {
     this.clock += deltaMs;
     this.quality.sample(deltaMs);
-    this.shake.update(deltaMs);
+    this.camera.update(realMs);
     this.flash = Math.max(0, this.flash - deltaMs / FLASH_MS);
     for (const tile of [...this.cracking]) {
       tile.age += deltaMs;
@@ -376,7 +378,7 @@ export class MosaicEffects {
   }
 
   private kick(amount: number): void {
-    if (this.profile().shake) this.shake.kick(amount);
+    if (this.profile().shake) this.camera.kick(amount);
   }
 
   private flashBoard(alpha: number): void {

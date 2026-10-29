@@ -78,8 +78,10 @@ export function createBrowserServices(
     // Players who ask their system for less motion start with calmer effects.
     effects: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full',
     shake: true,
-    // Vibrations are asked for, not imposed (1.32): players find them tiring.
-    haptics: false,
+    // A touch screen vibrates by default (1.41), only for the weighty moments: a hard drop,
+    // a clear, a combo, an alert (1.32 had them off: on every piece, players found them tiring).
+    haptics: window.matchMedia('(pointer: coarse)').matches,
+    hapticsChosen: false,
     volume: 0.7,
     musicVolume: 0.5,
     controls: 'gestures',

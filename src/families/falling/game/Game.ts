@@ -11,7 +11,7 @@ import type { PieceType, RotationDirection, Tone } from '../pieces/PieceType';
 import { kickOffsets, type Cell } from '../pieces/Shapes';
 import { GravityCurve } from '../rules/GravityCurve';
 import { Scoring } from '../rules/Scoring';
-import type { GameEventMap, GameOverReason, GameState } from './GameEvents';
+import type { GameEventMap, GameOverReason, GameState, LockCause } from './GameEvents';
 
 export const LOCK_DELAY_MS = 500;
 export const MAX_LOCK_RESETS = 15;
@@ -310,7 +310,7 @@ export class Game {
     this._active = this._active.moved(0, distance);
     if (this.mode.scoresDrops) this._score += this.scoring.hardDrop(distance);
     this.events.emit('hardDrop', { piece: this._active, distance });
-    this.lockActive();
+    this.lockActive('hard', distance);
   }
 
   rotate(direction: RotationDirection): boolean {
@@ -561,18 +561,18 @@ export class Game {
     this.lockTimer += deltaMs;
     const delay = LOCK_DELAY_MS + this.boosts.extraLockDelayMs;
     if (this.lockTimer >= delay || this.lockResets >= MAX_LOCK_RESETS) {
-      this.lockActive();
+      this.lockActive(this.softDropping ? 'soft' : 'gravity', 0);
     }
   }
 
-  private lockActive(): void {
+  private lockActive(cause: LockCause, distance: number): void {
     const piece = this._active;
     if (!piece) return;
     const visible = this.board.lock(piece);
     this.lockCount++;
     if (this.board.wraps) this.spawnCentre = this.board.column(Math.floor(piece.centre)) + 0.5;
     this._active = null;
-    this.events.emit('lock', { piece });
+    this.events.emit('lock', { piece, cause, distance });
     // Measured before the clear: lines cleared with the stack this high are a close call.
     const tense = inDanger(this.pressure());
     const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
@@ -600,7 +600,10 @@ export class Game {
   /** Scores the rows cleared at once; returns their points. */
   private scoreClear(cleared: readonly ClearedRow[], cascade: boolean): number {
     if (cleared.length === 0) {
-      if (!cascade) this._combo = -1;
+      if (!cascade) {
+        if (this._combo >= 1) this.events.emit('comboEnd', { combo: this._combo });
+        this._combo = -1;
+      }
       return 0;
     }
     this._combo++;

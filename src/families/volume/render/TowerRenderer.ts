@@ -35,7 +35,7 @@ export class TowerRenderer {
   private palette: TonePalette | null = null;
   private ghost = true;
   private dark = true;
-  /** Screen shake, in device pixels, added to every transform. */
+  /** The camera's offset, in device pixels, added to every transform. */
   private offsetX = 0;
   private offsetY = 0;
 
@@ -92,8 +92,8 @@ export class TowerRenderer {
     if (!sprites || !palette || projection.radius === 0) return;
     projection.camera = this.camera.position;
     const cell = projection.rowHeight;
-    this.offsetX = effects.shake.active ? effects.shake.x * cell : 0;
-    this.offsetY = effects.shake.active ? effects.shake.y * cell : 0;
+    this.offsetX = effects.camera.active ? effects.camera.x * cell : 0;
+    this.offsetY = effects.camera.active ? effects.camera.y * cell : 0;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;

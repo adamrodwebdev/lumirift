@@ -120,7 +120,7 @@ export class MosaicRenderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = palette.wellBackground;
     ctx.fillRect(0, 0, full, full);
-    if (effects.shake.active) ctx.translate(effects.shake.x * cell, effects.shake.y * cell);
+    if (effects.camera.active) ctx.translate(effects.camera.x * cell, effects.camera.y * cell);
 
     // Empty sockets of the tray.
     ctx.fillStyle = palette.wellGrid;

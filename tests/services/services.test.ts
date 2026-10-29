@@ -12,6 +12,7 @@ const DEFAULTS = {
   effects: 'full',
   shake: true,
   haptics: true,
+  hapticsChosen: false,
   volume: 0.7,
   musicVolume: 0.5,
   controls: 'gestures',
@@ -24,6 +25,32 @@ const DEFAULTS = {
 } as const;
 
 describe('SettingsService', () => {
+  describe('the vibrations, on by default on a touch screen (1.41)', () => {
+    const stored = (value: object) => {
+      const storage = new MemoryStorage();
+      storage.set(SETTINGS_KEY, JSON.stringify(value));
+      return storage;
+    };
+
+    it('takes the new default over an "off" saved by an older version, which was no choice', () => {
+      const settings = new SettingsService(stored({ ...DEFAULTS, haptics: false }), DEFAULTS);
+      expect(settings.current.haptics).toBe(true);
+    });
+
+    it('keeps an "on" of an older version: it was the player’s choice', () => {
+      const off = { ...DEFAULTS, haptics: false };
+      const settings = new SettingsService(stored({ haptics: true }), off);
+      expect(settings.current).toMatchObject({ haptics: true, hapticsChosen: true });
+    });
+
+    it('keeps the player’s choice from now on, "off" included', () => {
+      const storage = new MemoryStorage();
+      new SettingsService(storage, DEFAULTS).allowHaptics(false);
+      const again = new SettingsService(storage, DEFAULTS);
+      expect(again.current).toMatchObject({ haptics: false, hapticsChosen: true });
+    });
+  });
+
   it('starts from the defaults and saves every change', () => {
     const storage = new MemoryStorage();
     const settings = new SettingsService(storage, DEFAULTS);

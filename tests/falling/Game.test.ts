@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Board } from '@/families/falling/board/Board';
 import { Game } from '@/families/falling/game/Game';
 import { ClassicMode } from '@/families/falling/modes/ClassicMode';
+import { FixedRandom } from '@/showcase/autoplay';
 import { ConstantRandom, startedGame } from './helpers';
 
 const row = (pattern: string, count: number): string[] => Array<string>(count).fill(pattern);
@@ -257,5 +258,61 @@ describe('Game events and timing for the effects', () => {
     game.start();
     game.hardDrop();
     expect(game.active?.type).toBe('O');
+  });
+
+  describe('says how a piece locked, and when a combo ends (1.41)', () => {
+    /** The feel scenes' combo board (src/showcase/feelScenes.ts): the I, then the O, each clear a line. */
+    const comboWell = () => {
+      const side = '###....###';
+      const rows = [...row(side, 10), '####..####', '####...###'].map((pattern) =>
+        pattern.replace(/#/g, 'Z'),
+      );
+      const game = new Game(new ClassicMode(), {
+        random: new FixedRandom(),
+        board: Board.fromRows(rows),
+      });
+      game.start();
+      return game;
+    };
+
+    it('a hard drop locks as such, with its distance', () => {
+      const game = comboWell();
+      const locks: { cause: string; distance: number }[] = [];
+      game.events.on('lock', ({ cause, distance }) => locks.push({ cause, distance }));
+      const fall = game.dropDistance();
+      game.hardDrop();
+      expect(locks).toEqual([{ cause: 'hard', distance: fall }]);
+      expect(fall).toBeGreaterThan(5);
+    });
+
+    it('a piece left to fall locks by gravity, at no distance', () => {
+      const game = comboWell();
+      const locks: { cause: string; distance: number }[] = [];
+      game.events.on('lock', ({ cause, distance }) => locks.push({ cause, distance }));
+      for (let t = 0; t < 30_000 && locks.length === 0; t += 16) game.update(16);
+      expect(locks).toEqual([{ cause: 'gravity', distance: 0 }]);
+    });
+
+    it('a chain of two clears ends when a piece clears nothing', () => {
+      const game = comboWell();
+      const ends: number[] = [];
+      const clears: number[] = [];
+      game.events.on('comboEnd', ({ combo }) => ends.push(combo));
+      game.events.on('clear', ({ combo }) => clears.push(combo));
+      const next = () => {
+        for (let t = 0; t < 2000 && !game.active; t += 16) game.update(16);
+      };
+      game.hardDrop();
+      next();
+      game.hardDrop();
+      next();
+      expect(clears).toEqual([0, 1]);
+      expect(ends).toEqual([]);
+      // The T, dropped where it appears, clears nothing: the chain ends at ×2.
+      game.hardDrop();
+      next();
+      expect(clears).toEqual([0, 1]);
+      expect(ends).toEqual([1]);
+    });
   });
 });
