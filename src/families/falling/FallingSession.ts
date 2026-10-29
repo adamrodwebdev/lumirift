@@ -22,6 +22,8 @@ export type FallingCommand =
   | { readonly type: 'move'; readonly direction: -1 | 1 }
   | { readonly type: 'rotate'; readonly direction: RotationDirection }
   | { readonly type: 'softDrop'; readonly active: boolean }
+  /** Down one row: the soft drop of a finger, a row a notch (1.40). */
+  | { readonly type: 'softStep' }
   | { readonly type: 'hardDrop' }
   | { readonly type: 'hold' }
   | { readonly type: 'ability' };
@@ -61,6 +63,7 @@ export class FallingSession implements GameSession<FallingCommand> {
       this.game.setSoftDrop(active);
       return true;
     },
+    softStep: () => this.game.softStep(),
     hardDrop: () => {
       this.game.hardDrop();
       return true;

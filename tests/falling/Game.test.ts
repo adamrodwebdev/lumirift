@@ -68,6 +68,20 @@ describe('Game', () => {
     expect(game.score).toBe(1);
   });
 
+  it('takes the piece down a row at a time for a finger, scored as a soft drop (1.40)', () => {
+    const game = startedGame();
+    const y = game.active!.y;
+    expect(game.softStep()).toBe(true);
+    expect(game.active?.y).toBe(y + 1);
+    expect(game.score).toBe(1);
+    while (game.softStep()) {
+      /* down to the floor */
+    }
+    // On the floor: no row more, and the piece waits for its lock.
+    expect(game.softStep()).toBe(false);
+    expect(game.active).not.toBeNull();
+  });
+
   it('holds once per piece and swaps back after a lock', () => {
     const game = startedGame();
     expect(game.hold()).toBe(true);

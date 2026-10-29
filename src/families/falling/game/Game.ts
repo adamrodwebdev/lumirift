@@ -291,6 +291,18 @@ export class Game {
     this.softDropping = active;
   }
 
+  /** Down one row, now (a finger's notch, 1.40): a soft drop of exactly one row. */
+  softStep(): boolean {
+    this.wake();
+    const piece = this._active;
+    if (!this.canAct() || !piece || !this.board.fits(piece, 0, 1)) return false;
+    this.place(piece.moved(0, 1));
+    // The next row of gravity counts from here.
+    this.fallAccumulator = 0;
+    if (this.mode.scoresDrops) this._score += this.scoring.softDrop(1);
+    return true;
+  }
+
   hardDrop(): void {
     this.wake();
     if (!this.canAct() || !this._active) return;

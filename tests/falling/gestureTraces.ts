@@ -171,7 +171,7 @@ export interface Intent {
   readonly trace: Trace;
   /** The commands meant (soft drops aside where `softDropsAside`). */
   readonly meant: readonly FallingCommand[];
-  /** A drop that soft drops first lands in the same place: those do not count. */
+  /** A drop that soft drops first (or steps a row down, 1.40) lands in the same place: those do not count. */
   readonly softDropsAside?: boolean;
 }
 
@@ -187,10 +187,11 @@ function startPoint(hand: Hand, side: 1 | -1 = hand.sign()): [number, number] {
 
 /**
  * A sideways drag aimed at `cells` cells: the thumb stops soon after the
- * piece reaches its column (a tenth to six tenths of a cell past its notch).
+ * piece reaches its column (a tenth to six tenths of a cell past its notch,
+ * half a cell before the column, 1.40).
  */
 function sidewaysTravel(hand: Hand, cells: number): number {
-  return (cells + GESTURE_TUNING.notch.deadZone + hand.between(0.1, 0.6)) * CELL;
+  return (cells - 1 + GESTURE_TUNING.notch.first + hand.between(0.1, 0.6)) * CELL;
 }
 
 /** Quick taps, on either half: the piece turns that way. */
@@ -292,4 +293,35 @@ export function shakyTap(hand: Hand): Intent {
     .rest(hand.between(60, 260))
     .lift(hand.between(-6, 6), hand.between(-6, 6));
   return { trace, meant: [] };
+}
+
+/**
+ * A hurried swipe under pressure (1.40): quick (0.6 to 1.5 px/ms), aimed at
+ * two to five cells and landing within four tenths of a cell of the aim.
+ */
+export function hurriedSwipe(hand: Hand): Intent {
+  const cells = 2 + Math.floor(hand.between(0, 4));
+  const direction = hand.sign();
+  const travel = (cells + hand.between(-0.4, 0.4)) * CELL;
+  const trace = hand
+    .start(...startPoint(hand))
+    .stroke(direction * travel, hand.between(-8, 8), travel / hand.between(0.6, 1.5))
+    .rest(hand.between(0, 60))
+    .lift(-direction * hand.between(0, 4), hand.between(-3, 3));
+  return { trace, meant: moves(cells, direction) };
+}
+
+/**
+ * A quick soft descent (1.40): one to four rows down at a steady 0.5 to
+ * 1.4 px/ms (the recorded quick soft drags peak near 1.45), lifted still
+ * moving. The piece goes down those rows; never a hard drop.
+ */
+export function quickSoftDescent(hand: Hand): Intent {
+  const rows = 1 + Math.floor(hand.between(0, 4));
+  const travel = (rows + hand.between(-0.4, 0.4)) * CELL;
+  const trace = hand
+    .start(startPoint(hand)[0], hand.between(160, 520))
+    .stroke(hand.between(-6, 6), travel, travel / hand.between(0.5, 1.4), speedingUp(1))
+    .lift(0, hand.between(0, 4));
+  return { trace, meant: Array.from({ length: rows }, () => ({ type: 'softStep' }) as const) };
 }
