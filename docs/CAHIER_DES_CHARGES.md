@@ -2447,11 +2447,11 @@ des effets à la mesure du moment.
       catégories à chaque passage ;
     - les clips : `release/clips/feel-1.40.0` et `feel-1.41.0`, côte à côte sur une page privée
       pour l'utilisateur ; reste son essai sur téléphone.
-- **Lot 28 · 1.42 Des menus qui s'enchaînent** (détaillé le 29/10/2026, à valider avant son
-  code). Chaque changement d'affichage passé en revue (écrans, pages, fenêtres, pause, fin de
-  partie, page de la saison) reçoit une transition : moins de 300 ms, transformations et opacité
-  seulement, jamais un toucher bloqué sur ce qui arrive, un simple fondu avec le mouvement
-  réduit. Jugé sur un parcours filmé avant et après.
+- **Lot 28 · 1.42 Des menus qui s'enchaînent** (détaillé et validé le 29/10/2026). Chaque
+  changement d'affichage passé en revue (écrans, pages, fenêtres, pause, fin de partie, page de
+  la saison) reçoit une transition : moins de 300 ms, transformations et opacité seulement,
+  jamais un toucher bloqué sur ce qui arrive, un simple fondu avec le mouvement réduit. Jugé
+  sur un parcours filmé avant et après.
   - Constats (le code de la 1.41) :
     - la plupart des mouvements dépassent 300 ms : la faille entre l'accueil et une partie
       (320 ms pour couvrir, en `clip-path`, 380 pour révéler), les pages du menu et leur pastille
@@ -2484,15 +2484,16 @@ des effets à la mesure du moment.
     - transformations et opacité seulement : ni découpe, ni dimension, ni position, ni flou
       animés (la jauge d'expérience de la fin de partie passe d'une largeur à une échelle) ;
     - ce qui arrive prend les touchers dès sa première image ; ce qui part ne les prend plus. Une
-      exception, à valider : une fenêtre qui s'ouvre d'elle-même (la fin de partie, le cadeau du
-      jour) ignore les touchers, Entrée et Espace le temps de son arrivée (220 ms, 350
-      aujourd'hui), contre la touche frappée pour le jeu ; une fenêtre que le joueur ouvre
-      répond tout de suite ;
+      exception (choix de l'utilisateur, le 29/10/2026) : une fenêtre qui s'ouvre d'elle-même
+      (la fin de partie, le cadeau du jour) ignore les touchers, Entrée et Espace le temps de son
+      arrivée (220 ms, 350 aujourd'hui), contre la touche frappée pour le jeu ; une fenêtre que
+      le joueur ouvre répond tout de suite ;
     - le focus va à sa place dès la première image (un titre, le bouton par défaut), jamais à la
       fin du mouvement ;
-    - le mouvement réduit (le réglage du système, ou le joueur qui coupe les effets) : un fondu
-      d'opacité de 140 ms à la place de tout déplacement ou agrandissement, et les boucles
-      décoratives arrêtées ; la règle globale de 1 ms disparaît ;
+    - le mouvement réduit (le réglage du système, ou le joueur qui coupe les effets ; les effets
+      calmes gardent les transitions qui bougent, choix de l'utilisateur) : un fondu d'opacité de
+      140 ms à la place de tout déplacement ou agrandissement, et les boucles décoratives
+      arrêtées ; la règle globale de 1 ms disparaît ;
     - le premier affichage ne bouge pas : rien n'y part d'une opacité nulle (Lighthouse).
   - **Les écrans** :
     - la faille (§ 3.2 ter) garde son dessin, refait en transformations : une fente de lumière
