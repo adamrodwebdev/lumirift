@@ -155,6 +155,7 @@ npm run dev
 | `npm run format`          | Prettier                                                                                           |
 | `npm run lighthouse`      | Audit Lighthouse du build, mobile (`-- --desktop` pour le bureau)                                  |
 | `npm run clips`           | Les clips d'une semaine pour les réseaux (`-- --week AAAA-MM-JJ`, quelques minutes)                |
+| `npm run frame-time`      | Temps d'image des prises du ressenti, processeur ralenti 4× (`-- --raster software` : le pire cas) |
 | `npm run verify`          | Lint, format, types, tests et build : à passer avant chaque commit                                 |
 
 Les tests de bout en bout et Lighthouse utilisent le build : lancez `npm run build` avant.
