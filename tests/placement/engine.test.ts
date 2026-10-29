@@ -202,8 +202,10 @@ describe('MosaicGame', () => {
     expect([1, 2, 3, 4, 5, 6, 7].map(linePoints)).toEqual([10, 30, 60, 100, 150, 210, 270]);
   });
 
-  it('keeps the combo through two placements without a clear, not three', () => {
+  it('keeps the combo through two placements without a clear, not three, and says when it ends', () => {
     const game = gameWith(['#######.', ...Array<string>(7).fill(EMPTY)], ['#', '#', '#']);
+    const ends: number[] = [];
+    game.events.on('streakEnd', ({ streak }) => ends.push(streak));
     game.place(0, 7, 0);
     expect(game.streak).toBe(1);
     game.place(1, 0, 7);
@@ -213,6 +215,8 @@ describe('MosaicGame', () => {
     hand[0] = { id: 200, shape: Shape.parse('#'), tone: 1 };
     game.place(0, 4, 7);
     expect(game.streak).toBe(0);
+    // A streak that ends is told once (1.41: from ×3 it is heard falling).
+    expect(ends).toEqual([1]);
   });
 
   it('awards a bonus when the board is left empty', () => {

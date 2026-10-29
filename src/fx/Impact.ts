@@ -4,6 +4,11 @@
  * the painters never set a number of their own.
  */
 
+/** What a big moment holds still (1.41): the game's clock (`FrameClock.hold`). */
+export interface TimeHolder {
+  hold(ms: number): void;
+}
+
 /** What a moment does to the game and the screen. */
 export interface Impact {
   /** Hit-stop: the game's time stands still this long (ms). */

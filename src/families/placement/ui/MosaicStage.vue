@@ -61,6 +61,8 @@ const effects = new MosaicEffects(
   () => palette.value,
   (points) => format.number(points),
 );
+// The streak's milestones shout, in the player's language (1.41).
+effects.writeShouts((key) => t(`wellWords.shout.${key}`));
 const detachEffects = effects.attach(session);
 const soundscape = new MosaicSoundscape(audio, haptics);
 const detachSounds = soundscape.attach(session);

@@ -441,18 +441,27 @@ export class MosaicRenderer {
   private drawPopups(palette: TonePalette): void {
     const { ctx, cell, effects } = this;
     if (effects.popups.length === 0) return;
-    ctx.font = `800 ${Math.round(cell * 0.6)}px ui-rounded, system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = Math.max(2, cell * 0.1);
     ctx.strokeStyle = palette.wellBackground;
-    ctx.fillStyle = palette.accent;
     for (const popup of effects.popups) {
       const t = popup.age / MOSAIC_TIMINGS.POPUP_MS;
+      // The streak's word and shout (1.41): bolder, in their heat, glowing.
+      const word = popup.kind === 'label' || popup.kind === 'shout';
+      const size = popup.size ?? (popup.kind === 'shout' ? 0.75 : 0.6);
+      ctx.font = `${word ? 900 : 800} ${Math.round(cell * size)}px ui-rounded, system-ui, sans-serif`;
       ctx.globalAlpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
-      const y = (popup.y - t * 1.4) * cell;
+      const y = (popup.y - t * (word ? 0.8 : 1.4)) * cell;
       ctx.strokeText(popup.text, popup.x * cell, y);
+      const heat = popup.heat ? palette.effects.heat[popup.heat] : null;
+      if (heat) {
+        ctx.shadowColor = heat;
+        ctx.shadowBlur = cell * 0.6;
+      }
+      ctx.fillStyle = heat ?? palette.accent;
       ctx.fillText(popup.text, popup.x * cell, y);
+      ctx.shadowBlur = 0;
     }
     ctx.globalAlpha = 1;
   }

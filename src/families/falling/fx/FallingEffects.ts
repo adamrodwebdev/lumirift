@@ -8,6 +8,7 @@ import {
   landingImpact,
   type ComboHeat,
   type Impact,
+  type TimeHolder,
 } from '@/fx/Impact';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
 import { Camera } from '@/fx/Camera';
@@ -121,11 +122,6 @@ export interface WellWords {
   combo(times: number): string;
   /** `hot`, `blazing`, `inferno` or `riftbreaker` (`COMBO_SHOUTS`). */
   shout(key: string): string;
-}
-
-/** What a clear holds still: the game's clock (`FrameClock.hold`). */
-export interface TimeHolder {
-  hold(ms: number): void;
 }
 
 /** A piece that just landed (1.41): its board cells (row × width + column), its squash, its age. */

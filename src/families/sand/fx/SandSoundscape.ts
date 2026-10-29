@@ -1,3 +1,4 @@
+import { comboBreakHeard } from '@/fx/Impact';
 import { Tone } from '@/core/Tone';
 import { PlayerVoice } from '@/fx/PlayerVoice';
 import * as sounds from '@/fx/sounds';
@@ -66,7 +67,10 @@ export class SandSoundscape {
         audio.play(sounds.sweep(regions, multiplier));
         haptics.pulse(regions > 1 ? [30, 40, 70] : 30);
       }),
-      session.onGame('comboEnd', () => audio.play(sounds.comboLost)),
+      // A small combo lost stays silent; from ×3 it is heard falling (1.41).
+      session.onGame('comboEnd', ({ multiplier }) => {
+        if (comboBreakHeard(multiplier)) audio.play(sounds.comboLost);
+      }),
       session.onGame('quench', () => audio.play(sounds.hiss)),
       session.onGame('burn', () => {
         audio.play(sounds.crackle);

@@ -3,8 +3,9 @@ import { Tone } from '../pieces/PieceType';
 import { CELL_RIM, CRACK_MS, EFFECT_TIMINGS, type FallingEffects } from '../fx/FallingEffects';
 import type { BlockSprites } from './BlockSprites';
 import type { TonePalette } from '@/render/TonePalette';
+import { paintWords } from './WellOverlay';
 
-const { TRAIL_MS, FLASH_MS, POPUP_MS, WAVE_MS } = EFFECT_TIMINGS;
+const { TRAIL_MS, FLASH_MS, WAVE_MS } = EFFECT_TIMINGS;
 
 /** How far behind the rift's front a brick takes to light up fully, in cells. */
 const HEAT_SPREAD = 2;
@@ -256,45 +257,15 @@ export class EffectsPainter {
   }
 
   private popups(effects: FallingEffects, palette: TonePalette, cell: number): void {
-    if (effects.popups.length === 0) return;
-    const { ctx } = this;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.lineWidth = Math.max(2, cell * 0.12);
-    ctx.strokeStyle = palette.wellBackground;
-    const wellWidth = effects.width * cell;
-    for (const popup of effects.popups) {
-      if (popup.age < 0) continue;
-      const life = popup.life ?? POPUP_MS;
-      const t = popup.age / life;
-      const word = popup.kind === 'label' || popup.kind === 'shout';
-      // Words pop in (a quick overshoot), then rise slower than the points.
-      const punch = word ? (popup.punch ?? 0.35) : 0;
-      const pop = 1 + punch * Math.max(0, 1 - popup.age / (popup.punchMs ?? 160));
-      const base = popup.size ?? (popup.kind === 'shout' ? 0.85 : word ? 1.05 : 0.75);
-      let size = Math.round(cell * base * pop);
-      const font = (px: number) =>
-        `${word ? 900 : 800} ${px}px 'Unbounded Variable', ui-rounded, system-ui, sans-serif`;
-      ctx.font = font(size);
-      // A long shout (Russian, Indonesian) shrinks to stay inside the well.
-      const wide = ctx.measureText(popup.text).width;
-      if (wide > wellWidth * 0.94) {
-        size = Math.floor((size * wellWidth * 0.94) / wide);
-        ctx.font = font(size);
-      }
-      const rise = popup.kind === 'shout' ? 0.6 : word ? 0.8 : 1.6;
-      const y = (popup.y + 0.5 - t * rise) * cell;
-      ctx.globalAlpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
-      ctx.strokeText(popup.text, popup.x * cell, y);
-      const heat = popup.heat ? palette.effects.heat[popup.heat] : null;
-      if (word) {
-        ctx.shadowColor = heat ?? palette.effects.rift;
-        ctx.shadowBlur = cell * (popup.kind === 'shout' ? 0.9 : 0.7);
-      }
-      ctx.fillStyle = heat ?? (word ? palette.crack : palette.accent);
-      ctx.fillText(popup.text, popup.x * cell, y);
-      ctx.shadowBlur = 0;
-    }
-    ctx.globalAlpha = 1;
+    paintWords(
+      this.ctx,
+      effects,
+      palette,
+      { cell, wellWidth: effects.width * cell },
+      (popup, rise) => ({
+        x: popup.x * cell,
+        y: (popup.y + 0.5 - rise) * cell,
+      }),
+    );
   }
 }

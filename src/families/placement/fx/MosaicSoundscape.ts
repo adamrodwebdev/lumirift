@@ -1,3 +1,4 @@
+import { comboBreakHeard } from '@/fx/Impact';
 import { GameTimers } from '@/core/GameTimers';
 import { PlayerVoice } from '@/fx/PlayerVoice';
 import * as sounds from '@/fx/sounds';
@@ -36,6 +37,10 @@ export class MosaicSoundscape {
       session.onGame('place', () => {
         // A tile set down is heard, never felt (1.41: vibrations for the weighty moments).
         audio.play(sounds.tile);
+      }),
+      // A streak of ×3 or more that ends is heard falling (1.41).
+      session.onGame('streakEnd', ({ streak }) => {
+        if (comboBreakHeard(streak)) audio.play(sounds.comboLost);
       }),
       session.onGame('clear', ({ lines, streak }) => {
         this.later(() => audio.play(sounds.ceramicBreak(lines, streak)));

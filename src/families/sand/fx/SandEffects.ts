@@ -1,3 +1,4 @@
+import { comboBreakHeard, sandClearHoldMs, type TimeHolder } from '@/fx/Impact';
 import { Tone } from '@/core/Tone';
 import type { EffectsProfile } from '@/fx/EffectsProfile';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
@@ -9,6 +10,8 @@ import type { LandedPiece } from '../engine/SandPiece';
 import { GRAINS_PER_CELL, SAND_TONES } from '../engine/SandGrid';
 import type { SandView } from '../SandSession';
 
+/** How long a broken combo's badge takes to crack and fade (ms, 1.41). */
+export const BADGE_BREAK_MS = 400;
 const POPUP_MS = 900;
 const GRAVITY = 500;
 /** A lightning bolt stays drawn this long (ms), and the well flashes as it strikes. */
@@ -42,6 +45,9 @@ export class SandEffects {
   readonly pool = new ParticlePool(1200);
   /** The camera on the well, in grains: a full trauma shifts it a cell (6 grains), as the strongest jolt of 1.0. */
   readonly camera = new Camera(6);
+  /** The badge of a combo that just broke (1.41): it cracks and fades. */
+  badgeBreak: { readonly multiplier: number; age: number } | null = null;
+  private holder: TimeHolder | null = null;
   readonly popups: Popup[] = [];
   readonly colors: string[] = [];
   /** Direction of the gust being drawn, or 0. */
@@ -73,8 +79,14 @@ export class SandEffects {
     return this.profile().motion;
   }
 
+  /** Big clears hold the game's time still a moment (1.41). */
+  holdTimeWith(holder: TimeHolder): void {
+    this.holder = holder;
+  }
+
   attach(session: SandEventSource): () => void {
     const offs = [
+      session.onGame('comboEnd', ({ multiplier }) => this.onComboEnd(multiplier)),
       session.onGame('clear', ({ samples, points, regions, multiplier }) =>
         this.onClear(samples, points, regions, multiplier),
       ),
@@ -110,6 +122,10 @@ export class SandEffects {
   /** A frame: `deltaMs` of the game's time, `realMs` of the wall clock's (the camera runs on it). */
   update(deltaMs: number, realMs = deltaMs): void {
     this.camera.update(realMs);
+    if (this.badgeBreak) {
+      this.badgeBreak.age += deltaMs;
+      if (this.badgeBreak.age >= BADGE_BREAK_MS) this.badgeBreak = null;
+    }
     this.pool.update(deltaMs / 1000, this.world);
     let write = 0;
     for (const popup of this.popups) {
@@ -147,6 +163,13 @@ export class SandEffects {
     return popup.age / POPUP_MS;
   }
 
+  /** A combo of ×3 or more broke: its badge cracks and fades (1.41), where things may move. */
+  private onComboEnd(multiplier: number): void {
+    if (comboBreakHeard(multiplier) && this.profile().motion) {
+      this.badgeBreak = { multiplier, age: 0 };
+    }
+  }
+
   private onClear(
     samples: readonly GrainSample[],
     points: number,
@@ -156,6 +179,8 @@ export class SandEffects {
     this.popup(samples, points, multiplier >= 2 ? `×${multiplier}` : null);
     const profile = this.profile();
     if (profile.shake) this.camera.kick(2 + regions * 2);
+    // Two regions and more hold the game still a moment (1.41).
+    if (profile.motion) this.holder?.hold(sandClearHoldMs(regions));
     if (profile.particles === 0) return;
     for (const sample of this.thin(samples)) {
       const color = this.toneColor(sample.tone, random(0.2, 0.6));

@@ -52,6 +52,8 @@ export interface MosaicEventMap {
     readonly points: number;
     readonly streak: number;
   };
+  /** A streak of clears ended after its misses (1.41): how long it was. */
+  streakEnd: { readonly streak: number };
   /** The board is empty after a clear. */
   perfect: { readonly points: number };
   /** A second chance: the fullest lines vanished instead of the game ending. */
@@ -374,7 +376,10 @@ export class MosaicGame {
     const lines = this.grid.fullLines();
     const count = lines.rows.length + lines.columns.length;
     if (count === 0) {
-      if (++this.misses >= COMBO_GRACE) this._streak = 0;
+      if (++this.misses >= COMBO_GRACE && this._streak > 0) {
+        this.events.emit('streakEnd', { streak: this._streak });
+        this._streak = 0;
+      }
       return;
     }
     // Measured before the clear: lines cleared on a board this full are a close call.

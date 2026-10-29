@@ -75,6 +75,8 @@ const effects = new SandEffects(
   (points) => format.number(points),
 );
 const detachEffects = effects.attach(session);
+// Big clears hold the game still a moment (1.41).
+effects.holdTimeWith(props.clock);
 const detachSounds = new SandSoundscape(audio, haptics).attach(session);
 
 let renderer: SandRenderer | null = null;

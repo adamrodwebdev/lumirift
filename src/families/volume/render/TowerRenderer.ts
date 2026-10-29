@@ -1,10 +1,12 @@
 import { Tone } from '@/core/Tone';
 import type { FallingView } from '@/families/falling/FallingSession';
 import {
+  CELL_RIM,
   CRACK_MS,
   EFFECT_TIMINGS,
   type FallingEffects,
 } from '@/families/falling/fx/FallingEffects';
+import { paintHeat, paintRiftLight, paintWords } from '@/families/falling/render/WellOverlay';
 import type { Piece } from '@/families/falling/pieces/Piece';
 import { ParticleKind } from '@/fx/ParticlePool';
 import { shade, type TonePalette } from '@/render/TonePalette';
@@ -15,7 +17,9 @@ import type { EyeView } from '../TowerEye';
 import { TowerMode } from '../TowerMode';
 import { GlassSprites } from './GlassSprites';
 
-const { TRAIL_MS, FLASH_MS, POPUP_MS, WAVE_MS } = EFFECT_TIMINGS;
+const { TRAIL_MS, FLASH_MS, WAVE_MS } = EFFECT_TIMINGS;
+/** How far behind the rift's front a brick takes to light up fully, in cells (as in the well). */
+const HEAT_SPREAD = 2;
 /** Share of the visible height above which the tower glows with danger. */
 /** Opacity of the back of the tower, seen through the glass. */
 const BACK_ALPHA = 0.2;
@@ -38,6 +42,9 @@ export class TowerRenderer {
   /** The camera's offset, in device pixels, added to every transform. */
   private offsetX = 0;
   private offsetY = 0;
+  /** One pattern per glass picture, for shards that keep their part of it (1.41). */
+  private readonly patterns = new WeakMap<HTMLCanvasElement, CanvasPattern>();
+  private readonly matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -130,10 +137,9 @@ export class TowerRenderer {
     this.drawPopups(palette);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (eye) this.drawEyeMarker(eye, palette);
-    if (effects.wellFlash > 0) {
-      ctx.fillStyle = `rgb(255 255 255 / ${effects.wellFlash})`;
-      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    }
+    // The well's heat and the rift's warm light, as in the falling well (1.41).
+    paintHeat(ctx, effects, palette, cell);
+    paintRiftLight(ctx, effects);
   }
 
   /** The next piece in red where it would appear, when the tower leaves it no room to enter. */
@@ -394,10 +400,17 @@ export class TowerRenderer {
     return this.projection.depth(x + 0.5) > 0;
   }
 
-  /** One glass cell, lit by its angle (the back is dimmed and unlit). */
-  private drawCell(sprites: GlassSprites, tone: Tone, x: number, y: number, alpha: number): void {
+  /** One glass cell, lit by its angle (the back is dimmed and unlit); `height` < 1: squashed on its base. */
+  private drawCell(
+    sprites: GlassSprites,
+    tone: Tone,
+    at: { readonly x: number; readonly y: number },
+    alpha: number,
+    height = 1,
+  ): void {
     const { ctx, projection } = this;
-    this.face(x, y);
+    const { x, y } = at;
+    this.face(x, y + 1 - height, height);
     const front = this.isFront(x);
     ctx.globalAlpha = front ? alpha : alpha * BACK_ALPHA;
     ctx.drawImage(sprites.get(tone), 0, 0, 1, 1);
@@ -425,8 +438,10 @@ export class TowerRenderer {
       for (let y = hidden; y < board.height; y++) {
         const tone = board.get(x, y);
         if (tone === Tone.Empty) continue;
-        const row = y - hidden + this.effects.rowOffset[y]!;
-        this.drawCell(sprites, tone, x, row, 1);
+        // Rows fall into place and dip under a landing; a landed block squashes (1.41).
+        const row = y - hidden + this.effects.rowOffset[y]! + this.effects.rowDip[y]!;
+        const height = this.effects.squash?.get(y * board.width + x) ?? 1;
+        this.drawCell(sprites, tone, { x, y: row }, 1, height);
         if (board.hasBomb(x, y)) this.drawBomb(x, row, front ? 1 : BACK_ALPHA);
       }
     }
@@ -510,7 +525,7 @@ export class TowerRenderer {
     piece.localCells.forEach((local, index) => {
       const y = piece.y + local.y + dy - hidden;
       if (y < 0) return;
-      this.drawCell(sprites, piece.tone, piece.x + local.x, y, alpha);
+      this.drawCell(sprites, piece.tone, { x: piece.x + local.x, y }, alpha);
       if (piece.bomb === index) this.drawBomb(piece.x + local.x, y, alpha);
     });
     this.ctx.globalAlpha = 1;
@@ -579,31 +594,68 @@ export class TowerRenderer {
     const { ctx, effects, projection } = this;
     for (const crack of effects.cracks) {
       crack.tones.forEach((tone, x) => {
-        if (tone !== Tone.Empty) this.drawCell(sprites, tone as Tone, x, crack.row, 1);
+        if (tone !== Tone.Empty) this.drawCell(sprites, tone as Tone, { x, y: crack.row }, 1);
       });
+      const width = crack.tones.length;
       const progress = Math.min(1, crack.age / (CRACK_MS * 0.75));
-      const points = Math.max(2, Math.ceil((crack.path.length / 2) * progress));
-      ctx.setTransform(1, 0, 0, 1, this.offsetX, this.offsetY);
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = palette.crack;
-      ctx.lineWidth = Math.max(1.5, projection.rowHeight * 0.07);
+      const reach = progress * (Math.max(crack.origin, width - crack.origin) + HEAT_SPREAD);
+      // Each glass brick heats up and cracks from its break point as the rift arrives (1.41).
+      ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+      for (let x = 0; x < width; x++) {
+        const lit = Math.min(1, (reach - Math.abs(x + 0.5 - crack.origin)) / HEAT_SPREAD);
+        if (lit <= 0 || crack.tones[x] === Tone.Empty || !this.isFront(x)) continue;
+        this.face(x, crack.row);
+        ctx.globalAlpha = 0.38 * lit;
+        ctx.fillStyle = 'rgb(255 243 214)';
+        ctx.fillRect(0, 0, 1, 1);
+        ctx.globalAlpha = 0.85 * lit;
+        ctx.strokeStyle = palette.crack;
+        ctx.lineWidth = 0.045;
+        ctx.beginPath();
+        const px = crack.inner[x * 2]!;
+        const py = crack.inner[x * 2 + 1]!;
+        for (let i = 0; i < CELL_RIM.length; i += 2) {
+          ctx.moveTo(px, py);
+          ctx.lineTo(CELL_RIM[i]!, CELL_RIM[i + 1]!);
+        }
+        ctx.stroke();
+      }
+      // The rift itself, both ways from its origin, on the front: a wide glow, a gold halo,
+      // a white-hot core.
+      const from = Math.max(0, crack.origin - reach);
+      const to = Math.min(width, crack.origin + reach);
+      if (to <= from) continue;
+      ctx.setTransform(1, 0, 0, 1, this.offsetX, this.offsetY);
       ctx.beginPath();
       let drawing = false;
-      for (let i = 0; i < points; i++) {
-        const x = crack.path[i * 2]!;
-        if (projection.depth(x) <= 0) {
+      for (let i = 0; i < crack.path.length; i += 2) {
+        const x = crack.path[i]!;
+        if (x < from || x > to || projection.depth(x) <= 0) {
           drawing = false;
           continue;
         }
         const sx = projection.screenX(x);
-        const sy = projection.screenY(x, crack.row + crack.path[i * 2 + 1]!);
+        const sy = projection.screenY(x, crack.row + crack.path[i + 1]!);
         if (drawing) ctx.lineTo(sx, sy);
         else ctx.moveTo(sx, sy);
         drawing = true;
       }
+      const cell = projection.rowHeight;
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = palette.effects.rift;
+      ctx.lineWidth = cell * 0.55;
+      ctx.stroke();
+      ctx.globalAlpha = 0.7;
+      ctx.strokeStyle = palette.accent;
+      ctx.lineWidth = cell * 0.2;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = palette.crack;
+      ctx.lineWidth = Math.max(1.5, cell * 0.08);
       ctx.stroke();
     }
+    ctx.globalAlpha = 1;
   }
 
   private drawTrails(palette: TonePalette): void {
@@ -622,15 +674,21 @@ export class TowerRenderer {
     ctx.globalAlpha = 1;
   }
 
-  /** The level wave climbs the front of the tower. */
+  /** The level wave climbs the front of the tower; a sweep (a bomb, 1.41) runs round it. */
   private drawWaves(palette: TonePalette): void {
     const { ctx, projection } = this;
     for (const wave of this.effects.waves) {
-      if (wave.kind !== 'level') continue;
       const t = wave.age / WAVE_MS;
       ctx.globalAlpha = 0.35 * (1 - t);
       ctx.fillStyle = palette.accent;
       const first = Math.floor(projection.camera - this.columns / 4);
+      if (wave.kind === 'sweep') {
+        const x = first + Math.floor(t * (this.columns / 2 + 1));
+        if (!this.isFront(x)) continue;
+        this.face(x, 0, this.rows);
+        ctx.fillRect(0, 0, 1, 1);
+        continue;
+      }
       for (let x = first; x < first + this.columns / 2 + 1; x++) {
         if (!this.isFront(x)) continue;
         this.face(x, (1 - t) * this.rows - 0.6, 1.2);
@@ -673,13 +731,20 @@ export class TowerRenderer {
         const sin = Math.sin(pool.angle[i]!) * cell;
         const o = i * 6;
         const s = pool.shape;
-        ctx.fillStyle = color;
+        // The glass' own picture, turned with the shard, a lit edge on the break (1.41).
+        const pattern = this.shardPattern(i, cell, x, y);
+        ctx.fillStyle = pattern ?? color;
         ctx.beginPath();
         ctx.moveTo(x + s[o]! * cos - s[o + 1]! * sin, y + s[o]! * sin + s[o + 1]! * cos);
         ctx.lineTo(x + s[o + 2]! * cos - s[o + 3]! * sin, y + s[o + 2]! * sin + s[o + 3]! * cos);
         ctx.lineTo(x + s[o + 4]! * cos - s[o + 5]! * sin, y + s[o + 4]! * sin + s[o + 5]! * cos);
         ctx.closePath();
         ctx.fill();
+        if (pattern) {
+          ctx.strokeStyle = 'rgb(255 255 255 / 0.3)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
       } else if (kind === ParticleKind.Spark) {
         ctx.globalCompositeOperation = this.dark ? 'lighter' : 'source-over';
         ctx.strokeStyle = color;
@@ -698,26 +763,56 @@ export class TowerRenderer {
     ctx.globalAlpha = 1;
   }
 
-  /** Points rise in the middle of the screen, always readable whatever the camera. */
+  /**
+   * The well's words rise in the middle of the screen, always readable
+   * whatever the camera, as the falling well writes them (1.41: points, a
+   * moment's word, a combo's heat and shout).
+   */
   private drawPopups(palette: TonePalette): void {
     const { ctx, effects, projection } = this;
-    if (effects.popups.length === 0) return;
     const cell = projection.rowHeight;
     ctx.setTransform(1, 0, 0, 1, this.offsetX, this.offsetY);
-    ctx.font = `800 ${Math.round(cell * 0.75)}px ui-rounded, system-ui, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.lineWidth = Math.max(2, cell * 0.12);
-    ctx.strokeStyle = palette.wellBackground;
-    ctx.fillStyle = palette.accent;
-    for (const popup of effects.popups) {
-      const t = popup.age / POPUP_MS;
-      const y = projection.top + (popup.y + 0.5 - t * 1.6) * cell + projection.radius * TILT;
-      ctx.globalAlpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
-      ctx.strokeText(popup.text, projection.centreX, y);
-      ctx.fillText(popup.text, projection.centreX, y);
+    paintWords(
+      ctx,
+      effects,
+      palette,
+      { cell, wellWidth: projection.radius * 2 },
+      (popup, rise) => ({
+        x: projection.centreX,
+        y: projection.top + (popup.y + 0.5 - rise) * cell + projection.radius * TILT,
+      }),
+    );
+  }
+
+  /**
+   * The pattern of a shard's glass picture, placed under the shard (its
+   * centre at `x`, `y`, `cell` px a cell): null for a shard without one.
+   */
+  private shardPattern(i: number, cell: number, x: number, y: number): CanvasPattern | null {
+    const { pool } = this.effects;
+    const tone = pool.texture[i]!;
+    if (tone < 0 || !this.sprites) return null;
+    const sprite = this.sprites.get(tone as Tone);
+    let pattern = this.patterns.get(sprite);
+    if (!pattern) {
+      pattern = this.ctx.createPattern(sprite, 'no-repeat') ?? undefined;
+      if (!pattern) return null;
+      this.patterns.set(sprite, pattern);
     }
-    ctx.globalAlpha = 1;
+    const scale = cell / sprite.width;
+    const cos = Math.cos(pool.angle[i]!);
+    const sin = Math.sin(pool.angle[i]!);
+    const u = pool.uv[i * 2]! * cell;
+    const v = pool.uv[i * 2 + 1]! * cell;
+    const matrix = this.matrix;
+    matrix.a = cos * scale;
+    matrix.b = sin * scale;
+    matrix.c = -sin * scale;
+    matrix.d = cos * scale;
+    matrix.e = x - (u * cos - v * sin);
+    matrix.f = y - (u * sin + v * cos);
+    pattern.setTransform(matrix);
+    return pattern;
   }
 
   private rebuildSprites(): void {

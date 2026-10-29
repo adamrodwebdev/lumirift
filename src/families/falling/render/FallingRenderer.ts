@@ -1,3 +1,4 @@
+import { paintHeat, paintRiftLight } from './WellOverlay';
 import type { FallingView } from '../FallingSession';
 import type { FallingEffects } from '../fx/FallingEffects';
 import type { Piece } from '../pieces/Piece';
@@ -167,7 +168,7 @@ export class FallingRenderer {
     if (effects) this.painter.overlays(effects, palette, cell, this.dark, sprites);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (this.dangerEdge) this.drawDanger(palette);
-    if (effects && effects.heat > 0) this.drawHeat(effects, palette);
+    if (effects) paintHeat(ctx, effects, palette, cell);
     if (effects && effects.beatGlow > 0) {
       // The visual metronome: the frame of the well pulses on each beat.
       ctx.globalAlpha = 0.55 * effects.beatGlow;
@@ -181,31 +182,7 @@ export class FallingRenderer {
       );
       ctx.globalAlpha = 1;
     }
-    if (effects && effects.wellFlash > 0) {
-      // The rift's own light: warm, added to the picture rather than a white veil.
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = `rgb(255 170 80 / ${effects.wellFlash})`;
-      ctx.fillRect(0, 0, width, height);
-      ctx.globalCompositeOperation = 'source-over';
-    }
-  }
-
-  /**
-   * A combo's heat on the well's edges (1.41): a glow that rises with each
-   * clear of the chain, in its colour, and fades once it ends.
-   */
-  private drawHeat(effects: FallingEffects, palette: TonePalette): void {
-    const { ctx, cell, canvas } = this;
-    const color = palette.effects.heat[effects.heatColor];
-    const line = Math.max(2, cell * (0.08 + 0.14 * effects.heat));
-    ctx.strokeStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = cell * (0.4 + 0.8 * effects.heat);
-    ctx.globalAlpha = 0.25 + 0.55 * effects.heat;
-    ctx.lineWidth = line;
-    ctx.strokeRect(line / 2, line / 2, canvas.width - line, canvas.height - line);
-    ctx.shadowBlur = 0;
-    ctx.globalAlpha = 1;
+    if (effects) paintRiftLight(ctx, effects);
   }
 
   private drawGrid(color: string): void {
