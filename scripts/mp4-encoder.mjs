@@ -126,7 +126,11 @@ function mp4File({ width, height, fps, config, frames, audio = null }) {
   const timescale = fps * 1000;
   const delta = 1000;
   const videoMs = Math.round((frames.length / fps) * 1000);
-  const audioSamples = audio ? audio.chunks.length * AAC_FRAME - audio.delay : 0;
+  // The sound plays as long as it went in: the padding of the last AAC frame is cut by the edit
+  // list, so a clip's sound ends with its picture and loops with it.
+  const audioSamples = audio
+    ? Math.min(audio.samples, audio.chunks.length * AAC_FRAME - audio.delay)
+    : 0;
   const audioMs = audio ? Math.round((audioSamples / audio.sampleRate) * 1000) : 0;
   const movieDuration = Math.max(videoMs, audioMs);
   const ftyp = box(
@@ -458,7 +462,9 @@ export class Mp4Encoder {
    * puts before the sound) is measured: the AAC is decoded again and laid
    * against what went in, and the file skips exactly that many samples (its
    * edit list), so the sound starts with the picture. Returns the priming the
-   * encoder `reported` (its first timestamp) and the one `measured`.
+   * encoder `reported` (its first timestamp) and the one `measured`, and the
+   * highest sample of the decoded sound (`decodedPeakDb`, dBFS): AAC adds a
+   * little to the peaks that went in.
    */
   async setAudio({ channels, sampleRate, bitrate = 192_000 }) {
     const planar = Buffer.concat(
@@ -520,12 +526,17 @@ export class Mp4Encoder {
         await encoder.flush();
         encoder.close();
         if (state.error) throw new Error(state.error);
-        // Decoded again: where the first channel's sound comes out of the decoder.
+        // Decoded again: where the first channel's sound comes out of the decoder, and how high
+        // any channel goes.
         const parts = [];
+        let decodedPeak = 0;
         const decoder = new AudioDecoder({
           output: (data) => {
             const part = new Float32Array(data.numberOfFrames);
-            data.copyTo(part, { planeIndex: 0, format: 'f32-planar' });
+            for (let plane = data.numberOfChannels - 1; plane >= 0; plane--) {
+              data.copyTo(part, { planeIndex: plane, format: 'f32-planar' });
+              for (const value of part) decodedPeak = Math.max(decodedPeak, Math.abs(value));
+            }
             parts.push(part);
             data.close();
           },
@@ -566,7 +577,7 @@ export class Mp4Encoder {
           const match = dot / Math.sqrt(power || 1);
           if (match > best) [best, measured] = [match, shift];
         }
-        return { delay, measured, count: state.audio.length };
+        return { delay, measured, decodedPeak, count: state.audio.length };
       },
       {
         base64: planar.toString('base64'),
@@ -577,8 +588,17 @@ export class Mp4Encoder {
         codec: AUDIO_CODEC,
       },
     );
-    this.#audio = { sampleRate, channels: channels.length, bitrate, delay: info.measured };
-    return { reported: info.delay, measured: info.measured };
+    this.#audio = {
+      sampleRate,
+      channels: channels.length,
+      bitrate,
+      delay: info.measured,
+      samples: frames,
+    };
+    return {
+      priming: { reported: info.delay, measured: info.measured },
+      decodedPeakDb: 20 * Math.log10(info.decodedPeak),
+    };
   }
 
   /** Ends the video: the last frames are encoded, the file written. Returns its size in bytes. */

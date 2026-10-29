@@ -2,19 +2,21 @@
 // Instagram Reels and YouTube Shorts, filmed by the game itself on its real
 // engines (media/showcase.html?clip, one take per load of the set). Each clip
 // opens on its peak, an engine event that a first take finds (never a time
-// set by hand), goes back to the start and plays through the peak again, then
-// ends on its first picture, so that it loops. 1080 × 1920 at 30 frames a
-// second, H.264 and AAC (mp4-encoder.mjs), with the game's own sound rendered
-// with the picture and levelled near −14 LUFS (loudness.mjs); a JPEG cover
-// (the peak) and manifest.json (scene, variant, length, peak, the engines'
-// counts). It only writes files: no upload, no platform API (CAHIER § 9 ter).
+// set by hand), and its aftermath, then goes back to the start and plays up
+// to the frame before the one it opened on: the loop has no seam, picture and
+// sound run through it, and the peak plays once a loop. 1080 × 1920 at 30
+// frames a second, H.264 and AAC (mp4-encoder.mjs), with the game's own sound
+// rendered with the picture, levelled near −14 LUFS with its true peaks under
+// −2 dBTP (loudness.mjs); a JPEG cover (the peak) and manifest.json (scene,
+// variant, length, peak, the engines' counts, the sound's levels). It only
+// writes files: no upload, no platform API (CAHIER § 9 ter).
 // Usage: npm run clips -- --week 2026-11-02 [--clip mon-fire-on-oil]
 //        →  release/clips/<week>/
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
-import { loudness, normalise } from './loudness.mjs';
+import { loudness, normalise, truePeakDb } from './loudness.mjs';
 import { Mp4Encoder } from './mp4-encoder.mjs';
 import { SHOWCASE_URL, startShowcase } from './showcase-frames.mjs';
 
@@ -38,6 +40,11 @@ const OPEN_FREEZE_MS = 1200;
 const END_FREEZE_MS = 2500;
 /** A clip's length (s). */
 const LENGTH = { min: 7, max: 15 };
+/**
+ * The sound's levels: near −14 LUFS, true peaks under −2 dBTP before the
+ * encoder, and the decoded AAC's samples at −1 dBFS or under.
+ */
+const SOUND = { lufs: -14, truePeakDb: -2, decodedPeakDb: -1 };
 /** Where the action must be (shares of the frame): out of the right 15 % (the apps' buttons), the bottom 22 % (the caption), the top 10 % (the tabs). */
 const SAFE = { left: 0.03, right: 0.85, top: 0.1, bottom: 0.78 };
 /** The camera keeps the action this far inside the safe area (share of the frame). */
@@ -81,15 +88,19 @@ function punch(ms) {
 /**
  * The camera at zoom 1: the game's screen, moved up or down into the set's
  * margins so the action sits inside the safe area (the board keeps its size).
+ * The action is its anchor, or its extent when it reaches further (the Heart's
+ * floor and the rows that burst over it); if it is taller than the safe area,
+ * its bottom wins and the top of the well leaves the frame.
  */
-function screenCrop({ screen, page }, anchor) {
+function screenCrop({ screen, page }, anchor, extent = null) {
   const crop = { ...screen };
-  if (anchor) {
-    const share = (anchor.y - crop.y) / crop.height;
+  const action = extent ?? (anchor && { top: anchor.y, bottom: anchor.y });
+  if (action) {
+    const share = (y) => (y - crop.y) / crop.height;
     const low = SAFE.bottom - SAFE_MARGIN;
     const high = SAFE.top + SAFE_MARGIN;
-    if (share > low) crop.y += (share - low) * crop.height;
-    if (share < high) crop.y -= (high - share) * crop.height;
+    if (share(action.top) < high) crop.y -= (high - share(action.top)) * crop.height;
+    if (share(action.bottom) > low) crop.y += (share(action.bottom) - low) * crop.height;
     crop.y = Math.min(Math.max(crop.y, 0), page.height - crop.height);
   }
   return { x: snap(crop.x), y: snap(crop.y), width: snap(crop.width), height: snap(crop.height) };
@@ -125,15 +136,19 @@ function zoomed(picture, crop, anchor, zoom) {
 
 const fromBase64 = (text) => new Float32Array(new Uint8Array(Buffer.from(text, 'base64')).buffer);
 
-/** The sound of `count` frames from frame `from`, faded in and out: a cut never clicks. */
-function soundOf(channels, from, count) {
+/**
+ * The sound of a run (`count` frames from frame `from`), faded in and out at
+ * its cuts so that a cut never clicks; not at a seamless loop's point
+ * (`fadeIn` or `fadeOut` false), where the sound runs on.
+ */
+function soundOf(channels, { from, count, fadeIn = true, fadeOut = true }) {
   return channels.map((samples) => {
     const part = new Float32Array(count * SPF);
     part.set(samples.subarray(from * SPF, Math.min(samples.length, (from + count) * SPF)));
     const fade = Math.min(FADE, part.length >> 1);
     for (let i = 0; i < fade; i++) {
-      part[i] *= i / fade;
-      part[part.length - 1 - i] *= i / fade;
+      if (fadeIn) part[i] *= i / fade;
+      if (fadeOut) part[part.length - 1 - i] *= i / fade;
     }
     return part;
   });
@@ -148,13 +163,6 @@ const join2 = (parts) =>
 
 /** Two takes heard together, at half level each (their music is the same). */
 const mix = (a, b) => a.map((samples, channel) => samples.map((v, i) => (v + b[channel][i]) / 2));
-
-/** The peak level (dBFS) of the channels. */
-const peakDb = (channels) =>
-  20 *
-  Math.log10(
-    Math.max(...channels.map((samples) => samples.reduce((m, v) => Math.max(m, Math.abs(v)), 0))),
-  );
 
 // --- The set ---------------------------------------------------------------------
 
@@ -195,7 +203,10 @@ async function take(recipe, choice, options = {}) {
   for (let frame = 1; frame <= WARM_UP; frame++) await step();
 }
 
-/** The first take, nothing filmed: when and where the `nth` `event` happens, and the set's layout. */
+/**
+ * The first take, nothing filmed: when and where the `nth` `event` happens
+ * (its anchor, and its extent when the action reaches further), and the set's layout.
+ */
 async function findPeak(recipe, choice, event = recipe.peak, nth = recipe.nth ?? 1) {
   await take(recipe, choice);
   for (let frame = WARM_UP + 1; frame * FRAME_MS <= SEARCH_MS; frame++) {
@@ -208,7 +219,7 @@ async function findPeak(recipe, choice, event = recipe.peak, nth = recipe.nth ??
     );
     if (peak) {
       const layout = await set.evaluate(() => window.showcase.layout());
-      return { frame: Math.round(peak.ms / FRAME_MS), at: peak.at, layout };
+      return { frame: Math.round(peak.ms / FRAME_MS), at: peak.at, extent: peak.extent, layout };
     }
   }
   throw new Error(
@@ -273,35 +284,55 @@ async function film(
 // --- The clips -----------------------------------------------------------------------
 
 /**
- * A moment: it opens 0.15 s before its peak with the punch-in, holds it 1.2 s,
- * goes back to the start, plays through the peak again and `afterMs` more,
- * then ends on its first picture.
+ * A seamless loop around a peak (the frames of the take): the hook, from
+ * 0.15 s before the peak through `afterMs` of its aftermath, then the replay,
+ * from the scene's start to the frame just before the hook. The last frame
+ * leads into the first, so the loop has no seam and the peak plays once a
+ * loop. A clip that would last under 7 s gets a longer aftermath: the replay
+ * never reaches the peak. `end` is the last frame to film.
+ */
+function seamlessLoop(peakFrame, afterMs) {
+  const hook = peakFrame - frames(LEAD_MS);
+  const replay = hook - (WARM_UP + 1);
+  const hookFrames = Math.max(frames(LEAD_MS + afterMs), Math.ceil(LENGTH.min * FPS) - replay);
+  return { hook, hookFrames, replay, end: hook + hookFrames - 1 };
+}
+
+/** The runs of a seamless loop: the sound runs through its loop point, unfaded (a cut between). */
+const loopRuns = ({ hook, hookFrames, replay }, view) => [
+  { from: hook, count: hookFrames, view, fadeIn: false },
+  { from: WARM_UP + 1, count: replay, view, fadeOut: false },
+];
+
+/**
+ * A moment: it opens 0.15 s before its peak with the punch-in, holds it 1.2 s
+ * and its aftermath ~2.5 s, then replays from the start up to the frame
+ * before the one it opened on (a seamless loop).
  */
 async function momentClip(recipe) {
   const peak = await findPeak(recipe, null);
-  const end = peak.frame + frames(recipe.afterMs);
+  const loop = seamlessLoop(peak.frame, recipe.afterMs);
   const shot = await film(recipe, null, {
     from: WARM_UP + 1,
-    to: end,
-    crop: (layout) => screenCrop(layout, peak.at),
+    to: loop.end,
+    crop: (layout) => screenCrop(layout, peak.at, peak.extent),
   });
   const view = (frame) => [
     zoomed(shot.pictures.get(frame), shot.crop, peak.at, punch((frame - peak.frame) * FRAME_MS)),
   ];
-  const hook = peak.frame - frames(LEAD_MS);
-  const runs = [
-    { from: hook, count: frames(LEAD_MS + PUNCH.holdMs), view },
-    { from: WARM_UP + 1, count: end - WARM_UP, view },
-    { from: hook, count: 1, view },
-  ];
   return {
-    runs,
+    runs: loopRuns(loop, view),
     sound: shot.sound,
     cover: view(peak.frame + frames(300)),
     peak: {
       frame: peak.frame,
-      clipMs: (peak.frame - hook) * FRAME_MS,
+      clipMs: (peak.frame - loop.hook) * FRAME_MS,
       at: peak.at && onScreen(peak.at, shot.crop),
+      // How high the action reaches in the frame, top and bottom (shares of its height).
+      extent: peak.extent && {
+        top: (peak.extent.top - shot.crop.y) / shot.crop.height,
+        bottom: (peak.extent.bottom - shot.crop.y) / shot.crop.height,
+      },
     },
     measures: shot.measures,
     hash: shot.hash,
@@ -359,12 +390,13 @@ async function setupClip(recipe) {
 /**
  * A challenge's answer: both drops side by side, each well with its letter
  * under it, whole (no punch-in: a comparison needs both wells entire). It
- * opens 0.15 s before A's peak, goes back to the start, plays through it
- * again, then ends on its first picture.
+ * opens 0.15 s before A's peak with its aftermath, then replays from the
+ * start up to the frame before the one it opened on (a seamless loop).
  */
 async function answerClip(recipe) {
   const peak = await findPeak(recipe, 'A');
-  const end = peak.frame + frames(recipe.afterMs);
+  const loop = seamlessLoop(peak.frame, recipe.afterMs);
+  const end = loop.end;
   const wellAndBadge = ({ well }, [badge]) => {
     // The letter's glow fades within 32 px of its edge.
     const bottom = badge.y + badge.size / 2 + 32;
@@ -399,12 +431,6 @@ async function answerClip(recipe) {
       width: SPLIT.width,
       height,
     }));
-  const hook = peak.frame - frames(LEAD_MS);
-  const runs = [
-    { from: hook, count: frames(LEAD_MS + PUNCH.holdMs), view },
-    { from: WARM_UP + 1, count: end - WARM_UP, view },
-    { from: hook, count: 1, view },
-  ];
   // Where A's peak and each answer's letter land in the frame.
   const place = (point, i) => ({
     x: (SPLIT.left + i * (SPLIT.width + SPLIT.gap) + (point.x - crop.x) * scale) / VIDEO.width,
@@ -412,13 +438,13 @@ async function answerClip(recipe) {
   });
   const letters = takes.map((shot, i) => place(shot.badges[0], i));
   return {
-    runs,
+    runs: loopRuns(loop, view),
     background,
     sound: mix(takes[0].sound, takes[1].sound),
     cover: view(peak.frame + frames(300)),
     peak: {
       frame: peak.frame,
-      clipMs: (peak.frame - hook) * FRAME_MS,
+      clipMs: (peak.frame - loop.hook) * FRAME_MS,
       at: peak.at && place(peak.at, 0),
       answers: letters,
     },
@@ -437,23 +463,33 @@ async function makeClip(recipe) {
   const clip = await (MONTAGES[recipe.challenge] ?? momentClip)(recipe);
   const count = clip.runs.reduce((sum, run) => sum + run.count, 0);
   const seconds = count / FPS;
-  const levelled = normalise(
-    join2(clip.runs.map((run) => soundOf(clip.sound, run.from, run.count))),
-  );
+  const levelled = normalise(join2(clip.runs.map((run) => soundOf(clip.sound, run))), {
+    target: SOUND.lufs,
+    ceiling: SOUND.truePeakDb,
+  });
+  const truePeak = truePeakDb(levelled);
   const encoder = await Mp4Encoder.open(browser, { ...VIDEO, fps: FPS, bitrate: BITRATE });
   const background = clip.background ?? null;
   for (const run of clip.runs) {
     for (let i = 0; i < run.count; i++)
       await encoder.add(run.view(run.from + i, i), { background });
   }
-  const priming = await encoder.setAudio({ channels: levelled, sampleRate: SAMPLE_RATE });
+  const { priming, decodedPeakDb } = await encoder.setAudio({
+    channels: levelled,
+    sampleRate: SAMPLE_RATE,
+  });
   writeFileSync(join(OUT, `${recipe.id}.jpg`), await encoder.still(clip.cover, { background }));
   const bytes = await encoder.save(join(OUT, `${recipe.id}.mp4`));
   const points = [clip.peak.at, ...(clip.peak.answers ?? [])].filter(Boolean);
+  const { extent } = clip.peak;
   const checks = {
     length: seconds >= LENGTH.min && seconds <= LENGTH.max,
     peakInFirst300ms: clip.peak.clipMs <= 300,
-    safe: points.every(isSafe),
+    safe:
+      points.every(isSafe) && (!extent || (extent.top >= SAFE.top && extent.bottom <= SAFE.bottom)),
+    // Measured to a hundredth, as the meters show them.
+    truePeak: Math.round(truePeak * 100) <= SOUND.truePeakDb * 100,
+    decodedPeak: Math.round(decodedPeakDb * 100) <= SOUND.decodedPeakDb * 100,
   };
   const entry = {
     id: recipe.id,
@@ -473,11 +509,15 @@ async function makeClip(recipe) {
       ...(clip.peak.at
         ? { at: { x: +clip.peak.at.x.toFixed(3), y: +clip.peak.at.y.toFixed(3) } }
         : {}),
+      ...(extent
+        ? { extent: { top: +extent.top.toFixed(3), bottom: +extent.bottom.toFixed(3) } }
+        : {}),
     },
     measures: clip.measures,
     sound: {
       lufs: Number(loudness(levelled).toFixed(1)),
-      peakDb: Number(peakDb(levelled).toFixed(1)),
+      truePeakDb: Number(truePeak.toFixed(2)),
+      decodedPeakDb: Number(decodedPeakDb.toFixed(2)),
       priming,
     },
     checks,
@@ -489,7 +529,8 @@ async function makeClip(recipe) {
     .map(([name]) => name);
   console.log(
     `${recipe.id}: ${seconds.toFixed(1)} s, peak ${recipe.peak} at ${(entry.peak.sceneMs / 1000).toFixed(2)} s, ` +
-      `${entry.sound.lufs} LUFS, priming ${priming.measured} (reported ${priming.reported}), ` +
+      `${entry.sound.lufs} LUFS, ${entry.sound.truePeakDb} dBTP, decoded ${entry.sound.decodedPeakDb} dBFS, ` +
+      `priming ${priming.measured} (reported ${priming.reported}), ` +
       `${entry.megabytes} MB, ${((Date.now() - started) / 1000).toFixed(0)} s` +
       (failed.length ? `  CHECK FAILED: ${failed.join(', ')}` : ''),
   );

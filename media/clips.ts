@@ -7,8 +7,9 @@ export type ClipDay = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
 /**
  * A clip of the factory (scripts/clip-factory.mjs, 1.39): a scene, its
- * variant, and the engine event that marks its peak. The peak opens the clip;
- * the clip then goes back to the scene's start and plays through it again.
+ * variant, and the engine event that marks its peak. The peak and its
+ * aftermath open the clip; the clip then goes back to the scene's start and
+ * plays up to the frame before the one it opened on, a loop without a seam.
  */
 export interface ClipRecipe {
   /** Its file name in release/clips/<week>/, without extension. */
@@ -20,7 +21,7 @@ export interface ClipRecipe {
   readonly peak: string;
   /** Which of those events (1, the first, by default). */
   readonly nth?: number;
-  /** How long the clip goes on after its peak (ms). */
+  /** How long the clip goes on after its peak, before the replay (ms; longer if the clip would last under 7 s). */
   readonly afterMs: number;
   /** A challenge: the decision frozen with its A and B, or both answers side by side. */
   readonly challenge?: 'setup' | 'answer';
@@ -47,7 +48,7 @@ export const CLIP_WEEKS: Readonly<Record<string, ClipWeek>> = {
         scene: 'fireOnOil',
         variant: 0,
         peak: 'react.blaze',
-        afterMs: 1800,
+        afterMs: 2500,
       },
       {
         id: 'tue-fire-challenge',
@@ -64,7 +65,7 @@ export const CLIP_WEEKS: Readonly<Record<string, ClipWeek>> = {
         scene: 'lightningInWater',
         variant: 0,
         peak: 'strike.shock',
-        afterMs: 1800,
+        afterMs: 2500,
       },
       {
         id: 'fri-heart-of-the-rift',
@@ -73,7 +74,7 @@ export const CLIP_WEEKS: Readonly<Record<string, ClipWeek>> = {
         variant: 0,
         peak: 'heart.hurt.shard',
         nth: 2,
-        afterMs: 2000,
+        afterMs: 2500,
       },
       {
         id: 'sun-fire-challenge-answer',
@@ -81,7 +82,7 @@ export const CLIP_WEEKS: Readonly<Record<string, ClipWeek>> = {
         scene: 'fireChoice',
         variant: 0,
         peak: 'react.blaze',
-        afterMs: 1800,
+        afterMs: 2500,
         challenge: 'answer',
       },
     ],

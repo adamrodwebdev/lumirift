@@ -149,6 +149,8 @@ interface Peak {
   readonly ms: number;
   /** In CSS pixels of the page, or null when the engine says no place. */
   readonly at: { readonly x: number; readonly y: number } | null;
+  /** How far the action reaches up and down (CSS px of the page), when it is more than a point. */
+  readonly extent: { readonly top: number; readonly bottom: number } | null;
 }
 
 /** A place in the well, as shares of its width and height. */
@@ -156,8 +158,18 @@ interface Share {
   readonly x: number;
   readonly y: number;
 }
-/** The Heart lives under the floor: its rows rise from below, and it is wounded there. */
-const HEART_FLOOR: Share = { x: 0.5, y: 0.9 };
+/** A stretch of the well's height, as shares of it. */
+interface Band {
+  readonly top: number;
+  readonly bottom: number;
+}
+/**
+ * The Heart lives under the floor: its rows of rubble rise from below and
+ * burst there, four rows at most at once (an I), and it is wounded there.
+ * Its moments happen at the floor; the action is the floor and those rows.
+ */
+const HEART_FLOOR: Share = { x: 0.5, y: 1 };
+const HEART_ROWS: Band = { top: 0.8, bottom: 1 };
 
 const toneName = (tone: number) =>
   (Object.keys(Tone) as (keyof typeof Tone)[]).find((key) => Tone[key] === tone)?.toLowerCase() ??
@@ -176,13 +188,17 @@ interface Measures {
 /** Records the scene's moments (what happened, when, where on the page) and its counts. */
 function recordPeaks(scene: Scene, now: () => number, measures: Measures): Peak[] {
   const peaks: Peak[] = [];
-  const add = (event: string, share?: Share | null) => {
+  const add = (event: string, share?: Share | null, band?: Band) => {
     const rect = wellCanvas()?.getBoundingClientRect();
     const at =
       share && rect
         ? { x: rect.left + share.x * rect.width, y: rect.top + share.y * rect.height }
         : null;
-    peaks.push({ event, ms: now(), at });
+    const extent =
+      band && rect
+        ? { top: rect.top + band.top * rect.height, bottom: rect.top + band.bottom * rect.height }
+        : null;
+    peaks.push({ event, ms: now(), at, extent });
   };
   const { session } = scene;
   if (session instanceof SandSession) {
@@ -219,7 +235,11 @@ function recordPeaks(scene: Scene, now: () => number, measures: Measures): Peak[
     const { mode } = session.view;
     if (mode instanceof RiftHeartMode) {
       mode.heartEvents.on('boss', ({ event }) =>
-        add(event.type === 'hurt' ? `heart.hurt.${event.hit}` : `heart.${event.type}`, HEART_FLOOR),
+        add(
+          event.type === 'hurt' ? `heart.hurt.${event.hit}` : `heart.${event.type}`,
+          HEART_FLOOR,
+          HEART_ROWS,
+        ),
       );
     }
   }
