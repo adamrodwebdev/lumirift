@@ -243,11 +243,87 @@ describe('Game events and timing for the effects', () => {
     game.start();
     game.hardDrop();
     expect(game.active).toBeNull();
-    expect(game.hold()).toBe(false);
     game.update(279);
     expect(game.active).toBeNull();
     game.update(1);
     expect(game.active?.type).toBe('O');
+  });
+
+  describe('keeps what the player asks while the next piece waits to enter (1.41)', () => {
+    /** The I clears the bottom line: the O waits 280 ms to enter. */
+    const clearing = () => {
+      const game = new Game(new ClassicMode(), {
+        random: new ConstantRandom(),
+        board: Board.fromRows(['###....###']),
+        lineClearDelayMs: 280,
+      });
+      game.start();
+      game.hardDrop();
+      expect(game.active).toBeNull();
+      return game;
+    };
+    /** The piece that enters after the pause, once `act` has played during it. */
+    const entered = (act: (game: Game) => void = () => {}) => {
+      const game = clearing();
+      act(game);
+      expect(game.active).toBeNull();
+      game.update(280);
+      return game.active!;
+    };
+
+    it('a step taken during the pause moves the next piece as it enters', () => {
+      const still = entered();
+      const moved = entered((game) => {
+        expect(game.moveLeft()).toBe(true);
+        expect(game.moveLeft()).toBe(true);
+        expect(game.moveRight()).toBe(true);
+      });
+      expect(moved.type).toBe('O');
+      expect(moved.x).toBe(still.x - 1);
+    });
+
+    it('turns and a hold are played as it enters, the hold first', () => {
+      const turned = entered((game) => {
+        game.rotate(1);
+        game.rotate(1);
+        expect(game.rotate(-1)).toBe(true);
+      });
+      expect(turned.rotation).toBe(1);
+      const game = clearing();
+      expect(game.hold()).toBe(true);
+      game.rotate(-1);
+      game.update(280);
+      // The O goes to the hold as it enters; the T comes in its place, turned left.
+      expect(game.held?.type).toBe('O');
+      expect(game.active?.type).toBe('T');
+      expect(game.active?.rotation).toBe(3);
+    });
+
+    it('a hard drop, a step down and a held key’s repeat are not kept', () => {
+      const still = entered();
+      const kept = entered((game) => {
+        game.hardDrop();
+        expect(game.softStep()).toBe(false);
+        expect(game.repeatMove(-1)).toBe(false);
+      });
+      expect(kept).toEqual(still);
+    });
+
+    it('keeps no more steps than the well is wide, then forgets them', () => {
+      const game = clearing();
+      let kept = 0;
+      for (let tries = 0; tries < 30 && game.moveLeft(); tries++) kept++;
+      expect(kept).toBe(10);
+      game.update(280);
+      // At the wall already; the T, next, enters where it always does.
+      expect(game.moveLeft()).toBe(false);
+      game.hardDrop();
+      const control = clearing();
+      control.update(280);
+      control.hardDrop();
+      expect(game.active?.type).toBe('T');
+      expect(game.active?.x).toBe(control.active?.x);
+    });
   });
 
   it('spawns at once when nothing was cleared', () => {

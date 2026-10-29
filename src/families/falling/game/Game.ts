@@ -12,6 +12,7 @@ import { kickOffsets, type Cell } from '../pieces/Shapes';
 import { GravityCurve } from '../rules/GravityCurve';
 import { Scoring } from '../rules/Scoring';
 import type { GameEventMap, GameOverReason, GameState, LockCause } from './GameEvents';
+import { InitialActions, type ActionTarget, type Step } from './InitialActions';
 
 export const LOCK_DELAY_MS = 500;
 export const MAX_LOCK_RESETS = 15;
@@ -109,6 +110,14 @@ export class Game {
   private blocked: PieceSpec | null = null;
   /** A continued game waits for the player's first move before anything falls again. */
   private waiting = false;
+  /** What the player asks while the next piece waits to enter, played when it does (1.41). */
+  private readonly initial: InitialActions;
+  /** The kept actions play through the player's own intentions. */
+  private readonly entering: ActionTarget = {
+    hold: () => this.hold(),
+    rotate: (direction) => this.rotate(direction),
+    shift: (dx) => this.shift(dx),
+  };
 
   constructor(
     readonly mode: GameMode,
@@ -118,6 +127,7 @@ export class Game {
     this.board =
       options.board ??
       new Board(mode.well.width, mode.well.height, Board.HIDDEN_ROWS, mode.well.wraps ?? false);
+    this.initial = new InitialActions(this.board.width);
     this.bag = new Bag(this.random);
     this.scoring = new Scoring(mode.scoresPureLines);
     this.startLevel = options.startLevel ?? 1;
@@ -263,6 +273,7 @@ export class Game {
     this._canHold = true;
     this.softDropping = false;
     this.spawnDelay = 0;
+    this.initial.forget();
     return this.board.clearTopRows(rows);
   }
 
@@ -278,12 +289,18 @@ export class Game {
 
   moveLeft(): boolean {
     this.wake();
-    return this.shift(-1);
+    return this.step(-1);
   }
 
   moveRight(): boolean {
     this.wake();
-    return this.shift(1);
+    return this.step(1);
+  }
+
+  /** The repeat of a held key: moves the piece in play, never kept for the next one. */
+  repeatMove(dx: Step): boolean {
+    this.wake();
+    return this.shift(dx);
   }
 
   setSoftDrop(active: boolean): void {
@@ -315,6 +332,10 @@ export class Game {
 
   rotate(direction: RotationDirection): boolean {
     this.wake();
+    if (this.awaiting) {
+      this.initial.turn(direction);
+      return true;
+    }
     const piece = this._active;
     if (!this.canAct() || !piece) return false;
     const rotated = piece.rotated(direction);
@@ -330,6 +351,10 @@ export class Game {
 
   hold(): boolean {
     this.wake();
+    if (this.awaiting && this._canHold) {
+      this.initial.hold();
+      return true;
+    }
     const piece = this._active;
     if (!this.canAct() || !piece || !this._canHold) return false;
     const previous = this._held;
@@ -498,6 +523,19 @@ export class Game {
 
   private canAct(): boolean {
     return this._state === 'running';
+  }
+
+  /** The next piece waits to enter, after a clear: the player's actions wait for it. */
+  private get awaiting(): boolean {
+    return this.canAct() && this._active === null && this.spawnDelay > 0;
+  }
+
+  /** A step sideways: the piece in play's, or kept for the next one while it waits to enter. */
+  private step(dx: Step): boolean {
+    if (!this.awaiting) return this.shift(dx);
+    if (!this.initial.canStep(dx)) return false;
+    this.initial.step(dx);
+    return true;
   }
 
   /** The player acts: a continued game that waited for them goes on. */
@@ -712,6 +750,7 @@ export class Game {
     this.lockResets = 0;
     this.fallAccumulator = 0;
     this.events.emit('spawn', { piece });
+    this.initial.playOn(this.entering);
   }
 
   private fillQueue(count: number): void {

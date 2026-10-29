@@ -13,7 +13,12 @@ effacement frappe, chaque combo monte, à la mesure du moment (un petit événem
 - **L'arrêt sur image** : le jeu se tient un instant quand un effacement se voit, rien pour une
   ligne, 35 ms pour deux, 60 ms pour trois, 100 ms pour une RIFT!, 10 ms de plus par pas de combo
   dès ×3 (140 ms au plus d'affilée, 250 ms au plus par seconde) ; le Sable sur deux régions et
-  plus. Un geste fait pendant l'arrêt joue juste après. Jamais dans le Rythme ni la Mosaïque.
+  plus. Jamais dans le Rythme ni la Mosaïque.
+- **Aucun geste perdu entre deux pièces** : un pas de côté, un tour ou une mise en réserve faits
+  pendant la pause d'un effacement (que l'arrêt sur image allonge) jouent dès que la pièce
+  suivante entre. Une chute franche et un pas vers le bas ne se gardent pas (pressés deux fois,
+  ils jetteraient la pièce suivante sans qu'on la voie) ; une touche tenue reprend sa répétition
+  dès que la pièce est là.
 - **Le poids d'un bloc** : la pièce posée s'écrase sur sa base et revient en 140 ms, les rangées
   sous elle s'enfoncent, une chute franche fait plonger la caméra selon sa hauteur et gagne un
   coup sourd sous son son.
@@ -22,8 +27,9 @@ effacement frappe, chaque combo monte, à la mesure du moment (un petit événem
   et russe) ; les bords du puits rougeoient ; chaque pas joue une note plus haute de l'accord,
   l'accord entier à ×5 et ×10 ; un combo de ×3 ou plus qui casse s'entend tomber. La Mosaïque
   écrit sa série sur le plateau ; le badge du Sable grossit, puis se fend quand le combo casse.
-- **Des prises simples dans la fabrique de clips** (`npm run clips -- --set feel --label
-<version>`) : les six moments du ressenti, filmés avant et après, pour être vus côte à côte.
+- **Des prises simples dans la fabrique de clips**
+  (`npm run clips -- --set feel --label 1.41.0`) : les six moments du ressenti, filmés avant et
+  après, pour être vus côte à côte.
 
 ### Modifié
 
@@ -43,6 +49,8 @@ effacement frappe, chaque combo monte, à la mesure du moment (un petit événem
   pure), `src/fx/Camera.ts` (remplace `ScreenShake` dans les quatre familles), `WellOverlay` (les
   mots, la chaleur et la lueur, partagés par le puits et la Tour). Le moteur de chute dit la cause
   d'une pose et la fin d'un combo (`comboEnd`), la Mosaïque la fin d'une série (`streakEnd`).
+  `InitialActions` garde les gestes faits avant l'entrée d'une pièce ; la répétition d'une
+  touche tenue se dit (`repeat`).
 
 ## [1.40.0] — 29/10/2026
 
