@@ -89,7 +89,9 @@ export interface Popup {
 
 /**
  * Four lines are the rift itself: RIFT!, the game's own word in every
- * language. A chain of clears is a combo, in the player's language.
+ * language. A chain of clears is a combo, in the player's language, counted
+ * as the message over the well counts it: ×2 at the second clear in a row
+ * (1.40; `combo` is 0 at a chain's first clear).
  */
 export function clearLabel(
   lines: number,
@@ -97,7 +99,7 @@ export function clearLabel(
   comboWord: (combo: number) => string,
 ): string | null {
   if (lines >= 4) return 'RIFT!';
-  if (combo >= 2) return comboWord(combo);
+  if (combo >= 1) return comboWord(combo + 1);
   if (lines >= 2) return `×${lines}`;
   return null;
 }
