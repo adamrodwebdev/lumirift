@@ -7,8 +7,8 @@ navigateur, mobile d'abord, en
 blocs gemmes) et sa musique générative. Gratuit, sans inscription,
 aucune donnée ne quitte l'appareil.
 
-**Jouer** : [Lumirift Blocks sur Playgama](https://playgama.ai/play/be4bqnmqcv), gratuit, dans
-le navigateur, sur téléphone comme sur ordinateur.
+**Jouer** : [adamrodwebdev.com/lumirift](https://adamrodwebdev.com/lumirift/), gratuit, dans le
+navigateur, sur téléphone comme sur ordinateur.
 
 Cahier des charges (règles détaillées, architecture, décisions) :
 [docs/CAHIER_DES_CHARGES.md](docs/CAHIER_DES_CHARGES.md) · Historique : [CHANGELOG.md](CHANGELOG.md) ·
