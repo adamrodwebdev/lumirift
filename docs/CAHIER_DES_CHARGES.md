@@ -2703,7 +2703,10 @@ jeu de pièces propre) en réserve. Le paquet 1 (le test des mots interdits) est
       sur 40 ;
     - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
       catégories à chaque passage ; sur ordinateur, 100 aussi ;
-    - les prises avant/après : à filmer (le jeu de l'utilisateur occupait la machine) ;
+    - les prises avant/après : `release/clips/feel-1.43.0` (six prises, filmées par la fabrique
+      sur la version finale), côte à côte avec celles de la 1.41.0, dont la 1.42 garde le puits,
+      sur une page privée pour l'utilisateur (la chute, une ligne, une faille, un combo de cinq,
+      la Tour ; la Mosaïque ne change pas) ;
     - reste l'essai sur téléphone.
 
 ## 10. Hors périmètre (v1)
