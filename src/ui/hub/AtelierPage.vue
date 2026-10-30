@@ -598,6 +598,13 @@ watch([material, shatter, ambiance], async () => {
   opacity: 0;
 }
 
+/* Both shelves take the same cell: for the frames when the last one is still leaving, the new
+   one stands in its place instead of under it, below the screen (1.42). */
+.items,
+.collections {
+  grid-area: 2 / 1;
+}
+
 .items {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
