@@ -81,6 +81,27 @@ describe('translations', () => {
     for (const [key, message] of messages('en')) expect(message, key).not.toContain("'");
   });
 
+  // The IP review of 30 Oct 2026 (CAHIER § 2.3): The Tetris Company's marks, and the words and
+  // the tune its notices cite, never enter the game's texts, in any language.
+  it.each(Object.keys(LOCALES))('%s never uses The Tetris Company’s words', (locale) => {
+    const owned = /tetris|тетрис|tetr[aio]mino|тетр[аи]мино|t-?spin|korobe[iy]niki|коробейники/i;
+    for (const [key, message] of messages(locale)) expect(message, key).not.toMatch(owned);
+  });
+
+  // A “-tris” name draws notices on its own (Setris, 2023). Checked on names only: French words
+  // such as « meurtris » end the same way.
+  it.each(Object.keys(LOCALES))(
+    '%s names the game and its modes without a “-tris” word',
+    (locale) => {
+      const names = ['meta.title', ...MODE_IDS.map((mode) => `modes.${mode}.name`)];
+      for (const key of names) {
+        expect(String(leaf(LOCALES[locale]!, key)), key).not.toMatch(
+          /\p{L}+(tris|трис)(?!\p{L})/iu,
+        );
+      }
+    },
+  );
+
   it('names and pitches every mode', () => {
     for (const mode of MODE_IDS) {
       expect(leaf(fr, `modes.${mode}.name`), mode).toBeTypeOf('string');
