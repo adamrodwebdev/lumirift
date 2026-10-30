@@ -12,15 +12,20 @@ const tab = (page: Page, name: string) => page.getByRole('tab', { name });
 const panel = (page: Page, name: string) => page.getByRole('tabpanel', { name });
 const banner = (page: Page) => panel(page, 'Accueil').getByRole('button', { name: /^Semaine/ });
 
-/** The menu on a device holding this saved data (the season's, the profile's). */
+/**
+ * The menu on a device holding this saved data (the season's, the profile's). Written before
+ * the game's first script, once per tab (a reload keeps what the game saved since): never
+ * between two loads, where the game's own deferred save could land on it under load.
+ */
 async function openWith(page: Page, saved: Record<string, unknown>) {
   await closeDailyGift(page);
-  await page.goto('/');
-  await page.evaluate((data) => {
+  await page.addInitScript((data) => {
+    if (sessionStorage.getItem('e2e:seeded')) return;
+    sessionStorage.setItem('e2e:seeded', '1');
     for (const [key, value] of Object.entries(data))
       localStorage.setItem(key, JSON.stringify(value));
   }, saved);
-  await page.reload();
+  await page.goto('/');
   await page.locator('main').waitFor();
 }
 
