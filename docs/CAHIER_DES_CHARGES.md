@@ -14,6 +14,7 @@
 | 1.39    | 28/10/2026 | La fabrique de clips : les clips de la semaine filmés par le jeu, son compris, pour les réseaux (§ 9 ter, lot 25).                                                                                                                    |
 | 1.40    | 29/10/2026 | La prise en main : la pièce suit le doigt, de côté et vers le bas, un texte reste le temps d'être lu, un seul compte des combos (§ 9 quater, lot 26).                                                                                 |
 | 1.41    | 29/10/2026 | Le poids et l'éclat : chaque bloc pèse, chaque effacement se tient et frappe, chaque combo monte (§ 9 quater, lot 27).                                                                                                                |
+| 1.42    | 30/10/2026 | Des menus qui s'enchaînent : chaque changement d'affichage a sa transition, moins de 300 ms, jamais un toucher retenu, un fondu avec le mouvement réduit (§ 9 quater, lot 28).                                                        |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1773,7 +1774,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
 | 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Livré (1.40)                                                 |
 | 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
-| 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Prévu                                                        |
+| 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2556,6 +2557,32 @@ des effets à la mesure du moment.
       juge côte à côte ;
     - le temps d'image ne bouge pas (`npm run frame-time`) ; Lighthouse reste à 100 ;
     - l'essai de l'utilisateur sur son téléphone.
+  - **Livré en 1.42** (30/10/2026). Les mesures de la porte et les écarts :
+    - tests unitaires : 94 fichiers, 863 tests, dont la lecture des feuilles de style (aucune
+      transition au-delà de 300 ms hors de dix feuilles et cinq animations nommées : célébrations,
+      effets du jeu, décors ; aucune dimension animée, les jauges d'expérience et d'objectif
+      glissent désormais) et `MotionController` ; e2e : 211 tests au dernier passage complet, 182
+      passés, 28 réservés à l'autre appareil ; un test des Dunes (la touche R) est tombé une fois
+      sous la charge de la suite entière et passe six fois sur six répété seul ;
+      `transitions.spec.ts` passe 32 fois sur 32, répété quatre fois à quatre processus ;
+    - un écart trouvé par la suite e2e : la fenêtre de pause se fermait sur P, et le jeu, ne
+      voyant plus de fenêtre ouverte, prenait la même touche pour une nouvelle pause (les 200 ms
+      de fermeture l'isolaient jusque-là). La fenêtre arrête désormais la touche qu'elle utilise ;
+      une fenêtre fermée devient inerte à l'instant (ni toucher, ni clavier, ni lecteur d'écran
+      pendant son fondu) ;
+    - les touchers pendant une transition se vérifient au premier instant où l'élément paraît à
+      l'écran (`elementFromPoint`) : une page qui glisse, une fenêtre qui arrive dans ce qui
+      était 350 ms d'attente. Un clic sur une cible qui bouge manquait sous la charge ;
+    - le fondu : le mouvement réduit du système ou les effets coupés ; les boucles décoratives
+      s'arrêtent après un tour, les versions calmes des composants se jouent ;
+    - le temps d'image ne bouge pas : au 95e centile, toutes prises, le processeur ralenti quatre
+      fois, travail du processeur : 1.41 4,6 et 4,9 ms, 1.42 4,7 et 4,5 ms (deux tours
+      alternés) ;
+    - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+      catégories à chaque passage ;
+    - le parcours filmé : `release/walkthrough/1.41.0.mp4` et `1.42.0.mp4` (23 s chacun, le même
+      script), côte à côte sur une page privée pour l'utilisateur ; reste son essai sur
+      téléphone.
 
 ## 10. Hors périmètre (v1)
 
@@ -2633,3 +2660,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.39    | 28/10/2026 | La croissance sans dépense (§ 9 ter) ; la fabrique de clips : `clip-factory.mjs`, le plateau `?clip` (`SetTime`, `TakeSound`), la piste AAC (lot 25).                  |
 | 1.40    | 29/10/2026 | Le ressenti (§ 9 quater) ; la prise en main : `PhoneGestures` (crans à la case, `softStep`, coup lu à l'accélération), `readingTime`, compte des combos (lot 26).      |
 | 1.41    | 29/10/2026 | Le poids et l'éclat : `FrameClock.hold`, `Impact`, `Camera`, `WellOverlay`, la Tour au niveau du puits, les prises simples de la fabrique (lot 27).                    |
+| 1.42    | 30/10/2026 | Des menus qui s'enchaînent : `MotionController`, jetons `--motion-*`, fenêtres fermées à l'instant, faille en popover, test des feuilles de style (lot 28).            |

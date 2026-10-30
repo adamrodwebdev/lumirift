@@ -127,8 +127,9 @@ réservent (plein écran, fermeture d'onglet).
 Navigation complète au clavier (lien d'évitement, focus visible, focus déplacé à chaque
 écran), annonces des événements de jeu aux lecteurs d'écran, motif gravé sur chaque couleur
 (le jeu se joue sans distinguer les couleurs), cibles tactiles d'au moins 44 px, respect de
-`prefers-reduced-motion`. Chaque écran et chaque fenêtre sont audités automatiquement
-(axe-core, WCAG 2.2 AA).
+`prefers-reduced-motion` : là, ou les effets coupés, chaque transition devient un simple fondu
+(1.42). Les transitions durent moins de 300 ms et ne retiennent jamais un toucher. Chaque
+écran et chaque fenêtre sont audités automatiquement (axe-core, WCAG 2.2 AA).
 
 ## Démarrer
 
@@ -305,7 +306,7 @@ src/
   progression/   Expérience, objectifs, cosmétiques, ensembles, cadeaux du jour, profil
   seasons/       Les saisons en données, leur calendrier (UTC), leur piste, l'objectif de la semaine
   fx/, render/   Particules, caméra, échelle des moments, sons ; palette et motifs partagés
-  services/      Réglages, records, profil, thème, ambiance, audio, partage
+  services/      Réglages, records, profil, thème, ambiance, mouvement, audio, partage
   ui/            Écrans (menu, jeu), pages du menu (hub/), composants ; la présentation et
                  la scène de chaque famille (presentation.ts, stages.ts)
 ```
