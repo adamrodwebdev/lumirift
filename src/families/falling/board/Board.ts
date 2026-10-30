@@ -130,20 +130,26 @@ export class Board {
    */
   links(x: number, y: number): number {
     const index = y * this.width + x;
-    const piece = this.pieces[index]!;
-    const stone = this.cells[index] === Tone.Garbage;
-    if (piece === 0 && !stone) return 0;
-    const same = (nx: number, ny: number) => {
-      if (!this.isInside(nx, ny)) return false;
-      const next = ny * this.width + this.column(nx);
-      return stone ? this.cells[next] === Tone.Garbage : this.pieces[next] === piece;
-    };
+    if (this.pieces[index] === 0 && this.cells[index] !== Tone.Garbage) return 0;
     return (
-      (same(x, y - 1) ? LINK.north : 0) |
-      (same(x + 1, y) ? LINK.east : 0) |
-      (same(x, y + 1) ? LINK.south : 0) |
-      (same(x - 1, y) ? LINK.west : 0)
+      (this.joins(index, x, y - 1) ? LINK.north : 0) |
+      (this.joins(index, x + 1, y) ? LINK.east : 0) |
+      (this.joins(index, x, y + 1) ? LINK.south : 0) |
+      (this.joins(index, x - 1, y) ? LINK.west : 0)
     );
+  }
+
+  /**
+   * Whether the block at (x, y) belongs with the block at `from`: the same piece, or rift
+   * stone beside rift stone. A method, not a closure: the renderer asks for every block
+   * of the stack at every frame, which must allocate nothing.
+   */
+  private joins(from: number, x: number, y: number): boolean {
+    if (!this.isInside(x, y)) return false;
+    const to = y * this.width + this.column(x);
+    return this.cells[from] === Tone.Garbage
+      ? this.cells[to] === Tone.Garbage
+      : this.pieces[to] === this.pieces[from];
   }
 
   /** True when the block at (x, y) carries a bomb gem. */
