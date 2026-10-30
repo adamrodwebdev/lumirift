@@ -11,7 +11,7 @@ import { TonePalette } from '@/render/TonePalette';
 const props = defineProps<{ session: FallingSession; clock: FrameClock; label: string }>();
 
 const { t } = useI18n();
-const { theme } = useServices();
+const { theme, pixelRatio } = useServices();
 const box = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const ariaLabel = computed(() => `${t('game.opponent')} · ${props.label}`);
@@ -20,7 +20,7 @@ let renderer: FallingRenderer | null = null;
 const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const width = entry.contentRect.width;
-  renderer.layout(width, width * 2, Math.min(2, window.devicePixelRatio || 1));
+  renderer.layout(width, width * 2, pixelRatio());
   renderer.render();
 });
 

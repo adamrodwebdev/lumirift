@@ -61,7 +61,8 @@ defineExpose({
     'hand hand';
   gap: 0.75rem;
   height: 100dvh;
-  padding: 1rem;
+  /* The clip set (1.39) adds a margin of background above and below the screen. */
+  padding: calc(var(--clip-margin, 0px) + 1rem) 1rem;
   overflow: hidden;
 }
 

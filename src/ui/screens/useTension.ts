@@ -11,10 +11,10 @@ import { CALM_BPM } from '@/services/audio/Music';
 import type { Haptics } from '@/services/Haptics';
 
 /** The music's tempo by danger: calm, then quicker, as the genre's classics hurry up. */
-const TEMPO = { calm: CALM_BPM, danger: 96, critical: 108 } as const;
+export const TEMPO = { calm: CALM_BPM, danger: 96, critical: 108 } as const;
 /** Music intensity: a pause or the end of a game calms it, the danger drives it. */
-const MUSIC_PLAYING = 0.42;
-const MUSIC_DANGER = 0.58;
+export const MUSIC_PLAYING = 0.42;
+export const MUSIC_DANGER = 0.58;
 const MUSIC_CALM = 0.12;
 /** A close call: time at a third of its pace for a moment (real ms). */
 const CLOSE_CALL_SLOW = { scale: 0.3, ms: 420 } as const;

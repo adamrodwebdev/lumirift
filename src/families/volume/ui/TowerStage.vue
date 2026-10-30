@@ -60,7 +60,7 @@ const session: FallingSession = props.session;
 const ROUND_WELL_ARR_MS = 16;
 
 const { t } = useI18n();
-const { theme, settings, audio, haptics, look } = useServices();
+const { theme, settings, audio, haptics, look, pixelRatio } = useServices();
 /** The rift surge, the game screen's: its key and its button are here. */
 const surge = inject(SURGE, null);
 const keys = useKeyBindings();
@@ -123,11 +123,7 @@ const input = new FallingInput(
 const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
-  columnSize.value = renderer.layout(
-    width - 4,
-    height - 4,
-    Math.min(2, window.devicePixelRatio || 1),
-  );
+  columnSize.value = renderer.layout(width - 4, height - 4, pixelRatio());
   renderer.render();
 });
 

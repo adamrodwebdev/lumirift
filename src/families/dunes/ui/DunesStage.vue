@@ -50,7 +50,7 @@ const game = session.game;
 
 const { t } = useI18n();
 const format = useFormat();
-const { theme, settings, audio, haptics } = useServices();
+const { theme, settings, audio, haptics, pixelRatio } = useServices();
 
 /** Each element's name, by its tone. */
 const NAME_OF: ReadonlyMap<Tone, ElementName> = new Map(
@@ -194,7 +194,7 @@ const ghostCanvas = ref<HTMLCanvasElement | null>(null);
 const landscape = useLandscape();
 let renderer: SandRenderer | null = null;
 let cellCss = 30;
-const ratio = () => Math.min(2, window.devicePixelRatio || 1);
+const ratio = () => pixelRatio();
 
 const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;

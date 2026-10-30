@@ -51,7 +51,7 @@ const session: SandSession = props.session;
 
 const { t } = useI18n();
 const format = useFormat();
-const { theme, settings, audio, haptics } = useServices();
+const { theme, settings, audio, haptics, pixelRatio } = useServices();
 /** The rift surge, the game screen's: its key and its button are here. */
 const surge = inject(SURGE, null);
 const keys = useKeyBindings();
@@ -96,11 +96,7 @@ const { pad, notch, glows } = useTouchPlay({
 const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
-  cellSize.value = renderer.layout(
-    width - 4,
-    height - 4,
-    Math.min(2, window.devicePixelRatio || 1),
-  );
+  cellSize.value = renderer.layout(width - 4, height - 4, pixelRatio());
 });
 
 const refreshPalette = async () => {

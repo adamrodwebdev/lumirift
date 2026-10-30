@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
+import { useServices } from '@/app/AppServices';
 import type { TonePalette } from '@/render/TonePalette';
 import type { OfferedSand } from '../engine/DunesDealer';
 import { paintPiece } from '../render/paintPiece';
@@ -32,12 +33,13 @@ const props = defineProps<{
 const emit = defineEmits<{ grab: [event: PointerEvent]; select: [] }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
+const { pixelRatio } = useServices();
 
 const draw = () => {
   const element = canvas.value;
   const ctx = element?.getContext('2d');
   if (!element || !ctx || !props.palette) return;
-  const ratio = Math.min(2, window.devicePixelRatio || 1);
+  const ratio = pixelRatio();
   const px = Math.round(props.size * ratio);
   element.width = px;
   element.height = px;

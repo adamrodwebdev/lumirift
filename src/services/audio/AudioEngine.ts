@@ -9,7 +9,7 @@ import { createNoiseBuffer, Synth } from './Synth';
  */
 export type SoundRecipe = (synth: Synth, groove: Groove) => void;
 
-type ContextFactory = () => AudioContext;
+type ContextFactory = () => BaseAudioContext;
 
 /** How much of each bus goes through the shared room. */
 const SFX_REVERB = 0.16;
@@ -25,7 +25,7 @@ const MUSIC_REVERB = 0.35;
  * every sound seems to come from the same place.
  */
 export class AudioEngine {
-  private context: AudioContext | null = null;
+  private context: BaseAudioContext | null = null;
   private master: GainNode | null = null;
   private sfx: GainNode | null = null;
   private musicBus: GainNode | null = null;
@@ -39,11 +39,32 @@ export class AudioEngine {
   private danger = 0;
   private surge = 0;
 
-  constructor(private readonly createContext: ContextFactory | null) {}
+  constructor(
+    private readonly createContext: ContextFactory | null,
+    /** Rendered offline: the caller moves the audio time and calls `tick()` (no timer, no gesture). */
+    private readonly offline = false,
+  ) {}
 
   static browser(): AudioEngine {
     const Context = typeof window === 'undefined' ? undefined : window.AudioContext;
     return new AudioEngine(Context ? () => new Context() : null);
+  }
+
+  /**
+   * An engine on an offline context (the clip factory, 1.39): the clips carry
+   * the game's sound as a player hears it, rendered frame-exact. Its caller
+   * suspends the context at each frame, plays the frame, then calls `tick()`
+   * every `MUSIC_TICK_MS` of audio time, as the music's timer does in a game.
+   */
+  static offline(context: OfflineAudioContext): AudioEngine {
+    const engine = new AudioEngine(() => context, true);
+    engine.unlock();
+    return engine;
+  }
+
+  /** The music schedules its next notes (an offline render's clock; a timer does it in a game). */
+  tick(): void {
+    this.music?.tick();
   }
 
   get ready(): boolean {
@@ -69,10 +90,11 @@ export class AudioEngine {
       this.music.setTempo(this.tempo);
       this.music.setDanger(this.danger);
       this.music.setSurge(this.surge);
-      this.music.start();
+      if (this.offline) this.music.startByHand();
+      else this.music.start();
       this.applyVolume();
     }
-    if (this.context.state === 'suspended') void this.context.resume();
+    if (this.live?.state === 'suspended') void this.live.resume();
   }
 
   setVolume(volume: number): void {
@@ -113,7 +135,7 @@ export class AudioEngine {
    * first, a bar every four) falls now, and the music's beats follow it.
    */
   pulse(count: number): void {
-    if (this.context?.state !== 'running') return;
+    if (!this.sounding) return;
     this.music?.follow(count);
   }
 
@@ -126,23 +148,33 @@ export class AudioEngine {
   /** The player got out of danger: the music opens and resolves. */
   relief(): void {
     this.danger = 0;
-    if (this.context?.state !== 'running') return;
+    if (!this.sounding) return;
     this.music?.relief();
   }
 
   /** Stops the audio clock while the page is hidden. */
   suspend(): void {
-    if (this.context?.state === 'running') void this.context.suspend();
+    if (this.live?.state === 'running') void this.live.suspend();
   }
 
   resume(): void {
-    if (this.context?.state === 'suspended') void this.context.resume();
+    if (this.live?.state === 'suspended') void this.live.resume();
   }
 
   play(recipe: SoundRecipe): void {
     if (!this.synth || !this.music || this.muted || this.volume === 0) return;
-    if (this.context?.state !== 'running') return;
+    if (!this.sounding) return;
     recipe(this.synth, this.music.groove());
+  }
+
+  /** The live context of a game (null offline): the page's visibility suspends it. */
+  private get live(): AudioContext | null {
+    return this.offline ? null : (this.context as AudioContext | null);
+  }
+
+  /** Sounds play: a running live context, or an offline render (suspended at each frame on purpose). */
+  private get sounding(): boolean {
+    return this.offline ? this.context !== null : this.context?.state === 'running';
   }
 
   /** A bus: straight to the master, plus a share sent to the room. */

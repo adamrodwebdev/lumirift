@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
+import { useServices } from '@/app/AppServices';
 import { shapeCells } from '@/families/falling/pieces/Shapes';
 import { MOTIFS } from '@/render/motifs';
 import { shade, type TonePalette } from '@/render/TonePalette';
@@ -10,12 +11,13 @@ import type { PieceSpec } from '../engine/SandGame';
 const props = defineProps<{ spec: PieceSpec | null; palette: TonePalette | null; size: number }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
+const { pixelRatio } = useServices();
 
 const draw = () => {
   const element = canvas.value;
   const ctx = element?.getContext('2d');
   if (!element || !ctx || !props.palette) return;
-  const ratio = Math.min(2, window.devicePixelRatio || 1);
+  const ratio = pixelRatio();
   const px = Math.round(props.size * ratio);
   element.width = px;
   element.height = px;

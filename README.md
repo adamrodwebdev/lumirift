@@ -149,6 +149,7 @@ npm run dev
 | `npm run lint`            | ESLint (règles TypeScript strictes, typées)                                                        |
 | `npm run format`          | Prettier                                                                                           |
 | `npm run lighthouse`      | Audit Lighthouse du build, mobile (`-- --desktop` pour le bureau)                                  |
+| `npm run clips`           | Les clips d'une semaine pour les réseaux (`-- --week AAAA-MM-JJ`, quelques minutes)                |
 | `npm run verify`          | Lint, format, types, tests et build : à passer avant chaque commit                                 |
 
 Les tests de bout en bout et Lighthouse utilisent le build : lancez `npm run build` avant.
@@ -235,6 +236,22 @@ node scripts/yandex-media.mjs   # icône, couverture, captures et vidéos MP4 da
 Exigences et leur contrôle, fiche en quatre langues et étapes de publication :
 [docs/YANDEX.md](docs/YANDEX.md).
 
+### Clips des réseaux
+
+La fabrique de clips (1.39) filme les moments forts du jeu sur ses vrais moteurs, pour
+TikTok, Instagram et YouTube Shorts :
+
+```bash
+npm run clips -- --week 2026-11-02                          # la semaine dans release/clips/2026-11-02/
+npm run clips -- --week 2026-11-02 --clip mon-fire-on-oil   # un seul clip
+```
+
+Chaque clip est un MP4 vertical (1080 × 1920, H.264 et AAC, 7 à 15 s) qui s'ouvre sur son pic et
+boucle sans couture, avec le son du jeu (vers −14 LUFS, crêtes vraies sous −2 dBTP), sa
+couverture et une entrée de `manifest.json` (les mesures que citent les légendes, les niveaux
+du son et les contrôles). Les semaines sont des recettes dans `media/clips.ts`, les scènes dans
+`src/showcase/`. La fabrique n'écrit que des fichiers : l'envoi reste à la main.
+
 ## Qualité
 
 - TypeScript strict, ESLint `strictTypeChecked`, Prettier.
@@ -275,7 +292,7 @@ src/
   campaign/      Niveaux, objectifs, étoiles, améliorations, défi des Gardiens ; generator/ (le
                  plan des chapitres 6 à 10, un générateur par famille, le tamis du bot) et
                  packs/ (les chapitres générés, en données, avec leurs rapports)
-  showcase/      Scènes mises en scène (boucle de l'accueil, vidéos des portails)
+  showcase/      Scènes mises en scène (boucle de l'accueil, vidéos des portails, clips)
   families/      falling, sand, placement, volume : moteur, session, rendu, effets, interface ;
                  race : la course, une session de sessions qui change de monde ;
                  dunes : le sable posé (à l'essai), composé des grains et du Ver du Sable

@@ -1,4 +1,5 @@
 import { ref, type Ref } from 'vue';
+import { useServices } from '@/app/AppServices';
 import * as sounds from '@/fx/sounds';
 import type { SoundRecipe } from '@/services/audio/AudioEngine';
 import type { DunesPreview } from '../DunesController';
@@ -56,7 +57,8 @@ export function useHandDrag(host: HandDragHost) {
   /** Where the ghost is (client pixels of its top-left corner). */
   let ghostAt = { left: 0, top: 0 };
 
-  const ratio = () => Math.min(2, window.devicePixelRatio || 1);
+  const { pixelRatio } = useServices();
+  const ratio = pixelRatio;
 
   const ghostHost = () => {
     const ghost = host.ghost.value;

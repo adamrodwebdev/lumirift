@@ -6,7 +6,7 @@ import type { SandSession } from '@/families/sand/SandSession';
 import type { TowerMode } from '@/families/volume/TowerMode';
 import { FALLING_SCENES } from '@/showcase/fallingScenes';
 import { MOSAIC_SCENES } from '@/showcase/mosaicScenes';
-import { SAND_SCENES } from '@/showcase/sandScenes';
+import { SAND_SCENES, type FireChoice } from '@/showcase/sandScenes';
 import { SCENE_FAMILIES, SCENE_IDS, SCENE_MS, type Scene } from '@/showcase/Scene';
 import { TOWER_SCENES } from '@/showcase/towerScenes';
 
@@ -137,5 +137,89 @@ describe('the showcase scenes', () => {
     play(scene, SCENE_MS.riftHeart, clock);
     expect(seen.get('swell')).toBeLessThan(200);
     expect(seen.get('shard')).toBeLessThan(SCENE_MS.riftHeart - SEEN_MS);
+  });
+
+  /*
+   * The clip factory's scenes (1.39): a clip of 7 to 15 s needs its peak
+   * after a build-up of about 4.5 s, and each of the three variants must
+   * still play its moment out.
+   */
+  const VARIANTS = [0, 1, 2] as const;
+  /** A clip's moment lands between these times (ms): late enough for the build-up, early enough for 15 s. */
+  const PEAK_FROM_MS = 3500;
+  const PEAK_BY_MS = 7000;
+
+  it.each(VARIANTS)('fire on oil, variant %i: the pool blazes after the build-up', (variant) => {
+    const clock = { now: 0 };
+    const { seen, mark } = marks(clock);
+    let burnt = 0;
+    const scene = SAND_SCENES.fireOnOil(variant);
+    const session = scene.session as SandSession;
+    session.onGame('react', ({ kind, grains }) => {
+      mark(kind);
+      burnt += grains;
+    });
+    session.onGame('burn', ({ grains }) => (burnt += grains));
+    play(scene, 9000, clock);
+    expect(seen.get('blaze')).toBeGreaterThan(PEAK_FROM_MS);
+    expect(seen.get('blaze')).toBeLessThan(PEAK_BY_MS);
+    expect(burnt).toBeGreaterThan(300);
+  });
+
+  it.each(VARIANTS)('lightning in water, variant %i: the bolt shocks the pool', (variant) => {
+    const clock = { now: 0 };
+    const { seen, mark } = marks(clock);
+    let struck = 0;
+    const scene = SAND_SCENES.lightningInWater(variant);
+    (scene.session as SandSession).onGame('strike', ({ kind, grains }) => {
+      mark(kind);
+      struck += grains;
+    });
+    play(scene, 9000, clock);
+    expect(seen.get('shock')).toBeGreaterThan(PEAK_FROM_MS);
+    expect(seen.get('shock')).toBeLessThan(PEAK_BY_MS);
+    expect(struck).toBeGreaterThan(300);
+  });
+
+  it.each(VARIANTS)(
+    'the fire challenge, variant %i: the oil blazes (A), the water puts it out (B)',
+    (variant) => {
+      const outcome = (choice: FireChoice) => {
+        const clock = { now: 0 };
+        const { seen, mark } = marks(clock);
+        let burnt = 0;
+        const scene = SAND_SCENES.fireChoice(variant, choice);
+        const session = scene.session as SandSession;
+        session.onGame('react', ({ kind, grains }) => {
+          mark(kind);
+          burnt += grains;
+        });
+        session.onGame('burn', ({ grains }) => (burnt += grains));
+        session.onGame('quench', () => mark('quench'));
+        play(scene, 9000, clock);
+        return { seen, burnt };
+      };
+      const a = outcome('A');
+      const b = outcome('B');
+      expect(a.seen.get('blaze')).toBeLessThan(PEAK_BY_MS);
+      expect(a.burnt).toBeGreaterThan(150);
+      expect(b.seen.get('quench')).toBeLessThan(PEAK_BY_MS);
+      expect(b.burnt).toBe(0);
+    },
+  );
+
+  it('the fire challenge without a choice: the fire waits at the top, the same moment as both answers', () => {
+    const spawns = (choice: FireChoice | null) => {
+      const clock = { now: 0 };
+      const times: number[] = [];
+      const scene = SAND_SCENES.fireChoice(0, choice);
+      (scene.session as SandSession).onGame('spawn', () => times.push(clock.now));
+      play(scene, 4500, clock);
+      return times;
+    };
+    const decision = spawns(null);
+    expect(decision).toEqual(spawns('A'));
+    expect(decision).toEqual(spawns('B'));
+    expect(decision.at(-1)).toBeGreaterThan(PEAK_FROM_MS);
   });
 });

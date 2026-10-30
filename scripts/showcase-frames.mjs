@@ -5,6 +5,8 @@
 import { createServer } from 'vite';
 
 const PORT = 5179;
+/** The set's page, on the dev server `startShowcase` opens. */
+export const SHOWCASE_URL = `http://localhost:${PORT}/media/showcase.html`;
 
 /** The dev server of the showcase (no hot reload: an edit must not reload a recording). */
 export async function startShowcase() {
@@ -27,7 +29,7 @@ export async function* sceneFrames(browser, { width, height, fps, scenes, onScen
     colorScheme: 'dark',
     reducedMotion: 'no-preference',
   });
-  await tab.goto(`http://localhost:${PORT}/media/showcase.html`);
+  await tab.goto(SHOWCASE_URL);
   // `window.showcase` first names the page's <div id="showcase">: wait for the real API.
   await tab.waitForFunction(() => typeof window.showcase?.scene === 'function', null, {
     timeout: 120_000,

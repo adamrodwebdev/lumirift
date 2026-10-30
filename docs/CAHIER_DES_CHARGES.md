@@ -9,6 +9,9 @@
 | 1.34    | 27/10/2026 | Course contre la montre : la Course de la faille, ses mondes toutes les 40 s, son chrono et ses gains, les Gardiens du monde, le record de la semaine, ouverte au niveau 4-4 (§ 9 bis, lot 24).                                       |
 | 1.35    | 27/10/2026 | Cadeaux et collections : le calendrier de sept jours, le retour après une semaine, la série affichée et ses paliers, les ensembles de l'Atelier et leurs quatre ambiances (§ 3.6, § 9 bis, lot 17).                                   |
 | 1.36    | 27/10/2026 | Événements et saisons : l'élément de la semaine et son objectif, l'avant-saison, la saison 1 « Braises » et les saisons 2 et 3 en données, la page de la saison (§ 3.6, § 9 bis, lot 18).                                             |
+| 1.37    | 27/10/2026 | Dunes, le test web : le sable posé, trois pièces en main, sans chrono, dans sa propre version de test (§ 9 bis, lot 19).                                                                                                              |
+| 1.38    | 28/10/2026 | Niveaux générés : un générateur par famille, les chapitres 6 à 10, 69 niveaux, les revanches des Gardiens (§ 9 bis, lot 20).                                                                                                          |
+| 1.39    | 28/10/2026 | La fabrique de clips : les clips de la semaine filmés par le jeu, son compris, pour les réseaux (§ 9 ter, lot 25).                                                                                                                    |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1765,6 +1768,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
 | 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Livré (1.32)                                                 |
 | 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Livré (1.34)                                                 |
+| 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2101,6 +2105,121 @@ et 24. Le même jour : une partie reprise compte pour les records, comme chez la
 la boutique attend le contrat Yandex et forme une petite version à part, pour que la 1.31 sorte
 plus tôt.
 
+## 9 ter. La croissance sans dépense (lot 25, validé le 28/10/2026)
+
+Le plan « Lumirift Social Growth Plan », validé le 28/10/2026, fait venir des joueurs sans
+dépense : des clips courts du jeu chaque jour sur TikTok et Instagram, les trois meilleurs de la
+semaine sur YouTube, et une page à nous, adamrodwebdev.com/lumirift (dépôt du portfolio). Ce lot
+outille la part du jeu : le jeu filme lui-même ses meilleurs moments.
+
+- **Lot 25 · 1.39 La fabrique de clips.** Une commande, `npm run clips -- --week 2026-11-02`,
+  rend les clips d'une semaine dans `release/clips/<lundi>/`, depuis les vrais moteurs, comme les
+  vidéos des portails (`scripts/showcase-frames.mjs`, `scripts/mp4-encoder.mjs`,
+  `media/scenes.ts`).
+  - Chaque clip : un MP4 de 1080 × 1920 à 30 images/s, H.264 et AAC, de 7 à 15 s. Il s'ouvre sur
+    son pic, jamais sur la mise en place, et sa dernière image rejoint la première : il boucle.
+    Aucun texte incrusté (chaque application ajoute la ligne de texte, pour le texte natif et la
+    recherche), sauf les repères A et B d'un défi. Une couverture JPEG, l'image du pic. Un
+    `manifest.json` : scène, graine, durée, temps du pic, mesures du moteur (grains brûlés,
+    foudroyés, lignes faites).
+  - Le montage suit les événements des moteurs, ceux que lit `tests/showcase/scenes.test.ts`
+    (coups et réactions comme `shock`, `blaze`, `sprout` ; l'alerte, la sortie et les blessures
+    d'un Gardien ; les lignes), jamais des temps posés à la main : une scène modifiée garde sa
+    coupe. Une première passe sans dessin note quand et où chaque pic arrive. Le clip s'ouvre
+    0,15 s avant le pic, avec un zoom de × 1,0 à × 1,15 en 150 ms tenu environ 1,2 s, et environ
+    2,5 s de suite ; puis il rejoue la mise en place depuis le début jusqu'à l'image qui précède
+    son ouverture (revue du 29/10/2026) : la boucle n'a pas de couture, l'image et la musique la
+    traversent, le pic passe une fois par tour. Un clip de moins de 7 s allonge sa suite, jamais
+    sa reprise au-delà du pic.
+  - La caméra : les images sont dessinées à 3× puis recadrées en 1080 × 1920, si bien qu'un zoom
+    jusqu'à × 1,5 reste net (les canevas de la page des médias montent à 3× ; le jeu garde son
+    plafond de 2×). Le cadre suit le lieu du pic, reste dans le puits et garde l'action dans la
+    zone sûre du gabarit : hors des 15 % de droite (les boutons des applications), des 22 % du
+    bas (la légende) et des 10 % du haut (les onglets).
+  - Le son, tel que l'entend un joueur (la musique, les effets, le battement du danger). De
+    préférence rendu hors ligne, à l'image près : `AudioEngine` sur un `OfflineAudioContext`, les
+    sons de la session rejoués à leurs temps de jeu, l'ordonnanceur de `Music` piloté sur la
+    durée du clip au lieu de son `setInterval`, l'audio encodé en AAC par WebCodecs et une piste
+    audio dans `mp4-encoder.mjs`. À défaut, si cet essai dépasse une demi-journée, le son est
+    enregistré en direct, la scène avançant par pas fixes de 1/30 s à vitesse réelle. Le son
+    d'un pic tombe à moins d'une image (33 ms) de son image, vers −14 LUFS, ses crêtes vraies
+    sous −2 dBTP avant l'encodeur, l'AAC décodé à −1 dBFS ou sous (revue du 29/10/2026).
+  - Les scènes suivent le calendrier du jeu : le lundi, l'élément de la semaine
+    (`src/seasons/SeasonData.ts`) ; le vendredi, le Gardien du défi de la semaine
+    (`GuardianChallenge`). Semaine du 2 novembre : le feu sur l'huile (nouvelle scène), la paire
+    de défi du feu (nouvelle), une coupe plus longue du Cœur de la faille, l'éclair dans l'eau
+    (tiré de la scène `elements`). Puis l'eau et le Ver (9 novembre), la graine et le Golem (16),
+    la glace et l'Œil (23), l'huile et le Cœur (30), l'acide et le Ver (7 décembre), chaque
+    semaine construite une semaine à l'avance. Chaque nouvelle scène se met en scène par les
+    options publiques des moteurs (lit préparé, pièces scriptées, graine), a son test de pic à
+    l'heure et trois graines, pour qu'un élément qui revient ne montre jamais deux fois le même
+    clip.
+  - Les paires de défi : un même plateau, deux lâchers scriptés depuis la même graine. Le clip de
+    mise en place s'arrête sur la décision, repères A et B à l'écran ; le clip de réponse montre
+    les deux issues côte à côte, chacune avec le compte mesuré par le moteur (dans
+    `manifest.json`, que cite la légende du dimanche).
+  - Porte : la semaine 1 (clips, couvertures, manifeste) en moins de 15 minutes sur un seul
+    cœur ; deux passes aux mêmes entrées donnent les mêmes images ; chaque clip suit les règles
+    ci-dessus, son pic dans les 0,3 premières secondes, sa dernière image juste avant la première ;
+    le son de chaque pic à 33 ms près de son image ; l'action de chaque pic dans la zone sûre ;
+    un test de pic par nouvelle scène ; `scripts/yandex-media.mjs` et
+    `scripts/crazygames-media.mjs` rendent toujours les mêmes vidéos des portails ; la fabrique
+    ne fait qu'écrire des fichiers, sans publication ni API de plateforme.
+  - Architecture : `scripts/clip-factory.mjs` et `npm run clips` ; `media/clips.ts`, les
+    recettes des semaines en données ; les nouvelles scènes dans `src/showcase/` avec leurs
+    tests ; la piste audio dans `scripts/mp4-encoder.mjs` ; le son hors ligne à côté de
+    `src/services/audio/`.
+  - Hors du lot : la ligne de texte, la voix, le montage, l'envoi et la programmation, qui restent
+    dans les applications et aux mains de l'utilisateur ; la page /lumirift, livrée dans le dépôt
+    du portfolio (sa version 1.8.0).
+  - **Livré en 1.39** (28/10/2026). Le son hors ligne a tenu dans la demi-journée : pas
+    d'enregistrement en direct. Les choix au-delà de la spécification :
+    - **le plateau de tournage** (`media/showcase.html?clip`), une prise par chargement : la page
+      vit sur son propre temps (`SetTime` : minuteries, images, `performance.now()`, animations
+      CSS avancés avec les images), sinon le bandeau d'un moment (700 ms) ne durait que cinq
+      images, l'enregistreur prenant 0,1 s par image ; l'écran du jeu (540 × 960) a 160 px de
+      son fond au-dessus et au-dessous, où le cadre peut descendre ;
+    - **deux prises par clip** : la première, sans image, trouve le pic et sa place ; la seconde
+      filme et enregistre le son ensemble (`TakeSound` : le moteur audio du jeu sur un
+      `OfflineAudioContext` suspendu à chaque image, la musique suivie comme par `useTension`) ;
+      le son d'une image commence donc à son temps exact ;
+    - **le zoom se fait en composant** (l'image d'un cadre fixe, agrandie), donc sans saccade ;
+      il repart en 0,3 s après 1,2 s, avant la coupe vers le début ;
+    - **la zone sûre** : le cadre garde l'écran entier et sa taille, et descend dans la marge
+      si l'action tomberait sous la légende. Un pic peut porter l'étendue de l'action, que le
+      cadre garde entière, le bas d'abord. Sur le Cœur, dont les rangées montent du sol, c'est
+      son plancher et les quatre rangées qui éclatent au-dessus (revue du 29/10/2026) : le
+      plancher passe à 77,5 % de la hauteur, au-dessus de la légende (la marge de 160 px est
+      alors toute prise), les rangées entre 61 et 77,5 %, et le haut du puits sort du cadre. Le
+      contrôle teste l'étendue entière (en 1.39 d'abord, un seul point visé à 76 % laissait la
+      rangée du fond vers 85 %) ;
+    - **la question d'un défi** s'ouvre sur la décision (le feu vient d'apparaître, A et B au
+      milieu du ciel, au-dessus de l'huile et de l'eau), zoomée et tenue 1,2 s, revient au début,
+      puis tient la décision 2,5 s : la musique continue sous l'image arrêtée. **La réponse**
+      montre les deux puits entiers côte à côte (sans zoom : on compare), leur lettre dessous
+      (96 px), sur un fond uni, dans la zone sûre ; le son des deux prises mêlé ;
+    - **les mêmes images à chaque passe** : Chrome dessine sans carte graphique, qui composait
+      la lueur du puits un peu différemment d'une prise à l'autre ; le manifeste donne
+      l'empreinte des images de chaque clip (deux passes de la semaine 1 : les cinq égales) ;
+    - **l'amorce de l'AAC est mesurée** en décodant le son et en le recalant sur l'original :
+      0 échantillon avec l'encodeur de Chrome sous Windows ; un son placé à 0,5 s sort à 0,5 s
+      (0,04 ms). Le niveau suit BS.1770 (un sinus de 997 Hz à −20 dBFS lit −20,0 LUFS) ;
+    - **les crêtes vraies** (revue du 29/10/2026) : mesurées selon l'annexe 2 de BS.1770, quatre
+      fois suréchantillonnées (le sinus de 997 Hz à pleine échelle lit 0,01 dBTP), tenues sous
+      −2 dBTP par un limiteur qui anticipe de 1,5 ms et relâche en 80 ms, au lieu d'une courbe
+      douce sur les échantillons à −1 dBFS, que l'AAC dépassait ; l'AAC est décodé sur toutes ses
+      voies et ses crêtes contrôlées (−1 dBFS au plus). La piste son s'arrête avec l'image : la
+      liste d'édition coupe le bourrage du dernier bloc AAC, qui marquait le bouclage ;
+    - mesures de la semaine 1, refaite après la revue : 3,2 minutes pour cinq clips, quand la
+      porte en donne 15 ; 7,0 s (lundi, jeudi, dimanche), 7,7 s (mardi), 9,5 s (vendredi) ; les pics à 4,63 s
+      (l'embrasement, l'éclair), 4,07 s (la décision) et 7,13 s (le second éclat du Cœur) ; de
+      −14,2 à −14,5 LUFS, −2,0 dBTP avant l'encodeur, de −1,79 à −1,54 dBFS une fois décodés ; de
+      1,1 à 10,9 Mo. Au bouclage, la dernière image et la première diffèrent comme deux images qui
+      se suivent (lundi : 1,0 contre 0,6 en médiane et 6,1 au 9e décile, sur 255) ; le seul saut
+      est la coupe vers le début ;
+    - les vidéos des portails ne changent pas : sans `?clip`, le plateau reste à 2× et sur
+      l'horloge réelle.
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
@@ -2172,3 +2291,6 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.34    | 27/10/2026 | Course contre la montre : `families/race`, le point de contrôle de 10 s mesuré par le bot, ouverture au 4-4, débordement qui continue (§ 5, § 9 bis, lot 24).          |
 | 1.35    | 27/10/2026 | Cadeaux et collections : `DailyGifts`, `GiftCalendar`, `GiftService`, les ensembles et leurs ambiances, la série et ses paliers, le retour (§ 3.6, § 9 bis, lot 17).   |
 | 1.36    | 27/10/2026 | Événements et saisons : `seasons/` (calendrier UTC, piste, objectif de la semaine, nouveautés en données), avant-saison, saisons 1 à 3 (§ 3.6, § 9 bis, lot 18).       |
+| 1.37    | 27/10/2026 | Dunes : `families/dunes` (main de trois pièces, promesse lue sur les cases libres, le Ver), versions de test Dunes seul et Sable seul (§ 9 bis, lot 19).               |
+| 1.38    | 28/10/2026 | Niveaux générés : `campaign/generator` (plan, générateurs par famille, tamis du bot), les packs des chapitres 6 à 10 (§ 9 bis, lot 20).                                |
+| 1.39    | 28/10/2026 | La croissance sans dépense (§ 9 ter) ; la fabrique de clips : `clip-factory.mjs`, le plateau `?clip` (`SetTime`, `TakeSound`), la piste AAC (lot 25).                  |
