@@ -98,7 +98,17 @@ test('the keys play: 1 to 3 pick, the arrows aim, Space puts down, R swaps the h
   await page.keyboard.press('Space');
   await expect(hand(page).getByRole('button').nth(1)).toHaveAccessibleName('Emplacement vide');
   await page.keyboard.press('KeyR');
-  await expect(swapButton(page)).toHaveAccessibleName('Échanger votre main (0 restant)');
+  // Its falling sand may link the opening's zone, before R or after it (about one game in
+  // three): that level won brings a swap. Either way R used one: none left on D-1, one on D-2.
+  await expect
+    .poll(async () => {
+      const level = await page.getByRole('group', { name: 'Objectif' }).textContent();
+      const swaps = await swapButton(page).getAttribute('aria-label');
+      return level?.includes('Niveau D-2')
+        ? swaps === 'Échanger votre main (1 restant)'
+        : swaps === 'Échanger votre main (0 restant)';
+    })
+    .toBe(true);
   await expect(hand(page).getByRole('button', { name: 'Emplacement vide' })).toHaveCount(0);
   await page.keyboard.press('KeyP');
   const pause = page.getByRole('dialog', { name: 'Pause' });
