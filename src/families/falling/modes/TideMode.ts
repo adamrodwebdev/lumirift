@@ -1,10 +1,16 @@
+import { WELL } from '@/core/Well';
 import type { Indicator, ResultKind } from '@/session/GameSession';
 import type { Game } from '../game/Game';
 import { AbstractMode } from './AbstractMode';
 
-export const TIDE_START_INTERVAL_MS = 10_000;
-export const TIDE_INTERVAL_STEP_MS = 500;
-export const TIDE_MIN_INTERVAL_MS = 3_000;
+/**
+ * The tide was paced for a well of 20 rows: in Lumirift's 18 (1.43) it rises
+ * as much slower, so that it fills the same share of the well in the same time.
+ */
+const PACE = 20 / WELL.rows;
+export const TIDE_START_INTERVAL_MS = Math.round(10_000 * PACE);
+export const TIDE_INTERVAL_STEP_MS = Math.round(500 * PACE);
+export const TIDE_MIN_INTERVAL_MS = Math.round(3_000 * PACE);
 export const TIDE_DELAY_PER_LINE_MS = 1_000;
 /** Chance that a new garbage row keeps the previous hole, so a well can be dug. */
 const SAME_HOLE_CHANCE = 0.7;
