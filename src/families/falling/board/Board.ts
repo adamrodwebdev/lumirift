@@ -126,12 +126,20 @@ export class Board {
     return this.cells[y * this.width + x] as Tone;
   }
 
-  /** The sides of the block at (x, y) that touch a block of the same piece (`LINK` bits). */
+  /**
+   * The sides of the block at (x, y) that touch a block of the same piece (`LINK` bits).
+   * Garbage is rift stone (1.43): it joins the stone around it, a row reads as one slab.
+   */
   links(x: number, y: number): number {
-    const piece = this.pieces[y * this.width + x]!;
-    if (piece === 0) return 0;
-    const same = (nx: number, ny: number) =>
-      this.isInside(nx, ny) && this.pieces[ny * this.width + this.column(nx)] === piece;
+    const index = y * this.width + x;
+    const piece = this.pieces[index]!;
+    const stone = this.cells[index] === Tone.Garbage;
+    if (piece === 0 && !stone) return 0;
+    const same = (nx: number, ny: number) => {
+      if (!this.isInside(nx, ny)) return false;
+      const next = ny * this.width + this.column(nx);
+      return stone ? this.cells[next] === Tone.Garbage : this.pieces[next] === piece;
+    };
     return (
       (same(x, y - 1) ? LINK.north : 0) |
       (same(x + 1, y) ? LINK.east : 0) |

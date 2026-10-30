@@ -6,6 +6,7 @@ import {
   EFFECT_TIMINGS,
   type FallingEffects,
 } from '@/families/falling/fx/FallingEffects';
+import { BEAM, BeamPaint, lowestBlocks } from '@/families/falling/render/LandingBeam';
 import { WellOverlay } from '@/families/falling/render/WellOverlay';
 import type { Piece } from '@/families/falling/pieces/Piece';
 import { ParticleKind } from '@/fx/ParticlePool';
@@ -37,7 +38,11 @@ export class TowerRenderer {
   private readonly projection: CylinderProjection;
   private sprites: GlassSprites | null = null;
   private palette: TonePalette | null = null;
+  /** The player's landing guide: the landing beam since 1.43 (the setting keeps its name). */
   private ghost = true;
+  private readonly beam: BeamPaint;
+  /** The falling piece's lowest block per column, for the landing beam (reused). */
+  private readonly lows = new Int8Array(4);
   private dark = true;
   /** The camera's offset, in device pixels, added to every transform. */
   private offsetX = 0;
@@ -59,6 +64,7 @@ export class TowerRenderer {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D is not available');
     this.ctx = ctx;
+    this.beam = new BeamPaint(ctx);
     this.overlay = new WellOverlay(ctx);
     const { board } = view;
     this.projection = new CylinderProjection(board.width, board.height - board.hiddenRows);
@@ -126,7 +132,7 @@ export class TowerRenderer {
     const active = this.view.active;
     if (active) {
       const distance = this.view.dropDistance();
-      if (this.ghost && distance > 0) this.drawPiece(sprites, active, distance, 0.28);
+      if (this.ghost) this.drawBeam(active, distance, palette);
       this.drawPiece(sprites, active, 0, 1);
     }
 
@@ -521,6 +527,35 @@ export class TowerRenderer {
       ctx.strokeRect(0.05, 0.05, 0.9, 0.9);
     }
     ctx.globalAlpha = 1;
+  }
+
+  /**
+   * The landing beam (1.43) on the glass: from each front column of the piece,
+   * light down to where it will rest, and a bright cap at its resting place.
+   */
+  private drawBeam(piece: Piece, distance: number, palette: TonePalette): void {
+    if (distance <= 0) return;
+    const { ctx, beam } = this;
+    const { board } = this.view;
+    const rgb = palette.color(piece.tone);
+    const shaft = beam.shaft(piece.tone, rgb);
+    const { glow, core } = beam.cap(piece.tone, rgb);
+    const lows = lowestBlocks(piece.localCells, this.lows);
+    for (let local = 0; local < lows.length; local++) {
+      const low = lows[local]!;
+      const column = board.column(piece.x + local);
+      if (low < 0 || !this.isFront(column)) continue;
+      const top = piece.y + low + 1 - board.hiddenRows;
+      this.face(column, top, distance);
+      ctx.fillStyle = shaft;
+      ctx.fillRect((1 - BEAM.width) / 2, 0, BEAM.width, 1);
+      this.face(column, top + distance - 0.1, 0.1);
+      ctx.fillStyle = glow;
+      ctx.fillRect(0.05, -0.5, 0.9, 1.8);
+      ctx.fillStyle = core;
+      ctx.fillRect((1 - BEAM.cap) / 2, 0.15, BEAM.cap, 0.7);
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
   private drawPiece(sprites: GlassSprites, piece: Piece, dy: number, alpha: number): void {

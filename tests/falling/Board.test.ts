@@ -173,12 +173,13 @@ describe('Board links: each piece one crystal (1.43)', () => {
     expect(cut.links(9, FLOOR - 2)).toBe(north | south);
   });
 
-  it('makes the blocks drawn in text pieces of four at most, garbage none', () => {
+  it('makes the blocks drawn in text pieces of four at most, and stone one slab', () => {
     const board = Board.fromRows(['IIIIII', '##ZZ..']);
     expect(board.links(0, FLOOR - 1)).toBe(east);
     expect(board.links(3, FLOOR - 1)).toBe(west); // the fourth I closes the first piece
     expect(board.links(4, FLOOR - 1)).toBe(east); // the last two make another
-    expect(board.links(0, FLOOR)).toBe(0); // garbage stands alone
+    expect(board.links(0, FLOOR)).toBe(east); // rift stone joins the stone beside it
+    expect(board.links(1, FLOOR)).toBe(west); // not the Z, another piece
     expect(board.links(2, FLOOR)).toBe(east);
   });
 

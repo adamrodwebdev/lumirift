@@ -1,10 +1,12 @@
 import type { FallingView } from '../FallingSession';
 import type { FallingEffects } from '../fx/FallingEffects';
 import type { Piece } from '../pieces/Piece';
+import { Tone } from '../pieces/PieceType';
 import type { MaterialId } from '@/progression/Cosmetics';
 import type { BlockSprites } from './BlockSprites';
 import { blockSprites } from './materials';
 import { EffectsPainter } from './EffectsPainter';
+import { BEAM, BeamPaint, lowestBlocks } from './LandingBeam';
 import type { TonePalette } from '@/render/TonePalette';
 import type { WellDecor } from './WellDecor';
 
@@ -19,6 +21,9 @@ const DANGER_HEIGHT = 0.7;
 export class FallingRenderer {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly painter: EffectsPainter;
+  private readonly beam: BeamPaint;
+  /** The falling piece's lowest block per column, for the landing beam (reused). */
+  private readonly lows = new Int8Array(4);
   private sprites: BlockSprites | null = null;
   private material: MaterialId = 'crystal';
   private palette: TonePalette | null = null;
@@ -27,6 +32,7 @@ export class FallingRenderer {
   private animated = true;
   /** Cell side in device pixels. */
   private cell = 0;
+  /** The player's landing guide: the landing beam since 1.43 (the setting keeps its name). */
   private ghost = true;
   private dark = true;
 
@@ -40,6 +46,7 @@ export class FallingRenderer {
     if (!ctx) throw new Error('Canvas 2D is not available');
     this.ctx = ctx;
     this.painter = new EffectsPainter(ctx);
+    this.beam = new BeamPaint(ctx);
   }
 
   get columns(): number {
@@ -158,6 +165,7 @@ export class FallingRenderer {
         }
       }
     }
+    if (!effects?.stackHidden) this.drawStone(palette);
     this.decor?.draw(ctx, this.view, palette, cell, this.animated ? performance.now() : 0);
     if (effects) {
       this.painter.cracks(effects, sprites, palette, cell);
@@ -168,7 +176,7 @@ export class FallingRenderer {
     this.drawSpawnWarning(palette);
     const active = this.view.active;
     if (active) {
-      if (this.ghost) this.drawGhost(active, this.view.dropDistance());
+      if (this.ghost) this.drawBeam(active, this.view.dropDistance(), palette);
       this.drawPiece(active, 0);
     }
 
@@ -250,12 +258,112 @@ export class FallingRenderer {
     ctx.globalAlpha = 1;
   }
 
-  private drawGhost(piece: Piece, distance: number): void {
-    if (distance === 0) return;
-    const { ctx } = this;
-    ctx.globalAlpha = 0.28;
-    this.drawPiece(piece, distance);
+  /**
+   * Rift stone (1.43): a crack along each slab of garbage, and in an attack row's gap a
+   * vein of light, so the way through reads before the player aims. The crack's shape
+   * comes from the row's gap, so that it stays the same while the row rises.
+   */
+  private drawStone(palette: TonePalette): void {
+    const { ctx, cell, effects } = this;
+    const { board } = this.view;
+    const hidden = board.hiddenRows;
+    const { stone, rift, riftCore } = palette.effects;
+    for (let y = hidden; y < board.height; y++) {
+      let stones = 0;
+      let empties = 0;
+      let gap = -1;
+      for (let x = 0; x < board.width; x++) {
+        const tone = board.get(x, y);
+        if (tone === Tone.Garbage) stones++;
+        else if (tone === Tone.Empty) {
+          empties++;
+          gap = x;
+        }
+      }
+      if (stones === 0) continue;
+      const shift = (effects?.rowOffset[y] ?? 0) + (effects?.rowDip[y] ?? 0);
+      const top = (y - hidden + shift) * cell;
+      const seed = gap + 1;
+      ctx.strokeStyle = stone.crack;
+      ctx.lineWidth = Math.max(1, cell * 0.045);
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      let drawing = false;
+      for (let x = 0; x < board.width; x++) {
+        if (board.get(x, y) !== Tone.Garbage) {
+          drawing = false;
+          continue;
+        }
+        const from = top + cell * (0.35 + 0.3 * jitter(seed, x));
+        const to = top + cell * (0.35 + 0.3 * jitter(seed, x + 1));
+        if (!drawing) ctx.moveTo(x * cell + cell * 0.12, from);
+        ctx.lineTo((x + 0.5) * cell, top + cell * (0.3 + 0.4 * jitter(x, seed)));
+        ctx.lineTo(
+          (x + 1) * cell -
+            (x + 1 < board.width && board.get(x + 1, y) === Tone.Garbage ? 0 : cell * 0.12),
+          to,
+        );
+        drawing = true;
+      }
+      ctx.stroke();
+      if (empties === 1 && stones === board.width - 1)
+        this.drawVein(gap, top, rift, riftCore, seed);
+    }
+  }
+
+  /** The vein of light in an attack row's gap: a glow, then a bright jagged core. */
+  private drawVein(x: number, top: number, glow: string, core: string, seed: number): void {
+    const { ctx, cell } = this;
+    const middle = (x + 0.5) * cell;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (const [colour, width, alpha] of [
+      [glow, cell * 0.34, 0.28],
+      [glow, cell * 0.16, 0.5],
+      [core, Math.max(1.5, cell * 0.06), 1],
+    ] as const) {
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(middle, top + cell * 0.04);
+      for (let k = 1; k <= 4; k++) {
+        const sway = k === 4 ? 0 : (jitter(seed, k) - 0.5) * cell * 0.18;
+        ctx.lineTo(middle + sway, top + (cell * k) / 4 - (k === 4 ? cell * 0.04 : 0));
+      }
+      ctx.stroke();
+    }
     ctx.globalAlpha = 1;
+  }
+
+  /** The landing beam (1.43): light from each column of the piece down to where it will rest. */
+  private drawBeam(piece: Piece, distance: number, palette: TonePalette): void {
+    if (distance === 0) return;
+    const { ctx, cell, beam } = this;
+    const hidden = this.view.board.hiddenRows;
+    const rgb = palette.color(piece.tone);
+    const shaft = beam.shaft(piece.tone, rgb);
+    const { glow, core } = beam.cap(piece.tone, rgb);
+    const lows = lowestBlocks(piece.localCells, this.lows);
+    for (let local = 0; local < lows.length; local++) {
+      const low = lows[local]!;
+      if (low < 0) continue;
+      const x = (piece.x + local) * cell;
+      const top = (piece.y + low + 1 - hidden) * cell;
+      const bottom = top + distance * cell;
+      ctx.save();
+      ctx.translate(x, top);
+      ctx.scale(cell, bottom - top);
+      ctx.fillStyle = shaft;
+      ctx.fillRect((1 - BEAM.width) / 2, 0, BEAM.width, 1);
+      ctx.restore();
+      const inset = ((1 - BEAM.cap) / 2) * cell;
+      const thick = Math.max(2, cell * 0.08);
+      ctx.fillStyle = glow;
+      ctx.fillRect(x + inset * 0.6, bottom - thick * 2, cell - inset * 1.2, thick * 3);
+      ctx.fillStyle = core;
+      ctx.fillRect(x + inset, bottom - thick * 1.25, cell - inset * 2, thick);
+    }
   }
 
   private drawPiece(piece: Piece, dy: number): void {
@@ -274,4 +382,10 @@ export class FallingRenderer {
     this.sprites =
       this.palette && this.cell > 0 ? blockSprites(this.material, this.cell, this.palette) : null;
   }
+}
+
+/** A steady pseudo-random number in [0, 1) for two integers: cracks keep their shape. */
+function jitter(a: number, b: number): number {
+  const value = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+  return value - Math.floor(value);
 }

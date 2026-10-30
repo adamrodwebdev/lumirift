@@ -66,6 +66,11 @@
   --crack: #fff3d6;
   --well-glow: rgb(120 90 255 / 0.22);
   --well-halo: rgb(74 63 134 / 0.18);
+  /* Rift stone (1.43): the Duel's attack rows and the rubble under the Heart. */
+  --stone: #2b2550;
+  --stone-edge: #4a3f86;
+  --stone-shade: #16112f;
+  --stone-crack: #5a4f9a;
 
   /* The jewels: the interface names them, the pieces wear them. */
   --jewel-cyan: #3de0ff;

@@ -319,7 +319,7 @@
   "settings": {
     "title": "Settings",
     "language": "Language",
-    "ghost": "Show the ghost piece",
+    "ghost": "Show the landing beam",
     "effects": "Visual effects",
     "effectsFull": "Full",
     "effectsReduced": "Calm",

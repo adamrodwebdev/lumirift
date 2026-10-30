@@ -43,7 +43,8 @@ export abstract class BlockSprites {
     const ctx = canvas.getContext('2d');
     if (ctx && tone !== Tone.Empty) {
       const rgb = this.palette.color(tone);
-      if (links === 0) this.paint(ctx, tone, rgb);
+      if (tone === Tone.Garbage) this.paintStone(ctx, links);
+      else if (links === 0) this.paint(ctx, tone, rgb);
       else this.paintLinked(ctx, tone, rgb, links);
     }
     return canvas;
@@ -109,6 +110,43 @@ export abstract class BlockSprites {
     corner(n, east, [far, 0], [far - k, e], [far, e, e, k], [far - k, 0, k, e]);
     corner(south, east, [far, far], [far - k, far - k], [far, far - k, e, k], [far - k, far, k, e]);
     corner(south, w, [0, far], [e, far - k], [0, far - k, e, k], [e, far, k, e]);
+  }
+
+  /**
+   * Rift stone (1.43), whatever the material: the Duel's attack rows and the rubble
+   * under the Heart. Dark slate lit along its free top, shaded along its free bottom
+   * and right, joined to the stone around it; the renderer adds its cracks and veins.
+   */
+  private paintStone(ctx: CanvasRenderingContext2D, links: number): void {
+    const s = this.size;
+    const { body, edge, shade } = this.palette.effects.stone;
+    const gap = Math.max(1, Math.round(s * 0.05));
+    const north = (links & LINK.north) !== 0;
+    const east = (links & LINK.east) !== 0;
+    const south = (links & LINK.south) !== 0;
+    const west = (links & LINK.west) !== 0;
+    const right = east ? s : s - gap;
+    const bottom = south ? s : s - gap;
+    const radius = s * 0.1;
+    const round = (free: boolean) => (free ? radius : 0);
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(0, 0, right, bottom, [
+      round(!north && !west),
+      round(!north && !east),
+      round(!south && !east),
+      round(!south && !west),
+    ]);
+    ctx.fillStyle = body;
+    ctx.fill();
+    ctx.clip();
+    const band = Math.max(1, s * 0.08);
+    ctx.fillStyle = edge;
+    if (!north) ctx.fillRect(0, 0, right, band);
+    ctx.fillStyle = shade;
+    if (!south) ctx.fillRect(0, bottom - band, right, band);
+    if (!east) ctx.fillRect(right - band, 0, band, bottom);
+    ctx.restore();
   }
 
   /** The lone block of a tone without its motif: the body a joined side is filled from. */
