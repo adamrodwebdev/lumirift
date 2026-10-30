@@ -407,7 +407,7 @@ export class TowerRenderer {
   private drawCell(
     sprites: GlassSprites,
     tone: Tone,
-    at: { readonly x: number; readonly y: number },
+    at: { readonly x: number; readonly y: number; readonly links: number },
     alpha: number,
     height = 1,
   ): void {
@@ -416,7 +416,7 @@ export class TowerRenderer {
     this.face(x, y + 1 - height, height);
     const front = this.isFront(x);
     ctx.globalAlpha = front ? alpha : alpha * BACK_ALPHA;
-    ctx.drawImage(sprites.get(tone), 0, 0, 1, 1);
+    ctx.drawImage(sprites.get(tone, at.links), 0, 0, 1, 1);
     if (!front) return;
     const shadow = projection.shadow(x + 0.5);
     if (shadow > 0.02) {
@@ -444,7 +444,7 @@ export class TowerRenderer {
         // Rows fall into place and dip under a landing; a landed block squashes (1.41).
         const row = y - hidden + this.effects.rowOffset[y]! + this.effects.rowDip[y]!;
         const height = this.effects.squash?.get(y * board.width + x) ?? 1;
-        this.drawCell(sprites, tone, { x, y: row }, 1, height);
+        this.drawCell(sprites, tone, { x, y: row, links: board.links(x, y) }, 1, height);
         if (board.hasBomb(x, y)) this.drawBomb(x, row, front ? 1 : BACK_ALPHA);
       }
     }
@@ -525,10 +525,11 @@ export class TowerRenderer {
 
   private drawPiece(sprites: GlassSprites, piece: Piece, dy: number, alpha: number): void {
     const hidden = this.view.board.hiddenRows;
+    const links = piece.links;
     piece.localCells.forEach((local, index) => {
       const y = piece.y + local.y + dy - hidden;
       if (y < 0) return;
-      this.drawCell(sprites, piece.tone, { x: piece.x + local.x, y }, alpha);
+      this.drawCell(sprites, piece.tone, { x: piece.x + local.x, y, links: links[index]! }, alpha);
       if (piece.bomb === index) this.drawBomb(piece.x + local.x, y, alpha);
     });
     this.ctx.globalAlpha = 1;
@@ -597,7 +598,8 @@ export class TowerRenderer {
     const { ctx, effects, projection } = this;
     for (const crack of effects.cracks) {
       crack.tones.forEach((tone, x) => {
-        if (tone !== Tone.Empty) this.drawCell(sprites, tone as Tone, { x, y: crack.row }, 1);
+        if (tone === Tone.Empty) return;
+        this.drawCell(sprites, tone as Tone, { x, y: crack.row, links: crack.links[x]! }, 1);
       });
       const width = crack.tones.length;
       const progress = Math.min(1, crack.age / (CRACK_MS * 0.75));

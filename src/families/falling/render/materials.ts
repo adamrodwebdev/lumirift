@@ -1,5 +1,6 @@
 import type { MaterialId } from '@/progression/Cosmetics';
 import { mixRgb, parseHex, shade, type Rgb, type TonePalette } from '@/render/TonePalette';
+import { LINK } from '../board/Links';
 import type { Tone } from '../pieces/PieceType';
 import { SEASON_MATERIALS, type SeasonMaterialId } from '@/seasons/SeasonData';
 import { BlockSprites } from './BlockSprites';
@@ -56,6 +57,71 @@ class PaperSprites extends BlockSprites {
     ctx.fill();
     this.engrave(ctx, tone as Engraved, sheet, s / 2, s * 0.22, shade(rgb, -0.45));
   }
+
+  /** One sheet per piece (1.43): edged on its free sides, folded at its top-right block only. */
+  protected override paintLinked(
+    ctx: CanvasRenderingContext2D,
+    tone: Tone,
+    rgb: Rgb,
+    links: number,
+  ): void {
+    const s = this.size;
+    const gap = Math.max(1, Math.round(s * 0.05));
+    const fold = s * 0.26;
+    const north = (links & LINK.north) !== 0;
+    const east = (links & LINK.east) !== 0;
+    const south = (links & LINK.south) !== 0;
+    const west = (links & LINK.west) !== 0;
+    const left = west ? 0 : gap;
+    const top = north ? 0 : gap;
+    const right = east ? s : s - gap;
+    const bottom = south ? s : s - gap;
+    const folded = !north && !east;
+    ctx.fillStyle = shade(rgb, 0.32);
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(folded ? right - fold : right, top);
+    if (folded) ctx.lineTo(right, top + fold);
+    ctx.lineTo(right, bottom);
+    ctx.lineTo(left, bottom);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = shade(rgb, -0.25);
+    ctx.lineWidth = Math.max(1, s * 0.03);
+    ctx.lineCap = 'square';
+    ctx.beginPath();
+    if (!north) {
+      ctx.moveTo(left, top);
+      ctx.lineTo(folded ? right - fold : right, top);
+    }
+    if (folded) {
+      ctx.moveTo(right - fold, top);
+      ctx.lineTo(right, top + fold);
+    }
+    if (!east) {
+      ctx.moveTo(right, folded ? top + fold : top);
+      ctx.lineTo(right, bottom);
+    }
+    if (!south) {
+      ctx.moveTo(left, bottom);
+      ctx.lineTo(right, bottom);
+    }
+    if (!west) {
+      ctx.moveTo(left, top);
+      ctx.lineTo(left, bottom);
+    }
+    ctx.stroke();
+    if (folded) {
+      ctx.fillStyle = shade(rgb, 0.05);
+      ctx.beginPath();
+      ctx.moveTo(right - fold, top);
+      ctx.lineTo(right - fold, top + fold);
+      ctx.lineTo(right, top + fold);
+      ctx.closePath();
+      ctx.fill();
+    }
+    this.engrave(ctx, tone as Engraved, mixRgb(rgb, 0.32), s / 2, s * 0.22, shade(rgb, -0.45));
+  }
 }
 
 /** Eight-by-eight pixel blocks, lit from the top left like an old console. */
@@ -74,6 +140,38 @@ class PixelSprites extends BlockSprites {
     cell(1, 6, 6, 1, shade(rgb, -0.2));
     cell(6, 1, 1, 6, shade(rgb, -0.2));
     cell(2, 2, 1, 1, shade(rgb, 0.55));
+    this.engrave(ctx, tone as Engraved, rgb, s * 0.44, s * 0.18);
+  }
+
+  /** One console sprite per piece (1.43): lit and shaded along its free sides only. */
+  protected override paintLinked(
+    ctx: CanvasRenderingContext2D,
+    tone: Tone,
+    rgb: Rgb,
+    links: number,
+  ): void {
+    const s = this.size;
+    const p = s / 8;
+    const cell = (x: number, y: number, w: number, h: number, fill: string) => {
+      ctx.fillStyle = fill;
+      ctx.fillRect(Math.round(x * p), Math.round(y * p), Math.ceil(w * p), Math.ceil(h * p));
+    };
+    const north = (links & LINK.north) !== 0;
+    const east = (links & LINK.east) !== 0;
+    const south = (links & LINK.south) !== 0;
+    const west = (links & LINK.west) !== 0;
+    const right = east ? 8 : 7;
+    const bottom = south ? 8 : 7;
+    const from = west ? 0 : 1;
+    const down = north ? 0 : 1;
+    if (!south) cell(0, 7, 8, 1, shade(rgb, -0.45));
+    if (!east) cell(7, 0, 1, 8, shade(rgb, -0.45));
+    cell(0, 0, right, bottom, shade(rgb, 0));
+    if (!north) cell(0, 0, right, 1, shade(rgb, 0.4));
+    if (!west) cell(0, 0, 1, bottom, shade(rgb, 0.25));
+    if (!south) cell(from, 6, right - from, 1, shade(rgb, -0.2));
+    if (!east) cell(6, down, 1, bottom - down, shade(rgb, -0.2));
+    if (!north && !west) cell(2, 2, 1, 1, shade(rgb, 0.55));
     this.engrave(ctx, tone as Engraved, rgb, s * 0.44, s * 0.18);
   }
 }
@@ -103,6 +201,9 @@ class ObsidianSprites extends BlockSprites {
 
 /** Gold ingots set with a gem of the tone's colour. */
 class GoldSprites extends BlockSprites {
+  // A joined side is filled from the metal, short of the gem set in each block.
+  protected override readonly edge = 0.18;
+
   protected paint(ctx: CanvasRenderingContext2D, tone: Tone, rgb: Rgb): void {
     const s = this.size;
     const [light = '#f6dc8c', middle = '#c99a2e', dark = '#8a6414'] = this.palette.effects.gold;

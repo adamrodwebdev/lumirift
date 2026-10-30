@@ -140,13 +140,15 @@ export class FallingRenderer {
           const index = y * board.width + x;
           if (tone === 0 || covered?.has(index)) continue;
           const height = squash?.get(index);
+          // The blocks of one piece are drawn as one crystal (1.43).
+          const sprite = sprites.get(tone, board.links(x, y));
           if (height === undefined) {
-            ctx.drawImage(sprites.get(tone), x * cell, top);
+            ctx.drawImage(sprite, x * cell, top);
           } else {
             // A landed block squashes on its base, a little wider (1.41).
             const wide = 1 + (1 - height) / 2;
             ctx.drawImage(
-              sprites.get(tone),
+              sprite,
               (x + (1 - wide) / 2) * cell,
               top + (1 - height) * cell,
               wide * cell,
@@ -260,12 +262,12 @@ export class FallingRenderer {
     const { ctx, cell, sprites } = this;
     if (!sprites) return;
     const hidden = this.view.board.hiddenRows;
-    const sprite = sprites.get(piece.tone);
-    for (const local of piece.localCells) {
+    const links = piece.links;
+    piece.localCells.forEach((local, index) => {
       const y = piece.y + local.y + dy - hidden;
-      if (y < 0) continue;
-      ctx.drawImage(sprite, (piece.x + local.x) * cell, y * cell);
-    }
+      if (y < 0) return;
+      ctx.drawImage(sprites.get(piece.tone, links[index]), (piece.x + local.x) * cell, y * cell);
+    });
   }
 
   private rebuildSprites(): void {

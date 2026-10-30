@@ -1,5 +1,5 @@
 import type { PieceSpec } from '../game/Game';
-import { shapeCells } from '../pieces/Shapes';
+import { shapeCells, shapeLinks } from '../pieces/Shapes';
 import type { MaterialId } from '@/progression/Cosmetics';
 import type { TonePalette } from '@/render/TonePalette';
 import type { BlockSprites } from './BlockSprites';
@@ -48,11 +48,11 @@ export class PieceRenderer {
     const offsetY = (canvas.height - height * size) / 2 - Math.min(...ys) * size;
 
     ctx.globalAlpha = dimmed ? 0.4 : 1;
-    const sprite = sprites.get(spec.tone);
+    const links = shapeLinks(spec.type, 0);
     cells.forEach((cell, index) => {
       const x = Math.round(offsetX + cell.x * size);
       const y = Math.round(offsetY + cell.y * size);
-      ctx.drawImage(sprite, x, y);
+      ctx.drawImage(sprites.get(spec.tone, links[index]), x, y);
       if (spec.bomb === index) this.drawBomb(x, y, size);
     });
     ctx.globalAlpha = 1;

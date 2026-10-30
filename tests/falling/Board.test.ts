@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Board } from '@/families/falling/board/Board';
+import { LINK, linksOf } from '@/families/falling/board/Links';
 import { Piece } from '@/families/falling/pieces/Piece';
 import { Tone } from '@/families/falling/pieces/PieceType';
 
@@ -142,5 +143,53 @@ describe('Board operations of the advanced modes', () => {
     ]);
     expect(removed.map((cell) => cell.tone)).toEqual([Tone.ChromaC, Tone.ChromaC]);
     expect(board.blockCount()).toBe(2);
+  });
+});
+
+describe('Board links: each piece one crystal (1.43)', () => {
+  const { north, east, south, west } = LINK;
+
+  it('joins the blocks of a locked piece, never two pieces of one colour', () => {
+    const board = new Board();
+    board.lock(new Piece('O', Tone.O, 0, FLOOR - 1));
+    board.lock(new Piece('O', Tone.O, 2, FLOOR - 1)); // touching, same colour, another piece
+    expect(board.links(0, FLOOR - 1)).toBe(east | south);
+    expect(board.links(1, FLOOR)).toBe(north | west);
+    expect(board.links(2, FLOOR)).toBe(north | east);
+  });
+
+  it('keeps what is left of a piece joined once a line cuts it', () => {
+    const board = Board.fromRows(['#########.', '#########.', '#########.', '#########.']);
+    board.lock(new Piece('I', Tone.I, 7, FLOOR - 3).rotated(1)); // upright in the last column
+    expect(board.clearFullRows()).toHaveLength(4);
+    expect(board.blockCount()).toBe(0);
+
+    // Upright on a block, the I completes one row: its three other blocks fall one row.
+    const cut = Board.fromRows(['#########.', '.........#']);
+    cut.lock(new Piece('I', Tone.I, 7, FLOOR - 4).rotated(1));
+    expect(cut.clearFullRows()).toHaveLength(1);
+    expect(cut.get(9, FLOOR - 1)).toBe(Tone.I);
+    expect(cut.links(9, FLOOR - 1)).toBe(north);
+    expect(cut.links(9, FLOOR - 2)).toBe(north | south);
+  });
+
+  it('makes the blocks drawn in text pieces of four at most, garbage none', () => {
+    const board = Board.fromRows(['IIIIII', '##ZZ..']);
+    expect(board.links(0, FLOOR - 1)).toBe(east);
+    expect(board.links(3, FLOOR - 1)).toBe(west); // the fourth I closes the first piece
+    expect(board.links(4, FLOOR - 1)).toBe(east); // the last two make another
+    expect(board.links(0, FLOOR)).toBe(0); // garbage stands alone
+    expect(board.links(2, FLOOR)).toBe(east);
+  });
+
+  it('links a lone piece cell by cell, for the falling piece and the previews', () => {
+    // A T pointing up: its middle block touches the three others.
+    const t = [
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+    ];
+    expect(linksOf(t)).toEqual([south, east, north | east | west, west]);
   });
 });

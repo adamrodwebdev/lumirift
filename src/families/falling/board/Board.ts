@@ -1,6 +1,10 @@
 import type { Piece } from '../pieces/Piece';
 import { Tone } from '../pieces/PieceType';
 import type { Cell } from '../pieces/Shapes';
+import { LINK } from './Links';
+
+/** A board drawn in text makes its pieces of the connected blocks of one letter, four at most. */
+const PIECE_CELLS = 4;
 
 export interface ClearedRow {
   /** Row index before removal. */
@@ -11,6 +15,8 @@ export interface ClearedRow {
   readonly tones: Uint8Array;
   /** Columns of the bomb gems the row held. */
   readonly bombs: readonly number[];
+  /** Each block's links along the row, east and west only: the row breaks away (1.43). */
+  readonly links: Uint8Array;
 }
 
 /** The colour a board drawn in text gives a piece's letter. */
@@ -36,6 +42,7 @@ export type ReadonlyBoard = Pick<
   | 'hiddenRows'
   | 'wraps'
   | 'get'
+  | 'links'
   | 'hasBomb'
   | 'bombCount'
   | 'isInside'
@@ -69,6 +76,12 @@ export class Board {
   private readonly cells: Uint8Array;
   /** 1 where a block carries a gem: a bomb in the Tower, a shard of the rift under the Heart. */
   private readonly bombs: Uint8Array;
+  /**
+   * The piece each block came from (0 for a lone block: garbage, a dropped stone): blocks
+   * of one piece are drawn as one crystal (1.43). Ids move with their blocks.
+   */
+  private readonly pieces: Uint32Array;
+  private nextPiece = 1;
 
   constructor(
     width = Board.WIDTH,
@@ -82,6 +95,7 @@ export class Board {
     this.hiddenRows = hiddenRows;
     this.cells = new Uint8Array(this.width * this.height);
     this.bombs = new Uint8Array(this.width * this.height);
+    this.pieces = new Uint32Array(this.width * this.height);
   }
 
   /**
@@ -104,11 +118,26 @@ export class Board {
         if (mark === '*') board.bombs[(offset + r) * width + x] = 1;
       }
     });
+    board.joinLetters();
     return board;
   }
 
   get(x: number, y: number): Tone {
     return this.cells[y * this.width + x] as Tone;
+  }
+
+  /** The sides of the block at (x, y) that touch a block of the same piece (`LINK` bits). */
+  links(x: number, y: number): number {
+    const piece = this.pieces[y * this.width + x]!;
+    if (piece === 0) return 0;
+    const same = (nx: number, ny: number) =>
+      this.isInside(nx, ny) && this.pieces[ny * this.width + this.column(nx)] === piece;
+    return (
+      (same(x, y - 1) ? LINK.north : 0) |
+      (same(x + 1, y) ? LINK.east : 0) |
+      (same(x, y + 1) ? LINK.south : 0) |
+      (same(x - 1, y) ? LINK.west : 0)
+    );
   }
 
   /** True when the block at (x, y) carries a bomb gem. */
@@ -158,6 +187,7 @@ export class Board {
           cells.push({ x: nx, y: ny, tone });
           this.cells[i] = Tone.Empty;
           this.bombs[i] = 0;
+          this.pieces[i] = 0;
         }
       }
     }
@@ -193,10 +223,11 @@ export class Board {
   /** Writes the piece into the grid. Returns false if it lies wholly in the hidden rows. */
   lock(piece: Piece): boolean {
     let visible = false;
+    const id = this.nextPiece++;
     piece.localCells.forEach((cell, index) => {
       const y = cell.y + piece.y;
       const x = this.column(cell.x + piece.x);
-      this.set(x, y, piece.tone);
+      this.set(x, y, piece.tone, id);
       if (piece.bomb === index) this.bombs[y * this.width + x] = 1;
       if (y >= this.hiddenRows) visible = true;
     });
@@ -213,6 +244,7 @@ export class Board {
           pure: this.isRowPure(y),
           tones: this.rowTones(y),
           bombs: this.rowBombs(y),
+          links: this.rowLinks(y),
         });
       }
     }
@@ -248,17 +280,17 @@ export class Board {
    * column: holes disappear and the stack is rebuilt bottom-up in reverse order.
    */
   flipAndSettle(): void {
-    const column: Tone[] = [];
+    const column: [Tone, number][] = [];
     for (let x = 0; x < this.width; x++) {
       column.length = 0;
       // Reading top-down gives the blocks in the order they land once flipped.
       for (let y = 0; y < this.height; y++) {
         const tone = this.get(x, y);
-        if (tone !== Tone.Empty) column.push(tone);
+        if (tone !== Tone.Empty) column.push([tone, this.pieces[y * this.width + x]!]);
       }
       for (let y = 0; y < this.height; y++) this.set(x, y, Tone.Empty);
       let y = this.height - 1;
-      for (const tone of column) this.set(x, y--, tone);
+      for (const [tone, piece] of column) this.set(x, y--, tone, piece);
     }
   }
 
@@ -272,6 +304,8 @@ export class Board {
     this.cells.fill(Tone.Empty, 0, n * this.width);
     this.bombs.copyWithin(n * this.width, 0, (this.height - n) * this.width);
     this.bombs.fill(0, 0, n * this.width);
+    this.pieces.copyWithin(n * this.width, 0, (this.height - n) * this.width);
+    this.pieces.fill(0, 0, n * this.width);
   }
 
   /** Lets every block fall to the floor of its column, keeping their order. */
@@ -282,7 +316,7 @@ export class Board {
         const tone = this.get(x, read);
         if (tone === Tone.Empty) continue;
         if (write !== read) {
-          this.set(x, write, tone);
+          this.set(x, write, tone, this.pieces[read * this.width + x]);
           this.set(x, read, Tone.Empty);
         }
         write--;
@@ -299,11 +333,14 @@ export class Board {
     if (this.height - this.hiddenRows !== size) throw new Error('rotateLeft needs a square well');
     const top = this.hiddenRows;
     const before = this.cells.slice();
+    const pieces = this.pieces.slice();
     this.cells.fill(Tone.Empty);
+    this.pieces.fill(0);
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         // The cell (x, y) of the turned well shows the old cell (size - 1 - y, x).
-        this.set(x, top + y, before[(top + x) * size + (size - 1 - y)] as Tone);
+        const from = (top + x) * size + (size - 1 - y);
+        this.set(x, top + y, before[from] as Tone, pieces[from]);
       }
     }
   }
@@ -390,6 +427,7 @@ export class Board {
     for (let y = 0; y < this.height; y++) {
       this.cells.subarray(y * this.width, (y + 1) * this.width).reverse();
       this.bombs.subarray(y * this.width, (y + 1) * this.width).reverse();
+      this.pieces.subarray(y * this.width, (y + 1) * this.width).reverse();
     }
   }
 
@@ -398,6 +436,8 @@ export class Board {
     const copy = new Board(this.width, this.height - this.hiddenRows, this.hiddenRows, this.wraps);
     copy.cells.set(this.cells);
     copy.bombs.set(this.bombs);
+    copy.pieces.set(this.pieces);
+    copy.nextPiece = this.nextPiece;
     return copy;
   }
 
@@ -432,13 +472,55 @@ export class Board {
     return columns;
   }
 
+  private rowLinks(y: number): Uint8Array {
+    const links = new Uint8Array(this.width);
+    for (let x = 0; x < this.width; x++) links[x] = this.links(x, y) & (LINK.east | LINK.west);
+    return links;
+  }
+
   private rowTones(y: number): Uint8Array {
     return this.cells.slice(y * this.width, (y + 1) * this.width);
   }
 
-  private set(x: number, y: number, tone: Tone): void {
-    this.cells[y * this.width + x] = tone;
-    if (tone === Tone.Empty) this.bombs[y * this.width + x] = 0;
+  /** Writes a block; `piece` joins it to the blocks of that piece (0: a lone block). */
+  private set(x: number, y: number, tone: Tone, piece = 0): void {
+    const i = y * this.width + x;
+    this.cells[i] = tone;
+    this.pieces[i] = tone === Tone.Empty ? 0 : piece;
+    if (tone === Tone.Empty) this.bombs[i] = 0;
+  }
+
+  /**
+   * Gives each run of touching blocks of one letter a piece of its own, four blocks at
+   * most (a board drawn in text has no ids): the scenes' stacks are crystals too.
+   */
+  private joinLetters(): void {
+    for (let start = 0; start < this.cells.length; start++) {
+      const tone = this.cells[start] as Tone;
+      if (tone === Tone.Empty || tone === Tone.Garbage || this.pieces[start] !== 0) continue;
+      const id = this.nextPiece++;
+      const queue = [start];
+      this.pieces[start] = id;
+      let size = 1;
+      while (queue.length > 0 && size < PIECE_CELLS) {
+        const index = queue.shift()!;
+        const x = index % this.width;
+        const y = Math.floor(index / this.width);
+        for (const [nx, ny] of [
+          [x + 1, y],
+          [x, y + 1],
+          [x - 1, y],
+          [x, y - 1],
+        ] as const) {
+          if (size === PIECE_CELLS || !this.isInside(nx, ny)) continue;
+          const next = ny * this.width + this.column(nx);
+          if (this.cells[next] !== tone || this.pieces[next] !== 0) continue;
+          this.pieces[next] = id;
+          queue.push(next);
+          size++;
+        }
+      }
+    }
   }
 
   private isRowFull(y: number): boolean {
@@ -460,10 +542,12 @@ export class Board {
   private copyRow(from: number, to: number): void {
     this.cells.copyWithin(to * this.width, from * this.width, (from + 1) * this.width);
     this.bombs.copyWithin(to * this.width, from * this.width, (from + 1) * this.width);
+    this.pieces.copyWithin(to * this.width, from * this.width, (from + 1) * this.width);
   }
 
   private fillRow(y: number, tone: Tone): void {
     this.cells.fill(tone, y * this.width, (y + 1) * this.width);
     this.bombs.fill(0, y * this.width, (y + 1) * this.width);
+    this.pieces.fill(0, y * this.width, (y + 1) * this.width);
   }
 }

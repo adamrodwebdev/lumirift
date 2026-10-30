@@ -5,7 +5,7 @@ import {
   type RotationDirection,
   type Tone,
 } from './PieceType';
-import { shapeCells, shapeSize, type Cell } from './Shapes';
+import { shapeCells, shapeLinks, shapeSize, type Cell } from './Shapes';
 
 /** Seen in a mirror, S and Z swap, and so do J and L. */
 const MIRROR_TYPE: Readonly<Record<PieceType, PieceType>> = {
@@ -54,6 +54,11 @@ export class Piece {
   /** Cells relative to the bounding box (shared, never mutate). */
   get localCells(): readonly Cell[] {
     return shapeCells(this.type, this.rotation);
+  }
+
+  /** Which sides of each of `localCells` touch another cell of the piece (1.43, shared). */
+  get links(): readonly number[] {
+    return shapeLinks(this.type, this.rotation);
   }
 
   /** The same piece carrying a bomb gem on its cell `index`. */
