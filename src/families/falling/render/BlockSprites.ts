@@ -65,12 +65,7 @@ export abstract class BlockSprites {
    * of its body, without the motif, stretched out to the border: neighbours of a
    * piece meet without a seam. A material may draw its joined blocks itself.
    */
-  protected paintLinked(
-    ctx: CanvasRenderingContext2D,
-    tone: Tone,
-    rgb: Rgb,
-    links: number,
-  ): void {
+  protected paintLinked(ctx: CanvasRenderingContext2D, tone: Tone, rgb: Rgb, links: number): void {
     const s = this.size;
     const e = Math.max(STRIP, Math.round(s * this.edge));
     const k = STRIP;
