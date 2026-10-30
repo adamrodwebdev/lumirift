@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="Spec">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 /**
@@ -7,8 +7,9 @@ import { useI18n } from 'vue-i18n';
  * large at the middle, over the place where it will appear, the others smaller
  * and dimmer on its right, each coming out of the rift in turn. Lumirift's own
  * way to show what comes, in place of a box beside the well. The band is as
- * wide as the well (`--well-width`, set by the stage); each stage draws its
- * pieces (its own preview, `wide`) in the slot, at the size given.
+ * wide as the well (`--well-width`, set by the stage), never narrower than its
+ * pieces need; each stage draws its pieces (its own preview, `wide`) in the
+ * slot, at the size given.
  */
 const props = defineProps<{
   queue: readonly Spec[];
@@ -21,6 +22,13 @@ defineSlots<{ default(props: { spec: Spec; size: number }): unknown }>();
 const SHARES = [1, 0.72, 0.62, 0.55, 0.5, 0.46] as const;
 const sizeOf = (index: number) =>
   Math.round(props.size * (SHARES[Math.min(index, SHARES.length - 1)] ?? 1));
+/**
+ * The band's least width (CSS px): the next piece in the middle, the two after it at their
+ * full size on its right, as much room on its left, and the gaps. Over a narrow well (the
+ * Tower lying down, a small phone with a goal), the crack reaches past its sides rather
+ * than shrink the pieces.
+ */
+const leastWidth = computed(() => props.size + 2 * (sizeOf(1) + sizeOf(2)) + 8);
 
 const { t } = useI18n();
 /** A piece came out: the next one rises from the rift (two equal animations take turns). */
@@ -32,7 +40,11 @@ watch(
 </script>
 
 <template>
-  <section class="stage__next rift" :aria-label="t('hud.next')">
+  <section
+    class="stage__next rift"
+    :aria-label="t('hud.next')"
+    :style="{ '--rift-least': `${leastWidth}px` }"
+  >
     <svg class="rift__crack" viewBox="0 0 340 12" preserveAspectRatio="none" aria-hidden="true">
       <path class="rift__glow" d="M0 6L32 3L58 8L95 2L128 7L160 1L188 7L222 3L262 8L300 3L340 6" />
       <path class="rift__core" d="M0 6L32 3L58 8L95 2L128 7L160 1L188 7L222 3L262 8L300 3L340 6" />
@@ -52,7 +64,8 @@ watch(
 /*
  * The band: the next piece in the middle column, the others in the right one,
  * the left one as wide, so that the next piece stays over the well's middle.
- * The pieces stand on the crack, which runs the well's width under them.
+ * The pieces stand on the crack, which runs the well's width under them, or
+ * the band's least width over a narrow well.
  */
 .rift {
   position: relative;
@@ -61,7 +74,7 @@ watch(
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: end;
   justify-self: center;
-  width: min(100%, var(--well-width, 100%));
+  width: min(100%, max(var(--well-width, 100%), var(--rift-least, 0px)));
   min-width: 0;
   padding-bottom: 0.375rem;
 }
