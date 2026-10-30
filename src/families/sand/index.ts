@@ -25,7 +25,7 @@ import { SandSession } from './SandSession';
 const TRAINING_GAMES: Readonly<Record<TrainingStage, Omit<SandOptions, 'random'>>> = {
   hook: {
     hazards: false,
-    bed: { share: 0.36, variant: 0, water: 3 },
+    bed: { rows: 7.2, variant: 0, water: 3 },
     script: HOOK_SCRIPT,
     boss: 'duneWorm',
     bossDelayMs: HOOK_WYRM_MS,

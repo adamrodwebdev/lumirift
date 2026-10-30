@@ -27,7 +27,7 @@ export function elements(variant = 0): Scene {
     random: new SeededRandom(17 + variant),
     hazards: false,
     script,
-    bed: { share: 0.36, variant },
+    bed: { rows: 7.2, variant },
   });
   const session = new SandSession('sand', game);
   let since = 0;
@@ -68,7 +68,7 @@ export function duneWorm(): Scene {
     boss: 'duneWorm',
     bossDelayMs: 0,
     script: [{ at: 3, tone: Tone.Lightning, type: 'O' }],
-    bed: { share: 0.42, variant: 1 },
+    bed: { rows: 8.4, variant: 1 },
   });
   const session = new SandSession('sand', game);
   const wyrm = game.worm!;
@@ -168,9 +168,8 @@ function poolScene({ pool, spark }: PoolStaging, variant: number): Scene {
       // Right above the pool's second piece: it lands in the middle of the pool.
       { at: first + 2, tone: spark, type: 'O', above: true },
     ],
-    // A third of the well: six bands of sand under the pool, as in the 20-row well the
-    // moment was staged in (1.43), for a shock or a blaze as large.
-    bed: { share: 1 / 3, variant },
+    // Six bands of sand under the pool: a shock or a blaze as large as the moment was staged.
+    bed: { rows: 6, variant },
   });
   return aimedScene(game, [...build, ...POOL_AIMS, 0]);
 }
@@ -220,7 +219,7 @@ export function fireChoice(variant = 0, choice: FireChoice | null = null): Scene
       { at: first + 2, tone: Tone.Water, type: 'I' },
       { at: fire, tone: Tone.Fire, type: 'O' },
     ],
-    bed: { share: 0.3, variant: seed },
+    bed: { rows: 6, variant: seed },
   });
   const { wall, oil, water } = CHOICE_AIMS;
   const aims = [...build, wall, oil, water, choice ? CHOICE_AIMS[choice] : 0];

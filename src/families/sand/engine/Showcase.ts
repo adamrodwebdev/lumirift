@@ -37,7 +37,7 @@ export const PRACTICE_PACE: ElementPace = { after: 2, chance: 0.35 };
  * The practice opens on a bed of sand (1.33): the elements have something to
  * work on at once, and the pile starts high enough for the danger to show.
  */
-export const PRACTICE_BED: SandBed = { share: 0.2, variant: 2 };
+export const PRACTICE_BED: SandBed = { rows: 4, variant: 2 };
 
 /** The pairs that react, in the order they play: the shock, the blaze, the vine. */
 const PAIRS: readonly (readonly [ElementTone, ElementTone])[] = [

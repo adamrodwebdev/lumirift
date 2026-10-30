@@ -44,7 +44,7 @@ export const WYRM_DELAY_MS = 3500;
  * first hand's first piece is the top band's colour, and a mark shows where
  * it links the walls: the first move clears a region.
  */
-export const OPENING_BED: SandBed = { share: 0.25, variant: 0 };
+export const OPENING_BED: SandBed = { rows: 3, variant: 0 };
 /** The opening's first piece: a pair, laid flat. */
 const PAIR = Shape.parse('##');
 /** The reactions that keep a chain going (the Sand's list). */
@@ -404,7 +404,7 @@ export class DunesGame {
     const { grid } = this;
     const W = grid.width;
     const g = GRAINS_PER_CELL;
-    const top = grid.height - Math.round(grid.height * OPENING_BED.share);
+    const top = grid.height - Math.round(OPENING_BED.rows * g);
     const row = Array.from({ length: W }, (_, x) => grid.tones[top * W + x]!);
     const counts = new Map<number, number>();
     for (const tone of row) counts.set(tone, (counts.get(tone) ?? 0) + 1);
