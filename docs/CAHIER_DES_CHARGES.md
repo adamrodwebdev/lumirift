@@ -90,6 +90,20 @@ Différenciation :
   porte la couleur du standard** (I cyan, O jaune, T violet, S vert, Z rouge, J bleu, L orange) :
   I rose, O violet, T ambre, S cyan, Z citron vert, J corail, L bleu (`--tone-N` dans
   `tokens.css`, distincts des jetons `--jewel-*` de l'interface).
+- **Revue de propriété intellectuelle du 30/10/2026** (document « Lumirift IP Review »,
+  compétence `game-ip-legal-review`). Les règles restent libres. Des sept éléments que _Xio_ a
+  protégés, Lumirift en reprenait cinq : le puits d'exactement 10 × 20, les sept pièces et leur
+  mouvement, le fantôme translucide, l'affichage des prochaines pièces, les rangées d'attaque
+  percées. Les portails retirent sur notification, et leurs conditions font payer le
+  développeur. Décidé le même jour (lot 29, 1.43) :
+  - un test interdit les mots de The Tetris Company dans les quatre langues (« Tetris »,
+    « Tetrimino », « T-Spin », « Korobeiniki », cyrillique compris), ainsi que tout nom de jeu
+    ou de mode en « -tris » ;
+  - le puits passe à 10 × 18 ;
+  - les pièces, le fantôme, les prochaines pièces et les rangées d'attaque se dessinent à la
+    manière de Lumirift (§ 9 quinquies) ;
+  - un jeu de pièces propre reste en réserve, déclenché par une notification ou par le lancement
+    sur Google Play.
 - Nom de travail : **Lumirift** (« la faille dans la pile »), prononçable dans les trois
   langues. Vérification de disponibilité (marque, domaine, réseaux) à faire avant lancement.
 
@@ -1775,6 +1789,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Livré (1.40)                                                 |
 | 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
+| 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre              | Décidé, maquette à valider                                   |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2583,6 +2598,70 @@ des effets à la mesure du moment.
     - le parcours filmé : `release/walkthrough/1.41.0.mp4` et `1.42.0.mp4` (23 s chacun, le même
       script), côte à côte sur une page privée pour l'utilisateur ; reste son essai sur
       téléphone.
+
+## 9 quinquies. Un puits à nous (lot 29, décidé le 30/10/2026)
+
+La revue de propriété intellectuelle du 30/10/2026 (§ 2.3, document « Lumirift IP Review ») a
+proposé quatre paquets cumulables. Les choix de l'utilisateur, le même jour : les paquets 1 à 3
+dans une seule version, avant la soumission à CrazyGames ; le puits en 10 × 18 ; le paquet 4 (un
+jeu de pièces propre) en réserve. Le paquet 1 (le test des mots interdits) est livré avec ce lot
+(c95a692).
+
+- **Lot 29 · 1.43 Un puits à nous** (décidé le 30/10/2026, maquette à valider avant le code).
+  Lumirift garde toutes les règles du genre. Il dessine à sa manière ce que la revue a relevé :
+  un puits de 10 × 18, des pièces d'un seul cristal, un faisceau d'atterrissage, les prochaines
+  pièces dans la faille, la pierre de faille du Duel. Jugé sur la grille de risque de la revue,
+  sur la maquette, puis sur téléphone.
+  - Constats (le code de la 1.42) :
+    - le puits mesure exactement 10 × 20 dans dix modes (`STANDARD_WELL`) : l'élément le plus
+      précis de _Xio_, et le premier que citent les notifications fondées sur l'apparence ;
+    - une pièce se dessine en quatre blocs séparés par des bordures : les « four equally-sized,
+      delineated blocks » de la trade dress américaine ;
+    - le fantôme est une copie translucide de la pièce (opacité 0,28) à son point d'arrivée ;
+    - les trois prochaines pièces sont dans une boîte à côté du puits ;
+    - les rangées d'attaque du Duel sont grises, percées d'un trou ;
+    - déjà propres à Lumirift : les couleurs (1.11), les gemmes, le verre, la défaite qui brise
+      le verre, aucune couleur changée à la pose, aucun mot ni air de The Tetris Company.
+  - **Le puits de 10 × 18**, dans tous les modes qui utilisent `STANDARD_WELL` (la Bascule garde
+    12 × 12, la Tour son cylindre de 20 × 16) :
+    - même largeur : les stratégies, l'IA, les cibles de la Silhouette et les générateurs
+      tiennent ; deux rangées de moins serrent un peu les parties ;
+    - les seuils de danger (0,7 et 0,85 de la hauteur) restent des proportions. À relire :
+      l'apparition, les rangées cachées, la marée, le cœur de la faille, le renversement, les
+      scènes de la vitrine et des clips, les tests qui comptent 20 rangées ;
+    - le bot de courbe repasse la campagne et les chapitres générés : un niveau sorti de sa bande
+      est réglé (objectif, chrono) ou régénéré ;
+    - sur téléphone, mesurer la taille des cases à 360 × 800, 390 × 844, 844 × 390 et
+      1280 × 800 : deux rangées de moins laissent la place au HUD.
+  - **Des pièces d'un seul cristal** :
+    - une pièce se dessine comme un seul cristal, sans bordure entre ses propres cases ;
+    - posée, elle reste d'un seul tenant dans la pile jusqu'à ce qu'une ligne la coupe : le
+      plateau garde, par case, ses liens avec les cases voisines de la même pièce ;
+    - une grille très légère au fond du puits garde les cases lisibles ; les textures pour les
+      daltoniens restent ;
+    - même dessin dans la Tour, et dans le Sable avant qu'une pièce s'effrite ; la Mosaïque et
+      les Dunes ne changent pas.
+  - **Le faisceau d'atterrissage**, à la place du fantôme. Une lumière tombe des colonnes de la
+    pièce jusqu'à son point d'arrivée et trace le haut des cases d'arrivée, jamais une copie de la
+    pièce. Le réglage « Afficher le fantôme » devient « Afficher le faisceau », dans les quatre
+    langues.
+  - **Les prochaines pièces dans la faille.** Au-dessus du puits, dans la fente de la faille, la
+    suivante grande et les autres plus petites, qui en sortent à leur tour. Sur téléphone, cette
+    bande remplace la boîte latérale. La réserve garde sa place : elle n'est pas dans la liste de
+    _Xio_.
+  - **La pierre de faille** (Duel) : les rangées d'attaque montent en pierre sombre fendue, leur
+    trou marqué d'une veine de lumière ; plus de rangée grise.
+  - Hors lot : le paquet 4 (jeu de pièces propre) reste en réserve. Les visuels CrazyGames
+    (couvertures, vidéo) se refont sur le nouveau puits, après ce lot.
+  - **Porte** :
+    - la maquette validée par l'utilisateur avant le code ;
+    - la grille de risque de la revue sans ligne moyenne ni puits de 10 × 20 ;
+    - le bot de courbe vert sur toute la campagne ;
+    - tests unitaires et e2e ;
+    - Lighthouse à 100 sur trois passages ;
+    - le temps d'image : au plus +1 ms au 95e centile, le processeur ralenti quatre fois ;
+    - des clips avant/après ;
+    - l'essai sur téléphone.
 
 ## 10. Hors périmètre (v1)
 
