@@ -168,7 +168,9 @@ function poolScene({ pool, spark }: PoolStaging, variant: number): Scene {
       // Right above the pool's second piece: it lands in the middle of the pool.
       { at: first + 2, tone: spark, type: 'O', above: true },
     ],
-    bed: { share: 0.3, variant },
+    // A third of the well: six bands of sand under the pool, as in the 20-row well the
+    // moment was staged in (1.43), for a shock or a blaze as large.
+    bed: { share: 1 / 3, variant },
   });
   return aimedScene(game, [...build, ...POOL_AIMS, 0]);
 }

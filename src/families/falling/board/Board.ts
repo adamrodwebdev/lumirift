@@ -1,3 +1,4 @@
+import { WELL } from '@/core/Well';
 import type { Piece } from '../pieces/Piece';
 import { Tone } from '../pieces/PieceType';
 import type { Cell } from '../pieces/Shapes';
@@ -60,12 +61,9 @@ export type ReadonlyBoard = Pick<
  * above the visible area, where pieces spawn.
  */
 export class Board {
-  static readonly WIDTH = 10;
-  /**
-   * 18 rows, not the genre's standard 20, which the Tetris v. Xio court held to
-   * be protected expression (IP review, 30 Oct 2026; CAHIER § 9 quinquies).
-   */
-  static readonly VISIBLE_HEIGHT = 18;
+  /** Lumirift's well, 10 × 18 (see `WELL`). */
+  static readonly WIDTH = WELL.columns;
+  static readonly VISIBLE_HEIGHT = WELL.rows;
   static readonly HIDDEN_ROWS = 2;
 
   readonly width: number;

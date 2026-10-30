@@ -64,6 +64,11 @@
   align-self: end;
 }
 
+/* Under the rift, the well stands against it: the room left over goes below. */
+.stage:has(.stage__next) .stage__well {
+  align-items: start;
+}
+
 .stage__box {
   display: flex;
   align-items: center;

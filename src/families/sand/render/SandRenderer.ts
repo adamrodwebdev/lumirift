@@ -110,7 +110,7 @@ export class SandRenderer {
     this.shaded = new Uint8Array(width * height);
   }
 
-  /** Fits the 10 × 20 cell well in the box (CSS pixels); returns the cell size. */
+  /** Fits the well (10 × 18 cells) in the box (CSS pixels); returns the cell size. */
   layout(availableWidth: number, availableHeight: number, pixelRatio: number): number {
     const columns = this.view.grid.width / GRAINS_PER_CELL;
     const rows = this.view.grid.height / GRAINS_PER_CELL;

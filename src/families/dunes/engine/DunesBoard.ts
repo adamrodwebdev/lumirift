@@ -4,7 +4,7 @@ import { GRAINS_PER_CELL, SandGrid } from '@/families/sand/engine/SandGrid';
 
 /**
  * The Dunes board (1.37): 9 cells by 12, each of 6 × 6 grains. Lumirift's
- * own size, smaller than the Sand's 10 × 20 well: placed pieces fill it fast.
+ * own size, smaller than the Sand's 10 × 18 well: placed pieces fill it fast.
  */
 export const DUNES_COLUMNS = 9;
 export const DUNES_ROWS = 12;
