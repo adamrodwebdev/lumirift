@@ -7,7 +7,29 @@ import { freezeTime, play, playUntil } from './gameTime';
  * the game's one theme (the Rift). They complement Lighthouse, which only audits the home page.
  */
 
+/**
+ * The transitions done (1.42): an audit never reads a window or a page halfway
+ * through its fade. Polled from here: some tests freeze the page's own clock.
+ */
+const settled = async (page: Page) => {
+  for (let tries = 0; tries < 40; tries++) {
+    const moving = await page.evaluate(() =>
+      document.getAnimations().some((animation) => {
+        const timing = animation.effect?.getTiming();
+        return (
+          animation.playState === 'running' &&
+          timing?.iterations !== Infinity &&
+          Number(timing?.duration) <= 1000
+        );
+      }),
+    );
+    if (!moving) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+};
+
 const audit = async (page: Page) => {
+  await settled(page);
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();

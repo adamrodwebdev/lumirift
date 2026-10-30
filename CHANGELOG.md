@@ -3,6 +3,52 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.42.0] — 30/10/2026
+
+Des menus qui s'enchaînent (lot 28), d'après des parties sur téléphone : chaque changement
+d'affichage a sa transition, courte, sans jamais retenir un toucher.
+
+### Ajouté
+
+- **Une transition à chaque changement d'affichage** qui changeait d'un coup : la page de la
+  saison monte et redescend, l'ancien chapitre de la carte part pendant que le nouveau arrive,
+  les étagères de l'Atelier et le détail d'un mode changent en fondu, le jour réclamé du cadeau
+  aussi ; dans une partie, l'objectif, le chargement, les cartes du guide et du coach, les zones
+  de toucher et le puits d'une nouvelle manche arrivent et partent en fondu.
+- **Le fondu pour le mouvement réduit** : là où le système demande moins de mouvement, ou quand
+  le joueur coupe les effets, rien ne glisse ni ne grandit, chaque transition est un fondu de
+  140 ms (les effets calmes gardent les transitions qui bougent). La règle qui coupait toute
+  animation à 1 ms disparaît : les versions calmes des composants (le record, la bague de
+  l'offre) se jouent enfin, et la faille vient et part en fondu au lieu d'une coupe franche.
+
+### Modifié
+
+- **Trois durées pour tout** : 140 ms pour ce qui part, 220 ms pour ce qui arrive, 260 ms pour
+  une page du menu, 280 ms pour un écran ; rien au-delà de 300 ms hors des célébrations. Les
+  fenêtres (420 ms avant), les pages du menu et leur pastille (420), le retour à l'accueil
+  (520), les chapitres de la carte, la vitrine de l'Atelier et les zones de toucher (420), la
+  faille (320 puis 380) passent sous la barre.
+- **La faille, en transformations** : une fente de lumière s'ouvre depuis le bouton touché
+  (280 ms), puis s'efface (240 ms), l'écran suivant prenant les touchers dès qu'elle s'efface ;
+  elle passe désormais devant une fenêtre ouverte (quitter depuis la pause).
+- **Ce qui arrive répond dès sa première image** : une fenêtre ouverte par le joueur répond tout
+  de suite (350 ms d'attente avant) ; une fenêtre fermée l'est à l'instant, la page derrière
+  prend les touchers et Échap pendant que la fenêtre s'efface. Seules les fenêtres qui s'ouvrent
+  d'elles-mêmes (la fin de partie, le cadeau du jour) ignorent l'entrée le temps de leur arrivée
+  (220 ms), contre la touche frappée pour le jeu.
+- **Un message prend la place du précédent** sur le puits, sans que le premier saute.
+- Les jauges d'expérience et d'objectif glissent au lieu de s'élargir (aucune dimension animée).
+
+### Technique
+
+- `MotionController` (le style des transitions, `data-transitions` sur la page) et
+  `src/ui/motion.ts` ; les jetons `--motion-*`, `--ease-in`, `--move` ; les transitions
+  partagées `ui-fade`, `ui-rise`, `ui-out` ; les fenêtres natives sortent par
+  `transition-behavior: allow-discrete` là où le navigateur le permet, inertes dès leur
+  fermeture. Un test lit les feuilles de style (aucune transition au-delà de 300 ms hors des
+  célébrations nommées, aucune dimension animée) ; des e2e touchent pendant les transitions et
+  vérifient le fondu.
+
 ## [1.41.0] — 29/10/2026
 
 Le poids et l'éclat (lot 27), d'après des parties sur téléphone : chaque bloc pèse, chaque

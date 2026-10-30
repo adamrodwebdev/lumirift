@@ -117,9 +117,19 @@
   --veil: rgb(5 4 18 / 0.64);
   --shade: rgb(0 0 0 / 0.5);
   --surface-edge: #0b0823;
-  /* Motion: things arrive fast and settle; a spring for what pops. */
+  /* Motion: things arrive fast and settle; a spring for what pops; what leaves speeds up. */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-spring: cubic-bezier(0.3, 1.45, 0.45, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  /*
+   * Transitions (1.42, src/ui/motion.ts): what leaves, what arrives, a page of the menu, a
+   * whole screen; `--move` scales every displacement and growth of a transition.
+   */
+  --motion-out: 140ms;
+  --motion-in: 220ms;
+  --motion-page: 260ms;
+  --motion-screen: 280ms;
+  --move: 1;
   --glass: rgb(15 11 40 / 0.6);
   --star: #ffc35c;
   --star-empty: #3b3366;
@@ -133,4 +143,15 @@
   --space-8: 2rem;
   --header-h: clamp(2.75rem, 7vh, 3.25rem);
   --touch: 2.75rem;
+}
+
+/*
+ * The fade (1.42): the system asks for less motion, or the player turned the effects off
+ * (MotionController). Nothing moves or grows; every transition is a fade of `--motion-out`.
+ */
+:root[data-transitions='fade'] {
+  --motion-in: var(--motion-out);
+  --motion-page: var(--motion-out);
+  --motion-screen: var(--motion-out);
+  --move: 0;
 }

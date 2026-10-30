@@ -196,51 +196,54 @@ const shopOpen = ref(false);
       <i v-for="(chapter, i) in CHAPTERS" :key="chapter" :class="{ on: i === chapterIndex }" />
     </div>
 
-    <div ref="path" class="path">
-      <div
-        :key="view.chapter"
-        class="path__field"
-        :style="{ '--from': direction > 0 ? '1.75rem' : '-1.75rem' }"
-      >
-        <svg class="path__ways" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <path class="path__ahead" :d="ways.ahead" />
-          <path class="path__lit" :d="ways.lit" />
-        </svg>
-        <ol class="path__levels">
-          <li
-            v-for="(entry, i) in view.levels"
-            :key="entry.level.id"
-            class="node"
-            :class="[`node--${entry.state}`, { 'node--boss': entry.level.boss }]"
-            :data-family="entry.family"
-            :style="{ '--x': `${points[i]![0]}%`, '--y': `${points[i]![1]}%` }"
+    <div ref="path" class="path" :style="{ '--turn': direction }">
+      <Transition name="chapter">
+        <div :key="view.chapter" class="path__field">
+          <svg
+            class="path__ways"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
           >
-            <button
-              type="button"
-              class="node__button"
-              :aria-label="nodeLabel(entry)"
-              @click="open(entry.level, $event.currentTarget as Element)"
+            <path class="path__ahead" :d="ways.ahead" />
+            <path class="path__lit" :d="ways.lit" />
+          </svg>
+          <ol class="path__levels">
+            <li
+              v-for="(entry, i) in view.levels"
+              :key="entry.level.id"
+              class="node"
+              :class="[`node--${entry.state}`, { 'node--boss': entry.level.boss }]"
+              :data-family="entry.family"
+              :style="{ '--x': `${points[i]![0]}%`, '--y': `${points[i]![1]}%` }"
             >
-              <span class="node__disc">
-                <AppIcon v-if="entry.state === 'locked'" name="lock" :size="20" />
-                <template v-else>{{ entry.level.id }}</template>
-                <span class="node__mode" aria-hidden="true" />
-              </span>
-              <span class="node__label">{{
-                entry.level.boss
-                  ? t(`bosses.${entry.level.boss}.name`)
-                  : t(`modes.${entry.level.modeId}.name`)
-              }}</span>
-              <StarRow
-                class="node__stars"
-                :count="entry.stars"
-                :label="t('campaign.starsWon', { n: entry.stars }, entry.stars)"
-                :size="13"
-              />
-            </button>
-          </li>
-        </ol>
-      </div>
+              <button
+                type="button"
+                class="node__button"
+                :aria-label="nodeLabel(entry)"
+                @click="open(entry.level, $event.currentTarget as Element)"
+              >
+                <span class="node__disc">
+                  <AppIcon v-if="entry.state === 'locked'" name="lock" :size="20" />
+                  <template v-else>{{ entry.level.id }}</template>
+                  <span class="node__mode" aria-hidden="true" />
+                </span>
+                <span class="node__label">{{
+                  entry.level.boss
+                    ? t(`bosses.${entry.level.boss}.name`)
+                    : t(`modes.${entry.level.modeId}.name`)
+                }}</span>
+                <StarRow
+                  class="node__stars"
+                  :count="entry.stars"
+                  :label="t('campaign.starsWon', { n: entry.stars }, entry.stars)"
+                  :size="13"
+                />
+              </button>
+            </li>
+          </ol>
+        </div>
+      </Transition>
     </div>
 
     <div class="map__foot">
@@ -332,14 +335,30 @@ const shopOpen = ref(false);
 .path__field {
   position: absolute;
   inset: 2.9rem 2.6rem;
-  animation: chapter-in 420ms var(--ease-out);
 }
 
-@keyframes chapter-in {
-  from {
-    opacity: 0;
-    transform: translateX(var(--from));
-  }
+/* A new chapter slides in the way of the turn while the last one leaves the other way. */
+.chapter-enter-active {
+  transition:
+    opacity var(--motion-in) var(--ease-out),
+    transform var(--motion-in) var(--ease-out);
+}
+
+.chapter-leave-active {
+  pointer-events: none;
+  transition:
+    opacity var(--motion-out) var(--ease-in),
+    transform var(--motion-out) var(--ease-in);
+}
+
+.chapter-enter-from {
+  opacity: 0;
+  transform: translateX(calc(var(--move) * var(--turn) * 1.75rem));
+}
+
+.chapter-leave-to {
+  opacity: 0;
+  transform: translateX(calc(var(--move) * var(--turn) * -1.75rem));
 }
 
 .path__ways {

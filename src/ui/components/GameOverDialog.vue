@@ -115,6 +115,7 @@ const beats = computed(() => !props.continueCard);
     :title="title"
     hero
     wide
+    guarded
     @dismiss="
       outcome?.training?.next
         ? emit('step', outcome.training.next)
@@ -197,127 +198,134 @@ const beats = computed(() => !props.continueCard);
         </template>
       </div>
 
-      <!-- The continue takes the experience's place, so that nothing moves when it goes. -->
-      <section
-        v-if="continueCard"
-        class="cont results__right"
-        :aria-label="t('over.continue.title')"
-      >
-        <p class="cont__title">
-          <strong>{{ t('over.continue.title') }}</strong> · {{ continueCard.clears }}
-        </p>
-        <div class="cont__row">
-          <button
-            type="button"
-            class="btn btn--raised cont__btn"
-            :disabled="continueCard.busy"
-            :aria-label="t('over.continue.watchLabel')"
-            @click="emit('continue')"
-          >
-            <svg
-              v-if="continueCard.ringMs > 0"
-              class="cont__ring"
-              :style="{ '--ring': `${continueCard.ringMs}ms` }"
-              viewBox="0 0 20 20"
-              aria-hidden="true"
+      <!-- The continue takes the experience's place, so that nothing moves when it goes; it
+           fades out before the experience rises (1.42). -->
+      <Transition name="ui-out" mode="out-in">
+        <section
+          v-if="continueCard"
+          key="continue"
+          class="cont results__right"
+          :aria-label="t('over.continue.title')"
+        >
+          <p class="cont__title">
+            <strong>{{ t('over.continue.title') }}</strong> · {{ continueCard.clears }}
+          </p>
+          <div class="cont__row">
+            <button
+              type="button"
+              class="btn btn--raised cont__btn"
+              :disabled="continueCard.busy"
+              :aria-label="t('over.continue.watchLabel')"
+              @click="emit('continue')"
             >
-              <circle cx="10" cy="10" r="8" pathLength="100" />
-            </svg>
-            <span class="reward__badge" aria-hidden="true">
-              <AppIcon name="play" :size="12" />{{ t('over.adBadge') }}
-            </span>
-            <span aria-hidden="true">{{ t('over.continue.watch') }}</span>
-          </button>
-          <button
-            type="button"
-            class="btn btn--raised cont__btn"
-            :disabled="continueCard.busy"
-            @click="emit('decline')"
+              <svg
+                v-if="continueCard.ringMs > 0"
+                class="cont__ring"
+                :style="{ '--ring': `${continueCard.ringMs}ms` }"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <circle cx="10" cy="10" r="8" pathLength="100" />
+              </svg>
+              <span class="reward__badge" aria-hidden="true">
+                <AppIcon name="play" :size="12" />{{ t('over.adBadge') }}
+              </span>
+              <span aria-hidden="true">{{ t('over.continue.watch') }}</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn--raised cont__btn"
+              :disabled="continueCard.busy"
+              @click="emit('decline')"
+            >
+              {{ t('over.continue.skip') }}
+            </button>
+          </div>
+          <p class="cont__note">{{ t('over.continue.note') }}</p>
+        </section>
+        <section
+          v-else-if="outcome.progress.total > 0"
+          key="experience"
+          class="xp results__right"
+          :aria-label="t('progress.title')"
+        >
+          <p class="xp__line">
+            <strong>{{
+              t('progress.gained', { n: format.number(outcome.progress.total) })
+            }}</strong>
+            <span>{{ t('profile.level', { n: xp.level.value }) }}</span>
+          </p>
+          <div
+            class="xp__bar"
+            role="progressbar"
+            :aria-label="t('profile.xpLabel')"
+            aria-valuemin="0"
+            :aria-valuemax="levels.after.needed"
+            :aria-valuenow="levels.after.into"
           >
-            {{ t('over.continue.skip') }}
-          </button>
-        </div>
-        <p class="cont__note">{{ t('over.continue.note') }}</p>
-      </section>
-      <section
-        v-else-if="outcome.progress.total > 0"
-        class="xp results__right"
-        :aria-label="t('progress.title')"
-      >
-        <p class="xp__line">
-          <strong>{{ t('progress.gained', { n: format.number(outcome.progress.total) }) }}</strong>
-          <span>{{ t('profile.level', { n: xp.level.value }) }}</span>
-        </p>
-        <div
-          class="xp__bar"
-          role="progressbar"
-          :aria-label="t('profile.xpLabel')"
-          aria-valuemin="0"
-          :aria-valuemax="levels.after.needed"
-          :aria-valuenow="levels.after.into"
-        >
-          <i
-            :class="{ 'xp__fill--instant': xp.instant.value }"
-            :style="{
-              inlineSize: `${xp.fill.value * 100}%`,
-              transitionDuration: `${XP_FILL_MS}ms`,
-            }"
-          />
-        </div>
-        <ul class="xp__sources">
-          <li v-for="line in outcome.progress.xp" :key="line.source + line.amount">
-            {{ t(`progress.source.${line.source}`) }} <b>+{{ format.number(line.amount) }}</b>
-          </li>
-        </ul>
-        <!-- Its room is kept from the start: the window does not jump when it pops. -->
-        <p
-          v-if="outcome.progress.levelAfter > outcome.progress.levelBefore"
-          class="xp__levelup"
-          :class="{ 'xp__levelup--on': xp.levelUp.value }"
-        >
-          {{ t('progress.levelUp', { n: outcome.progress.levelAfter }) }}
-        </p>
-        <p v-for="objective in outcome.progress.completed" :key="objective.kind" class="xp__news">
-          <AppIcon name="check" :size="16" />
-          {{ t('progress.objectiveDone', { text: text.objective(objective) }) }}
-        </p>
-        <!-- The season (1.36): the points this game brought it, a tier, the week's goal. -->
-        <p v-if="outcome.season && outcome.season.points > 0" class="xp__news">
-          <AppIcon name="star" :size="16" />
-          {{
-            outcome.season.weekDone
-              ? t(
-                  'events.goalDone',
-                  { n: format.number(outcome.season.points) },
-                  outcome.season.points,
-                )
-              : outcome.season.tierUp
-                ? t('seasons.tierUp', { n: format.number(outcome.season.tier) })
-                : t(
-                    'seasons.gain',
-                    { name: outcome.season.title, n: format.number(outcome.season.points) },
+            <i
+              :class="{ 'xp__fill--instant': xp.instant.value }"
+              :style="{
+                transform: `translateX(${(xp.fill.value - 1) * 100}%)`,
+                transitionDuration: `${XP_FILL_MS}ms`,
+              }"
+            />
+          </div>
+          <ul class="xp__sources">
+            <li v-for="line in outcome.progress.xp" :key="line.source + line.amount">
+              {{ t(`progress.source.${line.source}`) }} <b>+{{ format.number(line.amount) }}</b>
+            </li>
+          </ul>
+          <!-- Its room is kept from the start: the window does not jump when it pops. -->
+          <p
+            v-if="outcome.progress.levelAfter > outcome.progress.levelBefore"
+            class="xp__levelup"
+            :class="{ 'xp__levelup--on': xp.levelUp.value }"
+          >
+            {{ t('progress.levelUp', { n: outcome.progress.levelAfter }) }}
+          </p>
+          <p v-for="objective in outcome.progress.completed" :key="objective.kind" class="xp__news">
+            <AppIcon name="check" :size="16" />
+            {{ t('progress.objectiveDone', { text: text.objective(objective) }) }}
+          </p>
+          <!-- The season (1.36): the points this game brought it, a tier, the week's goal. -->
+          <p v-if="outcome.season && outcome.season.points > 0" class="xp__news">
+            <AppIcon name="star" :size="16" />
+            {{
+              outcome.season.weekDone
+                ? t(
+                    'events.goalDone',
+                    { n: format.number(outcome.season.points) },
                     outcome.season.points,
                   )
-          }}
+                : outcome.season.tierUp
+                  ? t('seasons.tierUp', { n: format.number(outcome.season.tier) })
+                  : t(
+                      'seasons.gain',
+                      { name: outcome.season.title, n: format.number(outcome.season.points) },
+                      outcome.season.points,
+                    )
+            }}
+          </p>
+          <p
+            v-for="cosmetic in outcome.progress.unlocked"
+            :key="cosmetic.kind + cosmetic.id"
+            class="xp__news"
+          >
+            <AppIcon name="gem" :size="16" />
+            {{
+              t('progress.unlocked', {
+                name: text.cosmeticName(cosmetic),
+                kind: t(`cosmetics.one.${cosmetic.kind}`),
+              })
+            }}
+          </p>
+        </section>
+        <!-- A training step is never too short: it ends when its lesson is learnt. -->
+        <p v-else-if="!outcome.training" key="short" class="sheet-note results__right">
+          {{ t('progress.tooShort') }}
         </p>
-        <p
-          v-for="cosmetic in outcome.progress.unlocked"
-          :key="cosmetic.kind + cosmetic.id"
-          class="xp__news"
-        >
-          <AppIcon name="gem" :size="16" />
-          {{
-            t('progress.unlocked', {
-              name: text.cosmeticName(cosmetic),
-              kind: t(`cosmetics.one.${cosmetic.kind}`),
-            })
-          }}
-        </p>
-      </section>
-      <!-- A training step is never too short: it ends when its lesson is learnt. -->
-      <p v-else-if="!outcome.training" class="sheet-note results__right">
-        {{ t('progress.tooShort') }}
-      </p>
+      </Transition>
 
       <button
         v-if="
@@ -546,13 +554,15 @@ const beats = computed(() => !props.continueCard);
   box-shadow: inset 0 0 0 1px var(--border);
 }
 
+/* The fill slides in from the left, whole (its round end kept), clipped by the bar (1.42). */
 .xp__bar i {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--rift-glow), var(--accent-strong));
   box-shadow: 0 0 0.75rem color-mix(in srgb, var(--rift-glow) 70%, transparent);
-  transition-property: inline-size;
+  transition-property: transform;
   transition-timing-function: var(--ease-out);
 }
 
@@ -718,7 +728,12 @@ const beats = computed(() => !props.continueCard);
   text-shadow:
     0 0 1.1rem color-mix(in srgb, var(--defeat-glow) 70%, transparent),
     0 0.12rem 0 rgb(90 11 36);
-  animation: title-slam 340ms cubic-bezier(0.2, 1.5, 0.4, 1) both;
+  animation: title-slam 280ms cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+/* The fade (1.42): the title comes with the window, it does not land. */
+:root[data-transitions='fade'] .results--lost :deep(.sheet__title) {
+  animation: none;
 }
 
 .results--lost .results__reason {

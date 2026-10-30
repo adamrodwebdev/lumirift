@@ -10,6 +10,7 @@ import { allowsMode, offersDaily } from '@/platform/Edition';
 import { WebPlatform, type Platform } from '@/platform/Platform';
 import { ModeCatalog } from '@/session/ModeCatalog';
 import { AmbianceController } from '@/services/AmbianceController';
+import { MotionController } from '@/services/MotionController';
 import { WornLook } from '@/services/WornLook';
 import { AudioEngine } from '@/services/audio/AudioEngine';
 import { CampaignService } from '@/services/CampaignService';
@@ -49,6 +50,8 @@ export interface AppServices {
   readonly ads: AdScheduler;
   /** How many canvas pixels a CSS pixel gets: the screen's density, capped (see `GAME_PIXEL_RATIO`). */
   readonly pixelRatio: () => number;
+  /** How the interface's transitions run (1.42): they move, or they only fade. */
+  readonly motion: MotionController;
 }
 
 export const APP_SERVICES: InjectionKey<AppServices> = Symbol('AppServices');
@@ -135,6 +138,9 @@ export function createBrowserServices(
       () => clock().getTime(),
     ),
     pixelRatio: () => Math.min(maxPixelRatio, window.devicePixelRatio || 1),
+    motion: new MotionController(settings, document.documentElement, (query) =>
+      window.matchMedia(query),
+    ),
   };
 }
 

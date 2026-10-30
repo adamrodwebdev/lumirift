@@ -1,19 +1,20 @@
 import { onBeforeUnmount, ref, type Ref } from 'vue';
+import { useServices } from '@/app/AppServices';
 import type { LevelProgress } from '@/progression/Experience';
 
-const still = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
 /**
  * A number that counts up to its target, fast then settling (ease-out), so
- * that a score is felt before it is read. Straight to the end with reduced
- * motion.
+ * that a score is felt before it is read. Straight to the end under the
+ * fade (1.42: less motion asked, or the effects off).
  */
 export function useCountUp(durationMs = 750): {
   readonly value: Readonly<Ref<number>>;
   run(target: number, delayMs?: number): void;
 } {
+  const { motion } = useServices();
   const value = ref(0);
   let frame = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -21,7 +22,7 @@ export function useCountUp(durationMs = 750): {
   const run = (target: number, delayMs = 0) => {
     cancelAnimationFrame(frame);
     clearTimeout(timer);
-    if (still() || target <= 0) {
+    if (motion.fades || target <= 0) {
       value.value = target;
       return;
     }
@@ -64,6 +65,7 @@ export function useXpReveal(): {
   readonly instant: Readonly<Ref<boolean>>;
   run(from: LevelProgress, to: LevelProgress, delayMs?: number): Promise<void>;
 } {
+  const { motion } = useServices();
   const fill = ref(0);
   const level = ref(1);
   const levelUp = ref(false);
@@ -79,7 +81,7 @@ export function useXpReveal(): {
     fill.value = levelShare(from);
     level.value = from.level;
     levelUp.value = false;
-    if (still()) {
+    if (motion.fades) {
       fill.value = levelShare(to);
       level.value = to.level;
       levelUp.value = passed;

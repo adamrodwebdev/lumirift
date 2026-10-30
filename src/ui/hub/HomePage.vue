@@ -689,7 +689,7 @@ onBeforeUnmount(() => {
 /* Each moment is a fresh canvas, fading in over the last one. */
 .reel__stage :deep(.reel__canvas) {
   grid-area: 1 / 1;
-  transition: opacity 320ms ease;
+  transition: opacity var(--motion-screen) ease;
 }
 
 .reel__stage :deep(.reel__canvas--hidden),

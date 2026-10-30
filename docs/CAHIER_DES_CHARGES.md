@@ -14,6 +14,7 @@
 | 1.39    | 28/10/2026 | La fabrique de clips : les clips de la semaine filmés par le jeu, son compris, pour les réseaux (§ 9 ter, lot 25).                                                                                                                    |
 | 1.40    | 29/10/2026 | La prise en main : la pièce suit le doigt, de côté et vers le bas, un texte reste le temps d'être lu, un seul compte des combos (§ 9 quater, lot 26).                                                                                 |
 | 1.41    | 29/10/2026 | Le poids et l'éclat : chaque bloc pèse, chaque effacement se tient et frappe, chaque combo monte (§ 9 quater, lot 27).                                                                                                                |
+| 1.42    | 30/10/2026 | Des menus qui s'enchaînent : chaque changement d'affichage a sa transition, moins de 300 ms, jamais un toucher retenu, un fondu avec le mouvement réduit (§ 9 quater, lot 28).                                                        |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1773,7 +1774,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
 | 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Livré (1.40)                                                 |
 | 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
-| 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Prévu                                                        |
+| 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2447,10 +2448,141 @@ des effets à la mesure du moment.
       catégories à chaque passage ;
     - les clips : `release/clips/feel-1.40.0` et `feel-1.41.0`, côte à côte sur une page privée
       pour l'utilisateur ; reste son essai sur téléphone.
-- **Lot 28 · 1.42 Des menus qui s'enchaînent** (détaillé avant son code). Chaque changement
-  d'affichage passé en revue (écrans, pages, fenêtres, pause, fin de partie, page de la saison)
-  reçoit une transition : moins de 300 ms, transformations et opacité seulement, jamais un
-  toucher bloqué, un simple fondu avec le mouvement réduit.
+- **Lot 28 · 1.42 Des menus qui s'enchaînent** (détaillé et validé le 29/10/2026). Chaque
+  changement d'affichage passé en revue (écrans, pages, fenêtres, pause, fin de partie, page de
+  la saison) reçoit une transition : moins de 300 ms, transformations et opacité seulement,
+  jamais un toucher bloqué sur ce qui arrive, un simple fondu avec le mouvement réduit. Jugé
+  sur un parcours filmé avant et après.
+  - Constats (le code de la 1.41) :
+    - la plupart des mouvements dépassent 300 ms : la faille entre l'accueil et une partie
+      (320 ms pour couvrir, en `clip-path`, 380 pour révéler), les pages du menu et leur pastille
+      (420 ms), le retour à l'accueil (520 ms, les onglets 120 ms après), les fenêtres (420 ms en
+      portrait, 380 en paysage, leur contenu en cascade de 420 ms), les chapitres de la carte, la
+      vitrine de l'Atelier et les zones de toucher (420 ms) ;
+    - d'autres changent d'un coup : la page de la saison (ouverture et fermeture), le détail d'un
+      mode, les étagères de l'Atelier, le jour réclamé du cadeau, l'objectif d'un niveau, le
+      chargement, la pause publicitaire, le puits d'une nouvelle manche, l'arrivée et le départ
+      des cartes du guide et du coach, le départ des zones de toucher, l'ancien chapitre de la
+      carte, l'offre de continuer qui cède la place ;
+    - avec le mouvement réduit, une règle globale (`base.css`) ramène toute animation et toute
+      transition à 1 ms : tout change d'un coup, jusqu'aux versions calmes que des composants
+      prévoyaient (le record, la bague de l'offre) ; la faille est une coupe franche ;
+    - une fenêtre qui s'ouvre ignore les touchers, Entrée et Espace pendant 350 ms (une touche
+      frappée pour le jeu ne doit pas appuyer sur le bouton qui reçoit le focus) ; une fenêtre qui
+      se ferme reste ouverte 200 ms, et la page derrière attend ;
+    - deux messages qui se suivent sur le puits s'empilent sur deux lignes pendant 300 ms : le
+      message affiché saute ;
+    - quitter une partie depuis la pause ou la fin : la fenêtre ouverte reste au-dessus de la
+      faille (la couche supérieure du navigateur passe devant tout) jusqu'à la fin de l'écran ;
+    - le réglage d'effets du joueur ne touche ni les fenêtres, ni la faille, ni les pages.
+  - **Les règles du mouvement** (des jetons dans `tokens.css`, lus partout) :
+    - trois durées : 140 ms pour ce qui part et les petits éléments, 220 ms pour ce qui arrive
+      (une page, une fenêtre), 280 ms pour un écran ; un départ dure les deux tiers d'une arrivée ;
+      rien au-delà de 300 ms, hors des célébrations (le record, les cris, les moments de la
+      course), qui ne sont pas des changements d'affichage et que la 1.41 a réglées ;
+    - les courbes : ce qui arrive ralentit (`--ease-out`), ce qui part accélère (`--ease-in`,
+      nouveau), ce qui saute rebondit (`--ease-spring`) sans dépasser sa durée ;
+    - transformations et opacité seulement : ni découpe, ni dimension, ni position, ni flou
+      animés (la jauge d'expérience de la fin de partie passe d'une largeur à une échelle) ;
+    - ce qui arrive prend les touchers dès sa première image ; ce qui part ne les prend plus. Une
+      exception (choix de l'utilisateur, le 29/10/2026) : une fenêtre qui s'ouvre d'elle-même
+      (la fin de partie, le cadeau du jour) ignore les touchers, Entrée et Espace le temps de son
+      arrivée (220 ms, 350 aujourd'hui), contre la touche frappée pour le jeu ; une fenêtre que
+      le joueur ouvre répond tout de suite ;
+    - le focus va à sa place dès la première image (un titre, le bouton par défaut), jamais à la
+      fin du mouvement ;
+    - le mouvement réduit (le réglage du système, ou le joueur qui coupe les effets ; les effets
+      calmes gardent les transitions qui bougent, choix de l'utilisateur) : un fondu d'opacité de
+      140 ms à la place de tout déplacement ou agrandissement, et les boucles décoratives
+      arrêtées ; la règle globale de 1 ms disparaît ;
+    - le premier affichage ne bouge pas : rien n'y part d'une opacité nulle (Lighthouse).
+  - **Les écrans** :
+    - la faille (§ 3.2 ter) garde son dessin, refait en transformations : une fente de lumière
+      s'ouvre depuis le bouton touché et couvre l'écran en 280 ms ; l'écran suivant se met en
+      place derrière (son code chargé, deux images), puis la lumière s'efface en 240 ms, l'écran
+      suivant prenant les touchers dès qu'elle commence à s'effacer. Avec le mouvement réduit, la
+      lumière vient et part en fondu (140 ms chaque fois) au lieu d'une coupe franche ;
+    - la faille entre dans la couche supérieure (`popover`) : elle passe devant une fenêtre
+      ouverte, qui se ferme sous elle sans mouvement ;
+    - le retour à l'accueil : les pages remontent en 260 ms, les onglets 60 ms après ;
+    - une nouvelle manche (rejouer, le niveau suivant) : le puits apparaît en fondu de 140 ms.
+  - **Le menu** :
+    - les pages glissent en 260 ms, la pastille des onglets avec elles ; le doigt les mène
+      toujours sans délai ; la page qui arrive prend les touchers dès le début du glissement ;
+    - la page de la saison monte du bandeau qui l'ouvre (220 ms, glissement et fondu) et
+      redescend en 140 ms ; le focus va à son titre, puis revient au bandeau, comme aujourd'hui ;
+    - la carte : l'ancien chapitre part du côté opposé en 140 ms pendant que le nouveau arrive en
+      220 ms, dans le sens du chapitre ;
+    - l'Atelier : les étagères changent en fondu croisé (140 ms), la vitrine entre en 220 ms ;
+      le refus d'un objet verrouillé reste une secousse, en 280 ms ;
+    - le détail d'un mode change en fondu et glissement de 180 ms ; le jour réclamé du cadeau
+      se retourne en fondu de 220 ms.
+  - **Les fenêtres** (`ModalDialog`, onze fenêtres) :
+    - en portrait, la feuille monte en 220 ms et redescend en 140 ; en paysage, elle apparaît en
+      fondu et agrandissement (de 0,96 à 1) en 220 ms et part en 140 ; le voile suit les mêmes
+      durées ; le contenu arrive en cascade, 60 ms d'écart, 220 ms chacun ;
+    - une fenêtre fermée l'est tout de suite pour le navigateur : la page derrière prend les
+      touchers et Échap à l'instant, pendant que la fenêtre s'efface en 140 ms là où le
+      navigateur sait garder une fenêtre fermée à l'écran (sinon elle disparaît d'un coup) ;
+    - les fenêtres l'une dans l'autre (les gestes dans la pause, les touches dans les réglages) :
+      celle du dessous reste, celle du dessus arrive et part comme les autres.
+  - **La partie** :
+    - la pause : la feuille en 220 ms ; le coach et les zones de toucher partent en fondu de
+      140 ms au lieu de disparaître ;
+    - la fin de partie arrive à l'heure de la 1.41 (après la chute du puits), en 220 ms ; son
+      titre frappe en 280 ms (340 aujourd'hui) ; le compte des points (750 ms) et la jauge
+      d'expérience (700 ms) restent des récits, qui ne retiennent aucun toucher ;
+    - l'offre de continuer cède la place en fondu (140 ms) à l'expérience, qui monte en 220 ms ;
+    - un message sur le puits prend la place du précédent dans la même case : l'ancien part en
+      140 ms pendant que le nouveau arrive en 220, sans saut ;
+    - le guide et le coach : la carte arrive en 220 ms et part en 140, comme ses lignes ;
+    - l'objectif d'un niveau, le chargement, la pause publicitaire : fondu de 220 ms à l'arrivée,
+      140 au départ ; les zones de toucher : 220 ms à l'arrivée (420 aujourd'hui), 140 au départ.
+  - Architecture : les jetons de durée et de courbe dans `tokens.css` ; les transitions de Vue
+    (`<Transition>`) pour les éléments montés et démontés ; pour les fenêtres natives, l'entrée
+    en CSS (`@starting-style`) et la sortie gardée à l'écran par
+    `transition-behavior: allow-discrete` là où le navigateur le permet, sans minuterie ; un
+    composable `useMotion` dit si le mouvement est réduit (le système, ou `data-motion` déjà posé
+    par l'ambiance) ; aucune bibliothèque.
+  - Porte :
+    - un test lit les feuilles de style : aucune durée d'animation ou de transition au-delà de
+      300 ms hors des célébrations nommées, aucune propriété de mise en page animée (dimension,
+      position, marge, découpe) ;
+    - e2e : toute la suite passe, sans attente ajoutée ; un toucher fait pendant une transition
+      (une page qui glisse, une fenêtre qui arrive, le retour d'une partie) joue sur ce qui
+      arrive ; avec le mouvement réduit, les animations en cours ne portent que sur l'opacité ;
+      l'audit d'accessibilité attend la fin des fondus ;
+    - un parcours filmé sur la 1.41 puis sur la 1.42 (Playwright, vidéo) : l'accueil, les pages,
+      une fenêtre, la saison, une partie et son retour, la pause, la fin ; l'utilisateur les
+      juge côte à côte ;
+    - le temps d'image ne bouge pas (`npm run frame-time`) ; Lighthouse reste à 100 ;
+    - l'essai de l'utilisateur sur son téléphone.
+  - **Livré en 1.42** (30/10/2026). Les mesures de la porte et les écarts :
+    - tests unitaires : 94 fichiers, 863 tests, dont la lecture des feuilles de style (aucune
+      transition au-delà de 300 ms hors de dix feuilles et cinq animations nommées : célébrations,
+      effets du jeu, décors ; aucune dimension animée, les jauges d'expérience et d'objectif
+      glissent désormais) et `MotionController` ; e2e : 211 tests au dernier passage complet, 182
+      passés, 28 réservés à l'autre appareil ; un test des Dunes (la touche R) est tombé une fois
+      sous la charge de la suite entière et passe six fois sur six répété seul ;
+      `transitions.spec.ts` passe 32 fois sur 32, répété quatre fois à quatre processus ;
+    - un écart trouvé par la suite e2e : la fenêtre de pause se fermait sur P, et le jeu, ne
+      voyant plus de fenêtre ouverte, prenait la même touche pour une nouvelle pause (les 200 ms
+      de fermeture l'isolaient jusque-là). La fenêtre arrête désormais la touche qu'elle utilise ;
+      une fenêtre fermée devient inerte à l'instant (ni toucher, ni clavier, ni lecteur d'écran
+      pendant son fondu) ;
+    - les touchers pendant une transition se vérifient au premier instant où l'élément paraît à
+      l'écran (`elementFromPoint`) : une page qui glisse, une fenêtre qui arrive dans ce qui
+      était 350 ms d'attente. Un clic sur une cible qui bouge manquait sous la charge ;
+    - le fondu : le mouvement réduit du système ou les effets coupés ; les boucles décoratives
+      s'arrêtent après un tour, les versions calmes des composants se jouent ;
+    - le temps d'image ne bouge pas : au 95e centile, toutes prises, le processeur ralenti quatre
+      fois, travail du processeur : 1.41 4,6 et 4,9 ms, 1.42 4,7 et 4,5 ms (deux tours
+      alternés) ;
+    - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+      catégories à chaque passage ;
+    - le parcours filmé : `release/walkthrough/1.41.0.mp4` et `1.42.0.mp4` (23 s chacun, le même
+      script), côte à côte sur une page privée pour l'utilisateur ; reste son essai sur
+      téléphone.
 
 ## 10. Hors périmètre (v1)
 
@@ -2528,3 +2660,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.39    | 28/10/2026 | La croissance sans dépense (§ 9 ter) ; la fabrique de clips : `clip-factory.mjs`, le plateau `?clip` (`SetTime`, `TakeSound`), la piste AAC (lot 25).                  |
 | 1.40    | 29/10/2026 | Le ressenti (§ 9 quater) ; la prise en main : `PhoneGestures` (crans à la case, `softStep`, coup lu à l'accélération), `readingTime`, compte des combos (lot 26).      |
 | 1.41    | 29/10/2026 | Le poids et l'éclat : `FrameClock.hold`, `Impact`, `Camera`, `WellOverlay`, la Tour au niveau du puits, les prises simples de la fabrique (lot 27).                    |
+| 1.42    | 30/10/2026 | Des menus qui s'enchaînent : `MotionController`, jetons `--motion-*`, fenêtres fermées à l'instant, faille en popover, test des feuilles de style (lot 28).            |
