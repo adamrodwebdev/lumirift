@@ -49,12 +49,18 @@ defineExpose({
 </template>
 
 <style scoped>
+/*
+ * Like the game screen: the hold, then the coming pieces in the rift above the
+ * well (1.43). Every area a stage names is in the grid: one missing would open
+ * tracks of its own, at the well's expense.
+ */
 .showcase {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
   grid-template-areas:
-    'hold next'
+    'hold .'
+    'rift rift'
     'well well'
     'prompt prompt'
     'jokers jokers'
@@ -66,22 +72,19 @@ defineExpose({
   overflow: hidden;
 }
 
-.showcase :deep(.stage__next) {
-  justify-self: end;
-}
-
-.showcase :deep(.stage__hold),
-.showcase :deep(.stage__next) {
+.showcase :deep(.stage__hold) {
   align-self: start;
+  justify-self: start;
 }
 
-/* Landscape: the well in the middle, its pieces on either side, like the game. */
+/* Landscape: the well in the middle under its rift, the hold on its left, like the game. */
 @media (orientation: landscape) {
   .showcase {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
     grid-template-areas:
-      'hold well next'
+      '. rift .'
+      'hold well hand'
       'jokers well hand'
       'prompt well hand';
     column-gap: 1.5rem;
@@ -90,10 +93,6 @@ defineExpose({
 
   .showcase :deep(.stage__hold) {
     justify-self: end;
-  }
-
-  .showcase :deep(.stage__next) {
-    justify-self: start;
   }
 }
 </style>
