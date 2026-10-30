@@ -203,14 +203,45 @@ button {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
-  }
+/*
+ * Shared transitions (1.42, `<Transition name="…">`): `ui-fade` fades in and out, `ui-rise`
+ * also rises a little as it comes, `ui-out` only fades out (what has its own entrance). What
+ * leaves takes no taps.
+ */
+.ui-fade-enter-active,
+.ui-rise-enter-active {
+  transition:
+    opacity var(--motion-in) var(--ease-out),
+    transform var(--motion-in) var(--ease-out);
+}
+
+.ui-fade-leave-active,
+.ui-rise-leave-active,
+.ui-out-leave-active {
+  pointer-events: none;
+  transition: opacity var(--motion-out) var(--ease-in);
+}
+
+.ui-fade-enter-from,
+.ui-fade-leave-to,
+.ui-rise-enter-from,
+.ui-rise-leave-to,
+.ui-out-leave-to {
+  opacity: 0;
+}
+
+.ui-rise-enter-from {
+  transform: translateY(calc(var(--move) * 0.6rem));
+}
+
+/*
+ * The fade (1.42, tokens.css): the transitions fade by themselves; the decorative loops stop
+ * after one round. The components' own calm versions play as they were written.
+ */
+:root[data-transitions='fade'] *,
+:root[data-transitions='fade'] *::before,
+:root[data-transitions='fade'] *::after {
+  animation-iteration-count: 1 !important;
 }
 
 /*

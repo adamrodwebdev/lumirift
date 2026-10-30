@@ -1,6 +1,8 @@
 /*
  * The game's windows (`ModalDialog`): a sheet that rises from the bottom of
- * a phone held upright, a card that pops in the middle of a wide screen.
+ * a phone held upright, a card that pops in the middle of a wide screen
+ * (1.42: arriving in `--motion-in`, leaving in `--motion-out`, a fade alone
+ * under the fade, tokens.css).
  * Their content is laid out to fit without scrolling; the scroll stays as a
  * last resort (zoomed text, very small screens). The open sheet is a grid
  * whose items are the title row and each block of content (the body only
@@ -32,7 +34,7 @@
   box-shadow:
     0 -1.25rem 3.75rem var(--shade),
     inset 0 1px 0 var(--highlight);
-  animation: sheet-up 420ms var(--ease-out);
+  animation: sheet-up var(--motion-in) var(--ease-out);
 }
 
 .sheet[open] {
@@ -44,32 +46,23 @@
 
 .sheet::backdrop {
   background: var(--veil);
-  animation: veil-in 240ms ease-out;
+  animation: veil-in var(--motion-in) var(--ease-out);
 }
 
-.sheet--closing {
+/* Under the rift's light (a change of screen, `App`): the window it covers takes no taps. */
+.changing-screen .sheet {
   pointer-events: none;
-  animation: sheet-down 200ms ease-in forwards;
 }
 
-/* Arriving: its buttons wait a moment before they take a tap. */
+/* Arriving by itself (`guarded`): its buttons wait for the end of the arrival. */
 .sheet--settling .sheet__body {
   pointer-events: none;
 }
 
-.sheet--closing::backdrop {
-  animation: veil-out 200ms ease-in forwards;
-}
-
 @keyframes sheet-up {
   from {
-    transform: translateY(100%);
-  }
-}
-
-@keyframes sheet-down {
-  to {
-    transform: translateY(100%);
+    opacity: 0;
+    transform: translateY(calc(var(--move) * 100%));
   }
 }
 
@@ -79,8 +72,28 @@
   }
 }
 
-@keyframes veil-out {
-  to {
+/*
+ * Leaving: closed at once (the page behind takes taps and Escape), the sheet
+ * and its veil kept on screen while they fade, where the browser can keep a
+ * closed window in the top layer (`overlay`); elsewhere it goes at once.
+ */
+@supports (overlay: auto) {
+  .sheet,
+  .sheet::backdrop {
+    transition:
+      opacity var(--motion-out) var(--ease-in),
+      transform var(--motion-out) var(--ease-in),
+      overlay var(--motion-out) allow-discrete,
+      display var(--motion-out) allow-discrete;
+  }
+
+  .sheet:not([open]) {
+    opacity: 0;
+    transform: translateY(calc(var(--move) * 100%));
+    pointer-events: none;
+  }
+
+  .sheet:not([open])::backdrop {
     opacity: 0;
   }
 }
@@ -118,31 +131,27 @@
   display: contents;
 }
 
-/* The content follows the sheet in a short cascade. */
-.sheet[open]:not(.sheet--closing) > .sheet__body > * {
-  animation: sheet-rise 420ms var(--ease-out) both;
+/* The content follows the sheet in a short cascade, 60 ms apart. */
+.sheet[open] > .sheet__body > * {
+  animation: sheet-rise var(--motion-in) var(--ease-out) both;
 }
 
 .sheet[open] > .sheet__body > :nth-child(2) {
-  animation-delay: 40ms;
+  animation-delay: 60ms;
 }
 
 .sheet[open] > .sheet__body > :nth-child(3) {
-  animation-delay: 80ms;
-}
-
-.sheet[open] > .sheet__body > :nth-child(4) {
   animation-delay: 120ms;
 }
 
-.sheet[open] > .sheet__body > :nth-child(n + 5) {
-  animation-delay: 160ms;
+.sheet[open] > .sheet__body > :nth-child(n + 4) {
+  animation-delay: 180ms;
 }
 
 @keyframes sheet-rise {
   from {
     opacity: 0;
-    transform: translateY(0.9rem);
+    transform: translateY(calc(var(--move) * 0.9rem));
   }
 }
 
@@ -156,15 +165,17 @@
     padding: 1rem 1.15rem;
     border-bottom: 1px solid var(--border);
     border-radius: 1.6rem;
-    animation: sheet-pop 380ms var(--ease-spring);
+    animation: sheet-pop var(--motion-in) var(--ease-spring);
   }
 
   .sheet--wide {
     width: min(100% - 2rem, 46rem);
   }
 
-  .sheet--closing {
-    animation: sheet-away 180ms ease-in forwards;
+  @supports (overlay: auto) {
+    .sheet:not([open]) {
+      transform: scale(calc(1 - var(--move) * 0.03));
+    }
   }
 
   .sheet[open] {
@@ -175,14 +186,7 @@
 @keyframes sheet-pop {
   from {
     opacity: 0;
-    transform: scale(0.94);
-  }
-}
-
-@keyframes sheet-away {
-  to {
-    opacity: 0;
-    transform: scale(0.97);
+    transform: scale(calc(1 - var(--move) * 0.04));
   }
 }
 

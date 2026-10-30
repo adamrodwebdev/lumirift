@@ -46,7 +46,9 @@ const ownKeys = computed(() => !props.touch && props.family !== 'placement');
 
 /**
  * The pause key pauses and resumes: it works both ways (the game's own keys
- * sleep under a window). The Mosaic keeps its P.
+ * sleep under a window). The Mosaic keeps its P. The key stops here: the
+ * window closes at once (1.42), and the game, finding no window open, would
+ * take the same key as a new pause.
  */
 const onKey = (event: KeyboardEvent) => {
   if (event.repeat || keysOpen.value || guideOpen.value) return;
@@ -56,6 +58,7 @@ const onKey = (event: KeyboardEvent) => {
       : bindings.value.actionFor(event.code) === 'pause';
   if (!pause) return;
   event.preventDefault();
+  event.stopPropagation();
   emit('resume');
 };
 </script>
