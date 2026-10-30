@@ -1027,6 +1027,7 @@ onBeforeUnmount(() => {
 .game__goal,
 .game__help,
 .game :deep(.stage__hold),
+.game :deep(.stage__surge),
 .game :deep(.stage__next),
 .game :deep(.stage__side) {
   font-size: var(--hud-size);
@@ -1314,7 +1315,8 @@ onBeforeUnmount(() => {
   .game__guide,
   .game__goal,
   .game__help,
-  .game :deep(.stage__hold) {
+  .game :deep(.stage__hold),
+  .game :deep(.stage__surge) {
     justify-self: end;
     /* In `em`: the column grows with the HUD on a large screen. */
     width: min(100%, 15em);
