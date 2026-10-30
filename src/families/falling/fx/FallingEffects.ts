@@ -1,12 +1,21 @@
 import { AdaptiveQuality } from '@/fx/AdaptiveQuality';
 import type { EffectsProfile } from '@/fx/EffectsProfile';
 import { FlashLimiter } from '@/fx/FlashLimiter';
+import {
+  clearImpact,
+  comboBreakHeard,
+  comboLook,
+  landingImpact,
+  type ComboHeat,
+  type Impact,
+  type TimeHolder,
+} from '@/fx/Impact';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
-import { ScreenShake } from '@/fx/ScreenShake';
+import { Camera } from '@/fx/Camera';
 import type { ClearedRow, RemovedCell } from '../board/Board';
 import type { Cell } from '../pieces/Shapes';
 import type { FallingSession, FallingView } from '../FallingSession';
-import type { LinesClearedEvent } from '../game/GameEvents';
+import type { LinesClearedEvent, LockCause } from '../game/GameEvents';
 import type { Piece } from '../pieces/Piece';
 import { CHROMA_TONES, Tone } from '../pieces/PieceType';
 import { shade, type TonePalette } from '@/render/TonePalette';
@@ -24,6 +33,17 @@ const POPUP_MS = 950;
 const WAVE_MS = 650;
 const SLOW_MOTION_MS = 120;
 const SHARDS_PER_CELL = [6, 4, 3] as const;
+/** A full trauma shifts the well this far (cells). */
+const CAMERA_SHIFT = 0.35;
+/** A landed piece squashes and the stack under it dips: deepest at 25 ms, gone by 140 ms (1.41). */
+const LANDING_PEAK_MS = 25;
+const LANDING_MS = 140;
+/** A combo's heat on the well's edges holds 1.5 s after the last clear, then fades; a break drains it in 0.4 s. */
+const HEAT_HOLD_MS = 1500;
+const HEAT_FADE_MS = 600;
+const HEAT_DRAIN_MS = 400;
+/** A RIFT!'s word enters at × 1.5, settles in 200 ms and stays 1.1 s. */
+const RIFT_WORD = { size: 1.6, punch: 0.5, punchMs: 200, life: 1100 } as const;
 
 /**
  * A hard drop falls instead of jumping: quick over a short distance, at most
@@ -80,11 +100,41 @@ export interface CellFlash {
 
 export interface Popup {
   readonly text: string;
-  /** `label`: the big word of a moment (×2, RIFT!, COMBO); `points` otherwise. */
-  readonly kind?: 'points' | 'label';
+  /**
+   * `label`: the big word of a moment (×2, RIFT!, COMBO); `shout`: a combo's
+   * word of heat at a milestone (1.41); `points` otherwise.
+   */
+  readonly kind?: 'points' | 'label' | 'shout';
+  /** Its size (cells; by default 1.05 for a label, 0.75 for points) and its combo's heat (1.41). */
+  readonly size?: number;
+  readonly heat?: ComboHeat;
+  /** How far it enters bigger (× 1 + punch) and how fast it settles (ms); how long it stays (ms). */
+  readonly punch?: number;
+  readonly punchMs?: number;
+  readonly life?: number;
   readonly x: number;
   readonly y: number;
   age: number;
+}
+
+/** The words the well writes, translated: a combo (« COMBO ×3 »), its shouts (1.41). */
+export interface WellWords {
+  combo(times: number): string;
+  /** `hot`, `blazing`, `inferno` or `riftbreaker` (`COMBO_SHOUTS`). */
+  shout(key: string): string;
+}
+
+/** A piece that just landed (1.41): its board cells (row × width + column), its squash, its age. */
+export interface Landing {
+  readonly cells: ReadonlySet<number>;
+  readonly squash: number;
+  age: number;
+}
+
+/** A landing's curve: up to 1 at `peakMs`, then back to 0 with no bounce. */
+function settle(age: number, peakMs: number): number {
+  const t = age / peakMs;
+  return t * Math.exp(1 - t);
 }
 
 /**
@@ -123,7 +173,8 @@ const random = (min: number, max: number) => min + Math.random() * (max - min);
  */
 export class FallingEffects {
   readonly pool = new ParticlePool(POOL_CAPACITY);
-  readonly shake = new ScreenShake();
+  /** The camera on the well: its shake, its dips, its tilt (1.41). */
+  readonly camera = new Camera(CAMERA_SHIFT);
   /** Visual offset of each board row, in cells (negative: drawn higher). */
   readonly rowOffset: Float32Array;
   readonly cracks: CrackingRow[] = [];
@@ -137,6 +188,15 @@ export class FallingEffects {
   wellFlash = 0;
   /** Pulse of the well frame on a beat (Rhythm), from 1 down to 0. */
   beatGlow = 0;
+  /** A combo's heat on the well's edges (1.41), 0 to 1, and its colour. */
+  heat = 0;
+  heatColor: ComboHeat = 'gold';
+  /** Pieces squashing as they land (1.41). */
+  readonly landings: Landing[] = [];
+  /** Each board row's dip under a landing, in cells (down), added to `rowOffset` when drawn. */
+  readonly rowDip: Float32Array;
+  /** The landed cells' height this frame (1: none): the painter squashes them; null when none does. */
+  squash: ReadonlyMap<number, number> | null = null;
   stackHidden = false;
   /**
    * Hard drops are shown falling, when the stage's renderer can draw them
@@ -159,17 +219,28 @@ export class FallingEffects {
   /** Centre column of the last piece locked: where a crack starts. */
   private lockOrigin: number | null = null;
   private readonly delayed: { at: number; run: () => void }[] = [];
+  private readonly dipDepth: Float32Array;
+  private readonly dipAge: Float32Array;
+  /** How fast the well's light fades (per ms): each flash sets its own. */
+  private wellFlashFade = 1 / 260;
+  /** Time since the last clear of a combo, and how fast its heat drains once it broke (per ms). */
+  private heatAge = 0;
+  private heatDrain = 0;
+  private holder: TimeHolder | null = null;
 
   constructor(
     private readonly view: FallingView,
     private readonly profile: () => EffectsProfile,
     private readonly palette: () => TonePalette | null,
     private readonly formatPoints: (points: number) => string,
-    /** The combo's word, translated ("COMBO ×3"). */
-    private readonly comboWord: (combo: number) => string,
+    /** The well's words, translated. */
+    private readonly words: WellWords,
   ) {
     const { board } = view;
     this.rowOffset = new Float32Array(board.height);
+    this.rowDip = new Float32Array(board.height);
+    this.dipDepth = new Float32Array(board.height);
+    this.dipAge = new Float32Array(board.height).fill(LANDING_MS);
     this.rowVelocity = new Float32Array(board.height);
     this.rowHold = new Float32Array(board.height);
     this.quality = new AdaptiveQuality((budget) => this.pool.setLimit(budget));
@@ -194,11 +265,17 @@ export class FallingEffects {
     return this.profile().motion;
   }
 
+  /** The well's width, in cells (a word wider than it shrinks). */
+  get width(): number {
+    return this.view.board.width;
+  }
+
   attach(session: FallingSession): () => void {
     const offs = [
       session.onGame('hardDrop', ({ piece, distance }) => this.onHardDrop(piece, distance)),
-      session.onGame('lock', ({ piece }) => this.onLock(piece)),
+      session.onGame('lock', ({ piece, cause, distance }) => this.onLock(piece, cause, distance)),
       session.onGame('clear', (event) => this.onClear(event)),
+      session.onGame('comboEnd', ({ combo }) => this.onComboEnd(combo)),
       session.onGame('garbage', ({ rows }) => this.onGarbage(rows)),
       session.onGame('stones', ({ cells }) => this.onStones(cells)),
       session.onGame('levelUp', () => this.addWave('level')),
@@ -222,11 +299,14 @@ export class FallingEffects {
     return (
       this.pool.count > 0 ||
       this.cracks.length > 0 ||
-      this.shake.active ||
+      this.camera.active ||
       this.trails.length + this.flashes.length + this.popups.length + this.waves.length > 0 ||
       this.drops.length + this.delayed.length > 0 ||
       this.beatGlow > 0 ||
-      this.rowOffset.some((offset) => offset !== 0)
+      this.heat > 0 ||
+      this.landings.length > 0 ||
+      this.rowOffset.some((offset) => offset !== 0) ||
+      this.rowDip.some((dip) => dip !== 0)
     );
   }
 
@@ -244,10 +324,13 @@ export class FallingEffects {
     return cells;
   }
 
-  update(deltaMs: number): void {
+  /** A frame: `deltaMs` of the game's time, `realMs` of the wall clock's (the camera runs on it). */
+  update(deltaMs: number, realMs = deltaMs): void {
     // The events of a hard drop all come at once, between two frames.
     this.waiting = 0;
     this.clock += deltaMs;
+    // The game's time: a flash holds through a hit-stop, then fades; one lit this frame shows whole.
+    this.wellFlash = Math.max(0, this.wellFlash - deltaMs * this.wellFlashFade);
     for (let i = this.delayed.length - 1; i >= 0; i--) {
       const task = this.delayed[i]!;
       if (task.at > this.clock) continue;
@@ -261,9 +344,10 @@ export class FallingEffects {
     }
     this.drops.length = write;
     this.quality.sample(deltaMs);
-    this.shake.update(deltaMs);
-    this.wellFlash = Math.max(0, this.wellFlash - deltaMs / 260);
+    this.camera.update(realMs);
     this.beatGlow = Math.max(0, this.beatGlow - deltaMs / 240);
+    this.updateHeat(deltaMs);
+    this.updateLandings(deltaMs);
 
     for (const crack of [...this.cracks]) {
       crack.age += deltaMs;
@@ -284,6 +368,11 @@ export class FallingEffects {
   /** The stage draws hard drops falling (its renderer can). */
   showDropsFalling(): void {
     this.dropsFalling = true;
+  }
+
+  /** Clears hold the game's time still a moment (1.41), where the stage allows it: never in Rhythm. */
+  holdTimeWith(holder: TimeHolder): void {
+    this.holder = holder;
   }
 
   color(css: string): number {
@@ -333,9 +422,12 @@ export class FallingEffects {
     this.later(wait, () => this.dust(piece, Math.round(4 * profile.particles)));
   }
 
-  private onLock(piece: Piece): void {
+  private onLock(piece: Piece, cause: LockCause, distance: number): void {
     const cells = piece.localCells;
     this.lockOrigin = piece.x + cells.reduce((sum, cell) => sum + cell.x, 0) / cells.length + 0.5;
+    // The weight of the landing, when the piece is seen to land (a hard drop falls first).
+    const impact = landingImpact(cause === 'hard', distance);
+    this.later(this.waiting, () => this.land(piece, impact));
     if (this.profile().particles === 0) return;
     const hidden = this.view.board.hiddenRows;
     this.flashes.push({
@@ -345,6 +437,34 @@ export class FallingEffects {
       })),
       age: -this.waiting,
     });
+  }
+
+  /**
+   * A piece lands (1.41): it squashes on its base, the two rows under it dip
+   * (the higher one more), a hard drop dips the camera. The whole well's
+   * motion: never at the calmer levels.
+   */
+  private land(piece: Piece, impact: Impact): void {
+    if (!this.profile().motion) return;
+    const { width, height } = this.view.board;
+    const cells = new Set<number>();
+    let bottom = 0;
+    for (const cell of piece.localCells) {
+      const y = piece.y + cell.y;
+      bottom = Math.max(bottom, y);
+      cells.add(y * width + piece.x + cell.x);
+    }
+    this.landings.push({ cells, squash: impact.squash, age: 0 });
+    const under = [
+      [bottom + 1, 1],
+      [bottom + 2, 0.5],
+    ] as const;
+    for (const [row, share] of under) {
+      if (row >= height) continue;
+      this.dipDepth[row] = impact.stack * share;
+      this.dipAge[row] = 0;
+    }
+    if (impact.dip > 0) this.camera.dip(impact.dip);
   }
 
   private onClear(event: LinesClearedEvent): void {
@@ -400,31 +520,70 @@ export class FallingEffects {
     const middle = rows.reduce((sum, row) => sum + row, 0) / rows.length;
     this.popups.push({
       text: `+${this.formatPoints(event.points)}`,
+      // Bigger points for bigger moments: 0.75 cell at 100, a full cell from 10 000.
+      size: 0.75 + 0.25 * Math.min(1, Math.max(0, (Math.log10(event.points) - 2) / 2)),
       x: board.width / 2,
       y: middle,
       age: -wait,
     });
-    // The word of the moment, above the points.
-    const label = clearLabel(event.lines, event.combo, this.comboWord);
-    if (label) {
-      this.popups.push({
-        text: label,
-        kind: 'label',
-        x: board.width / 2,
-        y: middle - 1.4,
-        age: -wait,
-      });
-    }
+    this.addWords(event, middle - 1.4, -wait);
+    const impact = clearImpact(event.lines, event.combo);
+    this.later(wait, () => this.hit(impact, event.lines));
+  }
 
-    this.later(wait, () => {
-      if (event.lines >= 4) {
-        this.kick(0.3);
-        if (profile.motion) this.slowMotion = SLOW_MOTION_MS;
-        if (profile.motion && this.flashLimiter.tryFlash(this.clock)) this.wellFlash = 0.22;
-      } else {
-        this.kick(0.05 + 0.04 * event.lines + 0.03 * event.combo);
-      }
-    });
+  /**
+   * The word of the moment, above the points: RIFT! bigger and longer; a
+   * combo's word grows and heats with each step, and shouts at its milestones.
+   */
+  private addWords(event: LinesClearedEvent, y: number, age: number): void {
+    const x = this.view.board.width / 2;
+    const label = clearLabel(event.lines, event.combo, (times) => this.words.combo(times));
+    if (!label) return;
+    if (event.lines >= 4) {
+      this.popups.push({ text: label, kind: 'label', ...RIFT_WORD, x, y, age });
+      return;
+    }
+    if (event.combo < 1) {
+      this.popups.push({ text: label, kind: 'label', x, y, age });
+      return;
+    }
+    const look = comboLook(event.combo + 1);
+    // The word grows only where things may move; its heat shows at every level.
+    const size = this.motion ? look.size : 1.05;
+    this.popups.push({ text: label, kind: 'label', size, heat: look.heat, x, y, age });
+    if (look.shout) {
+      const shout = this.words.shout(look.shout);
+      this.popups.push({ text: shout, kind: 'shout', heat: look.heat, x, y: y - 1.2 * size, age });
+    }
+    if (this.motion) {
+      this.heat = Math.min(1, event.combo / 8);
+      this.heatColor = look.heat;
+      this.heatAge = 0;
+      this.heatDrain = 0;
+    }
+  }
+
+  /**
+   * The blow of a clear, when it is seen (1.41): the game holds still a moment,
+   * the camera shakes and dips, a RIFT! tilts it and lights the well, the
+   * light holding through the hold. The whole well's motion: full level only.
+   */
+  private hit(impact: Impact, lines: number): void {
+    const profile = this.profile();
+    if (!profile.motion) return;
+    this.holder?.hold(impact.holdMs);
+    if (profile.shake) this.camera.shake(impact.trauma, impact.tilt);
+    this.camera.dip(impact.dip);
+    if (lines >= 4) this.slowMotion = SLOW_MOTION_MS;
+    if (impact.flash > 0 && this.flashLimiter.tryFlash(this.clock)) {
+      this.wellFlash = impact.flash;
+      this.wellFlashFade = impact.flash / impact.flashMs;
+    }
+  }
+
+  /** A combo broke: from ×3, its heat drains from the edges in 0.4 s (its sound is the soundscape's). */
+  private onComboEnd(combo: number): void {
+    if (this.heat > 0 && comboBreakHeard(combo + 1)) this.heatDrain = this.heat / HEAT_DRAIN_MS;
   }
 
   /** Runs now, or once a falling piece has landed. */
@@ -464,6 +623,7 @@ export class FallingEffects {
     this.kick(0.25 + 0.12 * bombs);
     if (this.profile().motion && this.flashLimiter.tryFlash(this.clock)) {
       this.wellFlash = Math.min(0.5, 0.25 + 0.08 * bombs);
+      this.wellFlashFade = 1 / 260;
     }
     this.addWave('sweep');
   }
@@ -531,6 +691,46 @@ export class FallingEffects {
   }
 
   // --- Simulation -----------------------------------------------------------
+
+  /** The combo's heat holds, then fades; a broken combo's drains. */
+  private updateHeat(deltaMs: number): void {
+    if (this.heat <= 0) return;
+    this.heatAge += deltaMs;
+    const fade =
+      this.heatDrain > 0 ? this.heatDrain : this.heatAge > HEAT_HOLD_MS ? 1 / HEAT_FADE_MS : 0;
+    this.heat = Math.max(0, this.heat - fade * deltaMs);
+  }
+
+  /** The landed pieces' squash and the stack's dip, back in 140 ms. */
+  private updateLandings(deltaMs: number): void {
+    let write = 0;
+    for (const landing of this.landings) {
+      landing.age += deltaMs;
+      if (landing.age < LANDING_MS) this.landings[write++] = landing;
+    }
+    this.landings.length = write;
+    if (this.landings.length === 0) {
+      this.squash = null;
+    } else {
+      const squash = new Map<number, number>();
+      for (const landing of this.landings) {
+        const height = 1 - landing.squash * settle(landing.age, LANDING_PEAK_MS);
+        for (const cell of landing.cells) squash.set(cell, height);
+      }
+      this.squash = squash;
+    }
+    for (let y = 0; y < this.rowDip.length; y++) {
+      if (this.dipAge[y]! >= LANDING_MS) {
+        this.rowDip[y] = 0;
+        continue;
+      }
+      this.dipAge[y]! += deltaMs;
+      this.rowDip[y] =
+        this.dipAge[y]! >= LANDING_MS
+          ? 0
+          : this.dipDepth[y]! * settle(this.dipAge[y]!, LANDING_PEAK_MS);
+    }
+  }
 
   private updateRows(deltaMs: number): void {
     const dt = deltaMs / 1000;
@@ -719,7 +919,7 @@ export class FallingEffects {
   }
 
   private kick(cells: number): void {
-    if (this.profile().shake) this.shake.kick(cells);
+    if (this.profile().shake) this.camera.kick(cells);
   }
 
   /** Lets debris land on the stack (rows that are still moving are ignored). */

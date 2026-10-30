@@ -193,7 +193,10 @@ onMounted(async () => {
     profile: reelProfile,
     dark: () => theme.resolved.value === 'dark',
     formatPoints: (points) => format.number(points),
-    comboWord: (combo) => t('wellWords.combo', { n: combo }),
+    wellWords: {
+      combo: (n) => t('wellWords.combo', { n }),
+      shout: (key) => t(`wellWords.shout.${key}`),
+    },
     still: still || settings.current.effects === 'off',
     onScene: (id) => (shownScene.value = id),
     // Touch screens: 60 frames a second at most, like the game.

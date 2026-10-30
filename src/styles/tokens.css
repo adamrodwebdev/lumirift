@@ -51,6 +51,11 @@
   --fx-gold-dark: #a8741a;
   --fx-petal: #ffc4dd;
   --fx-petal-dark: #e77fa9;
+  /* A combo's heat (1.41): its word and the well's edges, gold to white-hot. */
+  --fx-heat-gold: #ffd25a;
+  --fx-heat-orange: #ff9a3c;
+  --fx-heat-red: #ff513f;
+  --fx-heat-white: #fff4e0;
   /* The rift: its hot core, its glow. */
   --rift-core: #fff3d6;
   --rift-glow: #ff9a3c;

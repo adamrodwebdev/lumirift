@@ -93,22 +93,27 @@ export class FallingInput {
       if (this.charge < das) return;
       this.charge -= das;
       this.repeating = true;
-      if (arr > 0) this.shift(direction);
+      if (arr > 0) this.repeat(direction);
     }
     if (arr <= 0) {
       // Instant: to the wall, and back to it after a rotation, while held.
       this.charge = 0;
-      for (let moves = 0; moves < MAX_SLIDE && this.shift(direction); moves++);
+      for (let moves = 0; moves < MAX_SLIDE && this.repeat(direction); moves++);
       return;
     }
     while (this.charge >= arr) {
       this.charge -= arr;
-      this.shift(direction);
+      this.repeat(direction);
     }
   }
 
-  /** True when the piece moved. */
+  /** True when the piece moved (or the next one keeps the step). */
   private shift(direction: 'left' | 'right'): boolean {
     return this.execute({ type: 'move', direction: direction === 'left' ? -1 : 1 });
+  }
+
+  /** The held key's repeat: the piece in play only (the next one starts its own, 1.41). */
+  private repeat(direction: 'left' | 'right'): boolean {
+    return this.execute({ type: 'move', direction: direction === 'left' ? -1 : 1, repeat: true });
   }
 }

@@ -20,13 +20,13 @@ export class Haptics {
     return this.wanted();
   }
 
-  pulse(pattern: number | number[]): void {
+  pulse(pattern: number | readonly number[]): void {
     if (!this.wanted() || !this.navigator.vibrate) return;
     // Before the player's first gesture the browser refuses it, and says so in the
     // console: a portal's first run plays at once, before any tap.
     if (this.navigator.userActivation?.hasBeenActive === false) return;
     try {
-      this.navigator.vibrate(pattern);
+      this.navigator.vibrate(typeof pattern === 'number' ? pattern : [...pattern]);
     } catch {
       // Some browsers throw before the first user gesture: ignore.
     }

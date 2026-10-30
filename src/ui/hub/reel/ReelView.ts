@@ -1,4 +1,5 @@
 import type { EffectsProfile } from '@/fx/EffectsProfile';
+import type { WellWords } from '@/families/falling/fx/FallingEffects';
 import type { TonePalette } from '@/render/TonePalette';
 import type { Scene } from '@/showcase/Scene';
 
@@ -11,7 +12,7 @@ export interface ReelContext {
   readonly dark: () => boolean;
   readonly formatPoints: (points: number) => string;
   /** The combo's word, translated ("COMBO ×3"). */
-  readonly comboWord: (combo: number) => string;
+  readonly wellWords: WellWords;
 }
 
 /**

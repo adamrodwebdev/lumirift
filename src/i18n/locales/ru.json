@@ -235,7 +235,13 @@
     "dunesGoal": "Уровень Д-{value} пройден!"
   },
   "wellWords": {
-    "combo": "КОМБО ×{n}"
+    "combo": "КОМБО ×{n}",
+    "shout": {
+      "hot": "ГОРЯЧО!",
+      "blazing": "ПЫЛАЕТ!",
+      "inferno": "ПЕКЛО!",
+      "riftbreaker": "КРУШИТЕЛЬ РАЗЛОМА!"
+    }
   },
   "controls": {
     "left": "Влево",

@@ -112,19 +112,47 @@ export class FallingRenderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = palette.wellBackground;
     ctx.fillRect(0, 0, width, height);
-    if (effects?.shake.active) ctx.translate(effects.shake.x * cell, effects.shake.y * cell);
+    if (effects?.camera.active) {
+      // The camera: its offset, and its tilt around the well's centre (1.41). A tilt that
+      // moves the corners by less than half a pixel is not drawn, and the offset stays on
+      // whole pixels meanwhile: the blocks keep their sharp, cheap copy.
+      const { x, y, angle } = effects.camera;
+      if (Math.abs(angle) * Math.hypot(width, height) < 1) {
+        ctx.translate(Math.round(x * cell), Math.round(y * cell));
+      } else {
+        ctx.translate(width / 2 + x * cell, height / 2 + y * cell);
+        ctx.rotate(angle);
+        ctx.translate(-width / 2, -height / 2);
+      }
+    }
     this.drawGrid(palette.wellGrid);
     this.decor?.drawBehind?.(ctx, this.view, palette, cell, this.animated ? performance.now() : 0);
 
     if (!effects?.stackHidden) {
       // A hard-dropped piece is drawn falling until it lands, not in the stack.
       const covered = effects?.coveredCells() ?? null;
+      const squash = effects?.squash ?? null;
       for (let y = hidden; y < board.height; y++) {
-        const top = (y - hidden + (effects?.rowOffset[y] ?? 0)) * cell;
+        const shift = (effects?.rowOffset[y] ?? 0) + (effects?.rowDip[y] ?? 0);
+        const top = (y - hidden + shift) * cell;
         for (let x = 0; x < board.width; x++) {
           const tone = board.get(x, y);
-          if (tone !== 0 && !covered?.has(y * board.width + x))
+          const index = y * board.width + x;
+          if (tone === 0 || covered?.has(index)) continue;
+          const height = squash?.get(index);
+          if (height === undefined) {
             ctx.drawImage(sprites.get(tone), x * cell, top);
+          } else {
+            // A landed block squashes on its base, a little wider (1.41).
+            const wide = 1 + (1 - height) / 2;
+            ctx.drawImage(
+              sprites.get(tone),
+              (x + (1 - wide) / 2) * cell,
+              top + (1 - height) * cell,
+              wide * cell,
+              height * cell,
+            );
+          }
         }
       }
     }
@@ -145,6 +173,7 @@ export class FallingRenderer {
     if (effects) this.painter.overlays(effects, palette, cell, this.dark, sprites);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (this.dangerEdge) this.drawDanger(palette);
+    if (effects) this.painter.overlay.heat(effects, palette, cell);
     if (effects && effects.beatGlow > 0) {
       // The visual metronome: the frame of the well pulses on each beat.
       ctx.globalAlpha = 0.55 * effects.beatGlow;
@@ -158,13 +187,7 @@ export class FallingRenderer {
       );
       ctx.globalAlpha = 1;
     }
-    if (effects && effects.wellFlash > 0) {
-      // The rift's own light: warm, added to the picture rather than a white veil.
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = `rgb(255 170 80 / ${effects.wellFlash})`;
-      ctx.fillRect(0, 0, width, height);
-      ctx.globalCompositeOperation = 'source-over';
-    }
+    if (effects) this.painter.overlay.riftLight(effects);
   }
 
   private drawGrid(color: string): void {

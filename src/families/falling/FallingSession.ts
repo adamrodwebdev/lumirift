@@ -19,7 +19,8 @@ import type { Cell } from './pieces/Shapes';
 
 /** Player intentions of the falling family. */
 export type FallingCommand =
-  | { readonly type: 'move'; readonly direction: -1 | 1 }
+  /** `repeat`: the auto-repeat of a held key, which the next piece does not keep (1.41). */
+  | { readonly type: 'move'; readonly direction: -1 | 1; readonly repeat?: true }
   | { readonly type: 'rotate'; readonly direction: RotationDirection }
   | { readonly type: 'softDrop'; readonly active: boolean }
   /** Down one row: the soft drop of a finger, a row a notch (1.40). */
@@ -57,7 +58,10 @@ export class FallingSession implements GameSession<FallingCommand> {
   readonly ability: AbilityId | null;
 
   private readonly handlers: CommandHandlers = {
-    move: ({ direction }) => (direction < 0 ? this.game.moveLeft() : this.game.moveRight()),
+    move: ({ direction, repeat }) => {
+      if (repeat) return this.game.repeatMove(direction);
+      return direction < 0 ? this.game.moveLeft() : this.game.moveRight();
+    },
     rotate: ({ direction }) => this.game.rotate(direction),
     softDrop: ({ active }) => {
       this.game.setSoftDrop(active);

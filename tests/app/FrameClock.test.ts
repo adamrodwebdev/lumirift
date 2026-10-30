@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { FrameCap } from '@/app/FrameCap';
-import { FrameClock, MAX_FRAME_MS } from '@/app/FrameClock';
+import { FrameClock, HOLD, MAX_FRAME_MS } from '@/app/FrameClock';
 
 /** A requestAnimationFrame driven by hand. */
 class ManualFrames {
@@ -86,5 +86,66 @@ describe('FrameClock', () => {
     frames.frame(32);
     expect(deltas).toEqual([0]);
     expect(frames.cancelled).toBe(1);
+  });
+
+  describe('a hit-stop (1.41)', () => {
+    /** A clock at 60 frames a second, its game and real times summed. */
+    function sixty() {
+      const frames = new ManualFrames();
+      const clock = new FrameClock(frames.request, frames.cancel);
+      const total = { game: 0, real: 0 };
+      clock.subscribe((delta, real) => {
+        total.game += delta;
+        total.real += real;
+      });
+      clock.start();
+      let time = 0;
+      frames.frame(time);
+      return {
+        clock,
+        total,
+        play: (ms: number) => {
+          for (const end = time + ms; time < end - 1e-9;) frames.frame((time += 1000 / 60));
+        },
+      };
+    }
+
+    it("stops the game's time for its length while the real time runs on", () => {
+      const { clock, total, play } = sixty();
+      clock.hold(100);
+      expect(clock.held).toBe(true);
+      play(100);
+      expect(total.game).toBeCloseTo(0, 6);
+      expect(total.real).toBeCloseTo(100, 6);
+      expect(clock.held).toBe(false);
+      play(50);
+      expect(total.game).toBeCloseTo(50, 6);
+    });
+
+    it('lets the rest of a frame play when it ends within it', () => {
+      const { clock, total, play } = sixty();
+      clock.hold(25);
+      play(1000 / 30);
+      expect(total.game).toBeCloseTo(1000 / 30 - 25, 6);
+    });
+
+    it('lasts 140 ms at most, and a hold during another lasts the longer one', () => {
+      const { clock, total, play } = sixty();
+      clock.hold(500);
+      play(50);
+      clock.hold(60);
+      play(200);
+      expect(total.game).toBeCloseTo(250 - HOLD.maxMs, 6);
+    });
+
+    it('takes 250 ms of a second at most: a chain of holds lets play through', () => {
+      const { clock, total, play } = sixty();
+      for (let i = 0; i < 10; i++) {
+        clock.hold(140);
+        play(100);
+      }
+      // A second of real time: 750 ms of play at least.
+      expect(total.game).toBeGreaterThanOrEqual(1000 - HOLD.perSecondMs - 1e-6);
+    });
   });
 });

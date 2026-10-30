@@ -86,8 +86,13 @@ const effects = new FallingEffects(
   () => profile.value,
   () => palette.value,
   (points) => format.number(points),
-  (combo) => t('wellWords.combo', { n: combo }),
+  {
+    combo: (n) => t('wellWords.combo', { n }),
+    shout: (key) => t(`wellWords.shout.${key}`),
+  },
 );
+// A big clear holds the game still a moment (1.41).
+effects.holdTimeWith(props.clock);
 const detachEffects = effects.attach(session);
 watch(
   () => look.current.value.shatter,
@@ -152,7 +157,7 @@ const sameSpecs = (a: readonly PieceSpec[], b: readonly PieceSpec[]) =>
 const offFrame = props.clock.subscribe((delta, real) => {
   input.update(props.active ? real : 0);
   if (props.active || session.state === 'over') {
-    effects.update(delta);
+    effects.update(delta, real);
     eyeEffects?.update(delta);
     soundscape.update(delta);
   }

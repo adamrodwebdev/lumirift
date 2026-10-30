@@ -92,10 +92,17 @@ const effects = new FallingEffects(
   () => profile.value,
   () => palette.value,
   (points) => format.number(points),
-  (combo) => t('wellWords.combo', { n: combo }),
+  {
+    combo: (n) => t('wellWords.combo', { n }),
+    shout: (key) => t(`wellWords.shout.${key}`),
+  },
 );
 // Hard drops are shown falling; Rhythm keeps them instant, its landings sound on the beat.
-if (session.modeId !== 'rhythm') effects.showDropsFalling();
+if (session.modeId !== 'rhythm') {
+  effects.showDropsFalling();
+  // A big clear holds the game still a moment (1.41); Rhythm's time follows its music.
+  effects.holdTimeWith(props.clock);
+}
 const detachEffects = effects.attach(session);
 watch(
   () => equipment.value.shatter,
@@ -203,7 +210,7 @@ const offFrame = props.clock.subscribe((delta, real) => {
   // Effects, and the sounds waiting for them, freeze with the pause; the final collapse plays
   // after game over.
   if (props.active || session.state === 'over') {
-    effects.update(delta);
+    effects.update(delta, real);
     soundscape.update(delta);
   }
   syncPreviews();

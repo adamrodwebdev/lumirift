@@ -3,8 +3,9 @@ import { Tone } from '../pieces/PieceType';
 import { CELL_RIM, CRACK_MS, EFFECT_TIMINGS, type FallingEffects } from '../fx/FallingEffects';
 import type { BlockSprites } from './BlockSprites';
 import type { TonePalette } from '@/render/TonePalette';
+import { WellOverlay } from './WellOverlay';
 
-const { TRAIL_MS, FLASH_MS, POPUP_MS, WAVE_MS } = EFFECT_TIMINGS;
+const { TRAIL_MS, FLASH_MS, WAVE_MS } = EFFECT_TIMINGS;
 
 /** How far behind the rift's front a brick takes to light up fully, in cells. */
 const HEAT_SPREAD = 2;
@@ -19,7 +20,12 @@ export class EffectsPainter {
   /** Reused for every textured shard: no allocation per particle and frame. */
   private readonly matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 
-  constructor(private readonly ctx: CanvasRenderingContext2D) {}
+  /** The words, the heat and the rift's light, drawn as the Tower draws them. */
+  readonly overlay: WellOverlay;
+
+  constructor(private readonly ctx: CanvasRenderingContext2D) {
+    this.overlay = new WellOverlay(ctx);
+  }
 
   /**
    * Rows that are cracking: still whole while the rift runs along them from
@@ -256,31 +262,14 @@ export class EffectsPainter {
   }
 
   private popups(effects: FallingEffects, palette: TonePalette, cell: number): void {
-    if (effects.popups.length === 0) return;
-    const { ctx } = this;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.lineWidth = Math.max(2, cell * 0.12);
-    ctx.strokeStyle = palette.wellBackground;
-    for (const popup of effects.popups) {
-      if (popup.age < 0) continue;
-      const t = popup.age / POPUP_MS;
-      const label = popup.kind === 'label';
-      // Labels pop in (a quick overshoot), then rise slower than the points.
-      const pop = label ? 1 + 0.35 * Math.max(0, 1 - t * 6) : 1;
-      const size = Math.round(cell * (label ? 1.05 : 0.75) * pop);
-      ctx.font = `${label ? 900 : 800} ${size}px 'Unbounded Variable', ui-rounded, system-ui, sans-serif`;
-      const y = (popup.y + 0.5 - t * (label ? 0.8 : 1.6)) * cell;
-      ctx.globalAlpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
-      ctx.strokeText(popup.text, popup.x * cell, y);
-      if (label) {
-        ctx.shadowColor = palette.effects.rift;
-        ctx.shadowBlur = cell * 0.7;
-      }
-      ctx.fillStyle = label ? palette.crack : palette.accent;
-      ctx.fillText(popup.text, popup.x * cell, y);
-      ctx.shadowBlur = 0;
-    }
-    ctx.globalAlpha = 1;
+    this.overlay.words(
+      effects,
+      palette,
+      { cell, wellWidth: effects.width * cell },
+      (popup, rise) => ({
+        x: popup.x * cell,
+        y: (popup.y + 0.5 - rise) * cell,
+      }),
+    );
   }
 }

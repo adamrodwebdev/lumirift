@@ -164,7 +164,7 @@ describe('MosaicEffects', () => {
     giveJoker(game, 'bomb');
     session.execute({ type: 'joker', index: 0, x: 3, y: 3 });
     expect(effects.pool.count).toBeGreaterThan(9);
-    expect(effects.shake.active || effects.flash > 0).toBe(true);
+    expect(effects.camera.active || effects.flash > 0).toBe(true);
   });
 
   it('stays still when effects are off', () => {

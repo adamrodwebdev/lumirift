@@ -1,7 +1,7 @@
 import { Tone } from '@/core/Tone';
 import { ParticleKind } from '@/fx/ParticlePool';
 import { parseHex, shade, type Rgb, type TonePalette } from '@/render/TonePalette';
-import type { SandEffects } from '../fx/SandEffects';
+import { BADGE_BREAK_MS, type SandEffects } from '../fx/SandEffects';
 import { WORM_RADIUS } from '../engine/DuneWorm';
 import { GRAINS_PER_CELL } from '../engine/SandGrid';
 import type { SandPiece } from '../engine/SandPiece';
@@ -153,7 +153,7 @@ export class SandRenderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = palette.wellBackground;
     ctx.fillRect(0, 0, width, height);
-    if (effects.shake.active) ctx.translate(effects.shake.x * grain, effects.shake.y * grain);
+    if (effects.camera.active) ctx.translate(effects.camera.x * grain, effects.camera.y * grain);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(this.image, 0, 0, width, height);
     this.drawFog(width, height);
@@ -444,9 +444,15 @@ export class SandRenderer {
    */
   private drawCombo(palette: TonePalette): void {
     const combo = this.view.comboGauge;
-    if (combo.fill <= 0 || this.effects.hidden) return;
+    if (this.effects.hidden) return;
+    if (combo.fill <= 0) {
+      this.drawBrokenBadge(palette);
+      return;
+    }
     const { ctx, cell, canvas } = this;
-    const radius = cell * 1.25;
+    // A notch bigger at each step (1.41), where things may move.
+    const grow = this.effects.motion ? Math.min(1.4, 1 + 0.06 * Math.max(0, combo.next - 2)) : 1;
+    const radius = cell * 1.25 * grow;
     const x = canvas.width - cell * 1.9;
     const y = cell * 1.9;
     const low = combo.fill < 0.3;
@@ -465,12 +471,45 @@ export class SandRenderer {
     ctx.arc(x, y, radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * combo.fill);
     ctx.stroke();
     ctx.fillStyle = color;
-    ctx.font = `900 ${Math.round(cell * 0.85)}px ui-rounded, system-ui, sans-serif`;
+    ctx.font = `900 ${Math.round(cell * 0.85 * grow)}px ui-rounded, system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`×${combo.next}`, x, y + cell * 0.04);
     ctx.globalAlpha = 1;
     ctx.lineCap = 'butt';
+  }
+
+  /** A combo of ×3 or more just broke (1.41): its badge splits and fades away. */
+  private drawBrokenBadge(palette: TonePalette): void {
+    const broken = this.effects.badgeBreak;
+    if (!broken) return;
+    const { ctx, cell, canvas } = this;
+    const t = broken.age / BADGE_BREAK_MS;
+    const x = canvas.width - cell * 1.9;
+    const y = cell * 1.9;
+    const radius = cell * 1.25;
+    const apart = cell * 0.3 * t;
+    ctx.globalAlpha = 1 - t;
+    ctx.strokeStyle = palette.danger;
+    ctx.fillStyle = palette.danger;
+    ctx.lineWidth = Math.max(2, cell * 0.22);
+    ctx.font = `900 ${Math.round(cell * 0.85)}px ui-rounded, system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // The two halves drift apart, a crack between them.
+    for (const side of [-1, 1] as const) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(side < 0 ? 0 : x, 0, side < 0 ? x : canvas.width - x, canvas.height);
+      ctx.clip();
+      ctx.translate(side * apart, side * apart * 0.4);
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillText(`×${broken.multiplier}`, x, y + cell * 0.04);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
   }
 
   /** The next piece in red where it would appear, when the sand leaves it no room to enter. */

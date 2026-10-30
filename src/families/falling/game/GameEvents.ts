@@ -32,6 +32,9 @@ export interface LinesClearedEvent {
   readonly rows: readonly ClearedRow[];
 }
 
+/** How a piece came to lock (1.41): left to gravity, brought down by the player, hard-dropped. */
+export type LockCause = 'gravity' | 'soft' | 'hard';
+
 export interface GameEventMap {
   state: { readonly state: GameState };
   spawn: { readonly piece: Piece };
@@ -41,7 +44,10 @@ export interface GameEventMap {
   rotate: { readonly piece: Piece; readonly kicked: boolean };
   /** Emitted before `lock`: `piece` is where it landed, `distance` how far it fell. */
   hardDrop: { readonly piece: Piece; readonly distance: number };
-  lock: { readonly piece: Piece };
+  /** A piece locked, and how (1.41): `distance`, the rows of a hard drop (0 otherwise). */
+  lock: { readonly piece: Piece; readonly cause: LockCause; readonly distance: number };
+  /** A chain of clears ended (1.41): `combo` as its clears counted it (1 at ×2). */
+  comboEnd: { readonly combo: number };
   hold: { readonly type: PieceType };
   clear: LinesClearedEvent;
   /** Cleared in danger: these points again, as a bonus (see `Tension`). */

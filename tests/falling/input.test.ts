@@ -31,7 +31,12 @@ describe('FallingInput', () => {
     expect(moves()).toHaveLength(2);
     input.update(ARR_MS * 3);
     expect(moves()).toHaveLength(5);
-    expect(moves()).toEqual(Array<FallingCommand>(5).fill({ type: 'move', direction: -1 }));
+    // The press is a step; the rest repeat the held key, which a piece waiting to enter
+    // does not keep (1.41).
+    expect(moves()).toEqual([
+      { type: 'move', direction: -1 },
+      ...Array<FallingCommand>(4).fill({ type: 'move', direction: -1, repeat: true }),
+    ]);
   });
 
   it('stops repeating on release', () => {
@@ -47,10 +52,10 @@ describe('FallingInput', () => {
     input.press('left');
     input.press('right');
     input.update(DAS_MS);
-    expect(moves().at(-1)).toEqual({ type: 'move', direction: 1 });
+    expect(moves().at(-1)).toEqual({ type: 'move', direction: 1, repeat: true });
     input.release('right');
     input.update(DAS_MS);
-    expect(moves().at(-1)).toEqual({ type: 'move', direction: -1 });
+    expect(moves().at(-1)).toEqual({ type: 'move', direction: -1, repeat: true });
   });
 
   it('holds soft drop while pressed', () => {

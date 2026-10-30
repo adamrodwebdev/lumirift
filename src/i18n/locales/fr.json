@@ -235,7 +235,13 @@
     "dunesGoal": "Niveau D-{value} réussi !"
   },
   "wellWords": {
-    "combo": "COMBO ×{n}"
+    "combo": "COMBO ×{n}",
+    "shout": {
+      "hot": "ÇA CHAUFFE !",
+      "blazing": "BRÛLANT !",
+      "inferno": "BRASIER !",
+      "riftbreaker": "BRISE-FAILLE !"
+    }
   },
   "controls": {
     "left": "Gauche",

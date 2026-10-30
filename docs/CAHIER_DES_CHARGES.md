@@ -13,6 +13,7 @@
 | 1.38    | 28/10/2026 | Niveaux générés : un générateur par famille, les chapitres 6 à 10, 69 niveaux, les revanches des Gardiens (§ 9 bis, lot 20).                                                                                                          |
 | 1.39    | 28/10/2026 | La fabrique de clips : les clips de la semaine filmés par le jeu, son compris, pour les réseaux (§ 9 ter, lot 25).                                                                                                                    |
 | 1.40    | 29/10/2026 | La prise en main : la pièce suit le doigt, de côté et vers le bas, un texte reste le temps d'être lu, un seul compte des combos (§ 9 quater, lot 26).                                                                                 |
+| 1.41    | 29/10/2026 | Le poids et l'éclat : chaque bloc pèse, chaque effacement se tient et frappe, chaque combo monte (§ 9 quater, lot 27).                                                                                                                |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1771,7 +1772,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Livré (1.34)                                                 |
 | 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
 | 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Livré (1.40)                                                 |
-| 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Prévu                                                        |
+| 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Prévu                                                        |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
@@ -2294,15 +2295,158 @@ des effets à la mesure du moment.
     - les traces de la porte : la descente rapide va de 0,5 à 1,4 px/ms d'une allure régulière,
       comme les descentes enregistrées (1,45 au plus) ; un tracé qui accélère puis ralentit
       culminait au double de sa moyenne et ne ressemblait à aucune.
-- **Lot 27 · 1.41 Le poids et l'éclat** (détaillé avant son code). Des effets à la mesure du
-  moment : un petit événement reste petit, un grand frappe. Un bloc qui se pose pèse (un léger
-  écrasement, la pile qui réagit, un son qui suit la vitesse) ; un effacement est une explosion
-  (un arrêt sur image de quelques dizaines de millisecondes, une secousse qui frappe puis
-  s'amortit, un éclair plus long pour une RIFT!, une couche de son grave) ; un combo monte (mots
-  plus grands, couleur qui chauffe, son et vibration qui montent, un son quand la série casse) ;
-  la Mosaïque montre sa série sur le plateau ; la Tour retrouve les mots et les éclats du puits
-  de chute. Sur le niveau d'effets complet seulement ; le niveau calme et le mouvement réduit
-  restent calmes. Jugé sur des clips avant et après tournés par la fabrique de clips.
+- **Lot 27 · 1.41 Le poids et l'éclat** (détaillé et validé le 29/10/2026). Des
+  effets à la mesure du moment : un petit événement reste petit, un grand frappe. Un bloc qui se
+  pose pèse ; un effacement est une explosion ; un combo monte. Sur le niveau d'effets complet ;
+  le niveau réduit (« calme ») et le mouvement réduit restent calmes. Jugé sur des clips avant et
+  après tournés par la fabrique de clips.
+  - Constats (le code de la 1.40) :
+    - aucun arrêt sur image, nulle part ;
+    - la secousse (`ScreenShake`) tire à chaque image un écart au hasard dans un carré, sans
+      direction, d'un grain qui dépend de la fréquence de l'écran ; elle s'éteint de moitié en
+      89 ms et ne frappe jamais une pose, même une chute franche de 18 rangées ;
+    - une pose : un éclair blanc de 110 ms sur la pièce ; poussière et traînée seulement après
+      une chute franche ; ni écrasement, ni pile qui réagit, ni caméra qui plonge ; l'événement
+      `lock` ne dit ni la cause ni la distance ;
+    - un effacement : la RIFT! secoue de 0,3 case et allume le puits d'une lueur chaude de 0,22
+      qui s'éteint en 57 ms environ ; les autres secouent de 0,05 case, plus 0,04 par ligne et
+      0,03 par combo ;
+    - un combo : « COMBO ×N » garde sa taille (1,05 case) et sa couleur de ×2 à ×10 ; seules la
+      secousse, les étincelles et la première note de l'éclat montent ; le compte retombe sans
+      un bruit dans le puits de chute (aucun événement) et dans la Mosaïque ; seul le Sable joue
+      un son quand sa série casse, sans rien montrer ;
+    - la Mosaïque ne montre sa série que dans le tableau de bord et le message ;
+    - la Tour a la logique des effets du puits de chute, pas leur dessin : mots sans style ni
+      éclat, fissure d'un trait, éclats unis sans texture ni arête claire, voile blanc au lieu de
+      la lueur chaude, pas de vague ;
+    - les vibrations sont éteintes par défaut depuis la 1.32 (des joueurs les trouvaient
+      fatigantes) et aucune ne suit le combo ; chaque pose ordinaire vibre 6 ms.
+  - **L'échelle d'impact** (une règle pure, `src/fx/Impact.ts`) donne à chaque moment son poids :
+    une pose par gravité ou en descente douce est minuscule, une chute franche pèse selon sa
+    hauteur, un effacement selon ses lignes (ou régions) et son combo. Chaque effet ci-dessous lit
+    cette échelle, jamais un nombre posé dans un peintre ; une pose ordinaire n'a ni arrêt, ni
+    secousse, ni caméra.
+  - **Le poids d'un bloc** :
+    - l'événement `lock` porte sa cause (gravité, descente douce, chute franche) et sa distance ;
+    - la pièce qui se pose s'écrase un instant sur sa base, de 4 % (gravité, descente douce) à
+      10 % (chute franche de 18 rangées), puis revient par un ressort amorti en 140 ms ;
+    - la pile réagit : les deux rangées sous la pièce s'enfoncent de 0,03 à 0,08 case (la plus
+      haute davantage) et remontent avec le même ressort ;
+    - la caméra plonge sur une chute franche, de 0,04 case (3 rangées) à 0,12 case (18 rangées),
+      et revient en 160 ms sans rebond ; rien sur une pose douce ;
+    - le son de la chute franche, déjà réglé sur sa hauteur, gagne une couche grave : un coup
+      sourd de 50 à 70 Hz qui s'allonge avec la distance ; une pose douce garde son petit son ;
+    - la vibration d'une chute franche va de 10 à 20 ms selon la hauteur.
+  - **L'éclat d'un effacement** :
+    - **l'arrêt sur image** : au moment où l'éclat se voit (pas à l'événement du moteur, qui part
+      jusqu'à 230 ms avant qu'une chute franche touche), le jeu s'arrête : rien pour une ligne
+      (le jeu coule), 35 ms pour deux, 60 ms pour trois, 100 ms pour une RIFT! ; dès ×3, 10 ms
+      de plus par pas de combo, 40 au plus ; jamais plus de 140 ms d'affilée ni plus de 250 ms
+      par seconde de jeu. Le Sable suit ses régions (deux : 35 ms, trois et plus : 60 ms). Les
+      règles, les effets et les minuteries des sons s'arrêtent ensemble (`FrameClock.hold`) ; la
+      caméra, l'entrée et la surcharge restent sur le temps réel, et un geste fait pendant
+      l'arrêt joue juste après, sans rien perdre. Pas d'arrêt dans le Rythme (le temps y suit la
+      musique) ni dans la Mosaïque (sans chute, rien à retenir) ; le Duel s'arrête entier (une
+      horloge pour les deux puits) ;
+    - **la secousse** devient un trauma (S. Eiserloh, « Juicing Your Cameras With Math »,
+      GDC 2016) : chaque coup y ajoute (0,15 une ligne, 0,25 deux, 0,4 trois, 0,65 une RIFT!, plus
+      0,05 par pas de combo, 1 au plus) ; l'écart vaut trauma² × 0,35 case, tiré d'un bruit
+      lisse sur le temps réel (le même à 60 et à 144 Hz), avec un premier coup vers le bas ; le
+      trauma retombe de 1,6 par seconde ; une RIFT! incline aussi le puits de 0,6° au plus ;
+    - **l'éclair** de la RIFT! monte à 0,35, tient pendant l'arrêt et s'éteint en 220 ms (57
+      aujourd'hui) ; trois lignes : 0,15 en 120 ms ; toujours sous le limiteur d'éclairs
+      (`FlashLimiter` : trois par seconde au plus) ;
+    - **le son** : dès deux lignes, une couche grave sous l'éclat (un coup sourd et un souffle,
+      plus longs et plus forts avec les lignes) ; la RIFT! garde sa fondamentale profonde ;
+    - **les mots** : RIFT! à 1,6 case, qui entre à × 1,5 et se pose en 200 ms, tenu 1,1 s ; les
+      points `+N` grandissent avec leur valeur, de 0,75 à 1 case.
+  - **L'élan d'un combo** (puits de chute, Tour, Sable, Mosaïque) :
+    - le moteur de chute publie la fin d'un combo (`comboEnd`), la Mosaïque la fin de sa série ;
+    - « COMBO ×N » grandit (1,05 case à ×2, plus 0,08 par pas, 1,6 au plus) et chauffe : or à
+      ×2, orange à ×3 et ×4, rouge de ×5 à ×7, blanc brûlant dès ×8 ;
+    - aux paliers, un mot de chaleur au-dessus, dit une fois (choix de l'utilisateur, le
+      29/10/2026) : HOT! à ×3, BLAZING! à ×5, INFERNO! à ×8, RIFTBREAKER! à ×10 ; traduits en
+      français, indonésien et russe avec le même ton (cris courts, la chaleur qui monte) ;
+    - le cadre du puits rougeoie avec le combo : une lueur sur ses bords, qui monte d'un pas à
+      chaque effacement et s'éteint 1,5 s après le dernier ;
+    - le son : chaque pas joue une note plus haute de l'accord en cours (comme le balayage du
+      Sable), au-dessus de l'éclat ; à ×5 et à ×10, l'accord entier ;
+    - la vibration : 20 ms plus 6 ms par pas, 60 au plus ;
+    - la casse, à partir de ×3 seulement (un petit combo perdu reste muet) : deux notes qui
+      descendent et la lueur du cadre qui se vide en 400 ms ; dans le Sable, le badge se fend et
+      s'efface ;
+    - la Mosaïque écrit sa série sur le plateau, « ×N » au-dessus des lignes effacées dès la
+      deuxième, avec la même chaleur et les mêmes mots ;
+    - dans le Sable, le badge du combo grossit d'un cran à chaque pas.
+  - **La Tour** reçoit le dessin du puits de chute : les mots par sorte (combo, RIFT!, points)
+    avec leur éclat, la fissure chaude (chaleur, fissures intérieures, lueur), les éclats
+    texturés à arête claire, la lueur chaude au lieu du voile blanc, la vague ; et le poids des
+    poses (écrasement, pile, caméra).
+  - **Les niveaux** : complet, tout ; réduit, ni arrêt, ni écrasement, ni caméra, ni secousse, et
+    les mots chauffent sans grandir ; aucun effet, rien de plus qu'aujourd'hui. Les sons et les
+    vibrations suivent l'échelle à tous les niveaux (ce ne sont pas des mouvements). La secousse
+    garde son propre réglage.
+  - **Les vibrations, allumées par défaut sur les écrans tactiles** (choix de l'utilisateur, le
+    29/10/2026), jamais sur ordinateur, et rares pour ne pas fatiguer : chute franche,
+    effacement, combo, RIFT!, alerte, Gardiens ; les poses ordinaires ne vibrent plus (les 6 ms
+    de chaque pièce), les crans de la descente au doigt gardent leur petit clic. Les réglages
+    s'enregistrent en entier : un `haptics: false` déjà enregistré ne dit donc pas un choix.
+    Le choix vit désormais sous sa propre clé, écrite seulement quand le joueur le fait ; un
+    ancien `true` se garde, un ancien `false` prend le nouveau défaut une fois.
+  - Architecture : `src/fx/Impact.ts` (l'échelle, règle pure) ; `src/fx/Camera.ts` (trauma, bruit
+    lisse, ressorts de la plongée et de la pile ; remplace `ScreenShake`) ; `FrameClock.hold(ms)` ;
+    les événements `lock` (cause, distance) et `comboEnd` ; les effets et paysages sonores des
+    familles lisent l'échelle ; la scène passe à `FallingEffects` de quoi tenir l'horloge au
+    moment de l'éclat ; les peintres lisent la caméra et l'écrasement. Les bobines de l'accueil
+    construisent les mêmes effets et suivent.
+  - Porte :
+    - tests unitaires : l'échelle (une pose par gravité reste minuscule : ni arrêt, ni secousse,
+      ni vibration) ; l'arrêt (temps de jeu nul pendant N ms, entrée et caméra en temps réel,
+      140 ms au plus d'affilée, 250 ms par seconde au plus, rien dans le Rythme) ; la caméra (les
+      mêmes écarts à 60 et à 144 Hz aux mêmes instants, la plongée revenue en 160 ms) ; les
+      événements `lock` et `comboEnd` ; la chaleur et les mots des paliers dans les quatre
+      langues ; les mots de la Tour par sorte ; les niveaux réduit et aucun ; la clé du choix
+      des vibrations ;
+    - e2e : toute la suite passe ; un geste fait pendant l'arrêt d'une RIFT! joue juste après ;
+    - les clips avant et après, tournés par la fabrique sur la 1.40 puis sur la 1.41 : une chute
+      franche dans un puits vide, une ligne, une RIFT!, un combo ×5, un anneau de la Tour avec
+      une bombe, une série ×3 de la Mosaïque ; l'utilisateur les juge côte à côte ;
+    - le temps d'image, le processeur ralenti quatre fois, ne gagne pas plus de 1 ms au 95e
+      centile ; Lighthouse reste à 100 ;
+    - l'essai de l'utilisateur sur son téléphone.
+  - **Livré en 1.41** (29/10/2026). Les mesures de la porte et les écarts :
+    - tests unitaires : 92 fichiers, 855 tests ; e2e : 175 passés (28 réservés à l'autre
+      appareil). Après la reprise des lueurs, 173 : l'ouverture de la saison 1 est tombée sous
+      la charge de la suite entière, à Auckland et à Los Angeles, puis a passé 30 fois sur 30,
+      répétée seule à quatre processus. Ce test est fragile sous charge, sans lien avec le lot ;
+    - **aucun geste perdu entre deux pièces** : le moteur perdait tout geste fait sans pièce en
+      jeu, pendant les 280 ms qui suivent un effacement, que l'arrêt allonge. Il garde désormais
+      les pas de côté (pas plus que la largeur du puits), les tours et la réserve, et les joue
+      quand la pièce suivante entre : la réserve, puis les tours, puis les pas. Ne se gardent
+      pas (choix de l'utilisateur, le 29/10/2026) : la chute franche et le pas vers le bas, qui, pressés
+      deux fois, jetteraient la pièce suivante sans qu'on la voie ; la répétition d'une touche
+      tenue, que la commande dit désormais (`repeat`) et qui reprend dès l'entrée. La porte
+      voulait un e2e, mais la version de production ne peut pas mettre en scène une RIFT! :
+      `tests/falling/hitStop.test.ts` joue la scène de la RIFT! avec l'horloge, l'entrée et les
+      effets branchés comme sur l'écran de jeu, et il échoue sans la correction ;
+    - **le temps d'image** : les six prises du ressenti jouées image par image sur le plateau de
+      la vitrine, à la taille d'un téléphone (390 × 844 à 3×), le processeur ralenti quatre
+      fois, la 1.40 (4f58963) et la 1.41 en alternance, deux tours de trois passages comptés.
+      Deux mesures : le travail du processeur, sur des canevas du processeur graphique comme sur
+      un téléphone (règles, effets, dessin enregistré) ; le rendu logiciel, le pire cas (les
+      canevas tramés par le processeur, vidés à chaque image). Le premier relevé a trouvé la
+      lueur des bords d'un combo floutée sur tout le pourtour à chaque image (×5 : 101 ms au 95e
+      centile en rendu logiciel, 58 en 1.40), et chaque mot refaisant son flou à chaque image.
+      Désormais, un mot est dessiné avec sa lueur à son apparition puis copié, la lueur des
+      bords est un dégradé, et la caméra reste au pixel près tant qu'elle ne penche pas.
+      Au 95e centile, toutes prises : 3,9 → 3,75 ms en travail du processeur, 57,8 → 56,2 ms en
+      rendu logiciel ; la porte (1 ms de plus au plus) tient. Seule la Tour coûte plus en rendu
+      logiciel (+13 ms : ses éclats texturés, ceux du puits depuis avant la 1.41), +0,4 ms en
+      travail du processeur ;
+    - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+      catégories à chaque passage ;
+    - les clips : `release/clips/feel-1.40.0` et `feel-1.41.0`, côte à côte sur une page privée
+      pour l'utilisateur ; reste son essai sur téléphone.
 - **Lot 28 · 1.42 Des menus qui s'enchaînent** (détaillé avant son code). Chaque changement
   d'affichage passé en revue (écrans, pages, fenêtres, pause, fin de partie, page de la saison)
   reçoit une transition : moins de 300 ms, transformations et opacité seulement, jamais un
@@ -2383,3 +2527,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.38    | 28/10/2026 | Niveaux générés : `campaign/generator` (plan, générateurs par famille, tamis du bot), les packs des chapitres 6 à 10 (§ 9 bis, lot 20).                                |
 | 1.39    | 28/10/2026 | La croissance sans dépense (§ 9 ter) ; la fabrique de clips : `clip-factory.mjs`, le plateau `?clip` (`SetTime`, `TakeSound`), la piste AAC (lot 25).                  |
 | 1.40    | 29/10/2026 | Le ressenti (§ 9 quater) ; la prise en main : `PhoneGestures` (crans à la case, `softStep`, coup lu à l'accélération), `readingTime`, compte des combos (lot 26).      |
+| 1.41    | 29/10/2026 | Le poids et l'éclat : `FrameClock.hold`, `Impact`, `Camera`, `WellOverlay`, la Tour au niveau du puits, les prises simples de la fabrique (lot 27).                    |

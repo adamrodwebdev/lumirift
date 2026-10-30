@@ -102,8 +102,62 @@ export const hardDrop =
       gain: 0.06 + 0.06 * weight,
     });
     s.tone({ frequency: 120, to: 42, duration: 0.2, gain: 0.25 + 0.15 * weight, start: 0.04 });
+    // The weight of it (1.41): a deep thump, 70 down to 50 Hz, longer for a longer fall.
+    s.tone({
+      frequency: 70,
+      to: 50,
+      duration: 0.12 + 0.18 * weight,
+      gain: 0.08 + 0.2 * weight,
+      start: 0.04,
+    });
     s.noise({ filter: 'lowpass', frequency: 700, duration: 0.09, gain: 0.12, start: 0.04 });
     bass(s, groove, 1.1 + 0.3 * weight, 0.04);
+  };
+
+/**
+ * The blow of a clear of two lines or more (1.41), under the crack: a deep
+ * thump and a breath, longer and louder with the lines.
+ */
+export const clearBlow =
+  (lines: number): SoundRecipe =>
+  (s) => {
+    const size = Math.min(4, lines) - 1;
+    s.tone({ frequency: 90, to: 38, duration: 0.18 + 0.08 * size, gain: 0.12 + 0.06 * size });
+    s.noise({
+      filter: 'lowpass',
+      frequency: 420,
+      to: 120,
+      duration: 0.25 + 0.1 * size,
+      gain: 0.05 + 0.03 * size,
+      start: 0.02,
+    });
+  };
+
+/**
+ * A step of a combo (1.41), ×`times`: a note of the chord playing, one higher
+ * each step, over the glass (as Sand's sweep climbs); at ×5 and ×10, the
+ * whole chord rings out.
+ */
+export const comboStep =
+  (times: number): SoundRecipe =>
+  (s, groove) => {
+    const chord = chordAt(groove.beat);
+    const strength = 0.75 + 0.45 * accent(groove.beat);
+    s.tone({
+      type: 'triangle',
+      frequency: degree(chordDegree(chord, 12, Math.min(times, 10) - 2)),
+      duration: 0.4,
+      gain: 0.055 * strength,
+    });
+    if (times !== 5 && times !== 10) return;
+    [0, 1, 2, 3].forEach((n, i) =>
+      s.tone({
+        frequency: degree(chordDegree(chord, 10, n)),
+        duration: 0.9,
+        gain: 0.04,
+        start: 0.05 + i * 0.03,
+      }),
+    );
   };
 
 export const crack: SoundRecipe = (s) => {

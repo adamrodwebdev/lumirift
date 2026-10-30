@@ -1,9 +1,10 @@
+import { comboLook, type ComboHeat } from '@/fx/Impact';
 import { Tone } from '@/core/Tone';
 import { AdaptiveQuality } from '@/fx/AdaptiveQuality';
 import type { EffectsProfile } from '@/fx/EffectsProfile';
 import { FlashLimiter } from '@/fx/FlashLimiter';
 import { ParticleKind, ParticlePool, type ParticleWorld } from '@/fx/ParticlePool';
-import { ScreenShake } from '@/fx/ScreenShake';
+import { Camera } from '@/fx/Camera';
 import { shade, type TonePalette } from '@/render/TonePalette';
 import type { GolemEvent } from '../engine/CeramicGolem';
 import type { RemovedTile } from '../engine/Grid';
@@ -57,6 +58,11 @@ export interface Pop extends Cell {
 
 export interface Popup {
   readonly text: string;
+  /** `label`: the streak's word (×N); `shout`: its word of heat at a milestone (1.41); points otherwise. */
+  readonly kind?: 'points' | 'label' | 'shout';
+  /** Its size (cells) and heat, as a combo of the falling well (1.41). */
+  readonly size?: number;
+  readonly heat?: ComboHeat;
   readonly x: number;
   readonly y: number;
   age: number;
@@ -71,10 +77,12 @@ const random = (min: number, max: number) => min + Math.random() * (max - min);
  */
 export class MosaicEffects {
   readonly pool = new ParticlePool(1600);
-  readonly shake = new ScreenShake();
+  /** The camera on the board: its shake (1.41: smooth, on real time). */
+  readonly camera = new Camera(0.35);
   readonly cracking: CrackingTile[] = [];
   readonly pops: Pop[] = [];
   readonly popups: Popup[] = [];
+  private shout: ((key: string) => string) | null = null;
   readonly colors: string[] = [];
   flash = 0;
   boardHidden = false;
@@ -105,7 +113,9 @@ export class MosaicEffects {
   attach(session: PlacementSession): () => void {
     const offs = [
       session.onGame('place', ({ cells }) => this.onPlace(cells)),
-      session.onGame('clear', ({ removed, points, lines }) => this.onClear(removed, points, lines)),
+      session.onGame('clear', ({ removed, points, lines, streak }) =>
+        this.onClear(removed, points, lines, streak),
+      ),
       session.onGame('bomb', ({ removed }) => this.onBomb(removed)),
       session.onGame('perfect', () => this.flashBoard(0.25)),
       session.onGame('over', () => this.collapse()),
@@ -153,10 +163,11 @@ export class MosaicEffects {
     return index;
   }
 
-  update(deltaMs: number): void {
+  /** A frame: `deltaMs` of the game's time, `realMs` of the wall clock's (the camera runs on it). */
+  update(deltaMs: number, realMs = deltaMs): void {
     this.clock += deltaMs;
     this.quality.sample(deltaMs);
-    this.shake.update(deltaMs);
+    this.camera.update(realMs);
     this.flash = Math.max(0, this.flash - deltaMs / FLASH_MS);
     for (const tile of [...this.cracking]) {
       tile.age += deltaMs;
@@ -224,12 +235,40 @@ export class MosaicEffects {
     }
   }
 
-  private onClear(removed: readonly RemovedTile[], points: number, lines: number): void {
+  /** The words of a streak's milestones, translated (1.41); none: the streak is only counted. */
+  writeShouts(shout: (key: string) => string): void {
+    this.shout = shout;
+  }
+
+  private onClear(
+    removed: readonly RemovedTile[],
+    points: number,
+    lines: number,
+    streak: number,
+  ): void {
     const profile = this.profile();
     if (removed.length > 0) {
       const x = removed.reduce((sum, tile) => sum + tile.x + 0.5, 0) / removed.length;
       const y = removed.reduce((sum, tile) => sum + tile.y + 0.5, 0) / removed.length;
       this.popups.push({ text: `+${this.formatPoints(points)}`, x, y, age: 0 });
+      // The streak on the board (1.41), from its second clear: it grows and heats as a combo.
+      if (streak >= 2) {
+        const look = comboLook(streak);
+        const size = profile.motion ? (0.85 * look.size) / 1.05 : 0.85;
+        this.popups.push({
+          text: `×${streak}`,
+          kind: 'label',
+          size,
+          heat: look.heat,
+          x,
+          y: y - 1,
+          age: 0,
+        });
+        if (look.shout && this.shout) {
+          const text = this.shout(look.shout);
+          this.popups.push({ text, kind: 'shout', heat: look.heat, x, y: y - 1 - size, age: 0 });
+        }
+      }
     }
     if (!profile.destruction) return;
     for (const tile of removed) this.cracking.push({ ...tile, age: 0 });
@@ -376,7 +415,7 @@ export class MosaicEffects {
   }
 
   private kick(amount: number): void {
-    if (this.profile().shake) this.shake.kick(amount);
+    if (this.profile().shake) this.camera.kick(amount);
   }
 
   private flashBoard(alpha: number): void {

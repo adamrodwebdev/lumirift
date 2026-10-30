@@ -75,6 +75,8 @@ const effects = new SandEffects(
   (points) => format.number(points),
 );
 const detachEffects = effects.attach(session);
+// Big clears hold the game still a moment (1.41).
+effects.holdTimeWith(props.clock);
 const detachSounds = new SandSoundscape(audio, haptics).attach(session);
 
 let renderer: SandRenderer | null = null;
@@ -120,7 +122,7 @@ watch(
 const offFrame = props.clock.subscribe((delta, real) => {
   input.update(props.active ? real : 0);
   // The effects go on at the end of a game, and while a Guardian passes by.
-  if (props.active || session.state === 'over' || session.teasing) effects.update(delta);
+  if (props.active || session.state === 'over' || session.teasing) effects.update(delta, real);
   const next = session.view.preview();
   if (next.length !== queue.value.length || next.some((spec, i) => spec !== queue.value[i]))
     queue.value = next;

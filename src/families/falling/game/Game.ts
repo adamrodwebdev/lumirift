@@ -11,7 +11,8 @@ import type { PieceType, RotationDirection, Tone } from '../pieces/PieceType';
 import { kickOffsets, type Cell } from '../pieces/Shapes';
 import { GravityCurve } from '../rules/GravityCurve';
 import { Scoring } from '../rules/Scoring';
-import type { GameEventMap, GameOverReason, GameState } from './GameEvents';
+import type { GameEventMap, GameOverReason, GameState, LockCause } from './GameEvents';
+import { InitialActions, type ActionTarget, type Step } from './InitialActions';
 
 export const LOCK_DELAY_MS = 500;
 export const MAX_LOCK_RESETS = 15;
@@ -109,6 +110,14 @@ export class Game {
   private blocked: PieceSpec | null = null;
   /** A continued game waits for the player's first move before anything falls again. */
   private waiting = false;
+  /** What the player asks while the next piece waits to enter, played when it does (1.41). */
+  private readonly initial: InitialActions;
+  /** The kept actions play through the player's own intentions. */
+  private readonly entering: ActionTarget = {
+    hold: () => this.hold(),
+    rotate: (direction) => this.rotate(direction),
+    shift: (dx) => this.shift(dx),
+  };
 
   constructor(
     readonly mode: GameMode,
@@ -118,6 +127,7 @@ export class Game {
     this.board =
       options.board ??
       new Board(mode.well.width, mode.well.height, Board.HIDDEN_ROWS, mode.well.wraps ?? false);
+    this.initial = new InitialActions(this.board.width);
     this.bag = new Bag(this.random);
     this.scoring = new Scoring(mode.scoresPureLines);
     this.startLevel = options.startLevel ?? 1;
@@ -263,6 +273,7 @@ export class Game {
     this._canHold = true;
     this.softDropping = false;
     this.spawnDelay = 0;
+    this.initial.forget();
     return this.board.clearTopRows(rows);
   }
 
@@ -278,12 +289,18 @@ export class Game {
 
   moveLeft(): boolean {
     this.wake();
-    return this.shift(-1);
+    return this.step(-1);
   }
 
   moveRight(): boolean {
     this.wake();
-    return this.shift(1);
+    return this.step(1);
+  }
+
+  /** The repeat of a held key: moves the piece in play, never kept for the next one. */
+  repeatMove(dx: Step): boolean {
+    this.wake();
+    return this.shift(dx);
   }
 
   setSoftDrop(active: boolean): void {
@@ -310,11 +327,15 @@ export class Game {
     this._active = this._active.moved(0, distance);
     if (this.mode.scoresDrops) this._score += this.scoring.hardDrop(distance);
     this.events.emit('hardDrop', { piece: this._active, distance });
-    this.lockActive();
+    this.lockActive('hard', distance);
   }
 
   rotate(direction: RotationDirection): boolean {
     this.wake();
+    if (this.awaiting) {
+      this.initial.turn(direction);
+      return true;
+    }
     const piece = this._active;
     if (!this.canAct() || !piece) return false;
     const rotated = piece.rotated(direction);
@@ -330,6 +351,10 @@ export class Game {
 
   hold(): boolean {
     this.wake();
+    if (this.awaiting && this._canHold) {
+      this.initial.hold();
+      return true;
+    }
     const piece = this._active;
     if (!this.canAct() || !piece || !this._canHold) return false;
     const previous = this._held;
@@ -500,6 +525,19 @@ export class Game {
     return this._state === 'running';
   }
 
+  /** The next piece waits to enter, after a clear: the player's actions wait for it. */
+  private get awaiting(): boolean {
+    return this.canAct() && this._active === null && this.spawnDelay > 0;
+  }
+
+  /** A step sideways: the piece in play's, or kept for the next one while it waits to enter. */
+  private step(dx: Step): boolean {
+    if (!this.awaiting) return this.shift(dx);
+    if (!this.initial.canStep(dx)) return false;
+    this.initial.step(dx);
+    return true;
+  }
+
   /** The player acts: a continued game that waited for them goes on. */
   private wake(): void {
     if (this._state === 'running') this.waiting = false;
@@ -561,18 +599,18 @@ export class Game {
     this.lockTimer += deltaMs;
     const delay = LOCK_DELAY_MS + this.boosts.extraLockDelayMs;
     if (this.lockTimer >= delay || this.lockResets >= MAX_LOCK_RESETS) {
-      this.lockActive();
+      this.lockActive(this.softDropping ? 'soft' : 'gravity', 0);
     }
   }
 
-  private lockActive(): void {
+  private lockActive(cause: LockCause, distance: number): void {
     const piece = this._active;
     if (!piece) return;
     const visible = this.board.lock(piece);
     this.lockCount++;
     if (this.board.wraps) this.spawnCentre = this.board.column(Math.floor(piece.centre)) + 0.5;
     this._active = null;
-    this.events.emit('lock', { piece });
+    this.events.emit('lock', { piece, cause, distance });
     // Measured before the clear: lines cleared with the stack this high are a close call.
     const tense = inDanger(this.pressure());
     const cleared = this.mode.clearsLines ? this.board.clearFullRows() : [];
@@ -600,7 +638,10 @@ export class Game {
   /** Scores the rows cleared at once; returns their points. */
   private scoreClear(cleared: readonly ClearedRow[], cascade: boolean): number {
     if (cleared.length === 0) {
-      if (!cascade) this._combo = -1;
+      if (!cascade) {
+        if (this._combo >= 1) this.events.emit('comboEnd', { combo: this._combo });
+        this._combo = -1;
+      }
       return 0;
     }
     this._combo++;
@@ -709,6 +750,7 @@ export class Game {
     this.lockResets = 0;
     this.fallAccumulator = 0;
     this.events.emit('spawn', { piece });
+    this.initial.playOn(this.entering);
   }
 
   private fillQueue(count: number): void {
