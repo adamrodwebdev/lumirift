@@ -538,7 +538,6 @@ export class TowerRenderer {
     const { ctx, beam } = this;
     const { board } = this.view;
     const rgb = palette.color(piece.tone);
-    const shaft = beam.shaft(piece.tone, rgb);
     const { glow, core } = beam.cap(piece.tone, rgb);
     const lows = lowestBlocks(piece.localCells, this.lows);
     for (let local = 0; local < lows.length; local++) {
@@ -547,8 +546,7 @@ export class TowerRenderer {
       if (low < 0 || !this.isFront(column)) continue;
       const top = piece.y + low + 1 - board.hiddenRows;
       this.face(column, top, distance);
-      ctx.fillStyle = shaft;
-      ctx.fillRect((1 - BEAM.width) / 2, 0, BEAM.width, 1);
+      beam.fillShaft(piece.tone, rgb);
       this.face(column, top + distance - 0.1, 0.1);
       ctx.fillStyle = glow;
       ctx.fillRect(0.05, -0.5, 0.9, 1.8);

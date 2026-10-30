@@ -342,7 +342,6 @@ export class FallingRenderer {
     const { ctx, cell, beam } = this;
     const hidden = this.view.board.hiddenRows;
     const rgb = palette.color(piece.tone);
-    const shaft = beam.shaft(piece.tone, rgb);
     const { glow, core } = beam.cap(piece.tone, rgb);
     const lows = lowestBlocks(piece.localCells, this.lows);
     for (let local = 0; local < lows.length; local++) {
@@ -354,8 +353,7 @@ export class FallingRenderer {
       ctx.save();
       ctx.translate(x, top);
       ctx.scale(cell, bottom - top);
-      ctx.fillStyle = shaft;
-      ctx.fillRect((1 - BEAM.width) / 2, 0, BEAM.width, 1);
+      beam.fillShaft(piece.tone, rgb);
       ctx.restore();
       const inset = ((1 - BEAM.cap) / 2) * cell;
       const thick = Math.max(2, cell * 0.08);

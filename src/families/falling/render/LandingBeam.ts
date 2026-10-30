@@ -27,21 +27,48 @@ export function lowestBlocks(cells: readonly Cell[], into: Int8Array): Int8Array
 
 const css = ({ r, g, b }: Rgb, alpha: number) => `rgb(${r} ${g} ${b} / ${alpha})`;
 
+/** Where the shaft's light is faintest, as a share of its height. */
+const DIMMEST = 0.7;
+
+/** A shaft's light: from the piece to its faintest, then on to where it lands. */
+interface Shaft {
+  readonly fading: CanvasGradient;
+  readonly landing: CanvasGradient;
+}
+
 /** The beam's light for a tone: a shaft for a unit square (0 under the piece, 1 at rest), a cap. */
 export class BeamPaint {
-  private readonly shafts = new Map<Tone, CanvasGradient>();
+  private readonly shafts = new Map<Tone, Shaft>();
   private readonly caps = new Map<Tone, { readonly glow: string; readonly core: string }>();
 
   constructor(private readonly ctx: CanvasRenderingContext2D) {}
 
-  /** Light leaving the piece, fading on the way down, brighter where it lands. */
-  shaft(tone: Tone, rgb: Rgb): CanvasGradient {
+  /**
+   * Fills the shaft in the unit square of the current transform: light leaving the
+   * piece, fading on the way down, brighter where it lands. Two gradients of two
+   * stops each rather than one of three: the same light, on the fast path of the
+   * software raster (a computer whose GPU the browser does not use).
+   */
+  fillShaft(tone: Tone, rgb: Rgb): void {
+    const { ctx } = this;
+    const shaft = this.shaft(tone, rgb);
+    const left = (1 - BEAM.width) / 2;
+    ctx.fillStyle = shaft.fading;
+    ctx.fillRect(left, 0, BEAM.width, DIMMEST);
+    ctx.fillStyle = shaft.landing;
+    ctx.fillRect(left, DIMMEST, BEAM.width, 1 - DIMMEST);
+  }
+
+  private shaft(tone: Tone, rgb: Rgb): Shaft {
     let shaft = this.shafts.get(tone);
     if (!shaft) {
-      shaft = this.ctx.createLinearGradient(0, 0, 0, 1);
-      shaft.addColorStop(0, css(rgb, 0.26));
-      shaft.addColorStop(0.7, css(rgb, 0.07));
-      shaft.addColorStop(1, css(mixRgb(rgb, 0.5), 0.34));
+      const fading = this.ctx.createLinearGradient(0, 0, 0, DIMMEST);
+      fading.addColorStop(0, css(rgb, 0.26));
+      fading.addColorStop(1, css(rgb, 0.07));
+      const landing = this.ctx.createLinearGradient(0, DIMMEST, 0, 1);
+      landing.addColorStop(0, css(rgb, 0.07));
+      landing.addColorStop(1, css(mixRgb(rgb, 0.5), 0.34));
+      shaft = { fading, landing };
       this.shafts.set(tone, shaft);
     }
     return shaft;
