@@ -44,6 +44,8 @@ export const CHAPTERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 export type Chapter = (typeof CHAPTERS)[number];
 
 const MIN = 60_000;
+/** The Dune Wyrm's first fight (2-7): a tenth weaker than a full Guardian since the 18-row Sand (1.43). */
+const FIRST_WYRM_HEALTH = Math.round(GUARDIAN_HEALTH * 0.9);
 const TIME_LEFT: StarRule = { kind: 'timeLeft' };
 
 const timed = (
@@ -92,20 +94,22 @@ const HANDMADE: readonly CampaignLevel[] = [
   // Then the player tries those elements alone: what no other game has stays
   // first, for three to four minutes, before the falling basics.
   { ...timed('1-2', 'sand', 3, { kind: 'lines', target: 3 }), practice: true },
-  timed('1-3', 'classic', 2.5, { kind: 'lines', target: 10 }),
+  // Eight lines in the 18-row well (1.43): ten made a newcomer lose one game in three.
+  timed('1-3', 'classic', 2.5, { kind: 'lines', target: 8 }),
   timed('1-4', 'mirror', 3, { kind: 'lines', target: 12 }),
   timed('1-5', 'classic', 3, { kind: 'bigClear', target: 2 }),
   duel('1-6', 'rookie'),
   // 2. Courants
+  // A minute and three quarters (1.43): the tide, paced to the 18-row well, needs it to press.
   timed(
     '2-1',
     'tide',
-    1.5,
-    { kind: 'survive', target: 1.5 * MIN },
+    1.75,
+    { kind: 'survive', target: 1.75 * MIN },
     {
       kind: 'lines',
-      two: 6,
-      three: 12,
+      two: 7,
+      three: 14,
     },
   ),
   timed('2-2', 'flip', 3, { kind: 'lines', target: 15 }),
@@ -114,9 +118,11 @@ const HANDMADE: readonly CampaignLevel[] = [
   timed('2-5', 'sand', 3, { kind: 'lines', target: 5 }),
   duel('2-6', 'easy'),
   // The first Guardian: the Dune Wyrm, fought with the elements met in this chapter.
+  // A tenth weaker in the 18-row Sand (1.43), where its expert won only four games of six.
   {
-    ...timed('2-7', 'sand', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
+    ...timed('2-7', 'sand', 4, { kind: 'boss', target: FIRST_WYRM_HEALTH }),
     boss: 'duneWorm',
+    bossHealth: FIRST_WYRM_HEALTH,
   },
   // 3. Mosaïques
   timed('3-1', 'mosaic', 2.5, { kind: 'lines', target: 8 }),
@@ -143,7 +149,7 @@ const HANDMADE: readonly CampaignLevel[] = [
   timed('4-2', 'rhythm', 3, { kind: 'lines', target: 12 }),
   timed('4-3', 'tower', 3, { kind: 'lines', target: 5 }),
   timed('4-4', 'tower', 4, { kind: 'lines', target: 10 }),
-  timed('4-5', 'sand', 4, { kind: 'lines', target: 7 }),
+  timed('4-5', 'sand', 4, { kind: 'lines', target: 6 }),
   duel('4-6', 'normal'),
   // The third Guardian: the Eye of the Tower, blinded by the bombs of its gaze.
   {

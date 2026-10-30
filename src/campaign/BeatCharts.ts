@@ -67,8 +67,9 @@ const HANDMADE_CHARTS: Readonly<Record<string, BeatChart>> = {
   '1-2': chart('teach', 'curiosity', [4, 5, 6], 'The elements alone, on a bed of sand', {
     cues: 3,
   }),
+  // One near miss in six (1.43): in the 18-row well, a newcomer's second turned into a loss.
   '1-3': chart('teach', 'focus', [3, 6, 7], 'Full rows clear; the first near miss', {
-    nearMisses: 2,
+    nearMisses: 1,
     cues: 3,
   }),
   '1-4': chart('twist', 'surprise', [3, 6, 8], 'The well flips left to right every ten lines', {
@@ -112,7 +113,7 @@ const HANDMADE_CHARTS: Readonly<Record<string, BeatChart>> = {
   '4-2': chart('breather', 'calm', [3, 4, 5], 'Lock on the beat'),
   '4-3': chart('teach', 'curiosity', [4, 5, 6], 'A well without walls, turned around'),
   '4-4': chart('test', 'focus', [4, 6, 6], 'Ten rings around the tower'),
-  '4-5': chart('breather', 'calm', [2, 4, 5], 'Seven links: the elements all come'),
+  '4-5': chart('breather', 'calm', [2, 4, 5], 'Six links: the elements all come'),
   '4-6': chart('duel', 'rivalry', [3, 6, 8], 'The rival of the middle'),
   '4-7': chart(
     'boss',

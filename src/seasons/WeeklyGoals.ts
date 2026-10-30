@@ -11,7 +11,7 @@ export const WEEKLY_TARGETS: Readonly<Record<ElementName, number>> = {
   water: 35,
   fire: 35,
   oil: 28,
-  ice: 30,
+  ice: 25,
   lightning: 25,
   seed: 70,
   acid: 2000,

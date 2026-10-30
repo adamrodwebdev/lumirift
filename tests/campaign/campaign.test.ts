@@ -72,7 +72,7 @@ describe('Campaign levels', () => {
 });
 
 describe('CampaignRun', () => {
-  const lines = levelById('1-3')!; // 10 lines in 2 min 30
+  const lines = levelById('1-3')!; // 8 lines in 2 min 30
 
   it('opens the race once the Tower’s first level is won, every other mode from the start', () => {
     const fresh = new CampaignProgress({ stars: {}, ranks: {} });
@@ -89,15 +89,15 @@ describe('CampaignRun', () => {
 
   it('ends the level as soon as a live goal is met, stars by the time left', () => {
     const run = new CampaignRun(lines, lines.timeLimitMs);
-    expect(run.check(state({ lines: 9 }))).toBeNull();
-    expect(run.progress(state({ lines: 12 }))).toEqual({ value: 10, target: 10 });
-    expect(run.check(state({ lines: 10, durationMs: 60_000 }))).toEqual({
+    expect(run.check(state({ lines: 7 }))).toBeNull();
+    expect(run.progress(state({ lines: 12 }))).toEqual({ value: 8, target: 8 });
+    expect(run.check(state({ lines: 8, durationMs: 60_000 }))).toEqual({
       levelId: '1-3',
       won: true,
       stars: 3,
     });
-    expect(run.check(state({ lines: 10, durationMs: 120_000 }))?.stars).toBe(2);
-    expect(run.check(state({ lines: 10, durationMs: 140_000 }))?.stars).toBe(1);
+    expect(run.check(state({ lines: 8, durationMs: 120_000 }))?.stars).toBe(2);
+    expect(run.check(state({ lines: 8, durationMs: 140_000 }))?.stars).toBe(1);
   });
 
   it('loses when the game ends before the goal', () => {
@@ -121,9 +121,9 @@ describe('CampaignRun', () => {
   it('counts survival with the lines cleared on the way', () => {
     const tide = levelById('2-1')!;
     const run = new CampaignRun(tide, tide.timeLimitMs);
-    expect(run.check(state({ durationMs: 89_000 }))).toBeNull();
-    expect(run.check(state({ durationMs: 90_000, lines: 13 }))?.stars).toBe(3);
-    expect(run.end('timeUp', state({ durationMs: 90_000, lines: 2 })).stars).toBe(1);
+    expect(run.check(state({ durationMs: 104_000 }))).toBeNull();
+    expect(run.check(state({ durationMs: 105_000, lines: 14 }))?.stars).toBe(3);
+    expect(run.end('timeUp', state({ durationMs: 105_000, lines: 2 })).stars).toBe(1);
   });
 });
 
