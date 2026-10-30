@@ -134,17 +134,19 @@ const onVariant = (variant: string) => {
     </div>
 
     <div class="detail" aria-live="polite">
-      <div class="detail__text">
-        <h3 class="detail__name">{{ t(`modes.${selected.mode.id}.name`) }}</h3>
-        <p class="detail__pitch">{{ t(`modes.${selected.mode.id}.pitch`) }}</p>
-        <p class="detail__best">
-          <template v-if="selected.lock">{{ lockText(selected.lock) }}</template>
-          <template v-else-if="selected.best !== null">
-            {{ t('home.best', { value: format.result(selected.mode.result, selected.best) }) }}
-          </template>
-          <template v-else>{{ t('home.noBest') }}</template>
-        </p>
-      </div>
+      <Transition name="detail">
+        <div :key="selectedId" class="detail__text">
+          <h3 class="detail__name">{{ t(`modes.${selected.mode.id}.name`) }}</h3>
+          <p class="detail__pitch">{{ t(`modes.${selected.mode.id}.pitch`) }}</p>
+          <p class="detail__best">
+            <template v-if="selected.lock">{{ lockText(selected.lock) }}</template>
+            <template v-else-if="selected.best !== null">
+              {{ t('home.best', { value: format.result(selected.mode.result, selected.best) }) }}
+            </template>
+            <template v-else>{{ t('home.noBest') }}</template>
+          </p>
+        </div>
+      </Transition>
       <button
         type="button"
         class="btn btn--primary btn--raised detail__play"
@@ -370,6 +372,22 @@ const onVariant = (variant: string) => {
 }
 
 /* A long name (Renversement, Переворот) breaks rather than spills on the Play button. */
+/* The chosen mode's words slide in as they replace the last ones (1.42). */
+.detail-enter-active {
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+}
+
+:root[data-transitions='fade'] .detail-enter-active {
+  transition-duration: var(--motion-out);
+}
+
+.detail-enter-from {
+  opacity: 0;
+  transform: translateY(calc(var(--move) * 0.4rem));
+}
+
 .detail__name {
   font-size: clamp(0.95rem, 0.7rem + 1.2vw, 1.05rem);
   overflow-wrap: break-word;

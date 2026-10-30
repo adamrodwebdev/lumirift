@@ -79,11 +79,11 @@ const text = computed(() =>
 }
 
 .coach-enter-active {
-  animation: coach-in 260ms cubic-bezier(0.2, 1.3, 0.4, 1);
+  animation: coach-in var(--motion-in) cubic-bezier(0.2, 1.3, 0.4, 1);
 }
 
 .coach-leave-active {
-  transition: opacity 150ms ease;
+  transition: opacity var(--motion-out) var(--ease-in);
 }
 
 .coach-leave-to {
@@ -93,7 +93,7 @@ const text = computed(() =>
 @keyframes coach-in {
   from {
     opacity: 0;
-    transform: translateY(-0.5rem) scale(0.92);
+    transform: translateY(calc(var(--move) * -0.5rem)) scale(calc(1 - var(--move) * 0.08));
   }
 }
 </style>

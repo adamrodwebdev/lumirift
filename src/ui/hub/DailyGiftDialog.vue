@@ -20,7 +20,11 @@ import GemCanvas from './GemCanvas.vue';
  * after a newcomer's first minutes), a gift of welcome after a week away, and
  * the daily streak with its next step. A day missed only waits.
  */
-const props = defineProps<{ open: boolean }>();
+const props = defineProps<{
+  open: boolean;
+  /** Opened by itself (once a day, 1.35): it ignores input while it arrives (`ModalDialog`). */
+  guarded?: boolean;
+}>();
 const emit = defineEmits<{ close: [] }>();
 
 const { t } = useI18n();
@@ -150,7 +154,14 @@ const streakWords = computed(() => {
 </script>
 
 <template>
-  <ModalDialog :open="open" :title="t('gifts.title')" closable wide @dismiss="emit('close')">
+  <ModalDialog
+    :open="open"
+    :title="t('gifts.title')"
+    closable
+    wide
+    :guarded="guarded"
+    @dismiss="emit('close')"
+  >
     <p class="gift-sub">
       {{ t('gifts.dayOf', { n: shown.next + 1, total: GIFT_DAYS }) }}
     </p>
@@ -200,34 +211,36 @@ const streakWords = computed(() => {
         </li>
       </ol>
 
-      <div v-if="claimed" class="gift-actions gift-actions--done">
-        <p class="gift-thanks" role="status">{{ thanks }}</p>
-        <button type="button" class="btn btn--primary btn--raised" @click="emit('close')">
-          {{ t('gifts.continue') }}
-        </button>
-      </div>
-      <div v-else-if="calendar.ready" class="gift-actions">
-        <button type="button" class="btn btn--primary btn--raised" @click="take(false)">
-          {{ claimWords }}
-        </button>
-        <button
-          v-if="canDouble"
-          type="button"
-          class="btn btn--raised gift-double"
-          :disabled="watching"
-          :aria-label="t('gifts.doubleLabel', { n: format.number(doubled) })"
-          @click="double"
-        >
-          <span class="gift-ad" aria-hidden="true">
-            <AppIcon name="play" :size="12" />{{ t('over.adBadge') }}
-          </span>
-          <span aria-hidden="true">{{ t('gifts.double', { n: format.number(doubled) }) }}</span>
-        </button>
-        <p v-if="status" class="gift-status" role="status">{{ status }}</p>
-      </div>
-      <p v-else class="gift-thanks">
-        {{ t('gifts.next', { gift: giftWords(today.gift) }) }}
-      </p>
+      <Transition name="gift-turn">
+        <div v-if="claimed" key="done" class="gift-actions gift-actions--done">
+          <p class="gift-thanks" role="status">{{ thanks }}</p>
+          <button type="button" class="btn btn--primary btn--raised" @click="emit('close')">
+            {{ t('gifts.continue') }}
+          </button>
+        </div>
+        <div v-else-if="calendar.ready" key="ready" class="gift-actions">
+          <button type="button" class="btn btn--primary btn--raised" @click="take(false)">
+            {{ claimWords }}
+          </button>
+          <button
+            v-if="canDouble"
+            type="button"
+            class="btn btn--raised gift-double"
+            :disabled="watching"
+            :aria-label="t('gifts.doubleLabel', { n: format.number(doubled) })"
+            @click="double"
+          >
+            <span class="gift-ad" aria-hidden="true">
+              <AppIcon name="play" :size="12" />{{ t('over.adBadge') }}
+            </span>
+            <span aria-hidden="true">{{ t('gifts.double', { n: format.number(doubled) }) }}</span>
+          </button>
+          <p v-if="status" class="gift-status" role="status">{{ status }}</p>
+        </div>
+        <p v-else key="next" class="gift-thanks">
+          {{ t('gifts.next', { gift: giftWords(today.gift) }) }}
+        </p>
+      </Transition>
 
       <div class="gift-streak">
         <AppIcon name="flame" :size="28" />
@@ -414,6 +427,15 @@ const streakWords = computed(() => {
     radial-gradient(70% 80% at 80% 90%, rgb(from var(--glow-2) r g b / 0.85), transparent 75%),
     var(--bg);
   box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* The day claimed: its thanks come in with a fade as the buttons go (1.42). */
+.gift-turn-enter-active {
+  transition: opacity var(--motion-in) var(--ease-out);
+}
+
+.gift-turn-enter-from {
+  opacity: 0;
 }
 
 .gift-actions {

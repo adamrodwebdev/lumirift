@@ -34,7 +34,10 @@ const shown = (n: number) => goalAmount(props.goal.kind, n);
         :aria-valuetext="`${shown(value)} / ${shown(target)}`"
         :aria-label="text"
       >
-        <span class="goal__fill" :style="{ inlineSize: `${(value / target) * 100}%` }" />
+        <span
+          class="goal__fill"
+          :style="{ transform: `translateX(${(Math.min(1, value / target) - 1) * 100}%)` }"
+        />
       </div>
       <p class="goal__count">{{ shown(value) }} / {{ shown(target) }}</p>
     </template>
@@ -101,12 +104,14 @@ const shown = (n: number) => goalAmount(props.goal.kind, n);
   overflow: hidden;
 }
 
+/* The fill slides in whole (its round end kept), clipped by the bar (1.42: no width animated). */
 .goal__fill {
   display: block;
+  inline-size: 100%;
   block-size: 100%;
   border-radius: inherit;
   background: var(--accent-gradient);
-  transition: inline-size 200ms ease;
+  transition: transform 200ms ease;
 }
 
 /*

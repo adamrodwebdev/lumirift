@@ -24,7 +24,7 @@ import AppIcon from './AppIcon.vue';
   pointer-events: none;
   /* Soft bands over the well: they fade out over the dashboard and the screen's bottom. */
   mask-image: linear-gradient(transparent 28%, #000 44% 80%, transparent);
-  animation: zones-in 420ms var(--ease-out) both;
+  animation: zones-in var(--motion-in) var(--ease-out) both;
 }
 
 .zones__half {
@@ -72,7 +72,6 @@ import AppIcon from './AppIcon.vue';
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .zones,
   .zones__half :deep(.icon) {
     animation: none;
   }

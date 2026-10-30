@@ -70,15 +70,16 @@ const hubPage = ref<HubPage>('home');
 const settingsOpen = ref(false);
 const main = ref<HTMLElement | null>(null);
 const wipe = ref<ScreenChange | null>(null);
-let changing = false;
+/** A change of screen under way: the window it covers takes no taps (1.42). */
+const changing = ref(false);
 
 /**
  * Changes screen behind the rift's light, from the button that asked for it;
  * one change at a time (a second tap during one is ignored).
  */
 const change = async (origin: Element | null, next: () => Promise<Screen> | Screen) => {
-  if (changing) return;
-  changing = true;
+  if (changing.value) return;
+  changing.value = true;
   const swap = async () => {
     screen.value = await next();
     await nextTick();
@@ -91,7 +92,7 @@ const change = async (origin: Element | null, next: () => Promise<Screen> | Scre
     if (wipe.value) await wipe.value.run(origin, swap);
     else await swap();
   } finally {
-    changing = false;
+    changing.value = false;
   }
 };
 
@@ -186,7 +187,7 @@ onBeforeUnmount(() => {
 
 <template>
   <a class="skip" href="#main">{{ t('nav.skip') }}</a>
-  <main id="main" ref="main" tabindex="-1">
+  <main id="main" ref="main" tabindex="-1" :class="{ 'changing-screen': changing }">
     <HubScreen
       v-if="screen.kind === 'hub'"
       v-model:page="hubPage"

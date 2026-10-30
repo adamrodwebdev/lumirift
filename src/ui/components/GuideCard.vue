@@ -126,11 +126,11 @@ const { t } = useI18n();
 }
 
 .guide-enter-active {
-  animation: guide-in 260ms cubic-bezier(0.2, 1.3, 0.4, 1);
+  animation: guide-in var(--motion-in) cubic-bezier(0.2, 1.3, 0.4, 1);
 }
 
 .guide-leave-active {
-  transition: opacity 120ms ease;
+  transition: opacity var(--motion-out) var(--ease-in);
 }
 
 .guide-leave-to {
@@ -140,7 +140,7 @@ const { t } = useI18n();
 @keyframes guide-in {
   from {
     opacity: 0;
-    transform: translateY(-0.35rem) scale(0.96);
+    transform: translateY(calc(var(--move) * -0.35rem)) scale(calc(1 - var(--move) * 0.04));
   }
 }
 </style>

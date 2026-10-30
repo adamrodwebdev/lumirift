@@ -665,38 +665,47 @@ onBeforeUnmount(() => {
       :main-first="false"
       :urgent="timeUrgent ? ['timeLeft'] : []"
     />
-    <div v-if="shownSubtitle || (goalCard && goal)" class="game__goal">
-      <!-- Part of the game (the shape to fill): shown at every screen size. -->
-      <p v-if="shownSubtitle" class="game__subtitle">{{ shownSubtitle }}</p>
-      <CampaignGoal
-        v-if="goalCard && goal"
-        :label="goalCard.label"
-        :text="goalCard.text"
-        :goal="goalCard.goal"
-        :value="goal.value"
+    <Transition name="ui-fade">
+      <div v-if="shownSubtitle || (goalCard && goal)" class="game__goal">
+        <!-- Part of the game (the shape to fill): shown at every screen size. -->
+        <p v-if="shownSubtitle" class="game__subtitle">{{ shownSubtitle }}</p>
+        <CampaignGoal
+          v-if="goalCard && goal"
+          :label="goalCard.label"
+          :text="goalCard.text"
+          :goal="goalCard.goal"
+          :value="goal.value"
+        />
+      </div>
+    </Transition>
+    <Transition name="ui-rise">
+      <GuideCard
+        v-if="training && guide && !guideHidden"
+        class="game__guide"
+        :line="guide"
+        :lines="guideLines"
+        @skip="guideHidden = true"
       />
-    </div>
-    <GuideCard
-      v-if="training && guide && !guideHidden"
-      class="game__guide"
-      :line="guide"
-      :lines="guideLines"
-      @skip="guideHidden = true"
-    />
+    </Transition>
 
-    <component
-      :is="stage"
-      v-if="session"
-      :key="round"
-      :session="session"
-      :clock="clock"
-      :active="phase === 'playing'"
-      :ghost="settings.current.ghost"
-      @pause="pause"
-      @notice="announce"
-    />
+    <!-- A new round (play again, the next level): the well fades in (1.42). -->
+    <Transition name="round">
+      <component
+        :is="stage"
+        v-if="session"
+        :key="round"
+        :session="session"
+        :clock="clock"
+        :active="phase === 'playing'"
+        :ghost="settings.current.ghost"
+        @pause="pause"
+        @notice="announce"
+      />
+    </Transition>
 
-    <TapZones v-if="turnZones" />
+    <Transition name="ui-out">
+      <TapZones v-if="turnZones" />
+    </Transition>
 
     <DangerLayer
       :amount="dangerAmount"
@@ -715,13 +724,17 @@ onBeforeUnmount(() => {
     />
 
     <div class="game__overlay">
-      <p v-if="phase === 'loading'" class="game__loading">{{ t('game.loading') }}</p>
-      <CoachCard
-        v-if="coachStep && phase === 'playing'"
-        :step="coachStep"
-        :goal="coachGoal"
-        @skip="skipCoach"
-      />
+      <Transition name="ui-fade">
+        <p v-if="phase === 'loading'" class="game__loading">{{ t('game.loading') }}</p>
+      </Transition>
+      <Transition name="ui-rise">
+        <CoachCard
+          v-if="coachStep && phase === 'playing'"
+          :step="coachStep"
+          :goal="coachGoal"
+          @skip="skipCoach"
+        />
+      </Transition>
       <div class="game__toasts" aria-hidden="true">
         <Transition name="toast">
           <p v-if="toast" :key="toast.key" class="toast">{{ toast.text }}</p>
@@ -1068,7 +1081,9 @@ onBeforeUnmount(() => {
   place-items: center;
 }
 
+/* A message takes the place of the last one, in the same cell: nothing jumps (1.42). */
 .toast {
+  grid-area: 1 / 1;
   padding: var(--space-2) var(--space-4);
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -1079,11 +1094,11 @@ onBeforeUnmount(() => {
 }
 
 .toast-enter-active {
-  animation: toast-in 280ms cubic-bezier(0.2, 1.4, 0.4, 1);
+  animation: toast-in var(--motion-in) cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 
 .toast-leave-active {
-  transition: opacity 300ms ease;
+  transition: opacity var(--motion-out) var(--ease-in);
 }
 
 .toast-leave-to {
@@ -1093,8 +1108,17 @@ onBeforeUnmount(() => {
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(calc(1 - var(--move) * 0.4));
   }
+}
+
+/* A new round's well comes in with a fade, the last one gone at once. */
+.round-enter-active {
+  transition: opacity var(--motion-out) var(--ease-out);
+}
+
+.round-enter-from {
+  opacity: 0;
 }
 
 .game__help {

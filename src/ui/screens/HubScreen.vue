@@ -26,6 +26,7 @@ import { HUB_ICONS, hubPagesOf, type HubPage } from '../hub/hubPages';
 import MapPage from '../hub/MapPage.vue';
 import ModesPage from '../hub/ModesPage.vue';
 import { useSwipe } from '../hub/useSwipe';
+import { MOTION } from '../motion';
 import { useLandscape } from '../useOrientation';
 import '../hub/hub.css';
 
@@ -94,6 +95,9 @@ const build = (id: HubPage | undefined) => {
   if (id) built.add(id);
 };
 watch(page, build);
+/** A page was changed since the menu appeared: under the fade, the next one fades in (1.42). */
+const turned = ref(false);
+watch(page, () => (turned.value = true));
 /** A page's place in the tabs pattern; only the page shown is reachable. */
 const panel = (id: HubPage) => ({
   id: `hub-panel-${id}`,
@@ -127,6 +131,8 @@ const muted = computed(() => settings.current.muted);
 // --- The gift calendar (1.35) --------------------------------------------------
 
 const giftOpen = ref(false);
+/** The calendar rose by itself, not at a tap: it ignores input while it arrives (1.42). */
+const giftByItself = ref(false);
 /** A gift waits: a dot on the Home tab, and on its pill. */
 const giftReady = computed(() => gifts.calendar.ready);
 /**
@@ -153,12 +159,18 @@ onMounted(() => {
     () => {
       stopGiftTimer();
       gifts.markShown();
+      giftByItself.value = true;
       giftOpen.value = true;
     },
     props.returning ? GIFT_DELAY_RETURNING_MS : GIFT_DELAY_MS,
   );
 });
 onBeforeUnmount(stopGiftTimer);
+/** The calendar opened at the player's tap: it answers at once. */
+const openGift = () => {
+  giftByItself.value = false;
+  giftOpen.value = true;
+};
 /** Looks earned and not seen in the Atelier yet: a badge on its tab. */
 const newLooks = computed(() => newCosmetics(profile.current).length);
 const stars = computed(() => campaign.model.totalStars);
@@ -219,10 +231,10 @@ const onTabKey = (event: KeyboardEvent) => {
   void nextTick(() => tabs.value[next]?.focus());
 };
 
-// Back from a game: the pages and tabs rise, once.
+// Back from a game: the pages and tabs rise, once (the tabs 60 ms after the pages).
 const rising = ref(props.returning);
 onMounted(() => {
-  if (rising.value) window.setTimeout(() => (rising.value = false), 700);
+  if (rising.value) window.setTimeout(() => (rising.value = false), MOTION.pageMs + 60);
 });
 </script>
 
@@ -262,11 +274,13 @@ onMounted(() => {
     </header>
 
     <div ref="pages" class="hub__pages">
-      <SeasonPage v-if="seasonOpen" @close="closeSeason" />
+      <Transition name="season">
+        <SeasonPage v-if="seasonOpen" @close="closeSeason" />
+      </Transition>
       <div
         class="hub__track"
         :inert="seasonOpen"
-        :class="{ 'hub__track--dragging': dragging }"
+        :class="{ 'hub__track--dragging': dragging, 'hub__track--turned': turned }"
         :style="{ '--index': index, '--drag': `${drag}px` }"
       >
         <HomePage
@@ -277,7 +291,7 @@ onMounted(() => {
           @daily="(challenge, origin) => emit('daily', challenge, origin)"
           @guardian="(challenge, origin) => emit('guardian', challenge, origin)"
           @level="(level, origin) => emit('level', level, origin)"
-          @gift="giftOpen = true"
+          @gift="openGift"
           @season="openSeason"
         />
         <section v-else v-bind="panel('home')" class="page" />
@@ -338,7 +352,7 @@ onMounted(() => {
         </button>
       </div>
     </nav>
-    <DailyGiftDialog :open="giftOpen" @close="giftOpen = false" />
+    <DailyGiftDialog :open="giftOpen" :guarded="giftByItself" @close="giftOpen = false" />
   </div>
 </template>
 
@@ -433,8 +447,48 @@ onMounted(() => {
   display: flex;
   width: calc(var(--pages) * 100%);
   transform: translate3d(calc(var(--index) * -100% / var(--pages) + var(--drag)), 0, 0);
-  transition: transform 420ms var(--ease-out);
+  transition: transform var(--motion-page) var(--ease-out);
   will-change: transform;
+}
+
+/* The fade (1.42): the pages do not slide; the one shown fades in (not the first one). */
+:root[data-transitions='fade'] .hub__track,
+:root[data-transitions='fade'] .tabs__pill {
+  transition: none;
+}
+
+:root[data-transitions='fade'] .hub__track--turned > :not([inert]) {
+  animation: page-in var(--motion-out) var(--ease-out);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The season's page rises over the pages and sinks back, without taking a tap as it goes. */
+.season-enter-active {
+  transition:
+    opacity var(--motion-in) var(--ease-out),
+    transform var(--motion-in) var(--ease-out);
+}
+
+.season-leave-active {
+  pointer-events: none;
+  transition:
+    opacity var(--motion-out) var(--ease-in),
+    transform var(--motion-out) var(--ease-in);
+}
+
+.season-enter-from {
+  opacity: 0;
+  transform: translateY(calc(var(--move) * 1.5rem));
+}
+
+.season-leave-to {
+  opacity: 0;
+  transform: translateY(calc(var(--move) * 1rem));
 }
 
 .hub__track > * {
@@ -488,7 +542,7 @@ onMounted(() => {
     0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent),
     0 0.4rem 1.1rem color-mix(in srgb, var(--rift-glow) 20%, transparent);
   transform: translate3d(calc(var(--position) * (100% + var(--space-1))), 0, 0);
-  transition: transform 420ms var(--ease-out);
+  transition: transform var(--motion-page) var(--ease-out);
   pointer-events: none;
 }
 
@@ -521,7 +575,7 @@ onMounted(() => {
 
 .tab :deep(svg) {
   transition:
-    transform 420ms var(--ease-spring),
+    transform var(--motion-page) var(--ease-spring),
     color 200ms ease;
 }
 
@@ -565,17 +619,17 @@ onMounted(() => {
 
 /* Back from a game: the pages and the tabs rise into place. */
 .hub--rising .hub__pages {
-  animation: rise 520ms var(--ease-out) both;
+  animation: rise var(--motion-page) var(--ease-out) both;
 }
 
 .hub--rising .hub__tabs {
-  animation: rise 520ms var(--ease-out) 120ms both;
+  animation: rise var(--motion-page) var(--ease-out) 60ms both;
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(1.1rem);
+    transform: translateY(calc(var(--move) * 1.1rem));
   }
 }
 

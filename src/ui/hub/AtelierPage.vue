@@ -17,6 +17,7 @@ import {
 import { newCosmetics } from '@/progression/Profile';
 import AppIcon from '../components/AppIcon.vue';
 import { useProgressText } from '../useProgressText';
+import { MOTION, transitionMs } from '../motion';
 import { isTouchScreen } from '../useOrientation';
 import type { GemArt } from './GemArt';
 import GemCanvas from './GemCanvas.vue';
@@ -38,12 +39,11 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { profile, look, platform, ads, audio, clock } = useServices();
+const { profile, look, platform, ads, audio, clock, motion } = useServices();
 /** A look shows from its season's start (1.36), or once the player has it. */
 const visible = (cosmetic: Cosmetic) =>
   lookShown(cosmeticKey(cosmetic), clock(), profile.isUnlocked(cosmetic));
 const text = useProgressText();
-const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const again = t(isTouchScreen() ? 'cosmetics.tapToWear' : 'cosmetics.clickToWear');
 
 const kind = ref<CosmeticKind>('material');
@@ -186,7 +186,7 @@ const chooseCollection = (entry: CollectionCard) => {
 };
 
 const nudge = (element: HTMLElement, keyframes: Keyframe[], duration: number) => {
-  if (!still) element.animate(keyframes, { duration, easing: 'ease-out' });
+  element.animate(keyframes, { duration, easing: 'ease-out' });
 };
 
 const choose = (item: ShelfItem, element: HTMLElement) => {
@@ -197,17 +197,19 @@ const choose = (item: ShelfItem, element: HTMLElement) => {
   trying.value = { ...trying.value, [cosmetic.kind]: cosmetic.id };
   if (!item.unlocked) {
     status.value = t('cosmetics.unlocksWith', { name, rule: text.unlockRule(cosmetic) });
-    nudge(
-      element,
-      [
-        { transform: 'translateX(0)' },
-        { transform: 'translateX(-4px)' },
-        { transform: 'translateX(4px)' },
-        { transform: 'translateX(-4px)' },
-        { transform: 'translateX(0)' },
-      ],
-      360,
-    );
+    // A locked look shakes its head; under the fade, nothing moves (1.42).
+    if (!motion.fades)
+      nudge(
+        element,
+        [
+          { transform: 'translateX(0)' },
+          { transform: 'translateX(-4px)' },
+          { transform: 'translateX(4px)' },
+          { transform: 'translateX(-4px)' },
+          { transform: 'translateX(0)' },
+        ],
+        280,
+      );
     return;
   }
   if (item.worn || !second) {
@@ -295,14 +297,17 @@ onBeforeUnmount(() => observer.disconnect());
 watch([material, shatter, ambiance], async () => {
   await nextTick();
   draw();
+  // The look tried enters the showcase; under the fade, it only fades in (1.42).
   if (stage.value)
     nudge(
       stage.value,
-      [
-        { transform: 'scale(0.94)', opacity: 0.4 },
-        { transform: 'none', opacity: 1 },
-      ],
-      420,
+      motion.fades
+        ? [{ opacity: 0.4 }, { opacity: 1 }]
+        : [
+            { transform: 'scale(0.94)', opacity: 0.4 },
+            { transform: 'none', opacity: 1 },
+          ],
+      transitionMs(MOTION.inMs, motion.fades),
     );
 });
 </script>
@@ -364,90 +369,93 @@ watch([material, shatter, ambiance], async () => {
           </button>
         </div>
 
-        <div v-if="collecting" class="collections">
-          <button
-            v-for="entry in collections"
-            :key="entry.collection.id"
-            type="button"
-            class="collection"
-            :class="{ 'collection--complete': entry.complete }"
-            :aria-pressed="entry.collection.id === collectionId"
-            :aria-label="`${collectionName(entry)}, ${collectionNote(entry)}`"
-            @click="chooseCollection(entry)"
-          >
-            <b>{{ collectionName(entry) }}</b>
-            <span class="collection__items" aria-hidden="true">
-              <span
-                v-for="item in entry.items"
-                :key="cosmeticKey(item.cosmetic)"
-                class="collection__item"
-                :class="{ 'collection__item--owned': item.owned }"
-              >
-                <GemCanvas
-                  v-if="item.cosmetic.kind === 'material'"
-                  class="collection__art"
-                  :material="item.cosmetic.id as MaterialId"
-                />
+        <Transition name="shelf">
+          <div v-if="collecting" key="collections" class="collections">
+            <button
+              v-for="entry in collections"
+              :key="entry.collection.id"
+              type="button"
+              class="collection"
+              :class="{ 'collection--complete': entry.complete }"
+              :aria-pressed="entry.collection.id === collectionId"
+              :aria-label="`${collectionName(entry)}, ${collectionNote(entry)}`"
+              @click="chooseCollection(entry)"
+            >
+              <b>{{ collectionName(entry) }}</b>
+              <span class="collection__items" aria-hidden="true">
                 <span
-                  v-else-if="item.cosmetic.kind === 'ambiance'"
-                  class="collection__art item__ambiance"
-                  :data-ambiance-preview="item.cosmetic.id"
-                />
-                <GemCanvas
-                  v-else
-                  class="collection__art"
-                  :shatter="item.cosmetic.id as ShatterId"
-                />
+                  v-for="item in entry.items"
+                  :key="cosmeticKey(item.cosmetic)"
+                  class="collection__item"
+                  :class="{ 'collection__item--owned': item.owned }"
+                >
+                  <GemCanvas
+                    v-if="item.cosmetic.kind === 'material'"
+                    class="collection__art"
+                    :material="item.cosmetic.id as MaterialId"
+                  />
+                  <span
+                    v-else-if="item.cosmetic.kind === 'ambiance'"
+                    class="collection__art item__ambiance"
+                    :data-ambiance-preview="item.cosmetic.id"
+                  />
+                  <GemCanvas
+                    v-else
+                    class="collection__art"
+                    :shatter="item.cosmetic.id as ShatterId"
+                  />
+                </span>
               </span>
-            </span>
-            <span class="collection__bar" aria-hidden="true">
-              <i :style="{ transform: `scaleX(${entry.done / entry.items.length})` }" />
-            </span>
-            <small aria-hidden="true">
-              {{ entry.done }}/{{ entry.items.length }} · {{ text.cosmeticName(entry.reward) }}
-            </small>
-          </button>
-        </div>
+              <span class="collection__bar" aria-hidden="true">
+                <i :style="{ transform: `scaleX(${entry.done / entry.items.length})` }" />
+              </span>
+              <small aria-hidden="true">
+                {{ entry.done }}/{{ entry.items.length }} · {{ text.cosmeticName(entry.reward) }}
+              </small>
+            </button>
+          </div>
 
-        <div
-          v-else
-          class="items"
-          :class="{ 'items--four': items.length === 4, 'items--wide': items.length > 9 }"
-        >
-          <button
-            v-for="item in items"
-            :key="item.cosmetic.id"
-            type="button"
-            class="item"
-            :class="{
-              'item--shown': item.shown && !item.worn,
-              'item--locked': !item.unlocked,
-            }"
-            :aria-pressed="item.worn"
-            :aria-label="itemLabel(item)"
-            @click="choose(item, $event.currentTarget as HTMLElement)"
+          <div
+            v-else
+            :key="kind"
+            class="items"
+            :class="{ 'items--four': items.length === 4, 'items--wide': items.length > 9 }"
           >
-            <GemCanvas
-              v-if="kind === 'material'"
-              class="item__art"
-              :material="item.cosmetic.id as MaterialId"
-            />
-            <span
-              v-else-if="kind === 'ambiance'"
-              class="item__art item__ambiance"
-              :data-ambiance-preview="item.cosmetic.id"
-            />
-            <GemCanvas v-else class="item__art" :shatter="item.cosmetic.id as ShatterId" />
-            <b>{{ text.cosmeticName(item.cosmetic) }}</b>
-            <small>{{ shortNote(item) }}</small>
-            <span v-if="!item.unlocked" class="item__lock" aria-hidden="true">
-              <AppIcon name="lock" :size="15" />
-            </span>
-            <span v-if="item.isNew" class="item__new" aria-hidden="true">
-              {{ t('cosmetics.new') }}
-            </span>
-          </button>
-        </div>
+            <button
+              v-for="item in items"
+              :key="item.cosmetic.id"
+              type="button"
+              class="item"
+              :class="{
+                'item--shown': item.shown && !item.worn,
+                'item--locked': !item.unlocked,
+              }"
+              :aria-pressed="item.worn"
+              :aria-label="itemLabel(item)"
+              @click="choose(item, $event.currentTarget as HTMLElement)"
+            >
+              <GemCanvas
+                v-if="kind === 'material'"
+                class="item__art"
+                :material="item.cosmetic.id as MaterialId"
+              />
+              <span
+                v-else-if="kind === 'ambiance'"
+                class="item__art item__ambiance"
+                :data-ambiance-preview="item.cosmetic.id"
+              />
+              <GemCanvas v-else class="item__art" :shatter="item.cosmetic.id as ShatterId" />
+              <b>{{ text.cosmeticName(item.cosmetic) }}</b>
+              <small>{{ shortNote(item) }}</small>
+              <span v-if="!item.unlocked" class="item__lock" aria-hidden="true">
+                <AppIcon name="lock" :size="15" />
+              </span>
+              <span v-if="item.isNew" class="item__new" aria-hidden="true">
+                {{ t('cosmetics.new') }}
+              </span>
+            </button>
+          </div>
+        </Transition>
 
         <p class="status">
           <span aria-live="polite">{{ status }}</span>
@@ -579,6 +587,15 @@ watch([material, shatter, ambiance], async () => {
   box-shadow:
     inset 0 1px 0 var(--highlight),
     0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* A shelf comes in with a fade as it replaces the last one (1.42). */
+.shelf-enter-active {
+  transition: opacity var(--motion-out) var(--ease-out);
+}
+
+.shelf-enter-from {
+  opacity: 0;
 }
 
 .items {
