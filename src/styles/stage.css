@@ -1,7 +1,7 @@
 /*
  * The parts every game stage shares. A stage has no box of its own
  * (`display: contents`): each part names its area of the game screen's grid
- * (well, hold, next, side, hand…), and the game screen places the areas for
+ * (well, hold, rift, side, hand…), and the game screen places the areas for
  * the orientation and the family.
  */
 .stage {
@@ -58,8 +58,10 @@
   }
 }
 
+/* The coming pieces, in the rift above the well (1.43, RiftQueue). */
 .stage__next {
-  grid-area: next;
+  grid-area: rift;
+  align-self: end;
 }
 
 .stage__box {
@@ -80,25 +82,4 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-}
-
-/*
- * Portrait: the coming pieces in a row speak for themselves, without a label
- * (the region keeps its name for screen readers): its room goes to the well.
- */
-.stage__next .stage__label {
-  display: none;
-}
-
-/* Landscape: the coming pieces stand in a column beside the well, under their label. */
-@media (orientation: landscape) {
-  .stage__next {
-    flex-direction: column;
-    align-self: start;
-    padding: var(--space-2);
-  }
-
-  .stage__next .stage__label {
-    display: block;
-  }
 }

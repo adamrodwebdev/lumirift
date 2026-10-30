@@ -20,6 +20,8 @@ import type { PieceSpec } from '@/families/falling/game/Game';
 import { FallingInput } from '@/families/falling/input/FallingInput';
 import NotchGlow from '@/families/falling/ui/NotchGlow.vue';
 import PiecePreview from '@/families/falling/ui/PiecePreview.vue';
+import RiftQueue from '@/ui/components/RiftQueue.vue';
+import { riftPieceSize } from '@/ui/riftSize';
 import TouchControls from '@/families/falling/ui/TouchControls.vue';
 import { useTouchPlay } from '@/families/falling/ui/useTouchPlay';
 import { effectsProfile } from '@/fx/EffectsProfile';
@@ -75,10 +77,13 @@ const canHold = ref(true);
 const queue = shallowRef<readonly PieceSpec[]>([]);
 /** Width of a column face on, in CSS pixels: one swipe step. */
 const columnSize = ref(24);
-/** Previews: small in the portrait band above the tower, larger beside it. */
+/** The held piece: small in the portrait band above the tower, larger beside it. */
 const previewSize = computed(() =>
   landscape.value ? Math.round(Math.min(84, Math.max(40, columnSize.value * 2.6))) : 38,
 );
+/** The tower's width and the next piece's in the rift above it (1.43), from the tower's place. */
+const wellWidth = ref(0);
+const riftSize = ref(riftPieceSize(0));
 
 const profile = computed(() => effectsProfile(settings.current.effects, settings.current.shake));
 const effects = new FallingEffects(
@@ -129,6 +134,8 @@ const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
   columnSize.value = renderer.layout(width - 4, height - 4, pixelRatio());
+  wellWidth.value = canvas.value?.offsetWidth ?? 0;
+  riftSize.value = riftPieceSize(width);
   renderer.render();
 });
 
@@ -239,7 +246,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="stage">
+  <div class="stage" :style="{ '--well-width': wellWidth ? `${wellWidth}px` : undefined }">
     <section class="stage__hold" :aria-label="t('hud.hold')">
       <button
         type="button"
@@ -264,16 +271,11 @@ onBeforeUnmount(() => {
       <NotchGlow v-if="glows" :beat="notch" :canvas="canvas" />
     </div>
 
-    <section class="stage__next stage__box" :aria-label="t('hud.next')">
-      <p class="stage__label" aria-hidden="true">{{ t('hud.next') }}</p>
-      <PiecePreview
-        v-for="(spec, index) in queue"
-        :key="index"
-        :spec="spec"
-        :palette="palette"
-        :size="index === 0 ? previewSize : Math.round(previewSize * 0.75)"
-      />
-    </section>
+    <RiftQueue :queue="queue" :size="riftSize">
+      <template #default="{ spec, size }">
+        <PiecePreview :spec="spec" :palette="palette" :size="size" wide />
+      </template>
+    </RiftQueue>
 
     <TouchControls
       v-if="pad !== 'none'"

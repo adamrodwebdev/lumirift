@@ -5,30 +5,36 @@ import type { TonePalette } from '@/render/TonePalette';
 import type { BlockSprites } from './BlockSprites';
 import { blockSprites } from './materials';
 
+/** A preview's box and look: what `PieceRenderer.layout` needs. */
+export interface PreviewLayout {
+  /** The box's width in CSS pixels; a piece's cell is 1/4.4 of it. */
+  readonly width: number;
+  /** Its height: the width (the hold's square), or half of it (a piece in the rift, 1.43). */
+  readonly height: number;
+  readonly pixelRatio: number;
+  readonly palette: TonePalette;
+  /** The player's block material (crystal by default). */
+  readonly material?: MaterialId | undefined;
+}
+
 /** Draws a single piece, centred, for the hold slot and the preview queue. */
 export class PieceRenderer {
   private readonly ctx: CanvasRenderingContext2D | null;
   private sprites: BlockSprites | null = null;
+  private palette: TonePalette | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d');
   }
 
-  /** `size` is the side of the square box in CSS pixels. */
-  private palette: TonePalette | null = null;
-
-  layout(
-    size: number,
-    pixelRatio: number,
-    palette: TonePalette,
-    material: MaterialId = 'crystal',
-  ): void {
+  layout({ width, height, pixelRatio, palette, material = 'crystal' }: PreviewLayout): void {
     this.palette = palette;
-    const px = Math.round(size * pixelRatio);
+    const px = Math.round(width * pixelRatio);
     this.canvas.width = px;
-    this.canvas.height = px;
-    this.canvas.style.width = `${size}px`;
-    this.canvas.style.height = `${size}px`;
+    this.canvas.height = Math.round(height * pixelRatio);
+    // The width alone: the height follows the canvas's own ratio, so that a box narrowed by
+    // its place (the rift's queue) keeps its piece's shape.
+    this.canvas.style.width = `${width}px`;
     this.sprites = blockSprites(material, Math.floor(px / 4.4), palette);
   }
 

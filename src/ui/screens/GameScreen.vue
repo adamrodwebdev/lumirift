@@ -788,10 +788,11 @@ onBeforeUnmount(() => {
 <style scoped>
 /*
  * One grid for every family. The game screen names the areas; the stage's
- * parts (hold, well, next, side, pads, hand…) sit in them. Portrait: a band
- * at the top (pause, score, sound; hold, stats, next), then the well as wide
- * as the screen. Landscape: the well in the middle, full height, the band
- * split into the two side columns. No page header during a game.
+ * parts (hold, well, rift, side, pads, hand…) sit in them. Portrait: a band
+ * at the top (pause, score, sound; the hold and the counters beside it), the
+ * coming pieces in the rift, then the well as wide as the screen. Landscape:
+ * the rift atop the well in the middle, the dashboard on its left. No page
+ * header during a game.
  */
 .game {
   --family-1: rgb(139 108 255 / 0.22);
@@ -803,8 +804,8 @@ onBeforeUnmount(() => {
   grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
   grid-template-areas:
     'pause score sound'
-    'hold goal next'
-    'stats stats stats'
+    'hold stats stats'
+    'rift rift rift'
     'well well well'
     'padm padm padm'
     'pada pada pada';
@@ -833,8 +834,8 @@ onBeforeUnmount(() => {
   grid-template-columns: auto minmax(0, 1fr) auto clamp(5.5rem, 22vw, 6rem);
   grid-template-areas:
     'pause score sound sound'
-    'hold goal next next'
-    'stats stats stats stats'
+    'hold stats stats stats'
+    'rift rift rift .'
     'well well well side'
     'padm padm padm padm'
     'pada pada pada pada';
@@ -854,49 +855,60 @@ onBeforeUnmount(() => {
 
 /*
  * The race (1.34): its clock atop the band, between pause and sound, the
- * worlds and the phase under it, the score between the hold and the next
- * pieces, then the counters, whose row keeps the room of the Guardian's card
- * (shown in their place): nothing moves when a Guardian comes or goes.
+ * worlds and the phase under it, the score beside the hold, then the
+ * counters, whose row keeps the room of the Guardian's card (shown in their
+ * place): nothing moves when a Guardian comes or goes.
  */
 .game[data-layout='race'] {
-  grid-template-rows: auto auto auto calc(var(--hud-size) * 3.2) minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto auto calc(var(--hud-size) * 3.2) auto minmax(0, 1fr) auto auto;
   grid-template-areas:
     'pause clock sound'
     'worlds worlds worlds'
-    'hold score next'
+    'hold score .'
     'stats stats stats'
+    'rift rift rift'
     'well well well'
     'padm padm padm'
     'pada pada pada';
 }
 
 /*
- * Portrait, a level's goal beside a hold box (the falling family, the Tower,
- * the duel): the hold, the Flip's button and the surge on one side, the next
- * pieces on the other, left the goal 30 to 120 px of a phone (its level on
- * three lines, its text cut). It takes the band's width, under them, as in
- * the Mosaic.
+ * Portrait, a goal (a level's card, the silhouette's name): the band's width,
+ * under the hold and the counters, as in the Mosaic. The training has no
+ * counters: its goal stands beside the hold, its guide under them.
  */
 @media (orientation: portrait) {
-  .game[data-layout='well']:has(.stage__hold):has(.game__goal .goal) {
+  .game[data-layout='well']:has(.game__goal) {
     grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
     grid-template-areas:
       'pause score sound'
-      'hold . next'
+      'hold stats stats'
       'goal goal goal'
-      'stats stats stats'
+      'rift rift rift'
       'well well well'
       'padm padm padm'
       'pada pada pada';
   }
 
-  .game[data-layout='duel']:has(.game__goal .goal) {
+  .game--training[data-layout='well'] {
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'pause score sound'
+      'hold goal goal'
+      'stats stats stats'
+      'rift rift rift'
+      'well well well'
+      'padm padm padm'
+      'pada pada pada';
+  }
+
+  .game[data-layout='duel']:has(.game__goal) {
     grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
     grid-template-areas:
       'pause score sound sound'
-      'hold . next next'
+      'hold stats stats stats'
       'goal goal goal goal'
-      'stats stats stats stats'
+      'rift rift rift .'
       'well well well side'
       'padm padm padm padm'
       'pada pada pada pada';
@@ -1153,11 +1165,6 @@ onBeforeUnmount(() => {
   flex-direction: row-reverse;
 }
 
-/* The parts of the stages, aligned in the band (portrait). */
-.game :deep(.stage__next) {
-  justify-self: end;
-}
-
 .game :deep(.controls__move),
 .game :deep(.controls__act) {
   width: 100%;
@@ -1181,12 +1188,12 @@ onBeforeUnmount(() => {
     grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.3fr) minmax(min(9rem, 26%), 1fr);
     grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
     grid-template-areas:
-      'pause well sound'
-      'score well next'
-      'stats well next'
-      'goal well next'
-      'hold well next'
-      'help well next'
+      'pause rift sound'
+      'score well .'
+      'stats well .'
+      'goal well .'
+      'hold well .'
+      'help well .'
       'padm well pada';
     column-gap: var(--space-4);
     row-gap: var(--space-2);
@@ -1197,31 +1204,29 @@ onBeforeUnmount(() => {
   }
 
   /* The training's guide under its goal, above the keys. */
-  .game--training {
+  .game--training[data-layout='well'] {
+    grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
     grid-template-areas:
-      'pause well sound'
-      'score well next'
-      'goal well next'
-      'stats well next'
-      'hold well next'
-      'help well next'
+      'pause rift sound'
+      'score well .'
+      'goal well .'
+      'stats well .'
+      'hold well .'
+      'help well .'
       'padm well pada';
   }
 
-  /* The opponent's well stands beside the coming pieces, not under them. */
+  /* The opponent's well stands beside the player's, on the right. */
   .game[data-layout='duel'] {
-    grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.3fr) auto minmax(
-        min(4.5rem, 16%),
-        0.6fr
-      );
+    grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.3fr) minmax(min(9rem, 26%), 1fr);
     grid-template-areas:
-      'pause well sound sound'
-      'score well next side'
-      'stats well next side'
-      'goal well next side'
-      'hold well next side'
-      'help well next side'
-      'padm well pada pada';
+      'pause rift sound'
+      'score well side'
+      'stats well side'
+      'goal well side'
+      'hold well side'
+      'help well side'
+      'padm well pada';
   }
 
   /*
@@ -1231,31 +1236,31 @@ onBeforeUnmount(() => {
   .game[data-layout='race'] {
     grid-template-rows: repeat(7, minmax(0, auto)) minmax(0, 1fr);
     grid-template-areas:
-      'pause well sound'
+      'pause rift sound'
       'clock well guardian'
-      'worlds well next'
-      'score well next'
-      'stats well next'
-      'hold well next'
+      'worlds well .'
+      'score well .'
+      'stats well .'
+      'hold well .'
       'help well note'
       'padm well pada';
   }
 
   /*
-   * The race on a short landscape screen (a phone): the hold box goes under
-   * the next pieces, so that the clock, the worlds, the score and the
-   * counters (or the Guardian's card) keep the left column.
+   * The race on a short landscape screen (a phone): the hold box goes to the
+   * right column, so that the clock, the worlds, the score and the counters
+   * (or the Guardian's card) keep the left one.
    */
   @media (height < 30rem) {
     .game[data-layout='race'] {
       grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
       grid-template-areas:
-        'pause well sound'
-        'clock well next'
-        'worlds well next'
-        'score well next'
-        'stats well hold'
-        'help well hold'
+        'pause rift sound'
+        'clock well hold'
+        'worlds well hold'
+        'score well .'
+        'stats well .'
+        'help well .'
         'padm well pada';
     }
 
@@ -1313,10 +1318,6 @@ onBeforeUnmount(() => {
   /* The dashboard adapts to its column (HudPanel's container queries). */
   .game__score {
     container: hud / inline-size;
-  }
-
-  .game :deep(.stage__next) {
-    justify-self: start;
   }
 
   .game__help {
