@@ -11,6 +11,8 @@ export const giftDialog = (page: Page) =>
  */
 export async function closeDailyGift(page: Page): Promise<void> {
   await page.addLocatorHandler(giftDialog(page), async (dialog) => {
+    // A window closed already only fades away (1.42): nothing to do but let it go.
+    if (!(await dialog.evaluate((element) => (element as HTMLDialogElement).open))) return;
     await dialog.getByRole('button', { name: /^(Fermer|Close|Закрыть|Tutup)$/ }).click();
   });
 }
