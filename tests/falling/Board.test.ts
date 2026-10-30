@@ -4,12 +4,14 @@ import { Piece } from '@/families/falling/pieces/Piece';
 import { Tone } from '@/families/falling/pieces/PieceType';
 
 const EMPTY = '..........';
+/** The bottom row's index: 18 visible rows under 2 hidden ones. */
+const FLOOR = Board.VISIBLE_HEIGHT + Board.HIDDEN_ROWS - 1;
 
 describe('Board', () => {
-  it('has 20 visible rows and 2 hidden rows', () => {
+  it('has 18 visible rows, not the standard 20, and 2 hidden rows', () => {
     const board = new Board();
-    expect(board.height).toBe(22);
-    expect(board.toRows()).toHaveLength(20);
+    expect(board.height).toBe(20);
+    expect(board.toRows()).toHaveLength(18);
   });
 
   it('is drawn in text: colours by letter, gems, and a cylinder for the Tower', () => {
@@ -39,12 +41,12 @@ describe('Board', () => {
     expect(board.fits(t, -1, 0)).toBe(false);
     expect(board.fits(t, 8, 0)).toBe(false);
     // Two rows of the T's box above the floor: its bottom row lands on the block.
-    expect(board.fits(t, 0, 20)).toBe(false);
+    expect(board.fits(t, 0, FLOOR - 1)).toBe(false);
   });
 
   it('locks a piece and reports whether it is visible', () => {
     const board = new Board();
-    expect(board.lock(new Piece('O', Tone.O, 4, 20))).toBe(true);
+    expect(board.lock(new Piece('O', Tone.O, 4, FLOOR - 1))).toBe(true);
     expect(board.blockCount()).toBe(4);
     expect(board.lock(new Piece('I', Tone.I, 0, -1))).toBe(false);
   });
@@ -52,21 +54,21 @@ describe('Board', () => {
   it('clears full rows and drops the rows above', () => {
     const board = Board.fromRows(['#.........', '##########', '.#........', '##########']);
     const cleared = board.clearFullRows();
-    expect(cleared.map((row) => row.index)).toEqual([19, 21]);
+    expect(cleared.map((row) => row.index)).toEqual([FLOOR - 2, FLOOR]);
     expect(board.toRows().slice(-2)).toEqual(['#.........', '.#........']);
   });
 
   it('flags pure rows (a single tone across)', () => {
     const board = new Board();
-    for (let x = 0; x < 10; x += 2) board.lock(new Piece('O', Tone.ChromaA, x, 20));
+    for (let x = 0; x < 10; x += 2) board.lock(new Piece('O', Tone.ChromaA, x, FLOOR - 1));
     const cleared = board.clearFullRows();
     expect(cleared).toHaveLength(2);
     expect(cleared.every((row) => row.pure)).toBe(true);
 
     const mixed = Board.fromRows(['##########']);
-    mixed.lock(new Piece('I', Tone.I, 0, 19)); // second row: 4 I blocks…
-    mixed.lock(new Piece('I', Tone.I, 4, 19));
-    mixed.lock(new Piece('O', Tone.O, 8, 19)); // …then an O: mixed tones
+    mixed.lock(new Piece('I', Tone.I, 0, FLOOR - 2)); // second row: 4 I blocks…
+    mixed.lock(new Piece('I', Tone.I, 4, FLOOR - 2));
+    mixed.lock(new Piece('O', Tone.O, 8, FLOOR - 2)); // …then an O: mixed tones
     expect(mixed.clearFullRows().map((row) => row.pure)).toEqual([false, true]);
   });
 
@@ -122,9 +124,9 @@ describe('Board operations of the advanced modes', () => {
 
   it('finds groups of same-coloured blocks touching by a side', () => {
     const board = new Board();
-    board.lock(new Piece('O', Tone.ChromaA, 0, 20));
-    board.lock(new Piece('O', Tone.ChromaB, 2, 20));
-    board.lock(new Piece('I', Tone.ChromaA, 4, 19)); // a separate line of four at x 4..7
+    board.lock(new Piece('O', Tone.ChromaA, 0, FLOOR - 1));
+    board.lock(new Piece('O', Tone.ChromaB, 2, FLOOR - 1));
+    board.lock(new Piece('I', Tone.ChromaA, 4, FLOOR - 2)); // a separate line of four at x 4..7
     expect(board.findGroups(4)).toHaveLength(3);
     expect(board.findGroups(5)).toHaveLength(0);
     expect(board.findGroups(4, [Tone.ChromaB])).toHaveLength(2);
@@ -133,10 +135,10 @@ describe('Board operations of the advanced modes', () => {
 
   it('removes cells and reports their tones', () => {
     const board = new Board();
-    board.lock(new Piece('O', Tone.ChromaC, 0, 20));
+    board.lock(new Piece('O', Tone.ChromaC, 0, FLOOR - 1));
     const removed = board.removeCells([
-      { x: 0, y: 21 },
-      { x: 1, y: 21 },
+      { x: 0, y: FLOOR },
+      { x: 1, y: FLOOR },
     ]);
     expect(removed.map((cell) => cell.tone)).toEqual([Tone.ChromaC, Tone.ChromaC]);
     expect(board.blockCount()).toBe(2);

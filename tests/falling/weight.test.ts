@@ -172,8 +172,8 @@ describe('the vibrations, kept for the weighty moments (1.41)', () => {
       session.update(FRAME_MS);
       soundscape.update(FRAME_MS);
     }
-    // The I's hard drop (19 rows), then its line.
-    expect(vibrate.mock.calls).toEqual([[20], [26]]);
+    // The I's hard drop (17 rows in the 18-row well), then its line.
+    expect(vibrate.mock.calls).toEqual([[19], [26]]);
 
     const calm = FEEL_SCENES.feelDrop();
     const quiet = vi.fn(() => true);

@@ -54,7 +54,11 @@ export type ReadonlyBoard = Pick<
  */
 export class Board {
   static readonly WIDTH = 10;
-  static readonly VISIBLE_HEIGHT = 20;
+  /**
+   * 18 rows, not the genre's standard 20, which the Tetris v. Xio court held to
+   * be protected expression (IP review, 30 Oct 2026; CAHIER § 9 quinquies).
+   */
+  static readonly VISIBLE_HEIGHT = 18;
   static readonly HIDDEN_ROWS = 2;
 
   readonly width: number;
@@ -87,7 +91,7 @@ export class Board {
   static fromRows(
     rows: readonly string[],
     width = Board.WIDTH,
-    visibleHeight = 20,
+    visibleHeight = Board.VISIBLE_HEIGHT,
     wraps = false,
   ): Board {
     const board = new Board(width, visibleHeight, Board.HIDDEN_ROWS, wraps);

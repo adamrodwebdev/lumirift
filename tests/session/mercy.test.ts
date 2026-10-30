@@ -54,7 +54,7 @@ describe('Mercy (1.33)', () => {
     const fall = (mercy: Mercy) => {
       const game = new Game(new ClassicMode(), {
         random: new ConstantRandom(),
-        board: stacked(16),
+        board: stacked(Board.VISIBLE_HEIGHT - 4), // four rows of room
         mercy,
       });
       game.start();
@@ -66,7 +66,7 @@ describe('Mercy (1.33)', () => {
     const risen = (mercy: Mercy) => {
       const game = new Game(new TideMode(), {
         random: new ConstantRandom(),
-        board: stacked(15),
+        board: stacked(Board.VISIBLE_HEIGHT - 5),
         mercy,
       });
       game.start();

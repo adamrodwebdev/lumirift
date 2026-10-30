@@ -2,12 +2,13 @@ import type { RandomSource } from '@/core/Random';
 import { NO_BOOSTS, type Boosts } from '@/session/Boosts';
 import type { Indicator, ResultKind } from '@/session/GameSession';
 import type { EngineModeId } from '@/session/ModeId';
+import { Board } from '../board/Board';
 import type { Game } from '../game/Game';
 import { shapeTone, type PieceType, type Tone } from '../pieces/PieceType';
 import type { AbilityId, BlastSize, GameMode, WellSize } from './GameMode';
 
-/** The genre's standard well. */
-export const STANDARD_WELL: WellSize = { width: 10, height: 20 };
+/** Lumirift's well: ten columns, like the genre's, and 18 rows (see `Board`). */
+export const STANDARD_WELL: WellSize = { width: Board.WIDTH, height: Board.VISIBLE_HEIGHT };
 
 export interface ModeOptions {
   /** Ends the game after this time (daily challenge); null for endless. */

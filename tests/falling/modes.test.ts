@@ -78,7 +78,7 @@ describe('TideMode', () => {
     const game = startedGame({ mode: new TideMode() });
     for (let i = 0; i < 40 && game.state === 'running'; i++) game.update(10_000);
     expect(game.state).toBe('over');
-    expect(game.overReason).toMatch(/topOut|blockOut/);
+    expect(game.overReason).toMatch(/topOut|blockOut|lockOut/);
   });
 });
 
@@ -131,11 +131,13 @@ describe('ChromaMode', () => {
     const game = startedGame({ mode: new ChromaMode() });
     const onNotice = vi.fn();
     game.events.on('notice', onNotice);
-    game.board.lock(new Piece('L', tone, 0, 20)); // bottom row: columns 0 to 2
-    game.board.lock(new Piece('J', tone, 7, 20)); // bottom row: columns 7 to 9
+    const bottom = game.board.height - 2; // the pieces' lower row on the floor
+    game.board.lock(new Piece('L', tone, 0, bottom)); // bottom row: columns 0 to 2
+    game.board.lock(new Piece('J', tone, 7, bottom)); // bottom row: columns 7 to 9
     game.hardDrop(); // the I fills columns 3 to 6
     expect(game.lines).toBe(1);
-    expect(game.score).toBe(38 + 400);
+    // The I falls the well's height less one, two points a row.
+    expect(game.score).toBe(2 * (game.board.height - game.board.hiddenRows - 1) + 400);
     expect(indicator(game, 'pureLines')).toBe(1);
     expect(onNotice).toHaveBeenCalledWith({ id: 'pureLine', value: 1 });
   });

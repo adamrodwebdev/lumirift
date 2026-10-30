@@ -1,11 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Board } from '@/families/falling/board/Board';
 import { Game } from '@/families/falling/game/Game';
+import { STANDARD_WELL } from '@/families/falling/modes/AbstractMode';
 import { ClassicMode } from '@/families/falling/modes/ClassicMode';
 import { FixedRandom } from '@/showcase/autoplay';
 import { ConstantRandom, startedGame } from './helpers';
 
 const row = (pattern: string, count: number): string[] => Array<string>(count).fill(pattern);
+/** The well's visible rows: a first piece falls one less than that to the floor. */
+const ROWS = STANDARD_WELL.height;
 
 describe('Game', () => {
   it('starts with the first piece of the bag, centred, just inside the well', () => {
@@ -20,7 +23,7 @@ describe('Game', () => {
   it('warns where the next piece would appear once it has no room to enter', () => {
     expect(startedGame().spawnWarning()).toBeNull();
     // The well full to its top row: the next piece, an O, could not come down.
-    const full = startedGame({ rows: row('####.#####', 20) });
+    const full = startedGame({ rows: row('####.#####', ROWS) });
     expect(full.preview(1)[0]?.type).toBe('O');
     expect(full.spawnWarning()).toHaveLength(4);
   });
@@ -43,7 +46,7 @@ describe('Game', () => {
   it('hard drops, scores two points per row and spawns the next piece', () => {
     const game = startedGame();
     game.hardDrop();
-    expect(game.score).toBe(38);
+    expect(game.score).toBe(2 * (ROWS - 1));
     expect(game.board.toRows().at(-1)).toBe('...####...');
     expect(game.active?.type).toBe('O');
   });
@@ -54,7 +57,7 @@ describe('Game', () => {
     game.events.on('clear', onClear);
     game.hardDrop();
     expect(game.lines).toBe(1);
-    expect(game.score).toBe(38 + 100);
+    expect(game.score).toBe(2 * (ROWS - 1) + 100);
     expect(game.board.blockCount()).toBe(0);
     expect(onClear).toHaveBeenCalledWith(
       expect.objectContaining({ lines: 1, points: 100, combo: 0, cascade: false }),
@@ -98,7 +101,7 @@ describe('Game', () => {
 
   it('waits for the lock delay after landing', () => {
     const game = startedGame();
-    for (let i = 0; i < 19; i++) game.update(1000);
+    for (let i = 0; i < ROWS - 1; i++) game.update(1000);
     expect(game.dropDistance()).toBe(0);
     game.update(499);
     expect(game.active?.type).toBe('I');
@@ -108,7 +111,7 @@ describe('Game', () => {
 
   it('resets the lock delay when the grounded piece moves', () => {
     const game = startedGame();
-    for (let i = 0; i < 19; i++) game.update(1000);
+    for (let i = 0; i < ROWS - 1; i++) game.update(1000);
     game.update(400);
     game.moveLeft();
     game.update(400);
@@ -202,7 +205,7 @@ describe('Game events and timing for the effects', () => {
     game.hardDrop();
     const { rows } = onClear.mock.calls[0]![0] as { rows: { index: number; tones: Uint8Array }[] };
     expect(rows).toHaveLength(1);
-    expect(rows[0]!.index).toBe(21);
+    expect(rows[0]!.index).toBe(game.board.height - 1);
     expect([...rows[0]!.tones].every((tone) => tone !== 0)).toBe(true);
   });
 
@@ -212,7 +215,7 @@ describe('Game events and timing for the effects', () => {
     game.events.on('hardDrop', ({ distance }) => order.push(`drop ${distance}`));
     game.events.on('lock', () => order.push('lock'));
     game.hardDrop();
-    expect(order).toEqual(['drop 19', 'lock']);
+    expect(order).toEqual([`drop ${ROWS - 1}`, 'lock']);
   });
 
   it('reports moves and rotations, and whether a rotation was kicked', () => {

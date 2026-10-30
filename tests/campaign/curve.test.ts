@@ -218,10 +218,11 @@ describe('The curve players (1.33)', () => {
   });
 
   it('fill a silhouette rather than clear lines', () => {
-    const target = new Set([10 * 21, 10 * 21 + 1, 10 * 21 + 2, 10 * 21 + 3]);
+    const floor = Board.VISIBLE_HEIGHT + Board.HIDDEN_ROWS - 1;
+    const target = new Set([10 * floor, 10 * floor + 1, 10 * floor + 2, 10 * floor + 3]);
     const placement = (rows: string[]) => {
       const after = Board.fromRows([
-        ...Array.from({ length: 20 - rows.length }, () => '..........'),
+        ...Array.from({ length: Board.VISIBLE_HEIGHT - rows.length }, () => '..........'),
         ...rows,
       ]);
       return { rotation: 0 as const, x: 0, lines: 0, features: measure(after), after };

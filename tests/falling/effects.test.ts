@@ -32,11 +32,12 @@ function setup(level: EffectsLevel = 'full') {
 function fillForFlip(session: FallingSession): void {
   const { board } = session.view;
   const cells = (board as unknown as { cells: Uint8Array }).cells;
-  for (let y = 12; y < board.height; y++) {
+  const full = board.height - 5; // the first of the five bottom rows
+  for (let y = full - 4; y < board.height; y++) {
     for (let x = 0; x < board.width; x++) {
       const last = x === board.width - 1;
-      if (y >= 17 && !last) cells[y * board.width + x] = 1;
-      if (y >= 13 && y < 17 && last) cells[y * board.width + x] = 2;
+      if (y >= full && !last) cells[y * board.width + x] = 1;
+      if (y < full && last) cells[y * board.width + x] = 2;
     }
   }
 }
