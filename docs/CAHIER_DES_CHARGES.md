@@ -2686,9 +2686,17 @@ jeu de pièces propre) en réserve. Le paquet 1 (le test des mots interdits) est
     - le bot de courbe : 7 vérifications sur 85 hors bande d'abord, corrigées aux sources (les
       lits de sable comptés en rangées, à leur quantité de la 1.42 ; la marée au pas du puits,
       20/18 plus lente) puis par niveau : 1-3 en 8 lignes, 2-1 en 1 min 45, le Ver de 2-7 à 90 de
-      vie, 4-5 en 6 liaisons, l'objectif de la glace à 25 ; 85 sur 85. Écart à confirmer : la
-      carte de 1-3 demande un frôlement de la défaite sur six parties au lieu de deux (aucun
-      réglage ne donnait à la fois cinq victoires du nouveau venu et deux frôlements) ;
+      vie, 4-5 en 6 liaisons, l'objectif de la glace à 25 ; 85 sur 85. Trois écarts confirmés
+      par l'utilisateur le 30/10/2026 : la carte de 1-3 demande un frôlement de la défaite sur
+      six parties au lieu de deux (aucun réglage ne donnait à la fois cinq victoires du nouveau
+      venu et deux frôlements) ; la marée plus lente partout, son mode libre compris ; le premier
+      combat du Ver des dunes un dixième plus faible que celui des autres Gardiens ;
+    - deux retouches demandées par l'utilisateur après la revue (30/10/2026) : la bande de la
+      faille n'est jamais plus étroite que ses pièces (la suivante et les deux d'après à leur
+      taille) et dépasse un puits étroit (la Tour couchée : 122 → 178 px, ses pièces d'après de
+      17 à 29 et 33 px ; un petit téléphone avec un objectif) ; dans le Sable, en paysage et sur
+      ordinateur, le bouton de la surcharge se range contre le tableau de bord, comme la réserve
+      des autres modes (il restait au bord de l'écran) ;
     - tests unitaires : 95 fichiers, 876 tests ; e2e : 211 tests, 182 passés, 28 réservés à
       l'autre appareil ; un test des saisons, tombé une fois sous la charge (ses données posées
       entre deux chargements), les pose désormais avant le premier script du jeu et passe 40 fois

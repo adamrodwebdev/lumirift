@@ -34,12 +34,19 @@ d'attaque grises).
   même largeur, donc les mêmes stratégies, deux rangées de moins. La Bascule garde son 12 × 12,
   la Tour son cylindre, les Dunes leur 9 × 12. Les cases grandissent sur téléphone (35 px au
   lieu de 31 à 390 × 844) et sur ordinateur (40 au lieu de 38 à 1280 × 800) ; en paysage, la
-  faille se loge entre la pause et le son, et le puits garde la hauteur de l'écran.
+  faille se loge entre la pause et le son, et le puits garde la hauteur de l'écran. Au-dessus
+  d'un puits étroit (la Tour couchée, un petit téléphone), la faille dépasse ses bords plutôt
+  que de rapetisser les pièces qui viennent.
 - **La marée** monte au pas du nouveau puits (20/18 plus lentement) : elle en remplit la même
   part dans le même temps.
 - **La campagne réglée au nouveau puits** par le bot de courbe : 1-3 demande 8 lignes (10),
   2-1 dure 1 min 45 (1 min 30, étoiles à 7 et 14 lignes), le Ver des dunes de 2-7 a 90 de vie
   (100), 4-5 demande 6 liaisons (7) ; l'objectif de la semaine de la glace passe de 30 à 25.
+
+### Corrigé
+
+- Dans le Sable, en paysage et sur ordinateur, le bouton de la surcharge se range contre le
+  tableau de bord, comme la réserve des autres modes, au lieu de rester au bord de l'écran.
 
 ### Technique
 
