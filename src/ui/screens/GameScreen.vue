@@ -890,7 +890,8 @@ onBeforeUnmount(() => {
       'pada pada pada';
   }
 
-  .game--training[data-layout='well'] {
+  /* As specific as the rule above, and after it: the training's own grid wins. */
+  .game--training[data-layout='well']:has(.game__goal) {
     grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
     grid-template-areas:
       'pause score sound'
@@ -1179,16 +1180,20 @@ onBeforeUnmount(() => {
 }
 
 /*
- * Landscape: the well in the middle, the dashboard on its left, the coming
- * pieces on its right. The side columns give way below 9rem only in a tiny
- * window (a 400 % zoom), so that the well always keeps a place.
+ * Landscape: the well in the middle under the rift, the dashboard on its left.
+ * The side columns give way below 9rem only in a tiny window (a 400 % zoom),
+ * so that the well always keeps a place. The pause and sound buttons span the
+ * rift's row and the next one: the rift's row is then no taller than the band,
+ * and the well starts right under it (1.43; a row of buttons cost a landscape
+ * phone two rows' worth of cells).
  */
 @media (orientation: landscape) {
   .game {
     grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.3fr) minmax(min(9rem, 26%), 1fr);
-    grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
+    grid-template-rows: repeat(7, minmax(0, auto)) minmax(0, 1fr);
     grid-template-areas:
       'pause rift sound'
+      'pause well sound'
       'score well .'
       'stats well .'
       'goal well .'
@@ -1205,9 +1210,10 @@ onBeforeUnmount(() => {
 
   /* The training's guide under its goal, above the keys. */
   .game--training[data-layout='well'] {
-    grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
+    grid-template-rows: repeat(7, minmax(0, auto)) minmax(0, 1fr);
     grid-template-areas:
       'pause rift sound'
+      'pause well sound'
       'score well .'
       'goal well .'
       'stats well .'
@@ -1221,6 +1227,7 @@ onBeforeUnmount(() => {
     grid-template-columns: minmax(min(9rem, 26%), 1fr) minmax(0, 1.3fr) minmax(min(9rem, 26%), 1fr);
     grid-template-areas:
       'pause rift sound'
+      'pause well sound'
       'score well side'
       'stats well side'
       'goal well side'
@@ -1234,9 +1241,10 @@ onBeforeUnmount(() => {
    * card atop the next pieces, the rules in a word under them.
    */
   .game[data-layout='race'] {
-    grid-template-rows: repeat(7, minmax(0, auto)) minmax(0, 1fr);
+    grid-template-rows: repeat(8, minmax(0, auto)) minmax(0, 1fr);
     grid-template-areas:
       'pause rift sound'
+      'pause well sound'
       'clock well guardian'
       'worlds well .'
       'score well .'
@@ -1253,9 +1261,10 @@ onBeforeUnmount(() => {
    */
   @media (height < 30rem) {
     .game[data-layout='race'] {
-      grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
+      grid-template-rows: repeat(7, minmax(0, auto)) minmax(0, 1fr);
       grid-template-areas:
         'pause rift sound'
+        'pause well sound'
         'clock well hold'
         'worlds well hold'
         'score well .'
