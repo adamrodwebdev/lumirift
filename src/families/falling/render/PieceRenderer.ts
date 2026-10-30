@@ -22,16 +22,30 @@ export class PieceRenderer {
   private readonly ctx: CanvasRenderingContext2D | null;
   private sprites: BlockSprites | null = null;
   private palette: TonePalette | null = null;
+  private material: MaterialId | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d');
   }
 
   layout({ width, height, pixelRatio, palette, material = 'crystal' }: PreviewLayout): void {
-    this.palette = palette;
     const px = Math.round(width * pixelRatio);
+    const high = Math.round(height * pixelRatio);
+    // The same box and look: the blocks drawn already serve the next piece (a crystal
+    // piece needs up to four, 1.43), rather than drawn again at each piece.
+    if (
+      this.sprites &&
+      px === this.canvas.width &&
+      high === this.canvas.height &&
+      this.canvas.style.width === `${width}px` &&
+      palette === this.palette &&
+      material === this.material
+    )
+      return;
+    this.palette = palette;
+    this.material = material;
     this.canvas.width = px;
-    this.canvas.height = Math.round(height * pixelRatio);
+    this.canvas.height = high;
     // The width alone: the height follows the canvas's own ratio, so that a box narrowed by
     // its place (the rift's queue) keeps its piece's shape.
     this.canvas.style.width = `${width}px`;
