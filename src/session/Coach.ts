@@ -7,11 +7,14 @@
  */
 export type CoachStep = 'move' | 'rotate' | 'drop' | 'goal';
 
-/** The commands that complete each step. */
+/** The commands that drop a piece: two of them past a step, and the guide moves on to the goal. */
+const DROPS: readonly string[] = ['hardDrop', 'softDrop'];
+
+/** The commands that complete each step (a finger's row down too, 1.40, though it drops nothing yet). */
 const DONE_BY: Readonly<Record<Exclude<CoachStep, 'goal'>, readonly string[]>> = {
   move: ['move'],
   rotate: ['rotate'],
-  drop: ['hardDrop', 'softDrop'],
+  drop: [...DROPS, 'softStep'],
 };
 
 export const COACH_STEPS: readonly CoachStep[] = ['move', 'rotate', 'drop', 'goal'];
@@ -39,7 +42,7 @@ export class Coach {
       this.drops = 0;
       return true;
     }
-    if (!DONE_BY.drop.includes(type) || ++this.drops < DROPS_BEFORE_GOAL) return false;
+    if (!DROPS.includes(type) || ++this.drops < DROPS_BEFORE_GOAL) return false;
     // Already playing: the remaining steps would only hide the well.
     const goal = this.steps.indexOf('goal');
     this.index = goal < 0 ? this.steps.length : goal;

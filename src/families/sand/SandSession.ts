@@ -79,6 +79,7 @@ export class SandSession implements GameSession<FallingCommand> {
       this.game.setSoftDrop(active);
       return true;
     },
+    softStep: () => this.game.softStep(),
     hardDrop: () => {
       this.game.hardDrop();
       return true;

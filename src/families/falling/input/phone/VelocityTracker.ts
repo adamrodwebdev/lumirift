@@ -18,6 +18,8 @@ export interface Motion {
   readonly vy: number;
   readonly dx: number;
   readonly dy: number;
+  /** How fast its speed grows along the motion (px/ms²): above 0 while it speeds up (1.40). */
+  readonly acceleration: number;
 }
 
 /** Σtᵏ for k = 0 to 4, times taken from the newest sample. */
@@ -110,11 +112,13 @@ export class VelocityTracker {
     const vx = slope(t, x);
     const vy = slope(t, y);
     if (vx === null || vy === null) return null;
+    const speed = Math.hypot(vx, vy);
     return {
       vx,
       vy,
       dx: this.at(this.xs, newest) - this.at(this.xs, oldest),
       dy: this.at(this.ys, newest) - this.at(this.ys, oldest),
+      acceleration: speed > 0 ? (bend(t, x) * vx + bend(t, y) * vy) / speed : 0,
     };
   }
 
@@ -138,19 +142,41 @@ export class VelocityTracker {
     return pause > stopMs && travel <= STILL;
   }
 
-  /** The stroke from the sample before `newest` to it (200 ms at most), its speed times `boost`. */
+  /**
+   * The stroke from the sample before `newest` to it (200 ms at most), its
+   * speed times `boost`; a stroke from rest (a boost) speeds up evenly across
+   * its gap, otherwise its speed is taken as steady.
+   */
   private between(newest: number, boost: number): Motion | null {
     const before = (newest + CAPACITY - 1) % CAPACITY;
     const gap = this.at(this.times, newest) - this.at(this.times, before);
     if (gap <= 0 || gap > 2 * windowMs) return null;
     const dx = this.at(this.xs, newest) - this.at(this.xs, before);
     const dy = this.at(this.ys, newest) - this.at(this.ys, before);
-    return { vx: (dx / gap) * boost, vy: (dy / gap) * boost, dx, dy };
+    const speed = (Math.hypot(dx, dy) / gap) * boost;
+    return {
+      vx: (dx / gap) * boost,
+      vy: (dy / gap) * boost,
+      dx,
+      dy,
+      acceleration: boost > 1 ? speed / gap : 0,
+    };
   }
 
   private at(values: Float64Array, index: number): number {
     return values[index] ?? 0;
   }
+}
+
+/**
+ * How fast the speed changes along an axis at the newest sample: twice the
+ * square term of the least-squares parabola, 0 when it cannot be solved.
+ */
+function bend([s0, s1, s2, s3, s4]: TimeSums, [r0, r1, r2]: AxisSums): number {
+  const det = s0 * (s2 * s4 - s3 * s3) - s1 * (s1 * s4 - s3 * s2) + s2 * (s1 * s3 - s2 * s2);
+  if (Math.abs(det) <= 1e-9 * s0 * s2 * s4) return 0;
+  const detC = s0 * (s2 * r2 - r1 * s3) - s1 * (s1 * r2 - r1 * s2) + r0 * (s1 * s3 - s2 * s2);
+  return (2 * detC) / det;
 }
 
 /**

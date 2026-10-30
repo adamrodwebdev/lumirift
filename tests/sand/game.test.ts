@@ -28,6 +28,18 @@ describe('SandGame', () => {
     expect(game.preview()).toHaveLength(3);
   });
 
+  it('takes the piece down a whole cell for a finger, as far as it fits (1.40)', () => {
+    const game = started();
+    const y = game.active!.y;
+    expect(game.softStep()).toBe(true);
+    expect(game.active!.y).toBe(y + G);
+    while (game.softStep()) {
+      /* down to the floor */
+    }
+    expect(game.softStep()).toBe(false);
+    expect(game.active).not.toBeNull();
+  });
+
   it('slides a whole cell sideways, and stops at the walls', () => {
     const game = started();
     const x = game.active!.x;

@@ -29,7 +29,8 @@ export interface TouchSession {
 }
 
 export interface TouchPlayOptions {
-  readonly execute: (command: FallingCommand) => void;
+  /** Plays a command; true when it took effect. */
+  readonly execute: (command: FallingCommand) => boolean;
   /** A cell's size in CSS pixels (in the Tower, a column face on). */
   readonly cellSize: () => number;
   /** False while paused or over: the gestures let go. */
@@ -86,15 +87,17 @@ export function useTouchPlay(options: TouchPlayOptions) {
     },
   };
   const offs = [options.session.onGame('spawn', () => entered++)];
+  let feel: TouchFeel | null = null;
   if (touch) {
-    const feel = new TouchFeel(
+    const touchFeel = new TouchFeel(
       haptics,
       () => notch.value++,
       () => performance.now(),
     );
+    feel = touchFeel;
     offs.push(
-      options.session.onGame('move', () => feel.moved()),
-      options.session.onGame('rotate', () => feel.turned()),
+      options.session.onGame('move', () => touchFeel.moved()),
+      options.session.onGame('rotate', () => touchFeel.turned()),
     );
   }
 
@@ -133,7 +136,10 @@ export function useTouchPlay(options: TouchPlayOptions) {
     void import('../input/phone/PhoneGestures').then(({ PhoneGestures }) => {
       if (disposed) return;
       gestures.value = new PhoneGestures({
-        execute: options.execute,
+        // A row the finger takes the piece down ticks like a cell sideways (1.40).
+        execute: (command) => {
+          if (options.execute(command) && command.type === 'softStep') feel?.moved();
+        },
         cellSize: options.cellSize,
         prefs: () => ({
           dragSpeed: settings.current.dragSpeed,

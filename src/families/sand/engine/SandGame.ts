@@ -538,6 +538,20 @@ export class SandGame {
     this.softDropping = active;
   }
 
+  /** Down one cell, now (a finger's notch, 1.40): its grains, as far as they fit. */
+  softStep(): boolean {
+    this.wake();
+    const piece = this._active;
+    if (this._state !== 'running' || !piece) return false;
+    let moved = piece;
+    for (let i = 0; i < GRAINS_PER_CELL && this.fits(moved, 0, 1); i++) moved = moved.moved(0, 1);
+    if (moved === piece) return false;
+    this.place(moved);
+    // The next grain of gravity counts from here.
+    this.fallAccumulator = 0;
+    return true;
+  }
+
   rotate(direction: RotationDirection): boolean {
     this.wake();
     const piece = this._active;

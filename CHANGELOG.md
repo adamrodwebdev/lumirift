@@ -3,6 +3,51 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.40.0] — 29/10/2026
+
+La prise en main (lot 26), d'après des parties sur téléphone : au doigt, la pièce suit le doigt ;
+un texte reste le temps d'être lu ; le puits et le message comptent le même combo.
+
+### Modifié
+
+- **De côté, la pièce suit le doigt à la case près** : le premier cran part à une demi-case (au
+  lieu d'une case et un tiers), les suivants à chaque case, et de même après un demi-tour, lu à
+  un sixième de case. Un glissé pressé de trois cases déplace de trois, plus de deux ; le
+  tremblement du pouce ne déplace rien.
+- **Vers le bas aussi** : une rangée par case de doigt, et la pièce s'arrête quand le doigt
+  s'arrête, au lieu d'une chute à 20 rangées par seconde jusqu'au lever. Le clavier et les
+  boutons gardent la descente continue.
+- **Lever le doigt ne fait plus tomber la pièce d'un coup** : la chute franche est un coup franc
+  vers le bas (1,6 px/ms), joué à l'instant ou au lever, ou un coup plus doux qui accélère encore
+  en quittant l'écran ; une descente rapide qui garde son allure ou ralentit n'est jamais une
+  chute. Un coup fait au moins 40 px (24 avant) : une petite descente d'une rangée n'en est pas un.
+- **Le temps de lire** : les messages au-dessus du puits restent le temps d'être lus (1,2 s et
+  55 ms par signe, de 1,5 à 7 s, au lieu de 1,4 s pour tous), et un nouveau message attend que le
+  précédent soit lu. Les lignes du guide de l'entraînement et la carte de la première partie
+  restent leur temps de lecture même quand l'étape est faite tout de suite ; la partie continue.
+
+### Corrigé
+
+- **Le compte des combos** : au troisième effacement d'affilée, le puits écrivait « COMBO ×2 »
+  quand le message disait « ×3 », et rien au deuxième ; ils disent le même nombre dès « COMBO
+  ×2 », dans le puits de chute comme dans la Tour.
+
+### Technique
+
+- `PhoneGestures` : crans arrondis à la case, descente par crans (`softStep`, une rangée, dans le
+  moteur de chute, la Tour comprise, et dans celui du Sable) ; un doigt qui glisse encore quand la
+  pièce suivante entre ne la fait pas descendre.
+- `VelocityTracker` donne aussi l'accélération (la parabole des moindres carrés) : un coup
+  accélère jusqu'au lever, une descente garde son allure.
+- La porte des gestes ajoute le glissé pressé et la descente rapide lâchée en mouvement : 99 fois
+  sur 100 la commande voulue, au plus une chute franche par accident sur 500 touchers. Sur une
+  page qui charge une pub, dans un navigateur qui fusionne les échantillons (Firefox sur Android,
+  Safari avant iOS 18.2), 6 à 8 % des coups juste après un déplacement sont manqués (3 % avant) :
+  un saut fusionné peut aussi bien être une descente rapide, et une chute par accident coûte plus
+  qu'un coup à refaire.
+- `readingMs`, `ReadingHold` et `MessageQueue` (`src/ui/readingTime.ts`), testés sur toutes les
+  lignes du guide et de la première partie, en quatre langues.
+
 ## [1.39.0] — 28/10/2026
 
 La fabrique de clips (lot 25, la croissance sans dépense) : le jeu filme lui-même ses meilleurs

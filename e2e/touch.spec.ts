@@ -81,6 +81,8 @@ async function playClassic(page: Page, settings: Record<string, unknown> = {}) {
 }
 
 const score = (page: Page) => page.locator('.hud__item').first().locator('dd');
+/** The score as a number (its digits: a long score has a thousands space). */
+const points = async (page: Page) => Number((await score(page).textContent())?.replace(/\D/g, ''));
 
 test('a flick drops at once, only once a touch; a tap never drops', async ({ page }) => {
   const { centre } = await playClassic(page);
@@ -129,12 +131,15 @@ test('with both, the buttons drop and the gestures only move', async ({ page }) 
   const touch = await finger(page);
   await expect(page.getByRole('group', { name: 'Déplacer et descendre' })).toHaveCount(0);
   await expect(page.getByRole('group', { name: 'Tourner et faire tomber' })).toBeVisible();
-  // A flick that would drop with the gestures alone (too short to soft drop).
+  // A flick that would drop with the gestures alone: here it only moves the piece, down a
+  // row as the finger goes (1.40: a point a row), never to the floor.
   await touch.stroke(line(centre, 0, 20, 2));
   await page.waitForTimeout(300);
-  await expect(score(page)).toHaveText('0');
+  const moved = await points(page);
+  expect(moved).toBeLessThanOrEqual(2);
+  // The button drops it to the floor from near the top: two points a row.
   await page.getByRole('button', { name: 'Chute instantanée' }).click();
-  await expect(score(page)).not.toHaveText('0');
+  await expect.poll(() => points(page)).toBeGreaterThan(moved + 10);
 });
 
 test('left-handed, the Hold box and the coming pieces swap sides', async ({ page }) => {

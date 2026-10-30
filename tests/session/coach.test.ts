@@ -18,6 +18,20 @@ describe('Coach', () => {
     expect(coach.step).toBeNull();
   });
 
+  it('takes a row down by the finger for the drop step, never for a piece dropped (1.40)', () => {
+    const coach = new Coach();
+    coach.command('move');
+    coach.command('rotate');
+    expect(coach.command('softStep')).toBe(true);
+    expect(coach.step).toBe('goal');
+    // On the move step, rows down drop no piece: the guide stays.
+    const learning = new Coach();
+    learning.command('softStep');
+    learning.command('softStep');
+    learning.command('softStep');
+    expect(learning.step).toBe('move');
+  });
+
   it('moves on to the goal after two pieces dropped without doing the step shown', () => {
     const coach = new Coach();
     expect(coach.command('hardDrop')).toBe(false);

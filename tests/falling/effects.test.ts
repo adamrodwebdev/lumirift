@@ -193,8 +193,13 @@ describe('clearLabel', () => {
   it('names the moment: the combo in the player’s language, RIFT! in every language', () => {
     expect(clearLabel(1, 0, russian)).toBeNull();
     expect(clearLabel(2, 0, russian)).toBe('×2');
-    expect(clearLabel(3, 1, russian)).toBe('×3');
-    expect(clearLabel(1, 3, russian)).toBe('КОМБО ×3');
     expect(clearLabel(4, 5, russian)).toBe('RIFT!');
+  });
+
+  it('counts a combo as the message over the well does: ×2 at the second clear in a row (1.40)', () => {
+    // `combo` is 0 at a chain's first clear, 1 at its second.
+    expect(clearLabel(1, 1, russian)).toBe('КОМБО ×2');
+    expect(clearLabel(3, 1, russian)).toBe('КОМБО ×2');
+    expect(clearLabel(1, 3, russian)).toBe('КОМБО ×4');
   });
 });

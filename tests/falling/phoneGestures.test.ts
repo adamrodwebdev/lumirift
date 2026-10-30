@@ -12,8 +12,11 @@ const CELL = 30;
 const RIGHT = { type: 'move', direction: 1 } as const;
 const LEFT = { type: 'move', direction: -1 } as const;
 const DROP = { type: 'hardDrop' } as const;
-const SOFT_ON = { type: 'softDrop', active: true } as const;
-const SOFT_OFF = { type: 'softDrop', active: false } as const;
+/** A row down, the finger's soft drop (1.40). */
+const STEP = { type: 'softStep' } as const;
+/** A flick may take a row down as it gathers speed: the piece lands in the same place. */
+const noSteps = (commands: readonly FallingCommand[]) =>
+  commands.filter(({ type }) => type !== 'softStep');
 
 /** A game screen 400 px wide and 800 px tall, one piece in play. */
 function setup(prefs: Partial<TouchPrefs> = {}, secondFingerTurns = true) {
@@ -156,16 +159,24 @@ describe('PhoneGestures', () => {
   it('takes neither a long press nor a short drag for a tap', () => {
     const { finger, commands } = setup();
     finger().down(300, 400).up(400);
-    finger().down(300, 400, 1000).glide(320, 400, 100).up();
     expect(commands).toEqual([]);
+    // Two thirds of a cell: the piece follows the finger to the nearest cell, no turn.
+    finger().down(300, 400, 1000).glide(320, 400, 100).up();
+    expect(commands).toEqual([RIGHT]);
   });
 
-  it('moves a notch a cell, after a dead zone of a third of a cell', () => {
+  it('follows the finger to the nearest cell: the first notch at half a cell, then a cell apart (1.40)', () => {
     const { finger, commands } = setup();
-    const one = finger().down(100, 400).glide(139, 400, 200, 50);
+    const one = finger().down(100, 400).glide(114, 400, 200, 50);
     expect(commands).toEqual([]);
     one.glide(200, 400, 300, 10).up();
-    // 40 px for the first cell, then every 30: 140, 170, 200.
+    // Notches at 115, 145 and 175; at 200 the finger is nearest the third cell.
+    expect(commands).toEqual([RIGHT, RIGHT, RIGHT]);
+  });
+
+  it('moves a hurried swipe of three cells three cells, not two (1.40)', () => {
+    const { finger, commands } = setup();
+    finger().down(100, 400).glide(190, 400, 96, 8).up();
     expect(commands).toEqual([RIGHT, RIGHT, RIGHT]);
   });
 
@@ -175,75 +186,87 @@ describe('PhoneGestures', () => {
     expect(commands).toEqual([RIGHT, RIGHT, RIGHT, RIGHT, RIGHT]);
   });
 
-  it('lets a finger rest on a notch without a twitch, and asks the dead zone again on a turn back', () => {
+  it('lets a finger rest on a notch without a twitch, and turns back from where it turned (1.40)', () => {
     const { finger, commands } = setup();
-    const one = finger().down(100, 400).glide(145, 400, 300, 50);
+    const one = finger().down(100, 400).glide(140, 400, 300, 50);
     expect(commands).toEqual([RIGHT]);
-    // Jitter, then the finger rolls back a little as it settles.
-    one.move(140, 401, 320).move(146, 400, 340).move(137, 399, 360).move(134, 400, 380);
+    // A tremor of a few pixels each way: never a turn back of a sixth of a cell.
+    one.move(137, 401, 320).move(143, 400, 340).move(139, 399, 360);
     expect(commands).toEqual([RIGHT]);
-    // Back 40 px from the turning point (146): one cell back.
-    one.glide(106, 400, 400, 50);
+    // Back where it began: the piece is back on its column.
+    one.glide(100, 400, 400, 50);
     expect(commands).toEqual([RIGHT, LEFT]);
     one.up();
     expect(commands).toEqual([RIGHT, LEFT]);
   });
 
-  it('soft drops on a mostly vertical drag, a cell and a half down, until the lift', () => {
+  it('takes the piece down with the finger, a row a cell, and never drops it at the lift (1.40)', () => {
     const { finger, commands } = setup();
-    const one = finger().down(200, 300).glide(202, 344, 400, 50);
+    const one = finger().down(200, 300).glide(201, 314, 200, 50);
     expect(commands).toEqual([]);
-    one.glide(204, 380, 300, 50);
-    expect(commands).toEqual([SOFT_ON]);
+    // 75 px down: rows at 15, 45 and 75.
+    one.glide(202, 375, 400, 50);
+    expect(commands).toEqual([STEP, STEP, STEP]);
     one.up(200);
-    expect(commands).toEqual([SOFT_ON, SOFT_OFF]);
+    expect(commands).toEqual([STEP, STEP, STEP]);
   });
 
-  it('ends a soft drop when the finger goes back up a cell', () => {
+  it('takes the piece down only over new ground: back up and down again adds nothing (1.40)', () => {
     const { finger, commands } = setup();
-    const one = finger().down(200, 300).glide(200, 400, 1000, 50);
-    one.glide(200, 368, 400, 50);
-    expect(commands).toEqual([SOFT_ON, SOFT_OFF]);
+    const one = finger().down(200, 300).glide(200, 360, 400, 50);
+    expect(commands).toEqual([STEP, STEP]);
+    one.glide(200, 335, 300, 50).glide(200, 360, 300, 50);
+    expect(commands).toEqual([STEP, STEP]);
+    one.glide(200, 375, 200, 50);
+    expect(commands).toEqual([STEP, STEP, STEP]);
   });
 
-  it('takes no soft drop from a thumb arc', () => {
+  it('takes no row down from a thumb arc', () => {
     const { finger, commands } = setup();
     const one = finger().down(100, 400);
     for (let step = 1; step <= 12; step++)
       one.move(100 + step * 10, 400 + 30 * Math.sin((step / 12) * (Math.PI / 2)), step * 50);
     one.up();
-    expect(commands).toEqual([RIGHT, RIGHT, RIGHT]);
+    // 120 px sideways: the nearest cell is the fourth.
+    expect(commands).toEqual([RIGHT, RIGHT, RIGHT, RIGHT]);
   });
 
   it('drops at once on a flick down, then ignores the rest of the touch', () => {
     const { finger, commands } = setup();
     const one = finger().down(200, 300).move(200, 320, 10).move(201, 345, 20);
-    expect(commands).toEqual([DROP]);
+    expect(noSteps(commands)).toEqual([DROP]);
     one.glide(320, 345, 300).up();
-    expect(commands).toEqual([DROP]);
+    expect(noSteps(commands)).toEqual([DROP]);
   });
 
   it('drops right after a move, without lifting the finger', () => {
     const { finger, commands } = setup();
     finger().down(100, 300).glide(172, 302, 360).glide(178, 420, 40, 8);
-    // A soft drop may begin as the flick gathers speed: the piece lands in the same place.
-    expect(commands.filter(({ type }) => type !== 'softDrop')).toEqual([RIGHT, RIGHT, DROP]);
+    expect(noSteps(commands)).toEqual([RIGHT, RIGHT, DROP]);
     expect(commands.at(-1)).toEqual(DROP);
   });
 
-  it('drops on a gentle flick as the finger leaves the glass', () => {
+  it('drops on a gentler flick that leaves the glass speeding up; never on a soft drag still moving (1.40)', () => {
     const { finger, commands } = setup();
-    const one = finger().down(200, 300).glide(200, 330, 30, 10).glide(200, 370, 30, 10);
+    // Faster every frame (0.2 to 1.2 px/ms): a flick, short of the firm speed.
+    const flick = finger().down(200, 300);
+    [303, 310, 322, 337, 356].forEach((y, i) => flick.move(200, y, (i + 1) * 16));
     expect(commands).not.toContainEqual(DROP);
-    one.up(2);
+    flick.up(2);
     expect(commands.at(-1)).toEqual(DROP);
+    // A steady 1.3 px/ms down, lifted still moving: rows, no drop.
+    commands.length = 0;
+    const drag = finger().down(200, 300, 1000);
+    [321, 342, 363, 384].forEach((y, i) => drag.move(200, y, 1000 + (i + 1) * 16));
+    drag.up(2);
+    expect(commands).toEqual([STEP, STEP, STEP]);
   });
 
   it('moves nothing sideways with the arc of a flick', () => {
     const { finger, commands } = setup();
     // A flick 25° off the vertical: 50 px sideways on its way down.
     finger().down(200, 300).glide(250, 410, 64, 8).up();
-    expect(commands).toEqual([DROP]);
+    expect(noSteps(commands)).toEqual([DROP]);
   });
 
   it('drops only the piece in play as the touch began', () => {
@@ -253,6 +276,8 @@ describe('PhoneGestures', () => {
     pieces.entered = 2;
     one.glide(200, 450, 60, 10).up();
     expect(commands).not.toContainEqual(DROP);
+    // Nor does it take the new piece down: the one row went down before it entered.
+    expect(commands).toEqual([STEP]);
   });
 
   it('gives a touch begun while the next piece waits to that piece', () => {
@@ -261,7 +286,7 @@ describe('PhoneGestures', () => {
     const one = finger().down(200, 300);
     Object.assign(pieces, { entered: 2, inPlay: true });
     one.glide(200, 420, 60, 10).up();
-    expect(commands).toEqual([DROP]);
+    expect(noSteps(commands)).toEqual([DROP]);
   });
 
   it('holds on a flick up, unless it starts on the bottom edge', () => {
@@ -284,16 +309,17 @@ describe('PhoneGestures', () => {
     // Quick, but short of a flick; then still for 60 ms, and lifted a little lower.
     finger().down(200, 300).glide(200, 322, 20, 5);
     gestures.up({ id: 1, x: 200, y: 330, time: 80 });
-    expect(commands).toEqual([]);
+    // Most of a row down: the piece follows the finger, and is not dropped.
+    expect(commands).toEqual([STEP]);
   });
 
   it('turns on a second finger tapped during a drag, and the drag goes on', () => {
     const { gestures, finger, commands } = setup();
-    const one = finger().down(200, 400).glide(245, 400, 200, 50);
+    const one = finger().down(200, 400).glide(240, 400, 200, 50);
     expect(commands).toEqual([RIGHT]);
     gestures.down({ id: 2, x: 80, y: 500, time: 210 });
     gestures.up({ id: 2, x: 81, y: 500, time: 300 });
-    one.glide(275, 400, 200, 50).up();
+    one.glide(260, 400, 200, 50).up();
     expect(commands).toEqual([RIGHT, { type: 'rotate', direction: -1 }, RIGHT]);
   });
 
@@ -317,16 +343,18 @@ describe('PhoneGestures', () => {
   it('leaves a second finger to the Tower, which turns with two: the drag ends', () => {
     const { gestures, finger, commands } = setup({}, false);
     finger().down(200, 300).glide(200, 400, 1000, 50);
-    expect(commands).toEqual([SOFT_ON]);
+    expect(commands).toEqual([STEP, STEP, STEP]);
     gestures.down({ id: 2, x: 300, y: 400, time: 1100 });
-    expect(commands).toEqual([SOFT_ON, SOFT_OFF]);
+    gestures.move({ id: 1, x: 200, y: 460, time: 1150 });
+    expect(commands).toEqual([STEP, STEP, STEP]);
   });
 
   it('lets go of everything on a cancel', () => {
     const { gestures, finger, commands } = setup();
     finger().down(200, 300).glide(200, 400, 1000, 50);
     gestures.cancel();
-    gestures.up({ id: 1, x: 200, y: 400, time: 1100 });
-    expect(commands).toEqual([SOFT_ON, SOFT_OFF]);
+    gestures.move({ id: 1, x: 200, y: 460, time: 1050 });
+    gestures.up({ id: 1, x: 200, y: 460, time: 1100 });
+    expect(commands).toEqual([STEP, STEP, STEP]);
   });
 });

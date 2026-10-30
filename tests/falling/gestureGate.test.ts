@@ -7,8 +7,10 @@ import {
   edgeJitter,
   flickUp,
   Hand,
+  hurriedSwipe,
   type Intent,
   moveThenFlick,
+  quickSoftDescent,
   quickTap,
   replay,
   type Screen,
@@ -30,6 +32,13 @@ import {
  * end of a sideways drag and the start of the flick leaves one jump, and the
  * drag's last cell cannot be told from the flick's arc. The piece then drops
  * a cell short; it never drops by accident.
+ *
+ * Since 1.40, a second one, chosen: a jump a busy page merged could as well be
+ * a quick soft drag, so a drop read at the lift takes the jump as it moved, not
+ * as a stroke from rest. About 6 to 8 % of the flicks right after a move are
+ * then missed on such a page (the piece is not dropped, the player flicks
+ * again), and no quick soft descent is dropped by accident: one costs more
+ * than the other.
  */
 const SCREENS: readonly Screen[] = [
   { hz: 60, freeze: false },
@@ -39,12 +48,27 @@ const SCREENS: readonly Screen[] = [
 ];
 
 const TOUCHES = 1000;
-const CASES = { quickTap, moveThenFlick, flickUp, thumbArc, edgeJitter } as const;
-const NO_DROPS = [slantedSoftDrag, thumbArc, shakyTap, edgeJitter, slantedSoftDrag] as const;
+const CASES = {
+  quickTap,
+  moveThenFlick,
+  flickUp,
+  thumbArc,
+  edgeJitter,
+  hurriedSwipe,
+  quickSoftDescent,
+} as const;
+const NO_DROPS = [
+  slantedSoftDrag,
+  thumbArc,
+  shakyTap,
+  edgeJitter,
+  quickSoftDescent,
+  slantedSoftDrag,
+] as const;
 
-/** The misses allowed in 1000 touches: 1 %, but for the merged drag and flick of a busy page. */
+/** The misses allowed in 1000 touches: 1 %, but for the merged drag and flick of a busy page (8 %). */
 const allowed = (name: string, { freeze }: Screen) =>
-  freeze && name === 'moveThenFlick' ? 30 : TOUCHES / 100;
+  freeze && name === 'moveThenFlick' ? 80 : TOUCHES / 100;
 
 const seed = (name: string, { hz, freeze }: Screen) =>
   SeededRandom.fromString(`${name}:${hz}:${freeze}`);
@@ -60,7 +84,9 @@ function play(intent: Intent, screen: Screen, hand: Hand): FallingCommand[] {
     secondFingerTurns: true,
   });
   replay(intent.trace, gestures, screen, hand);
-  return intent.softDropsAside ? commands.filter(({ type }) => type !== 'softDrop') : commands;
+  return intent.softDropsAside
+    ? commands.filter(({ type }) => type !== 'softDrop' && type !== 'softStep')
+    : commands;
 }
 
 describe.each(SCREENS)('the phone gestures at $hz Hz (a page loading an ad: $freeze)', (screen) => {
