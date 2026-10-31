@@ -16,6 +16,7 @@
 | 1.41    | 29/10/2026 | Le poids et l'éclat : chaque bloc pèse, chaque effacement se tient et frappe, chaque combo monte (§ 9 quater, lot 27).                                                                                                                |
 | 1.42    | 30/10/2026 | Des menus qui s'enchaînent : chaque changement d'affichage a sa transition, moins de 300 ms, jamais un toucher retenu, un fondu avec le mouvement réduit (§ 9 quater, lot 28).                                                        |
 | 1.43    | 30/10/2026 | Un puits à nous : un puits de 10 × 18, des pièces d'un seul cristal, le faisceau d'atterrissage, les prochaines pièces dans la faille, la pierre de faille ; la campagne réglée au nouveau puits (§ 2.3, § 9 quinquies, lot 29).      |
+| 1.44    | 31/10/2026 | La faille qui casse : la faille ouvre les lignes effacées, la rangée se fend en morceaux que la fente avale ; les éclats de l'Atelier et le son accordés (§ 9 sexies, lot 30).                                                        |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1795,7 +1796,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
 | 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre              | Livré (1.43)                                                 |
-| 30  | La faille qui casse (1.44) : l'effacement des lignes à la manière de la faille                             | Décidé, maquette validée                                     |
+| 30  | La faille qui casse (1.44) : l'effacement des lignes à la manière de la faille                             | Livré (1.44)                                                 |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2753,6 +2754,44 @@ qui l'accompagnaient (les éclats de l'Atelier, la portée, le son, la version).
     - Lighthouse à 100 sur trois passages ;
     - des prises avant/après ;
     - l'essai sur téléphone.
+  - **Livré en 1.44** (31/10/2026). Les mesures de la porte et les écarts :
+    - les temps livrés : la faille court de 0 à 90 ms ; la rangée se fend de 90 à 150 ms ; la
+      fente avale de 120 à 270 ms, les morceaux retenus d'abord puis aspirés de plus en plus vite
+      (en k³, comme sur la maquette) ; elle s'embrase de 230 à 270 ms et se referme de 270 à
+      360 ms ; les rangées du dessus tombent dès 250 ms (elles ont parcouru un centième de case
+      quand la fente commence à se refermer). Un écart avec le texte ci-dessus : la fente y
+      avalait en 180 ms, soit 330 ms avec la course et la fente, plus que les 280 ms avant la
+      pièce suivante ; elle avale en 150 ms, en commençant 30 ms avant la fin de la fente, et
+      tout est parti à 270 ms. Une première version, aspirée d'un pas égal, cachait les morceaux
+      sous la lumière de la fente dès la moitié : vu sur des bandes d'images du plateau, corrigé
+      avant les prises ;
+    - le découpage : des morceaux d'un ou deux blocs d'une même pièce (les liens de la rangée),
+      coupés le long de la fêlure (un point par demi-case, à 0,24 case au plus du milieu) ; une
+      rangée de dix blocs en donne de 10 à 20 ;
+    - ce qui monte de la fente, une fois, quand elle s'embrase : 8 braises par rangée (6 puis 4
+      quand la machine peine), ou 10 flocons d'un éclat de l'Atelier ; les étincelles d'une
+      rangée pure et d'un combo partent de la fente, plus lentes (4 à 10 cases par seconde au
+      lieu de 7 à 17). À un RIFT!, une quarantaine de particules au lieu de plus de 300 éclats ;
+    - mouvement réduit : ni braises ni étincelles, la rangée s'efface sur place ; un écart
+      léger : la 1.43 gardait les 18 étincelles d'une rangée pure aux effets sobres ;
+    - hors du lot : la fusion, les bombes, l'effondrement de la défaite et la reprise gardent
+      leurs éclats (ce ne sont pas des lignes effacées) ;
+    - le temps d'image (390 × 844 à 3×, le processeur ralenti quatre fois, la 1.43 et la 1.44 en
+      alternance), au 95e centile toutes prises : travail du processeur 3,5 et 3,4 → 2,3 et
+      2,3 ms (deux tours), rendu logiciel 56,8 → 48,6 ms : la porte passe, la faille coûte moins
+      que les éclats. Par prise, en rendu logiciel : la faille 64 → 45 ms, la ligne 18,6 → 17,
+      la combo 49,6 → 31,3, la Tour 61,4 → 60,5 ;
+    - tests unitaires : 96 fichiers, 883 tests (le découpage, les temps, les poses et la lumière
+      des morceaux, les teintes et les flocons de l'Atelier, le mouvement réduit, le son) ;
+    - e2e : 211 tests, 183 passés, 28 réservés à l'autre appareil, aucun échec ;
+    - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+      catégories à chaque passage ; sur ordinateur, 100 aussi ;
+    - les prises avant/après : `release/clips/feel-1.44.0` (six prises, filmées par la fabrique
+      sur la version finale), côte à côte avec celles de la 1.43.0 sur une page privée pour
+      l'utilisateur (une ligne, une faille, un combo de cinq, la Tour ; la chute et la Mosaïque
+      ne changent pas, les images de la Mosaïque ont la même empreinte qu'en 1.43) ; la prise
+      de la faille pèse 1,2 Mo au lieu de 2,1 (moins de mouvement à coder) ;
+    - reste l'essai sur téléphone.
 
 ## 10. Hors périmètre (v1)
 
@@ -2832,3 +2871,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.41    | 29/10/2026 | Le poids et l'éclat : `FrameClock.hold`, `Impact`, `Camera`, `WellOverlay`, la Tour au niveau du puits, les prises simples de la fabrique (lot 27).                    |
 | 1.42    | 30/10/2026 | Des menus qui s'enchaînent : `MotionController`, jetons `--motion-*`, fenêtres fermées à l'instant, faille en popover, test des feuilles de style (lot 28).            |
 | 1.43    | 30/10/2026 | Un puits à nous : `WELL` 10 × 18, `links`, `LandingBeam`, `RiftQueue`, pierre de faille, lits de sable en rangées, marée au pas du puits (lot 29).                     |
+| 1.44    | 31/10/2026 | La faille qui casse : `RiftOpening`, particules `Ember` et `Flake`, la Tour fendue en deux moitiés, `riftRun` et `riftSwallow` (§ 9 sexies, lot 30).                   |

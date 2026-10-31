@@ -3,6 +3,41 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.44.0] — 31/10/2026
+
+La faille qui casse (lot 30) : une ligne effacée s'ouvre comme la faille, au lieu d'éclater en
+éclats qui passent devant la pile.
+
+### Modifié
+
+- **La faille ouvre les lignes effacées** : elle part de la pièce posée et court jusqu'aux
+  bords ; la rangée se fend sur sa lumière, ses cristaux cassent en morceaux d'un ou deux blocs,
+  jamais à cheval sur deux pièces, et la lumière filtre entre eux ; la fente les retient, puis
+  les avale d'un coup, s'embrase et se referme, quelques braises montent, et les rangées du
+  dessus tombent. Tout est parti avant la pièce suivante, et rien ne passe devant la pile.
+  Plusieurs lignes : les fêlures se rejoignent à l'origine ; à un RIFT!, les rangées s'ouvrent
+  en une seule lumière. Dans tous les modes du puits, le Duel compris, sur l'écran titre, et
+  dans la Tour, où chaque brique se fend en deux moitiés.
+- **Les éclats de l'Atelier** suivent la faille : les morceaux prennent leur teinte, et leurs
+  confettis, pétales, feuilles d'or ou ceux des saisons montent de la fente à la place des
+  braises.
+- **Le son** : le craquement court avec la faille, le cristal se brise quand la rangée se fend,
+  et un souffle aspiré accompagne la fente qui avale, plus grave et plus long à un RIFT!.
+- **Mouvement réduit** : la fêlure, puis la rangée qui s'efface sur place, sans morceau qui
+  bouge, sans braises ni étincelles.
+
+### Technique
+
+- `RiftOpening` (`src/families/falling/fx/`) : les temps de l'ouverture (`RIFT`), la fêlure
+  (`crackPath`, `crackY`), le découpage en morceaux le long de la fêlure (`riftRuns`,
+  `riftChunks`, `riftSeams`), leur pose et leur lumière (`chunkPose`, `pieceLight`, `halfBand`
+  pour la Tour), testés seuls.
+- `FallingEffects` : `CrackingRow` porte ses morceaux, leurs teintes et ses jonctions ;
+  `RiftJoin` relie les rangées d'un effacement de plusieurs lignes ; `CRACK_MS` disparaît.
+- Deux sortes de particules qui flottent sans toucher la pile : `Ember` (les braises) et
+  `Flake` (les flocons des éclats de l'Atelier).
+- Sons `riftRun` et `riftSwallow` ; la note grave d'un RIFT! passe du bris au souffle.
+
 ## [1.43.0] — 30/10/2026
 
 Un puits à nous (lot 29), d'après la revue de propriété intellectuelle du 30/10 : Lumirift garde
