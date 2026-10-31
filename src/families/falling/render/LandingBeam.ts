@@ -59,12 +59,15 @@ interface Shaft {
   readonly landing: CanvasGradient;
 }
 
-/** A spark's light for a tone: the halo (a unit circle), the links' glow, the near-white core. */
+/** A spark's light for a tone: the halo (a small picture, made once), the links' glow, the near-white core. */
 interface Spark {
-  readonly halo: CanvasGradient;
+  readonly halo: HTMLCanvasElement;
   readonly glow: string;
   readonly core: string;
 }
+
+/** The halo's picture, in pixels: drawn scaled to each spark, cheaper than a gradient fill each time. */
+const HALO_PX = 64;
 
 /** The beam's light for a tone: a shaft for a unit square (0 under the piece, 1 at rest), the sparks. */
 export class BeamPaint {
@@ -117,45 +120,77 @@ export class BeamPaint {
     this.starAlpha[i] = alpha;
   }
 
-  /** Draws the constellation begun: the links first, then each spark, the tone's glow under a near-white core. */
+  /**
+   * Draws the constellation begun: the links, then each spark, the tone's glow
+   * under a near-white core. Where every spark is lit alike (the well, the
+   * Sand), the links are one path and the cores another: two strokes and one
+   * fill, whatever the piece.
+   */
   drawConstellation(tone: Tone, rgb: Rgb): void {
-    const { ctx, starX, starY, starSize, starAlpha } = this;
+    const { ctx, starX, starY, starSize, starAlpha, starCount } = this;
+    if (starCount === 0) return;
     const spark = this.spark(tone, rgb);
+    const even = this.evenlyLit();
     ctx.lineCap = 'round';
+    if (even) ctx.beginPath();
     for (let i = 0; i < this.linkCount; i++) {
       const a = this.links[i * 2]!;
       const b = this.links[i * 2 + 1]!;
-      if (a >= this.starCount || b >= this.starCount) continue;
-      const size = (starSize[a]! + starSize[b]!) / 2;
-      ctx.globalAlpha = Math.min(starAlpha[a]!, starAlpha[b]!);
-      ctx.beginPath();
+      if (a >= starCount || b >= starCount) continue;
+      if (!even) ctx.beginPath();
       ctx.moveTo(starX[a]!, starY[a]!);
       ctx.lineTo(starX[b]!, starY[b]!);
-      ctx.strokeStyle = spark.glow;
-      ctx.lineWidth = Math.max(3, size * SPARK.linkGlow);
-      ctx.stroke();
-      ctx.strokeStyle = spark.core;
-      ctx.lineWidth = Math.max(1.2, size * SPARK.link);
-      ctx.stroke();
+      if (even) continue;
+      ctx.globalAlpha = Math.min(starAlpha[a]!, starAlpha[b]!);
+      this.strokeLinks(spark, (starSize[a]! + starSize[b]!) / 2);
     }
-    for (let i = 0; i < this.starCount; i++) {
-      const x = starX[i]!;
-      const y = starY[i]!;
-      const size = starSize[i]!;
+    if (even) {
+      ctx.globalAlpha = starAlpha[0]!;
+      this.strokeLinks(spark, starSize[0]!);
+    }
+    for (let i = 0; i < starCount; i++) {
+      const halo = starSize[i]! * SPARK.halo;
       ctx.globalAlpha = starAlpha[i]!;
-      // The halo: the tone's gradient, made once on a unit circle, placed and scaled.
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(size * SPARK.halo, size * SPARK.halo);
-      ctx.fillStyle = spark.halo;
-      ctx.fillRect(-1, -1, 2, 2);
-      ctx.restore();
-      ctx.fillStyle = spark.core;
-      ctx.beginPath();
-      ctx.arc(x, y, Math.max(2, size * SPARK.core), 0, Math.PI * 2);
+      ctx.drawImage(spark.halo, starX[i]! - halo, starY[i]! - halo, halo * 2, halo * 2);
+    }
+    ctx.fillStyle = spark.core;
+    if (even) ctx.beginPath();
+    for (let i = 0; i < starCount; i++) {
+      const core = Math.max(2, starSize[i]! * SPARK.core);
+      if (even) {
+        ctx.moveTo(starX[i]! + core, starY[i]!);
+      } else {
+        ctx.globalAlpha = starAlpha[i]!;
+        ctx.beginPath();
+      }
+      ctx.arc(starX[i]!, starY[i]!, core, 0, Math.PI * 2);
+      if (!even) ctx.fill();
+    }
+    if (even) {
+      ctx.globalAlpha = starAlpha[0]!;
       ctx.fill();
     }
     ctx.globalAlpha = 1;
+  }
+
+  /** Strokes the current path as the constellation's links: the tone's glow under a near-white line. */
+  private strokeLinks(spark: Spark, size: number): void {
+    const { ctx } = this;
+    ctx.strokeStyle = spark.glow;
+    ctx.lineWidth = Math.max(3, size * SPARK.linkGlow);
+    ctx.stroke();
+    ctx.strokeStyle = spark.core;
+    ctx.lineWidth = Math.max(1.2, size * SPARK.link);
+    ctx.stroke();
+  }
+
+  /** Every spark as bright and as large as the first: one path each for the links and the cores. */
+  private evenlyLit(): boolean {
+    for (let i = 1; i < this.starCount; i++) {
+      if (this.starAlpha[i] !== this.starAlpha[0] || this.starSize[i] !== this.starSize[0])
+        return false;
+    }
+    return true;
   }
 
   private shaft(tone: Tone, rgb: Rgb): Shaft {
@@ -176,9 +211,18 @@ export class BeamPaint {
   private spark(tone: Tone, rgb: Rgb): Spark {
     let spark = this.sparks.get(tone);
     if (!spark) {
-      const halo = this.ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-      halo.addColorStop(0, css(rgb, 0.75));
-      halo.addColorStop(1, css(rgb, 0));
+      const halo = document.createElement('canvas');
+      halo.width = HALO_PX;
+      halo.height = HALO_PX;
+      const paint = halo.getContext('2d');
+      if (paint) {
+        const middle = HALO_PX / 2;
+        const glow = paint.createRadialGradient(middle, middle, 0, middle, middle, middle);
+        glow.addColorStop(0, css(rgb, 0.75));
+        glow.addColorStop(1, css(rgb, 0));
+        paint.fillStyle = glow;
+        paint.fillRect(0, 0, HALO_PX, HALO_PX);
+      }
       spark = { halo, glow: css(rgb, 0.45), core: css(mixRgb(rgb, 0.85), 1) };
       this.sparks.set(tone, spark);
     }
