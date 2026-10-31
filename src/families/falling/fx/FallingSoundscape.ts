@@ -5,7 +5,10 @@ import * as sounds from '@/fx/sounds';
 import type { AudioEngine, SoundRecipe } from '@/services/audio/AudioEngine';
 import type { Haptics } from '@/services/Haptics';
 import type { FallingSession } from '../FallingSession';
-import { CRACK_MS } from './FallingEffects';
+import { RIFT } from './RiftOpening';
+
+/** The swallow is heard as it gathers pace, its breath fullest as the last pieces go. */
+const SWALLOW_HEARD_MS = 60;
 
 /** Notices that deserve a sound, by id. */
 const NOTICE_SOUNDS: Readonly<Record<string, SoundRecipe>> = {
@@ -58,18 +61,22 @@ export class FallingSoundscape {
         if (!this.hardDropped) audio.play(sounds.land);
         this.hardDropped = false;
       }),
+      // The rift opens the row (1.44): it runs, the row splits and breaks, the rift swallows it.
       session.onGame('clear', ({ lines, combo, pureLines }) => {
         const landing = this.landingIn;
         this.after(landing, () => {
-          audio.play(sounds.crack);
+          audio.play(sounds.riftRun);
           if (lines >= 2) audio.play(sounds.clearBlow(lines));
           haptics.pulse(clearImpact(lines, combo).vibrate);
         });
-        this.after(landing + CRACK_MS, () => {
+        this.after(landing + RIFT.runMs, () => {
           audio.play(sounds.shatter(lines, combo));
           if (combo >= 1) audio.play(sounds.comboStep(combo + 1));
           if (pureLines > 0) audio.play(sounds.pureLine);
         });
+        this.after(landing + RIFT.swallowFrom + SWALLOW_HEARD_MS, () =>
+          audio.play(sounds.riftSwallow(lines)),
+        );
       }),
       // A combo of ×3 or more that breaks is heard falling (1.41).
       session.onGame('comboEnd', ({ combo }) => {

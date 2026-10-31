@@ -9,7 +9,10 @@ import type { TonePalette } from '@/render/TonePalette';
 import { FEEL_SCENES } from '@/showcase/feelScenes';
 
 const FRAME_MS = 16;
-const PALETTE = { color: () => ({ r: 200, g: 120, b: 80 }) } as unknown as TonePalette;
+const PALETTE = {
+  color: () => ({ r: 200, g: 120, b: 80 }),
+  effects: { rift: '#ff9a3c', riftCore: '#fff3d6' },
+} as unknown as TonePalette;
 
 /**
  * A RIFT! played as on the game's screen (FallingStage): one clock for the

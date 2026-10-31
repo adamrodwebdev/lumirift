@@ -165,6 +165,47 @@ export const crack: SoundRecipe = (s) => {
   s.tone({ type: 'square', frequency: 2400, to: 1500, duration: 0.03, gain: 0.025 });
 };
 
+/** The rift running along a cleared row to the walls (1.44): the crack, then its splinters, fainter and higher. */
+export const riftRun: SoundRecipe = (s, groove) => {
+  crack(s, groove);
+  for (let i = 0; i < 4; i++)
+    s.noise({
+      filter: 'highpass',
+      frequency: 3000 + 450 * i,
+      duration: 0.018,
+      gain: 0.08 - 0.014 * i,
+      start: 0.022 + 0.019 * i + Math.random() * 0.006,
+    });
+};
+
+/**
+ * The rift swallowing the row's pieces (1.44): a breath drawn in, deeper and
+ * longer for more lines; at a RIFT!, the chord's root deep under it.
+ */
+export const riftSwallow =
+  (lines: number): SoundRecipe =>
+  (s, groove) => {
+    const size = Math.max(1, Math.min(4, lines)) - 1;
+    s.noise({
+      filter: 'lowpass',
+      frequency: 1100 - 150 * size,
+      to: 160,
+      duration: 0.2 + 0.06 * size,
+      gain: 0.06 + 0.02 * size,
+      attack: 0.06,
+    });
+    s.tone({
+      frequency: 92 - 8 * size,
+      to: 44,
+      duration: 0.18 + 0.05 * size,
+      gain: 0.07 + 0.03 * size,
+    });
+    if (lines < 4) return;
+    const root = chordRoot(chordAt(groove.beat));
+    s.tone({ frequency: root / 2, to: 36, duration: 0.8, gain: 0.32 });
+    s.tone({ type: 'triangle', frequency: root, duration: 1.1, gain: 0.08, start: 0.05 });
+  };
+
 /** Breaking crystal: the chord rung out, more pings for more lines; each combo starts it a note higher. */
 export const shatter =
   (lines: number, combo: number): SoundRecipe =>
@@ -189,12 +230,6 @@ export const shatter =
         gain: 0.018,
         start,
       });
-    }
-    // Four lines: the rift opens, the chord's root deep under the glass.
-    if (lines >= 4) {
-      const root = chordRoot(chord);
-      s.tone({ frequency: root / 2, to: 36, duration: 0.8, gain: 0.32 });
-      s.tone({ type: 'triangle', frequency: root, duration: 1.1, gain: 0.08, start: 0.05 });
     }
   };
 

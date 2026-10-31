@@ -5,6 +5,10 @@ export const ParticleKind = {
   Spark: 1,
   /** A small square grain: bounces, settles. */
   Dust: 2,
+  /** A mote of the rift's light (1.44): drifts up, touches nothing, glows out. */
+  Ember: 3,
+  /** A light triangle (confetti, a petal, gold leaf; 1.44): floats up, drifts down, touches nothing. */
+  Flake: 4,
 } as const;
 export type ParticleKind = (typeof ParticleKind)[keyof typeof ParticleKind];
 
@@ -22,6 +26,10 @@ export interface ParticleWorld {
 const RESTITUTION = 0.32;
 const FRICTION = 0.72;
 const SPARK_DRAG = 0.22;
+/** Embers slow sideways; flakes ride the air, falling at this share of gravity. */
+const EMBER_DRAG = 0.4;
+const FLAKE_DRAG = 0.12;
+const FLAKE_WEIGHT = 0.12;
 
 /**
  * Every particle of a scene in flat typed arrays (structure of arrays): no
@@ -147,7 +155,9 @@ export class ParticlePool {
         this.kill(i);
         continue;
       }
-      if (this.kind[i] === ParticleKind.Spark) this.moveSpark(i, dt, world);
+      const kind = this.kind[i];
+      if (kind === ParticleKind.Spark) this.moveSpark(i, dt, world);
+      else if (kind === ParticleKind.Ember || kind === ParticleKind.Flake) this.drift(i, dt, world);
       else this.moveSolid(i, dt, world);
       i++;
     }
@@ -163,6 +173,21 @@ export class ParticlePool {
     this.vy[i] = this.vy[i]! * drag + world.gravity * 0.5 * dt;
     this.x[i]! += this.vx[i]! * dt;
     this.y[i]! += this.vy[i] * dt;
+  }
+
+  /** Embers and flakes ride the air: slowed, never landing; a flake sinks and spins. */
+  private drift(i: number, dt: number, world: ParticleWorld): void {
+    if (this.kind[i] === ParticleKind.Flake) {
+      const drag = FLAKE_DRAG ** dt;
+      this.vx[i]! *= drag;
+      this.vy[i] = this.vy[i]! * drag + world.gravity * FLAKE_WEIGHT * dt;
+      this.angle[i]! += this.spin[i]! * dt;
+    } else {
+      this.vx[i]! *= EMBER_DRAG ** dt;
+    }
+    this.x[i]! += this.vx[i]! * dt;
+    this.y[i]! += this.vy[i]! * dt;
+    if (world.wraps) this.x[i] = ((this.x[i]! % world.width) + world.width) % world.width;
   }
 
   private moveSolid(i: number, dt: number, world: ParticleWorld): void {
