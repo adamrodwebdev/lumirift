@@ -2762,9 +2762,9 @@ qui l'accompagnaient (les éclats de l'Atelier, la portée, le son, la version).
       quand la fente commence à se refermer). Un écart avec le texte ci-dessus : la fente y
       avalait en 180 ms, soit 330 ms avec la course et la fente, plus que les 280 ms avant la
       pièce suivante ; elle avale en 150 ms, en commençant 30 ms avant la fin de la fente, et
-      tout est parti à 270 ms. Une première version, aspirée d'un pas égal, cachait les morceaux
-      sous la lumière de la fente dès la moitié : vu sur des bandes d'images du plateau, corrigé
-      avant les prises ;
+      tout est parti à 270 ms (écart confirmé par l'utilisateur le 31/10/2026). Une première
+      version, aspirée d'un pas égal, cachait les morceaux sous la lumière de la fente dès la
+      moitié : vu sur des bandes d'images du plateau, corrigé avant les prises ;
     - le découpage : des morceaux d'un ou deux blocs d'une même pièce (les liens de la rangée),
       coupés le long de la fêlure (un point par demi-case, à 0,24 case au plus du milieu) ; une
       rangée de dix blocs en donne de 10 à 20 ;
@@ -2773,7 +2773,8 @@ qui l'accompagnaient (les éclats de l'Atelier, la portée, le son, la version).
       rangée pure et d'un combo partent de la fente, plus lentes (4 à 10 cases par seconde au
       lieu de 7 à 17). À un RIFT!, une quarantaine de particules au lieu de plus de 300 éclats ;
     - mouvement réduit : ni braises ni étincelles, la rangée s'efface sur place ; un écart
-      léger : la 1.43 gardait les 18 étincelles d'une rangée pure aux effets sobres ;
+      léger, confirmé par l'utilisateur le 31/10/2026 : la 1.43 gardait les 18 étincelles d'une
+      rangée pure aux effets sobres ;
     - hors du lot : la fusion, les bombes, l'effondrement de la défaite et la reprise gardent
       leurs éclats (ce ne sont pas des lignes effacées) ;
     - le temps d'image (390 × 844 à 3×, le processeur ralenti quatre fois, la 1.43 et la 1.44 en
