@@ -1795,6 +1795,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
 | 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre              | Livré (1.43)                                                 |
+| 30  | La faille qui casse (1.44) : l'effacement des lignes à la manière de la faille                             | Décidé, maquette validée                                     |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2710,6 +2711,48 @@ jeu de pièces propre) en réserve. Le paquet 1 (le test des mots interdits) est
       sur une page privée pour l'utilisateur (la chute, une ligne, une faille, un combo de cinq,
       la Tour ; la Mosaïque ne change pas) ;
     - reste l'essai sur téléphone.
+
+## 9 sexies. La faille qui casse les lignes (lot 30, décidé le 31/10/2026)
+
+L'utilisateur a demandé le 31/10/2026 un effacement des lignes plus proche de la faille, aux
+fractures plus lisibles, toujours moderne et cinématographique. Une maquette animée a montré trois
+pistes face à la 1.43, de une à quatre lignes : la faille qui s'ouvre, une coupure de lumière, un
+verre qui cède. L'utilisateur a choisi la première, recommandée, et validé les quatre propositions
+qui l'accompagnaient (les éclats de l'Atelier, la portée, le son, la version).
+
+- **Lot 30 · 1.44 La faille qui casse** (décidé le 31/10/2026, maquette validée le même jour).
+  - Constats (la 1.43) : une fêlure de 130 ms, puis chaque bloc part en huit triangles lancés vers
+    le haut, qui tournent. À un RIFT!, plus de 300 éclats passent devant la pile pendant plus d'une
+    seconde : on ne lit plus la rangée qui part, ni la pile qui reste.
+  - **La faille s'ouvre** :
+    - la faille part de la pièce posée et court jusqu'aux bords (90 ms) ; la rangée chauffe à son
+      passage ;
+    - la rangée se fend sur cette ligne de lumière (60 ms) : ses deux moitiés s'écartent, ses
+      cristaux cassent en gros morceaux (un ou deux blocs, jamais à cheval sur deux pièces), la
+      lumière filtre entre eux ;
+    - la fente avale les morceaux (180 ms), s'embrase, puis se referme ; quelques braises montent ;
+    - plusieurs lignes : les fêlures se rejoignent à l'origine ; à quatre lignes (RIFT!), les fentes
+      s'ouvrent en une seule ouverture et sa lumière emplit le puits ;
+    - rien ne passe devant la pile : les morceaux restent dans leur rangée.
+  - Le temps : la pièce suivante arrive toujours 280 ms après la pose. La rangée a disparu avant,
+    les rangées du dessus tombent dès que la fente se referme ; l'arrêt sur image, la secousse, la
+    bascule et les mots de la 1.41 ne changent pas.
+  - **Les éclats de l'Atelier** suivent la chorégraphie et gardent leurs couleurs et leurs formes :
+    les morceaux prennent la teinte du cosmétique, et ses particules (confettis, pétales, feuilles
+    d'or, étincelles, celles des saisons) montent de la fente à la place des braises.
+  - **La portée** : le puits, dans tous les modes de la famille Chute, Duel compris, et la Tour. La
+    Mosaïque et le Sable gardent leur effacement.
+  - **Le son** : le craquement d'aujourd'hui suit la faille qui court ; un souffle sourd quand la
+    fente avale, plus grave et plus long à un RIFT!, tiré des sons du jeu.
+  - **Mouvement réduit** : la fêlure, puis un fondu de la rangée, sans morceau qui bouge, sans
+    secousse ni braises.
+  - **Porte** :
+    - la maquette validée par l'utilisateur avant le code ;
+    - tests unitaires (le découpage en morceaux, les temps de la chorégraphie) et e2e ;
+    - le temps d'image : au plus +1 ms au 95e centile, le processeur ralenti quatre fois ;
+    - Lighthouse à 100 sur trois passages ;
+    - des prises avant/après ;
+    - l'essai sur téléphone.
 
 ## 10. Hors périmètre (v1)
 
