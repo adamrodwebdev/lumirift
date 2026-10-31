@@ -44,6 +44,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["vite", "preview", "--mode", "crazygames", "--port", "4180", "--strictPort"],
       "port": 4180
+    },
+    {
+      "name": "lumirift-playgama-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "preview", "--mode", "playgama", "--port", "4183", "--strictPort"],
+      "port": 4183
     }
   ]
 }

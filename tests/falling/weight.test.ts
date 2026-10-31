@@ -11,7 +11,10 @@ import { FEEL_SCENES } from '@/showcase/feelScenes';
 import type { Scene } from '@/showcase/Scene';
 
 const FRAME_MS = 16;
-const PALETTE = { color: () => ({ r: 200, g: 120, b: 80 }) } as unknown as TonePalette;
+const PALETTE = {
+  color: () => ({ r: 200, g: 120, b: 80 }),
+  effects: { rift: '#ff9a3c', riftCore: '#fff3d6' },
+} as unknown as TonePalette;
 
 /** A feel scene with the well's effects on it, frame by frame; what it held, and when. */
 function watch(scene: Scene, level: EffectsLevel = 'full') {

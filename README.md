@@ -65,7 +65,8 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde. À la mesure du moment (1.41) :
   un bloc posé pèse, un effacement se tient un instant et secoue, un combo grandit, chauffe et
-  crie à ses paliers.
+  crie à ses paliers. Une ligne effacée s'ouvre comme la faille (1.44) : la fêlure court depuis
+  la pièce posée, la rangée se fend en morceaux que la fente avale, rien ne passe devant la pile.
 - **La tension de l'échec** : en danger, la musique presse et un cœur bat, le verre du
   puits se fend d'or ; une ligne sauvée au bord du gouffre compte double. Une défaite brise
   le verre sous la pulsation rouge, ses vitres tombent, la pile éclate dans la matière de

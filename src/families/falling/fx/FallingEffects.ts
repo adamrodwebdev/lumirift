@@ -20,10 +20,18 @@ import type { Piece } from '../pieces/Piece';
 import { CHROMA_TONES, Tone } from '../pieces/PieceType';
 import { shade, type TonePalette } from '@/render/TonePalette';
 import type { ShatterId } from '@/progression/Cosmetics';
+import {
+  crackPath,
+  crackY,
+  joinPath,
+  RIFT,
+  riftChunks,
+  riftRuns,
+  riftSeams,
+  type RiftChunk,
+} from './RiftOpening';
 import { SHATTER_STYLES, type ShatterStyle } from './ShatterStyles';
 
-/** How long a full row shows its crack before it shatters. */
-export const CRACK_MS = 130;
 const POOL_CAPACITY = 1600;
 /** Gravity of debris and collapsing rows, in cells per second squared. */
 const GRAVITY = 62;
@@ -33,6 +41,9 @@ const POPUP_MS = 950;
 const WAVE_MS = 650;
 const SLOW_MOTION_MS = 120;
 const SHARDS_PER_CELL = [6, 4, 3] as const;
+/** What rises from a row's rift as it flares (1.44), by detail: its embers, or a shatter style's flakes. */
+const EMBERS_PER_ROW = [8, 6, 4] as const;
+const FLAKES_PER_ROW = [10, 7, 5] as const;
 /** A full trauma shifts the well this far (cells). */
 const CAMERA_SHIFT = 0.35;
 /** A landed piece squashes and the stack under it dips: deepest at 25 ms, gone by 140 ms (1.41). */
@@ -54,8 +65,9 @@ export function fallMs(distance: number): number {
 }
 
 /** Corners and middles of a cell's edges, clockwise from the top left, in cells. */
-export const CELL_RIM: readonly number[] = [0, 0, 0.5, 0, 1, 0, 1, 0.5, 1, 1, 0.5, 1, 0, 1, 0, 0.5];
+const CELL_RIM: readonly number[] = [0, 0, 0.5, 0, 1, 0, 1, 0.5, 1, 1, 0.5, 1, 0, 1, 0, 0.5];
 
+/** A cleared row the rift opens (1.44; `RiftOpening`): it runs, the row splits, the seam swallows it. */
 export interface CrackingRow {
   /** Visible row index (0 = top of the visible well). */
   readonly row: number;
@@ -63,15 +75,40 @@ export interface CrackingRow {
   /** Each block's links along the row: its pieces stay crystals while it cracks (1.43). */
   readonly links: Uint8Array;
   readonly pure: boolean;
-  /** The crack, as x/y pairs in cells relative to the row's top-left corner. */
+  /** The crack, as x/y pairs in cells from the row's top-left corner, a point every half cell. */
   readonly path: Float32Array;
   /** Where the rift starts, in cells: under the piece that completed the row. */
   readonly origin: number;
-  /** Each brick's break point, x/y pairs in cells from its top-left corner. */
-  readonly inner: Float32Array;
+  /** The row's pieces, cut along the crack, never across two pieces of the stack. */
+  readonly chunks: readonly RiftChunk[];
+  /** Each piece's tint in the player's shatter style; null: the blocks keep their own look. */
+  readonly tints: readonly string[] | null;
+  /** Where two pieces meet (columns): light shows there as the row splits. */
+  readonly seams: readonly number[];
   /** Columns of a piece still falling into the row: drawn once it lands. */
   readonly covered: ReadonlySet<number>;
+  /** Nothing moves (calmer effects): the row fades where it is, under its crack. */
+  readonly still: boolean;
   /** Negative while the piece that completed the row is still falling. */
+  age: number;
+}
+
+/**
+ * Where the cracks of a clear of several lines join (1.44): a crack down its
+ * rows at the origin; at a RIFT!, the rows open into one light.
+ */
+export interface RiftJoin {
+  /** The first row (visible) and how many rows down it runs. */
+  readonly top: number;
+  readonly rows: number;
+  /** 1 for each of those rows the clear took: the crack crosses only those. */
+  readonly cleared: Uint8Array;
+  /** The crack's x every half row from the top of the first row, in cells. */
+  readonly path: Float32Array;
+  readonly origin: number;
+  /** Four lines: the light of the opening fills the rows. */
+  readonly rift: boolean;
+  readonly still: boolean;
   age: number;
 }
 
@@ -182,6 +219,7 @@ export class FallingEffects {
   /** Visual offset of each board row, in cells (negative: drawn higher). */
   readonly rowOffset: Float32Array;
   readonly cracks: CrackingRow[] = [];
+  readonly joins: RiftJoin[] = [];
   readonly trails: Trail[] = [];
   readonly flashes: CellFlash[] = [];
   readonly popups: Popup[] = [];
@@ -302,7 +340,7 @@ export class FallingEffects {
   get busy(): boolean {
     return (
       this.pool.count > 0 ||
-      this.cracks.length > 0 ||
+      this.cracks.length + this.joins.length > 0 ||
       this.camera.active ||
       this.trails.length + this.flashes.length + this.popups.length + this.waves.length > 0 ||
       this.drops.length + this.delayed.length > 0 ||
@@ -353,10 +391,8 @@ export class FallingEffects {
     this.updateHeat(deltaMs);
     this.updateLandings(deltaMs);
 
-    for (const crack of [...this.cracks]) {
-      crack.age += deltaMs;
-      if (crack.age >= CRACK_MS) this.shatter(crack);
-    }
+    this.updateCracks(deltaMs);
+    age(this.joins, deltaMs, RIFT.endMs);
     this.updateRows(deltaMs);
 
     const scale = this.slowMotion > 0 ? 0.35 : 1;
@@ -482,7 +518,7 @@ export class FallingEffects {
     const drop = wait > 0 ? this.drops.at(-1) : undefined;
 
     // Rows above the cleared ones already moved down in the engine: draw them
-    // where they were, hold them while the crack shows, then let them fall.
+    // where they were, hold them while the rift opens, then let them fall as it closes.
     const cleared = new Set(event.rows.map((row) => row.index));
     let shift = 0;
     for (let old = board.height - 1; old >= 0; old--) {
@@ -494,7 +530,7 @@ export class FallingEffects {
       const now = old + shift;
       this.rowOffset[now] = this.rowOffset[old]! - shift;
       this.rowVelocity[now] = 0;
-      this.rowHold[now] = CRACK_MS + wait;
+      this.rowHold[now] = RIFT.fallFrom + wait;
     }
     // The falling piece: its cells in a cleared row wait in the crack, the
     // others moved down with the stack.
@@ -515,13 +551,19 @@ export class FallingEffects {
       this.rowHold[y] = 0;
     }
 
+    const still = !profile.motion;
     for (const row of event.rows) {
-      const crack = this.crackRow(row, hidden, wait, covered.get(row.index) ?? new Set());
+      const crack = this.crackRow(
+        row,
+        { hidden, wait, still },
+        covered.get(row.index) ?? new Set(),
+      );
       this.cracks.push(crack);
       this.pending.set(crack, { lines: event.lines, combo: event.combo });
     }
 
     const rows = event.rows.map((row) => row.index - hidden);
+    if (rows.length >= 2) this.joins.push(this.joinRows(rows, event.lines, { wait, still }));
     const middle = rows.reduce((sum, row) => sum + row, 0) / rows.length;
     this.popups.push({
       text: `+${this.formatPoints(event.points)}`,
@@ -764,43 +806,99 @@ export class FallingEffects {
     }
   }
 
-  private shatter(crack: CrackingRow): void {
-    this.cracks.splice(this.cracks.indexOf(crack), 1);
-    const meta = this.pending.get(crack) ?? { lines: 1, combo: 0 };
-    this.pending.delete(crack);
-    const profile = this.profile();
-    if (profile.particles === 0) return;
+  /** The rifts age: each flares once, then closes and is gone. */
+  private updateCracks(deltaMs: number): void {
+    let kept = 0;
+    for (const crack of this.cracks) {
+      const before = crack.age;
+      crack.age += deltaMs;
+      if (before < RIFT.flareFrom && crack.age >= RIFT.flareFrom) this.flare(crack);
+      if (crack.age < RIFT.endMs) this.cracks[kept++] = crack;
+      else this.pending.delete(crack);
+    }
+    this.cracks.length = kept;
+  }
 
-    const big = meta.lines >= 4;
-    const perCell = Math.max(
-      1,
-      Math.round(SHARDS_PER_CELL[this.quality.detail]! * profile.particles),
-    );
+  /**
+   * The rift flares as it swallows the row's last pieces (1.44): embers rise
+   * from it, or the flakes of the player's shatter style; a pure row and a
+   * combo add their sparks. Nothing rises where things may not move.
+   */
+  private flare(crack: CrackingRow): void {
+    const profile = this.profile();
+    const palette = this.palette();
+    if (profile.particles === 0 || crack.still || !palette) return;
+    const meta = this.pending.get(crack) ?? { lines: 1, combo: 0 };
+    const style = this.shatterStyle;
     const width = crack.tones.length;
-    // Each brick breaks along the cracks it showed, away from where the rift started.
-    for (let x = 0; x < width; x++) {
-      this.shardsFor(
-        x,
-        crack.row,
-        crack.tones[x] as Tone,
-        perCell,
-        crack.origin,
-        big ? 1.35 : 1,
-        crack.inner[x * 2],
-        crack.inner[x * 2 + 1],
-      );
+    const detail = this.quality.detail;
+    const per = style.textured ? EMBERS_PER_ROW[detail]! : FLAKES_PER_ROW[detail]!;
+    const count = Math.max(1, Math.round(per * profile.particles));
+    for (let i = 0; i < count; i++) {
+      const x = random(0.2, width - 0.2);
+      const y = crack.row + crackY(crack.path, x);
+      if (style.textured) this.ember(x, y, palette);
+      else this.flake(x, y, style.colour(crack.tones[Math.floor(x)] as Tone, palette));
     }
     const sparks = Math.round((crack.pure ? 18 : 0) + meta.combo * 4 * profile.particles);
     for (let i = 0; i < sparks; i++) {
       const tone = crack.pure ? CHROMA_TONES[i % CHROMA_TONES.length]! : Tone.O;
-      this.spark(random(0, width), crack.row + 0.5, tone);
+      const x = random(0, width);
+      this.spark(x, crack.row + crackY(crack.path, x), tone);
     }
   }
 
+  /** A mote of the rift's light, drifting up from its seam. */
+  private ember(x: number, y: number, palette: TonePalette): void {
+    const hot = Math.random() < 0.5;
+    this.pool.spawn(
+      ParticleKind.Ember,
+      x,
+      y,
+      random(-0.4, 0.4),
+      -random(0.8, 1.7),
+      random(0.5, 0.85),
+      random(0.04, 0.09),
+      this.color(hot ? palette.effects.riftCore : palette.effects.rift),
+    );
+  }
+
+  /** A flake of the player's shatter style, rising from the seam, then drifting down in the air. */
+  private flake(x: number, y: number, css: string): void {
+    const style = this.shatterStyle;
+    const index = this.pool.spawn(
+      ParticleKind.Flake,
+      x,
+      y,
+      random(-2.2, 2.2),
+      -random(3, 5.5) * style.lift,
+      random(0.8, 1.25),
+      0.2,
+      this.color(css),
+    );
+    if (index < 0) return;
+    this.pool.spin[index] = random(-9, 9) * style.spin;
+    this.pool.angle[index] = random(0, Math.PI * 2);
+    // A small triangle, its three corners about a third of the way round from each other.
+    const size = random(0.1, 0.16);
+    const a = random(0, Math.PI * 2);
+    const b = a + 2.1 + random(-0.3, 0.3);
+    const c = b + 2.1 + random(-0.3, 0.3);
+    this.pool.setTriangle(
+      index,
+      Math.cos(a) * size,
+      Math.sin(a) * size,
+      Math.cos(b) * size,
+      Math.sin(b) * size,
+      Math.cos(c) * size,
+      Math.sin(c) * size,
+    );
+  }
+
   /**
-   * Cuts a brick into fans around its break point (`innerX`, `innerY`, in
-   * cells from its corner) and throws the pieces away from `centre`. With a
-   * textured style, each piece keeps its part of the brick's picture.
+   * Cuts a brick into fans around a break point and throws the pieces away
+   * from `centre`. With a textured style, each piece keeps its part of the
+   * brick's picture.
    */
   private shardsFor(
     x: number,
@@ -809,14 +907,12 @@ export class FallingEffects {
     count: number,
     centre: number,
     power: number,
-    innerX = random(0.3, 0.7),
-    innerY = random(0.3, 0.7),
   ): void {
     const palette = this.palette();
     if (!palette) return;
     const style = this.shatterStyle;
-    const px = x + innerX;
-    const py = y + innerY;
+    const px = x + random(0.3, 0.7);
+    const py = y + random(0.3, 0.7);
     const half = this.view.board.width / 2;
     const step = Math.max(1, Math.floor(8 / count));
     for (let i = 0; i < 8; i += step) {
@@ -847,11 +943,12 @@ export class FallingEffects {
     }
   }
 
+  /** A spark from a rift's seam: quick, but kept near its row (1.44). */
   private spark(x: number, y: number, tone: Tone): void {
     const palette = this.palette();
     if (!palette) return;
     const angle = random(0, Math.PI * 2);
-    const speed = random(7, 17);
+    const speed = random(4, 10);
     const color = this.color(shade(palette.color(tone), 0.35));
     this.pool.spawn(
       ParticleKind.Spark,
@@ -893,24 +990,22 @@ export class FallingEffects {
     }
   }
 
+  /** A cleared row, cut into its pieces along a fresh crack; tinted by the player's shatter style. */
   private crackRow(
     row: ClearedRow,
-    hidden: number,
-    wait: number,
+    {
+      hidden,
+      wait,
+      still,
+    }: { readonly hidden: number; readonly wait: number; readonly still: boolean },
     covered: ReadonlySet<number>,
   ): CrackingRow {
     const width = row.tones.length;
-    const points = width * 2 + 1;
-    const path = new Float32Array(points * 2);
-    for (let i = 0; i < points; i++) {
-      path[i * 2] = (i / (points - 1)) * width;
-      path[i * 2 + 1] = 0.5 + random(-0.32, 0.32);
-    }
-    const inner = new Float32Array(width * 2);
-    for (let x = 0; x < width; x++) {
-      inner[x * 2] = random(0.3, 0.7);
-      inner[x * 2 + 1] = random(0.3, 0.7);
-    }
+    const path = crackPath(width, Math.random);
+    const runs = riftRuns(row.tones, row.links, Math.random);
+    const chunks = riftChunks(runs, path, Math.random);
+    const palette = this.palette();
+    const style = this.shatterStyle;
     return {
       row: row.index - hidden,
       tones: row.tones,
@@ -918,8 +1013,37 @@ export class FallingEffects {
       pure: row.pure,
       path,
       origin: this.lockOrigin ?? width / 2,
-      inner,
+      chunks,
+      tints:
+        style.textured || !palette
+          ? null
+          : chunks.map((chunk) => style.colour(row.tones[chunk.x0] as Tone, palette)),
+      seams: riftSeams(runs, width),
       covered,
+      still,
+      age: -wait,
+    };
+  }
+
+  /** The crack joining a clear's rows (visible indexes) at its origin, across the rows it took. */
+  private joinRows(
+    rows: readonly number[],
+    lines: number,
+    { wait, still }: { readonly wait: number; readonly still: boolean },
+  ): RiftJoin {
+    const top = Math.min(...rows);
+    const span = Math.max(...rows) - top + 1;
+    const cleared = new Uint8Array(span);
+    for (const row of rows) cleared[row - top] = 1;
+    const origin = this.lockOrigin ?? this.view.board.width / 2;
+    return {
+      top,
+      rows: span,
+      cleared,
+      path: joinPath(span, origin, Math.random),
+      origin,
+      rift: lines >= 4,
+      still,
       age: -wait,
     };
   }

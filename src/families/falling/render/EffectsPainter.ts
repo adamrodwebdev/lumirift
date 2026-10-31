@@ -1,6 +1,23 @@
 import { ParticleKind } from '@/fx/ParticlePool';
 import { Tone } from '../pieces/PieceType';
-import { CELL_RIM, CRACK_MS, EFFECT_TIMINGS, type FallingEffects } from '../fx/FallingEffects';
+import {
+  EFFECT_TIMINGS,
+  type CrackingRow,
+  type FallingEffects,
+  type RiftJoin,
+} from '../fx/FallingEffects';
+import {
+  chunkPose,
+  crackY,
+  leakLight,
+  openingLight,
+  pieceLight,
+  RIFT,
+  riftPhase,
+  seamLight,
+  type ChunkPose,
+  type PieceLight,
+} from '../fx/RiftOpening';
 import type { BlockSprites } from './BlockSprites';
 import type { TonePalette } from '@/render/TonePalette';
 import { WellOverlay } from './WellOverlay';
@@ -28,70 +45,43 @@ export class EffectsPainter {
   }
 
   /**
-   * Rows that are cracking: still whole while the rift runs along them from
-   * where the piece landed; each brick lights up and shows its cracks as the
-   * rift reaches it. A row still waiting for a falling piece shows nothing yet.
+   * The rift opening the cleared rows (1.44): it runs from where the piece
+   * landed to both walls, heating the row; the row splits along it into its
+   * pieces, light between them; the seam swallows them, flares and closes.
+   * Several lines: the cracks join at the origin; a RIFT! opens into one
+   * light. A row still waiting for a falling piece shows nothing of it yet.
    */
   cracks(effects: FallingEffects, sprites: BlockSprites, palette: TonePalette, cell: number): void {
     const { ctx } = this;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     for (const crack of effects.cracks) {
       const top = crack.row * cell;
-      const waiting = crack.age < 0;
-      crack.tones.forEach((tone, x) => {
-        if (tone === Tone.Empty || (waiting && crack.covered.has(x))) return;
-        ctx.drawImage(sprites.get(tone as Tone, crack.links[x]), x * cell, top);
-      });
-      if (waiting) continue;
-
-      const width = crack.tones.length;
-      const progress = Math.min(1, crack.age / (CRACK_MS * 0.75));
-      const reach = progress * (Math.max(crack.origin, width - crack.origin) + HEAT_SPREAD);
-      // Each brick heats up and cracks from its break point as the rift arrives.
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineWidth = Math.max(1, cell * 0.045);
-      for (let x = 0; x < width; x++) {
-        const lit = Math.min(1, (reach - Math.abs(x + 0.5 - crack.origin)) / HEAT_SPREAD);
-        if (lit <= 0 || crack.tones[x] === Tone.Empty) continue;
-        ctx.fillStyle = `rgb(255 243 214 / ${0.38 * lit})`;
-        ctx.fillRect(x * cell, top, cell, cell);
-        const px = (x + crack.inner[x * 2]!) * cell;
-        const py = top + crack.inner[x * 2 + 1]! * cell;
-        ctx.globalAlpha = 0.85 * lit;
-        ctx.strokeStyle = palette.crack;
-        ctx.beginPath();
-        for (let i = 0; i < CELL_RIM.length; i += 2) {
-          ctx.moveTo(px, py);
-          ctx.lineTo((x + CELL_RIM[i]!) * cell, top + CELL_RIM[i + 1]! * cell);
-        }
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+      if (crack.age < RIFT.runMs) {
+        const waiting = crack.age < 0;
+        crack.tones.forEach((tone, x) => {
+          if (tone === Tone.Empty || (waiting && crack.covered.has(x))) return;
+          ctx.drawImage(sprites.get(tone as Tone, crack.links[x]), x * cell, top);
+        });
+        if (!waiting) this.running(crack, riftPhase(crack.age).run, palette, cell);
+        continue;
       }
-
-      // The rift itself, both ways from its origin: a wide glow, a gold halo, a white-hot core.
-      const from = Math.max(0, crack.origin - reach);
-      const to = Math.min(width, crack.origin + reach);
-      if (to <= from) continue;
-      ctx.beginPath();
-      ctx.moveTo(from * cell, top + this.crackY(crack.path, from) * cell);
-      for (let i = 0; i < crack.path.length; i += 2) {
-        const px = crack.path[i]!;
-        if (px > from && px < to) ctx.lineTo(px * cell, top + crack.path[i + 1]! * cell);
-      }
-      ctx.lineTo(to * cell, top + this.crackY(crack.path, to) * cell);
-      ctx.globalAlpha = 0.3;
-      ctx.strokeStyle = palette.effects.rift;
-      ctx.lineWidth = cell * 0.55;
-      ctx.stroke();
-      ctx.globalAlpha = 0.7;
-      ctx.strokeStyle = palette.accent;
-      ctx.lineWidth = cell * 0.2;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = palette.crack;
-      ctx.lineWidth = Math.max(1.5, cell * 0.08);
-      ctx.stroke();
+      const phase = riftPhase(crack.age);
+      const light = pieceLight(phase, crack.still);
+      if (light.alpha > 0.01)
+        crack.chunks.forEach((chunk, index) => {
+          const pose = chunkPose(chunk, phase, crack.still);
+          if (pose.scaleX > 0.01 && pose.scaleY > 0.01)
+            this.chunk(crack, index, pose, { sprites, palette, top, cell, light });
+        });
+      const leak = leakLight(phase, crack.still);
+      if (leak > 0) this.leaks(crack, leak, palette, cell);
+      const seam = seamLight(phase, crack.still);
+      this.riftPath(crack.path, top, cell, 0, crack.tones.length);
+      this.riftStroke(palette, cell, seam.strength, seam.width);
     }
+    for (const join of effects.joins)
+      if (join.age >= RIFT.runMs) this.join(join, palette, cell, effects.width);
   }
 
   /** Hard drops on their way down: the piece speeds up, a streak behind it. */
@@ -174,12 +164,170 @@ export class EffectsPainter {
     this.popups(effects, palette, cell);
   }
 
-  /** The height of the crack at `x` cells along its row. */
-  private crackY(path: Float32Array, x: number): number {
-    const step = path[2]! - path[0]!;
-    const i = Math.min(path.length / 2 - 2, Math.max(0, Math.floor(x / step)));
-    const t = (x - path[i * 2]!) / step;
-    return path[i * 2 + 1]! + (path[i * 2 + 3]! - path[i * 2 + 1]!) * t;
+  /** The rift running both ways from its origin: each brick heats up as it passes. */
+  private running(crack: CrackingRow, run: number, palette: TonePalette, cell: number): void {
+    const { ctx } = this;
+    const width = crack.tones.length;
+    const top = crack.row * cell;
+    const reach = run * (Math.max(crack.origin, width - crack.origin) + HEAT_SPREAD);
+    ctx.fillStyle = palette.effects.rift;
+    for (let x = 0; x < width; x++) {
+      const lit = Math.min(1, (reach - Math.abs(x + 0.5 - crack.origin)) / HEAT_SPREAD);
+      if (lit <= 0) continue;
+      ctx.globalAlpha = 0.3 * lit;
+      ctx.fillRect(x * cell, top, cell, cell);
+    }
+    const from = Math.max(0, crack.origin - reach);
+    const to = Math.min(width, crack.origin + reach);
+    if (to <= from) return;
+    this.riftPath(crack.path, top, cell, from, to);
+    this.riftStroke(palette, cell, 1, 0.07);
+  }
+
+  /**
+   * One piece of a row, moved, turned and squashed about its centre: each of
+   * its blocks' pictures inside its outline, the shatter style's tint over
+   * it as the row splits, the rift's glow as the seam draws it in.
+   */
+  private chunk(
+    crack: CrackingRow,
+    index: number,
+    pose: ChunkPose,
+    at: {
+      readonly sprites: BlockSprites;
+      readonly palette: TonePalette;
+      readonly top: number;
+      readonly cell: number;
+      readonly light: PieceLight;
+    },
+  ): void {
+    const { ctx, matrix } = this;
+    const { sprites, top, cell, light } = at;
+    const chunk = crack.chunks[index]!;
+    const px = chunk.pivotX * cell;
+    const py = top + chunk.pivotY * cell;
+    ctx.save();
+    ctx.translate(px, py + pose.dy * cell);
+    ctx.rotate(pose.turn);
+    ctx.scale(pose.scaleX, pose.scaleY);
+    ctx.translate(-px, -py);
+    const outline = chunk.outline;
+    ctx.beginPath();
+    ctx.moveTo(outline[0]! * cell, top + outline[1]! * cell);
+    for (let i = 2; i < outline.length; i += 2)
+      ctx.lineTo(outline[i]! * cell, top + outline[i + 1]! * cell);
+    ctx.closePath();
+    ctx.globalAlpha = light.alpha;
+    for (let x = chunk.x0; x < chunk.x1; x++) {
+      const sprite = sprites.get(crack.tones[x] as Tone, crack.links[x]);
+      const pattern = this.pattern(sprite);
+      if (!pattern) continue;
+      // The block's picture where the block was: the piece carries it as it moves.
+      matrix.a = cell / sprite.width;
+      matrix.b = 0;
+      matrix.c = 0;
+      matrix.d = cell / sprite.height;
+      matrix.e = x * cell;
+      matrix.f = top;
+      pattern.setTransform(matrix);
+      ctx.fillStyle = pattern;
+      ctx.fill();
+    }
+    const tint = crack.tints?.[index];
+    if (tint && light.tint > 0) {
+      ctx.globalAlpha = light.alpha * light.tint;
+      ctx.fillStyle = tint;
+      ctx.fill();
+    }
+    if (light.glow > 0) {
+      ctx.globalAlpha = light.alpha * light.glow;
+      ctx.fillStyle = at.palette.effects.rift;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /** Light between a row's pieces as it splits, down each place two pieces meet. */
+  private leaks(crack: CrackingRow, light: number, palette: TonePalette, cell: number): void {
+    const { ctx } = this;
+    const top = crack.row * cell;
+    ctx.globalAlpha = 0.85 * light;
+    ctx.strokeStyle = palette.effects.riftCore;
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.beginPath();
+    for (const x of crack.seams) {
+      ctx.moveTo((x + 0.04) * cell, top + 1);
+      ctx.lineTo((x - 0.05) * cell, top + crackY(crack.path, x) * cell);
+      ctx.lineTo((x + 0.03) * cell, top + cell - 1);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * The crack joining the rows of a clear of several lines, down from its
+   * origin through the rows it took; a RIFT!'s rows open into one light.
+   */
+  private join(join: RiftJoin, palette: TonePalette, cell: number, width: number): void {
+    const { ctx } = this;
+    const phase = riftPhase(join.age);
+    const top = join.top * cell;
+    const path = join.path;
+    ctx.beginPath();
+    for (let i = 0; i < path.length - 1; i++) {
+      if (!join.cleared[Math.floor(i / 2)]) continue;
+      ctx.moveTo(path[i]! * cell, top + (i / 2) * cell);
+      ctx.lineTo(path[i + 1]! * cell, top + ((i + 1) / 2) * cell);
+    }
+    this.riftStroke(palette, cell, phase.split * (1 - phase.close), 0.06);
+    const light = join.rift && !join.still ? openingLight(join.age) : 0;
+    if (light <= 0) return;
+    // The opening's light, an oval over the rows, from the origin.
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.translate(join.origin * cell, top + (join.rows / 2) * cell);
+    ctx.scale(width * 0.55 * cell, join.rows * 0.62 * cell);
+    const lens = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    lens.addColorStop(0, palette.effects.riftCore);
+    lens.addColorStop(0.45, palette.effects.rift);
+    lens.addColorStop(1, 'rgb(0 0 0 / 0)');
+    ctx.globalAlpha = 0.6 * light;
+    ctx.fillStyle = lens;
+    ctx.beginPath();
+    ctx.arc(0, 0, 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** The crack's path along a row, from `from` to `to` cells. */
+  private riftPath(path: Float32Array, top: number, cell: number, from: number, to: number): void {
+    const { ctx } = this;
+    ctx.beginPath();
+    ctx.moveTo(from * cell, top + crackY(path, from) * cell);
+    for (let i = 0; i < path.length; i += 2) {
+      const x = path[i]!;
+      if (x > from && x < to) ctx.lineTo(x * cell, top + path[i + 1]! * cell);
+    }
+    ctx.lineTo(to * cell, top + crackY(path, to) * cell);
+  }
+
+  /** The rift's light along the current path: a wide glow, a gold halo, a white-hot core `core` cells wide. */
+  private riftStroke(palette: TonePalette, cell: number, alpha: number, core: number): void {
+    if (alpha <= 0) return;
+    const { ctx } = this;
+    ctx.globalAlpha = 0.32 * alpha;
+    ctx.strokeStyle = palette.effects.rift;
+    ctx.lineWidth = cell * (core + 0.48);
+    ctx.stroke();
+    ctx.globalAlpha = 0.7 * alpha;
+    ctx.strokeStyle = palette.accent;
+    ctx.lineWidth = cell * (core + 0.13);
+    ctx.stroke();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = palette.crack;
+    ctx.lineWidth = Math.max(1.5, cell * core);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
   }
 
   private pattern(sprite: HTMLCanvasElement): CanvasPattern | null {
@@ -206,7 +354,7 @@ export class EffectsPainter {
       ctx.globalAlpha = pool.alpha(i);
       const color = colors[pool.color[i]!]!;
       const kind = pool.kind[i];
-      if (kind === ParticleKind.Shard) {
+      if (kind === ParticleKind.Shard || kind === ParticleKind.Flake) {
         const unitCos = Math.cos(pool.angle[i]!);
         const unitSin = Math.sin(pool.angle[i]!);
         const cos = unitCos * cell;
@@ -250,6 +398,13 @@ export class EffectsPainter {
         ctx.moveTo(x - pool.vx[i]! * cell * 0.03, y - pool.vy[i]! * cell * 0.03);
         ctx.lineTo(x, y);
         ctx.stroke();
+        ctx.globalCompositeOperation = 'source-over';
+      } else if (kind === ParticleKind.Ember) {
+        ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(0.8, pool.size[i]! * cell), 0, Math.PI * 2);
+        ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
       } else {
         const size = pool.size[i]! * cell;

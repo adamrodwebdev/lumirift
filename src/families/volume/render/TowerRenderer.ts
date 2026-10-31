@@ -1,11 +1,22 @@
 import { Tone } from '@/core/Tone';
 import type { FallingView } from '@/families/falling/FallingSession';
 import {
-  CELL_RIM,
-  CRACK_MS,
   EFFECT_TIMINGS,
+  type CrackingRow,
   type FallingEffects,
+  type RiftJoin,
 } from '@/families/falling/fx/FallingEffects';
+import {
+  crackY,
+  halfBand,
+  leakLight,
+  openingLight,
+  pieceLight,
+  RIFT,
+  riftPhase,
+  seamLight,
+  type RiftPhase,
+} from '@/families/falling/fx/RiftOpening';
 import { BEAM, BeamPaint, lowestBlocks } from '@/families/falling/render/LandingBeam';
 import { WellOverlay } from '@/families/falling/render/WellOverlay';
 import type { Piece } from '@/families/falling/pieces/Piece';
@@ -627,73 +638,216 @@ export class TowerRenderer {
 
   // --- Effects ----------------------------------------------------------------
 
+  /**
+   * The rift opening the cleared rows on the glass (1.44), as in the well: it
+   * runs from the piece, heating the bricks in front; each brick splits along
+   * it, its two halves drawn in to the seam, which flares and closes. The back
+   * shows faintly through the glass; the light only in front.
+   */
   private drawCracks(sprites: GlassSprites, palette: TonePalette): void {
-    const { ctx, effects, projection } = this;
+    const { ctx, effects } = this;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     for (const crack of effects.cracks) {
-      crack.tones.forEach((tone, x) => {
-        if (tone === Tone.Empty) return;
-        this.drawCell(sprites, tone as Tone, { x, y: crack.row, links: crack.links[x]! }, 1);
+      if (crack.age < RIFT.runMs) {
+        crack.tones.forEach((tone, x) => {
+          if (tone === Tone.Empty) return;
+          this.drawCell(sprites, tone as Tone, { x, y: crack.row, links: crack.links[x]! }, 1);
+        });
+        if (crack.age >= 0) this.drawRunning(crack, riftPhase(crack.age).run, palette);
+        continue;
+      }
+      const phase = riftPhase(crack.age);
+      this.drawHalves(sprites, crack, phase, palette);
+      const seam = seamLight(phase, crack.still);
+      this.strokeRift(crack, [0, crack.tones.length], palette, {
+        alpha: seam.strength,
+        core: seam.width,
       });
-      const width = crack.tones.length;
-      const progress = Math.min(1, crack.age / (CRACK_MS * 0.75));
-      const reach = progress * (Math.max(crack.origin, width - crack.origin) + HEAT_SPREAD);
-      // Each glass brick heats up and cracks from its break point as the rift arrives (1.41).
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      for (let x = 0; x < width; x++) {
-        const lit = Math.min(1, (reach - Math.abs(x + 0.5 - crack.origin)) / HEAT_SPREAD);
-        if (lit <= 0 || crack.tones[x] === Tone.Empty || !this.isFront(x)) continue;
+    }
+    for (const join of effects.joins) if (join.age >= RIFT.runMs) this.drawJoin(join, palette);
+    ctx.globalAlpha = 1;
+  }
+
+  /** The rift running both ways from its origin: the bricks in front heat up as it passes. */
+  private drawRunning(crack: CrackingRow, run: number, palette: TonePalette): void {
+    const { ctx } = this;
+    const width = crack.tones.length;
+    const reach = run * (Math.max(crack.origin, width - crack.origin) + HEAT_SPREAD);
+    ctx.fillStyle = palette.effects.rift;
+    for (let x = 0; x < width; x++) {
+      const lit = Math.min(1, (reach - Math.abs(x + 0.5 - crack.origin)) / HEAT_SPREAD);
+      if (lit <= 0 || crack.tones[x] === Tone.Empty || !this.isFront(x)) continue;
+      this.face(x, crack.row);
+      ctx.globalAlpha = 0.3 * lit;
+      ctx.fillRect(0, 0, 1, 1);
+    }
+    const from = Math.max(0, crack.origin - reach);
+    const to = Math.min(width, crack.origin + reach);
+    if (to > from) this.strokeRift(crack, [from, to], palette, { alpha: 1, core: 0.07 });
+  }
+
+  /**
+   * Each brick's halves, above and below the rift, squashed in to its seam
+   * (on the glass the pieces only squash), with the shatter style's tint and
+   * the rift's glow; the light between the pieces as the row splits.
+   */
+  private drawHalves(
+    sprites: GlassSprites,
+    crack: CrackingRow,
+    phase: RiftPhase,
+    palette: TonePalette,
+  ): void {
+    const { ctx, projection } = this;
+    const light = pieceLight(phase, crack.still);
+    if (light.alpha <= 0.01) return;
+    crack.chunks.forEach((chunk, index) => {
+      const tint = crack.tints?.[index];
+      for (let x = chunk.x0; x < chunk.x1; x++) {
+        const tone = crack.tones[x] as Tone;
+        if (tone === Tone.Empty) continue;
+        const cut = crackY(crack.path, x + 0.5);
+        const band = halfBand(chunk.upper, cut, phase, crack.still);
+        if (band.height <= 0.01) continue;
+        const front = this.isFront(x);
+        const seen = front ? light.alpha : light.alpha * BACK_ALPHA;
+        const sprite = sprites.get(tone, crack.links[x]);
+        const from = chunk.upper ? 0 : cut;
+        const share = chunk.upper ? cut : 1 - cut;
         this.face(x, crack.row);
-        ctx.globalAlpha = 0.38 * lit;
-        ctx.fillStyle = 'rgb(255 243 214)';
-        ctx.fillRect(0, 0, 1, 1);
-        ctx.globalAlpha = 0.85 * lit;
-        ctx.strokeStyle = palette.crack;
-        ctx.lineWidth = 0.045;
-        ctx.beginPath();
-        const px = crack.inner[x * 2]!;
-        const py = crack.inner[x * 2 + 1]!;
-        for (let i = 0; i < CELL_RIM.length; i += 2) {
-          ctx.moveTo(px, py);
-          ctx.lineTo(CELL_RIM[i]!, CELL_RIM[i + 1]!);
+        ctx.globalAlpha = seen;
+        ctx.drawImage(
+          sprite,
+          0,
+          from * sprite.height,
+          sprite.width,
+          share * sprite.height,
+          0,
+          band.top,
+          1,
+          band.height,
+        );
+        if (!front) continue;
+        const shadow = projection.shadow(x + 0.5);
+        if (shadow > 0.02) {
+          ctx.globalAlpha = seen * shadow;
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, band.top, 1, band.height);
         }
-        ctx.stroke();
+        if (tint && light.tint > 0) {
+          ctx.globalAlpha = seen * light.tint;
+          ctx.fillStyle = tint;
+          ctx.fillRect(0, band.top, 1, band.height);
+        }
+        if (light.glow > 0) {
+          ctx.globalAlpha = seen * light.glow;
+          ctx.fillStyle = palette.effects.rift;
+          ctx.fillRect(0, band.top, 1, band.height);
+        }
       }
-      // The rift itself, both ways from its origin, on the front: a wide glow, a gold halo,
-      // a white-hot core.
-      const from = Math.max(0, crack.origin - reach);
-      const to = Math.min(width, crack.origin + reach);
-      if (to <= from) continue;
-      ctx.setTransform(1, 0, 0, 1, this.offsetX, this.offsetY);
+    });
+    const leak = leakLight(phase, crack.still);
+    if (leak <= 0) return;
+    // The light between two pieces, down the edge where they meet.
+    ctx.globalAlpha = 0.85 * leak;
+    ctx.strokeStyle = palette.effects.riftCore;
+    ctx.lineWidth = 0.035;
+    for (const x of crack.seams) {
+      if (!this.isFront(x) || !this.isFront(x - 1)) continue;
+      this.face(x, crack.row);
       ctx.beginPath();
-      let drawing = false;
-      for (let i = 0; i < crack.path.length; i += 2) {
-        const x = crack.path[i]!;
-        if (x < from || x > to || projection.depth(x) <= 0) {
-          drawing = false;
-          continue;
-        }
-        const sx = projection.screenX(x);
-        const sy = projection.screenY(x, crack.row + crack.path[i + 1]!);
-        if (drawing) ctx.lineTo(sx, sy);
-        else ctx.moveTo(sx, sy);
-        drawing = true;
-      }
-      const cell = projection.rowHeight;
-      ctx.globalAlpha = 0.3;
-      ctx.strokeStyle = palette.effects.rift;
-      ctx.lineWidth = cell * 0.55;
-      ctx.stroke();
-      ctx.globalAlpha = 0.7;
-      ctx.strokeStyle = palette.accent;
-      ctx.lineWidth = cell * 0.2;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = palette.crack;
-      ctx.lineWidth = Math.max(1.5, cell * 0.08);
+      ctx.moveTo(0.04, 0.03);
+      ctx.lineTo(-0.05, crackY(crack.path, x));
+      ctx.lineTo(0.03, 0.97);
       ctx.stroke();
     }
+  }
+
+  /**
+   * The rift's light along a row's crack between two columns, on the front
+   * of the tower.
+   */
+  private strokeRift(
+    crack: CrackingRow,
+    [from, to]: readonly [number, number],
+    palette: TonePalette,
+    { alpha, core }: { readonly alpha: number; readonly core: number },
+  ): void {
+    if (alpha <= 0) return;
+    const { ctx, projection } = this;
+    ctx.setTransform(1, 0, 0, 1, this.offsetX, this.offsetY);
+    ctx.beginPath();
+    let drawing = false;
+    for (let i = 0; i < crack.path.length; i += 2) {
+      const x = crack.path[i]!;
+      if (x < from || x > to || projection.depth(x) <= 0) {
+        drawing = false;
+        continue;
+      }
+      const sx = projection.screenX(x);
+      const sy = projection.screenY(x, crack.row + crack.path[i + 1]!);
+      if (drawing) ctx.lineTo(sx, sy);
+      else ctx.moveTo(sx, sy);
+      drawing = true;
+    }
+    this.riftLight(palette, alpha, core);
+  }
+
+  /** Strokes the current path with the rift's light: a wide glow, a gold halo, a white-hot core. */
+  private riftLight(palette: TonePalette, alpha: number, core: number): void {
+    if (alpha <= 0) return;
+    const { ctx } = this;
+    const cell = this.projection.rowHeight;
+    ctx.globalAlpha = 0.32 * alpha;
+    ctx.strokeStyle = palette.effects.rift;
+    ctx.lineWidth = cell * (core + 0.48);
+    ctx.stroke();
+    ctx.globalAlpha = 0.7 * alpha;
+    ctx.strokeStyle = palette.accent;
+    ctx.lineWidth = cell * (core + 0.13);
+    ctx.stroke();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = palette.crack;
+    ctx.lineWidth = Math.max(1.5, cell * core);
+    ctx.stroke();
     ctx.globalAlpha = 1;
+  }
+
+  /** The crack joining a clear's rows at its origin, in front; a RIFT!'s rows open into one light. */
+  private drawJoin(join: RiftJoin, palette: TonePalette): void {
+    const { ctx, projection } = this;
+    const phase = riftPhase(join.age);
+    const path = join.path;
+    ctx.setTransform(1, 0, 0, 1, this.offsetX, this.offsetY);
+    ctx.beginPath();
+    for (let i = 0; i < path.length - 1; i++) {
+      const a = path[i]!;
+      const b = path[i + 1]!;
+      if (!join.cleared[Math.floor(i / 2)] || projection.depth(a) <= 0) continue;
+      ctx.moveTo(projection.screenX(a), projection.screenY(a, join.top + i / 2));
+      ctx.lineTo(projection.screenX(b), projection.screenY(b, join.top + (i + 1) / 2));
+    }
+    this.riftLight(palette, phase.split * (1 - phase.close), 0.06);
+    const light = join.rift && !join.still ? openingLight(join.age) : 0;
+    if (light <= 0 || projection.depth(join.origin) <= 0) return;
+    const cell = projection.rowHeight;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.translate(
+      projection.screenX(join.origin),
+      projection.screenY(join.origin, join.top + join.rows / 2),
+    );
+    ctx.scale(projection.radius * 0.8, join.rows * 0.62 * cell);
+    const lens = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    lens.addColorStop(0, palette.effects.riftCore);
+    lens.addColorStop(0.45, palette.effects.rift);
+    lens.addColorStop(1, 'rgb(0 0 0 / 0)');
+    ctx.globalAlpha = 0.6 * light;
+    ctx.fillStyle = lens;
+    ctx.beginPath();
+    ctx.arc(0, 0, 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   private drawTrails(palette: TonePalette): void {
@@ -764,7 +918,7 @@ export class TowerRenderer {
       ctx.globalAlpha = pool.alpha(i) * (depth > 0 ? 1 : BACK_ALPHA);
       const color = colors[pool.color[i]!]!;
       const kind = pool.kind[i];
-      if (kind === ParticleKind.Shard) {
+      if (kind === ParticleKind.Shard || kind === ParticleKind.Flake) {
         const cos = Math.cos(pool.angle[i]!) * cell;
         const sin = Math.sin(pool.angle[i]!) * cell;
         const o = i * 6;
@@ -791,6 +945,13 @@ export class TowerRenderer {
         ctx.moveTo(x - pool.vx[i]! * cell * 0.03, y - pool.vy[i]! * cell * 0.03);
         ctx.lineTo(x, y);
         ctx.stroke();
+        ctx.globalCompositeOperation = 'source-over';
+      } else if (kind === ParticleKind.Ember) {
+        ctx.globalCompositeOperation = this.dark ? 'lighter' : 'source-over';
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(0.8, pool.size[i]! * cell), 0, Math.PI * 2);
+        ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
       } else {
         const size = pool.size[i]! * cell;
