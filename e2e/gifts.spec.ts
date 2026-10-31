@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { giftDialog } from './dailyGift';
+import { seedStorage } from './seed';
 
 /*
  * The gift calendar and the collections (1.35), in French. Nothing before
@@ -21,17 +22,9 @@ async function openMenu(page: Page) {
   await page.locator('main').waitFor();
 }
 
-/**
- * The menu on a device holding this profile. Written before the game's first script, once per
- * tab (a reload keeps what the game saved since): never between two loads, where the game's
- * own deferred save could land on it under load.
- */
+/** The menu on a device holding this profile. */
 async function openWith(page: Page, profile: Record<string, unknown>) {
-  await page.addInitScript((saved) => {
-    if (sessionStorage.getItem('e2e:seeded')) return;
-    sessionStorage.setItem('e2e:seeded', '1');
-    localStorage.setItem('stackrift:profile', JSON.stringify(saved));
-  }, profile);
+  await seedStorage(page, { 'stackrift:profile': profile });
   await page.goto('/');
   await page.locator('main').waitFor();
 }

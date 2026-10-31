@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
+import { seedStorage } from './seed';
 
 /*
  * The seasons and the week's event (1.36), in French. The browser's date is
@@ -12,19 +13,10 @@ const tab = (page: Page, name: string) => page.getByRole('tab', { name });
 const panel = (page: Page, name: string) => page.getByRole('tabpanel', { name });
 const banner = (page: Page) => panel(page, 'Accueil').getByRole('button', { name: /^Semaine/ });
 
-/**
- * The menu on a device holding this saved data (the season's, the profile's). Written before
- * the game's first script, once per tab (a reload keeps what the game saved since): never
- * between two loads, where the game's own deferred save could land on it under load.
- */
+/** The menu on a device holding this saved data (the season's, the profile's). */
 async function openWith(page: Page, saved: Record<string, unknown>) {
   await closeDailyGift(page);
-  await page.addInitScript((data) => {
-    if (sessionStorage.getItem('e2e:seeded')) return;
-    sessionStorage.setItem('e2e:seeded', '1');
-    for (const [key, value] of Object.entries(data))
-      localStorage.setItem(key, JSON.stringify(value));
-  }, saved);
+  await seedStorage(page, saved);
   await page.goto('/');
   await page.locator('main').waitFor();
 }

@@ -1723,7 +1723,9 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   clavier seul. **Garde responsive** (`e2e/responsive.spec.ts`) : aucun défilement
   horizontal de 320 à 2560 px tous les 20 px, puis quatre tailles clés (320 × 568 et
   844 × 390 au toucher, zooms 200 % et 400 %) : cibles tactiles, textes du HUD, part du
-  puits.
+  puits. Les sauvegardes d'un scénario sont posées avant le premier script du jeu
+  (`e2e/seed.ts`), jamais entre deux chargements, où la sauvegarde que le jeu écrit après un
+  chargement pouvait les écraser sous la charge (1.43).
 - **Audits d'accessibilité** axe-core WCAG 2.2 AA (§ 4.3).
 - **Lighthouse** mobile et bureau : 100 dans les quatre catégories (`npm run lighthouse`).
 - `npm run verify` (lint, format, types y compris des tests e2e, tests, build) avant

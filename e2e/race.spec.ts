@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
 import { freezeTime, play, playUntil } from './gameTime';
+import { seedStorage } from './seed';
 
 /*
  * The Rift Race (1.34), in French: closed until the campaign reaches 4-4,
@@ -40,11 +41,10 @@ test('a run of the race: the clock, the worlds, the shift seen coming, the weekâ
   page,
 }) => {
   test.setTimeout(180_000);
-  await page.evaluate((won) => {
-    const stars = Object.fromEntries(won.map((id) => [id, 2]));
-    localStorage.setItem('stackrift:campaign', JSON.stringify({ stars, ranks: {} }));
-    localStorage.setItem('stackrift:profile', JSON.stringify({ games: 12 }));
-  }, WON);
+  await seedStorage(page, {
+    'stackrift:campaign': { stars: Object.fromEntries(WON.map((id) => [id, 2])), ranks: {} },
+    'stackrift:profile': { games: 12 },
+  });
   await page.reload();
   await page.getByRole('tab', { name: 'Modes' }).click();
   await banner(page).click();
