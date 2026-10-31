@@ -1,6 +1,6 @@
 import { Tone } from '@/core/Tone';
 import { ParticleKind } from '@/fx/ParticlePool';
-import { BEAM, BeamPaint, lowestBlocks } from '@/families/falling/render/LandingBeam';
+import { BeamPaint, lowestBlocks } from '@/families/falling/render/LandingBeam';
 import { parseHex, shade, type Rgb, type TonePalette } from '@/render/TonePalette';
 import { BADGE_BREAK_MS, type SandEffects } from '../fx/SandEffects';
 import { WORM_RADIUS } from '../engine/DuneWorm';
@@ -538,33 +538,30 @@ export class SandRenderer {
     ctx.globalAlpha = 1;
   }
 
-  /** The landing beam (1.43): from each column of the piece, light down to where it will rest. */
+  /**
+   * The landing beam (1.43): from each column of the piece, light down to where
+   * it will rest; at its foot, the constellation of its blocks there (1.45).
+   */
   private drawBeam(piece: SandPiece, dy: number, palette: TonePalette, grain: number): void {
     if (dy <= 0) return;
     const { ctx, beam } = this;
     const g = GRAINS_PER_CELL;
     const cell = g * grain;
     const rgb = palette.color(piece.tone);
-    const { glow, core } = beam.cap(piece.tone, rgb);
     const lows = lowestBlocks(piece.localCells, this.lows);
     for (let local = 0; local < lows.length; local++) {
       const low = lows[local]!;
       if (low < 0) continue;
-      const x = (piece.x + local * g) * grain;
-      const top = (piece.y + (low + 1) * g) * grain;
-      const bottom = top + dy * grain;
       ctx.save();
-      ctx.translate(x, top);
-      ctx.scale(cell, bottom - top);
+      ctx.translate((piece.x + local * g) * grain, (piece.y + (low + 1) * g) * grain);
+      ctx.scale(cell, dy * grain);
       beam.fillShaft(piece.tone, rgb);
       ctx.restore();
-      const inset = ((1 - BEAM.cap) / 2) * cell;
-      const thick = Math.max(2, cell * 0.08);
-      ctx.fillStyle = glow;
-      ctx.fillRect(x + inset * 0.6, bottom - thick * 2, cell - inset * 1.2, thick * 3);
-      ctx.fillStyle = core;
-      ctx.fillRect(x + inset, bottom - thick * 1.25, cell - inset * 2, thick);
     }
+    beam.beginConstellation(piece.localCells);
+    for (const { x, y } of piece.localCells)
+      beam.addStar((piece.x + (x + 0.5) * g) * grain, (piece.y + dy + (y + 0.5) * g) * grain, cell);
+    beam.drawConstellation(piece.tone, rgb);
   }
 
   private outline(piece: SandPiece, dy: number, color: string, grain: number): void {
