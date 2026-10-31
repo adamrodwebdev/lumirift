@@ -1,10 +1,14 @@
 import { Tone } from '@/core/Tone';
 import { GRAINS_PER_CELL, SAND_TONES, type SandGrid } from './SandGrid';
 
-/** A prepared well: how much of its height the bed fills, and which of its patterns. */
+/** A prepared well: how much sand the bed lays, and which of its patterns. */
 export interface SandBed {
-  /** Share of the well's height (0 to 1). */
-  readonly share: number;
+  /**
+   * Rows of sand, in cells: an amount, not a share of the well, so that what was staged or
+   * tuned on a bed keeps its sand whatever the well's height (1.43: two rows fewer thinned
+   * every bed laid as a share).
+   */
+  readonly rows: number;
   /** Shifts the colours and the cuts: two beds never look alike. */
   readonly variant: number;
   /**
@@ -30,8 +34,8 @@ const CUT = 7;
  * top bands are one slab under a sheet of water. No chance involved:
  * a bed never changes a seeded game's draws.
  */
-export function layBed(grid: SandGrid, { share, variant, water = 0 }: SandBed): void {
-  const rows = Math.round(grid.height * share);
+export function layBed(grid: SandGrid, { rows: cells, variant, water = 0 }: SandBed): void {
+  const rows = Math.min(grid.height, Math.round(cells * GRAINS_PER_CELL));
   const bands = Math.ceil(rows / GRAINS_PER_CELL);
   const toneOf = (band: number) => SAND_TONES[(band + variant) % SAND_TONES.length]!;
   const cutOf = (band: number) => (band * 17 + 6 + variant * 11) % (grid.width - 8);

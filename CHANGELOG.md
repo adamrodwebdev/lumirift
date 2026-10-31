@@ -3,6 +3,69 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.43.0] — 30/10/2026
+
+Un puits à nous (lot 29), d'après la revue de propriété intellectuelle du 30/10 : Lumirift garde
+toutes les règles du genre et dessine à sa manière ce que le jugement Tetris v. Xio a protégé
+(le terrain exact, les blocs séparés, le fantôme, l'aperçu des pièces suivantes, les rangées
+d'attaque grises).
+
+### Ajouté
+
+- **Des pièces d'un seul cristal** : une pièce se dessine d'un seul tenant, sans bordure entre
+  ses blocs, et le reste dans la pile jusqu'à ce qu'une ligne la coupe. Le cristal, le papier et
+  le pixel dessinent eux-mêmes leurs pièces jointes (un biseau le long du contour seul, l'éclat
+  sur le bloc du coin, le pli au seul coin supérieur droit) ; les autres matières joignent leurs
+  blocs sans couture ; dans la Tour, chaque pièce est un seul carreau de verre.
+- **Le faisceau d'atterrissage**, à la place du fantôme : sous chaque colonne de la pièce, une
+  lumière tombe jusqu'où elle se posera, et un liseré clair marque l'endroit, dans le puits, la
+  Tour et le Sable. Le réglage devient « Afficher le faisceau d'atterrissage ».
+- **Les prochaines pièces dans la faille** : au-dessus du puits, aussi large que lui, la
+  suivante attend au milieu, au-dessus de l'endroit où elle apparaîtra, les autres plus petites
+  et plus pâles à sa droite ; chacune sort de la fente de lumière à son tour. Sur téléphone, les
+  lignes et le niveau montent à côté de la réserve.
+- **La pierre de faille** : les rangées d'attaque du Duel et les gravats sous le Cœur de la
+  faille sont de la pierre sombre, d'une seule dalle par rangée, fendue, avec une veine de
+  lumière dans la brèche.
+
+### Modifié
+
+- **Le puits passe de 10 × 20 à 10 × 18** dans les modes de la famille Chute et dans le Sable :
+  même largeur, donc les mêmes stratégies, deux rangées de moins. La Bascule garde son 12 × 12,
+  la Tour son cylindre, les Dunes leur 9 × 12. Les cases grandissent sur téléphone (35 px au
+  lieu de 31 à 390 × 844) et sur ordinateur (40 au lieu de 38 à 1280 × 800) ; en paysage, la
+  faille se loge entre la pause et le son, et le puits garde la hauteur de l'écran. Au-dessus
+  d'un puits étroit (la Tour couchée, un petit téléphone), la faille dépasse ses bords plutôt
+  que de rapetisser les pièces qui viennent.
+- **La marée** monte au pas du nouveau puits (20/18 plus lentement) : elle en remplit la même
+  part dans le même temps.
+- **La campagne réglée au nouveau puits** par le bot de courbe : 1-3 demande 8 lignes (10),
+  2-1 dure 1 min 45 (1 min 30, étoiles à 7 et 14 lignes), le Ver des dunes de 2-7 a 90 de vie
+  (100), 4-5 demande 6 liaisons (7) ; l'objectif de la semaine de la glace passe de 30 à 25.
+
+### Corrigé
+
+- Dans le Sable, en paysage et sur ordinateur, le bouton de la surcharge se range contre le
+  tableau de bord, comme la réserve des autres modes, au lieu de rester au bord de l'écran.
+
+### Technique
+
+- Une seule taille de puits, `WELL` (`src/core/Well.ts`), pour le plateau de chute et la grille
+  du Sable.
+- Le plateau retient la pièce d'où vient chaque bloc (`pieces`) et dit quels côtés touchent la
+  même pièce (`links`, `Links.ts`) ; les formes savent les leurs (`shapeLinks`). Les matières
+  dessinent un bloc par côtés joints (`BlockSprites.get(tone, links)`).
+- `LandingBeam` (les blocs les plus bas dans un tampon réutilisé, les dégradés faits une fois
+  par teinte) ; `RiftQueue`, la bande commune aux trois scènes, et `riftPieceSize` ;
+  `PieceRenderer.layout` prend un objet ; jetons `--stone-*`.
+- Un test garde les textes du jeu sans aucun mot de The Tetris Company, dans les quatre langues,
+  et sans nom en « -tris » ; les tests comptent les rangées depuis le fond du puits.
+- Le faisceau peint ses colonnes en deux dégradés de deux arrêts (le chemin rapide du rendu
+  logiciel) ; un aperçu garde ses blocs d'une pièce à l'autre ; `Board.links` n'alloue rien.
+- Les lits de sable se comptent en rangées (`SandBed.rows`), à leur quantité de la 1.42 : la
+  pratique, l'entraînement et les scènes ne s'amincissent plus avec le puits. La vitrine a sa
+  rangée de la faille (une aire absente de sa grille serrait le puits de moitié).
+
 ## [1.42.0] — 30/10/2026
 
 Des menus qui s'enchaînent (lot 28), d'après des parties sur téléphone : chaque changement

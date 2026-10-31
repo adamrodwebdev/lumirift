@@ -1,3 +1,4 @@
+import { linksOf } from '../board/Links';
 import { PIECE_TYPES, type PieceType, type Rotation } from './PieceType';
 
 export interface Cell {
@@ -48,6 +49,15 @@ const ORIENTATIONS = new Map<PieceType, Orientations>(
 
 export const shapeCells = (type: PieceType, rotation: Rotation): readonly Cell[] =>
   ORIENTATIONS.get(type)?.[rotation] ?? [];
+
+/** The links of every orientation's cells (1.43): drawing a piece as one crystal allocates nothing. */
+const LINKS = new Map<PieceType, readonly (readonly number[])[]>(
+  PIECE_TYPES.map((type) => [type, (ORIENTATIONS.get(type) ?? []).map((cells) => linksOf(cells))]),
+);
+
+/** Which sides of each cell of an orientation touch another cell of the piece (`LINK` bits). */
+export const shapeLinks = (type: PieceType, rotation: Rotation): readonly number[] =>
+  LINKS.get(type)?.[rotation] ?? [];
 
 export const shapeSize = (type: PieceType): number => DEFINITIONS[type].size;
 

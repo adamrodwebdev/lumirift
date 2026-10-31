@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
+import { seedStorage } from './seed';
 
 /*
  * The seasons and the week's event (1.36), in French. The browser's date is
@@ -15,12 +16,8 @@ const banner = (page: Page) => panel(page, 'Accueil').getByRole('button', { name
 /** The menu on a device holding this saved data (the season's, the profile's). */
 async function openWith(page: Page, saved: Record<string, unknown>) {
   await closeDailyGift(page);
+  await seedStorage(page, saved);
   await page.goto('/');
-  await page.evaluate((data) => {
-    for (const [key, value] of Object.entries(data))
-      localStorage.setItem(key, JSON.stringify(value));
-  }, saved);
-  await page.reload();
   await page.locator('main').waitFor();
 }
 

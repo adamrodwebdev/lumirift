@@ -48,10 +48,11 @@ describe('FusionMode', () => {
     const cells = cellsOf(game);
     const W = game.board.width;
     const put = (x: number, y: number, tone: number) => (cells[y * W + x] = tone);
-    for (let x = 0; x < 4; x++) put(x, 21, Tone.ChromaA); // four A on the floor
-    for (let x = 0; x < 6; x++) put(x, 20, Tone.ChromaB); // six B: the first fusion
-    put(0, 19, Tone.ChromaA); // two A that fall onto the floor ones: the second
-    put(1, 19, Tone.ChromaA);
+    const floor = game.board.height - 1;
+    for (let x = 0; x < 4; x++) put(x, floor, Tone.ChromaA); // four A on the floor
+    for (let x = 0; x < 6; x++) put(x, floor - 1, Tone.ChromaB); // six B: the first fusion
+    put(0, floor - 2, Tone.ChromaA); // two A that fall onto the floor ones: the second
+    put(1, floor - 2, Tone.ChromaA);
     const chains: number[] = [];
     const onNotice = vi.fn();
     game.events.on('fusion', ({ chain }) => chains.push(chain));
@@ -209,7 +210,8 @@ describe('RhythmMode', () => {
     game.update(600); // exactly on a beat
     game.hardDrop();
     expect(onGroove).toHaveBeenCalledWith({ level: 2, onBeat: true });
-    expect(game.score).toBe(38 + 100 * 2);
+    // The I falls the well's height less one, two points a row; the line counts double.
+    expect(game.score).toBe(2 * (game.board.height - game.board.hiddenRows - 1) + 100 * 2);
   });
 
   it('resets the groove off the beat', () => {

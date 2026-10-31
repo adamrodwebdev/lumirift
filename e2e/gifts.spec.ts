@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { giftDialog } from './dailyGift';
+import { seedStorage } from './seed';
 
 /*
  * The gift calendar and the collections (1.35), in French. Nothing before
@@ -18,6 +19,13 @@ const giftButton = (page: Page) =>
 /** The menu, after a reload: the calendar may rise 600 ms after it shows. */
 async function openMenu(page: Page) {
   await page.reload();
+  await page.locator('main').waitFor();
+}
+
+/** The menu on a device holding this profile. */
+async function openWith(page: Page, profile: Record<string, unknown>) {
+  await seedStorage(page, { 'stackrift:profile': profile });
+  await page.goto('/');
   await page.locator('main').waitFor();
 }
 
@@ -96,14 +104,7 @@ test('a player already busy in the menu is not interrupted: the gift waits for t
 
 test('the next day brings the next gift; a clock turned back brings none', async ({ page }) => {
   await page.clock.setFixedTime(new Date(2026, 9, 31, 23, 58));
-  await page.goto('/');
-  await page.evaluate(() =>
-    localStorage.setItem(
-      'stackrift:profile',
-      JSON.stringify({ games: 2, gifts: { next: 1, lastDay: '20261030', shownDay: null } }),
-    ),
-  );
-  await openMenu(page);
+  await openWith(page, { games: 2, gifts: { next: 1, lastDay: '20261030', shownDay: null } });
   const gift = giftDialog(page);
   await expect(gift).toContainText('Jour 2 sur 7');
   await gift.getByRole('button', { name: /^Récupérer \+60\sXP$/ }).click();
@@ -131,19 +132,12 @@ test('back after a week away: a gift of welcome comes with the day’s, the stre
   page,
 }) => {
   await page.clock.setFixedTime(new Date(2026, 9, 27, 12, 0));
-  await page.goto('/');
-  await page.evaluate(() =>
-    localStorage.setItem(
-      'stackrift:profile',
-      JSON.stringify({
-        games: 9,
-        lastVisit: '20261012',
-        gifts: { next: 6, lastDay: '20261011', shownDay: null },
-        streak: { count: 3, best: 3, lastDay: '20261026' },
-      }),
-    ),
-  );
-  await openMenu(page);
+  await openWith(page, {
+    games: 9,
+    lastVisit: '20261012',
+    gifts: { next: 6, lastDay: '20261011', shownDay: null },
+    streak: { count: 3, best: 3, lastDay: '20261026' },
+  });
   const gift = giftDialog(page);
   await expect(gift).toContainText(/Bon retour\s! \+150\sXP s’ajoutent au cadeau du jour\./);
   await expect(gift).toContainText('3 jours d’affilée au défi du jour.');
@@ -160,20 +154,13 @@ test('back after a week away: a gift of welcome comes with the day’s, the stre
 });
 
 test('a gift that completes a set says so: its ambiance comes with it', async ({ page }) => {
-  await page.goto('/');
   // Level 10 (Neon, Pixel, Confetti) and Obsidian already given: day 7 brings Cosmos.
-  await page.evaluate(() =>
-    localStorage.setItem(
-      'stackrift:profile',
-      JSON.stringify({
-        games: 30,
-        xp: 2400,
-        gifted: ['material.obsidian'],
-        gifts: { next: 6, lastDay: '20200101', shownDay: null },
-      }),
-    ),
-  );
-  await openMenu(page);
+  await openWith(page, {
+    games: 30,
+    xp: 2400,
+    gifted: ['material.obsidian'],
+    gifts: { next: 6, lastDay: '20200101', shownDay: null },
+  });
   const gift = giftDialog(page);
   await gift.getByRole('button', { name: 'Récupérer Cosmos' }).click();
   await expect(gift.getByRole('status')).toContainText(
@@ -185,12 +172,8 @@ test('the Atelier’s sets: how far each one is, and a complete set’s ambiance
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
   // Level 12: Neon, Pixel, Confetti and Cosmos earned, the Arcade set complete.
-  await page.evaluate(() =>
-    localStorage.setItem('stackrift:profile', JSON.stringify({ xp: 3300, seen: [] })),
-  );
-  await openMenu(page);
+  await openWith(page, { xp: 3300, seen: [] });
   await tab(page, 'Atelier').click();
   const atelier = panel(page, 'Atelier');
   await atelier.getByRole('button', { name: 'Ensembles' }).click();

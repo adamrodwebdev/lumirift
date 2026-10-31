@@ -60,6 +60,8 @@ export interface CrackingRow {
   /** Visible row index (0 = top of the visible well). */
   readonly row: number;
   readonly tones: Uint8Array;
+  /** Each block's links along the row: its pieces stay crystals while it cracks (1.43). */
+  readonly links: Uint8Array;
   readonly pure: boolean;
   /** The crack, as x/y pairs in cells relative to the row's top-left corner. */
   readonly path: Float32Array;
@@ -78,6 +80,8 @@ export interface FallingDrop {
   /** Where it lands, in visible rows. */
   readonly cells: readonly { readonly x: number; readonly y: number }[];
   readonly tone: Tone;
+  /** The links of `cells`, in their order: the piece falls as one crystal (1.43). */
+  readonly links: readonly number[];
   readonly distance: number;
   readonly duration: number;
   /** Board cells (absolute rows) the piece now fills: drawn once it lands. */
@@ -400,6 +404,7 @@ export class FallingEffects {
       this.drops.push({
         cells: cells.map(({ x, y }) => ({ x, y: y - hidden })),
         tone: piece.tone,
+        links: piece.links,
         distance,
         duration: wait,
         covered: cells.filter(({ y }) => y >= hidden),
@@ -909,6 +914,7 @@ export class FallingEffects {
     return {
       row: row.index - hidden,
       tones: row.tones,
+      links: row.links,
       pure: row.pure,
       path,
       origin: this.lockOrigin ?? width / 2,

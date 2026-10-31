@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
+import { localDay, seedStorage } from './seed';
 
 /*
  * The player's journeys, in French (the browser's language), on a phone and
@@ -308,9 +309,7 @@ test('the Mosaic shows its five jokers from the start, the dim ones telling how 
 test('a Mosaic piece is dragged from the hand to the board, or back; the record falls', async ({
   page,
 }) => {
-  await page.evaluate(() =>
-    localStorage.setItem('stackrift:records', JSON.stringify({ mosaic: 2 })),
-  );
+  await seedStorage(page, { 'stackrift:records': { mosaic: 2 } });
   await page.reload();
   await openMode(page, 'Mosaïque');
   const score = page.locator('.hud__item').first().locator('dd');
@@ -391,7 +390,7 @@ test('in the Atelier, a first tap tries a look on the stage, a second wears it',
   page,
 }) => {
   // Level 3: Neon is open.
-  await page.evaluate(() => localStorage.setItem('stackrift:profile', JSON.stringify({ xp: 300 })));
+  await seedStorage(page, { 'stackrift:profile': { xp: 300 } });
   await page.reload();
   await tab(page, 'Atelier').click();
   const atelier = panel(page, 'Atelier');
@@ -411,12 +410,12 @@ test('looks earned since the last visit are new: a badge on the Atelier, until s
   page,
 }) => {
   // Level 3, only the starting looks seen: Neon and Aurora are new.
-  await page.evaluate(() =>
-    localStorage.setItem(
-      'stackrift:profile',
-      JSON.stringify({ xp: 300, seen: ['material.crystal', 'ambiance.night', 'shatter.shards'] }),
-    ),
-  );
+  await seedStorage(page, {
+    'stackrift:profile': {
+      xp: 300,
+      seen: ['material.crystal', 'ambiance.night', 'shatter.shards'],
+    },
+  });
   await page.reload();
   await expect(tab(page, 'Atelier')).toHaveAccessibleName(/2 nouveautés/);
   await tab(page, 'Atelier').click();
@@ -531,12 +530,7 @@ test('the campaign: map, a level, its goal, then back to the map', async ({ page
 });
 
 test('the upgrades are bought with campaign stars, and refunded', async ({ page }) => {
-  await page.evaluate(() =>
-    localStorage.setItem(
-      'stackrift:campaign',
-      JSON.stringify({ stars: { '1-1': 3, '1-2': 2 }, ranks: {} }),
-    ),
-  );
+  await seedStorage(page, { 'stackrift:campaign': { stars: { '1-1': 3, '1-2': 2 }, ranks: {} } });
   await page.reload();
   await tab(page, 'Carte').click();
   await panel(page, 'Carte')
@@ -613,27 +607,15 @@ test('every window fits the screen, without scrolling, from 360 × 640 to the de
   test.skip(info.project.name !== 'desktop', 'One sweep is enough');
   test.setTimeout(120_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.evaluate(() => {
-    localStorage.setItem(
-      'stackrift:campaign',
-      JSON.stringify({ stars: { '1-1': 3, '1-2': 2, '1-3': 3 }, ranks: { phoenix: 1 } }),
-    );
+  await seedStorage(page, {
+    'stackrift:campaign': { stars: { '1-1': 3, '1-2': 2, '1-3': 3 }, ranks: { phoenix: 1 } },
     // The gift calendar at its fullest: back after a week away, on a streak, a look to claim.
-    const day = (offset: number) => {
-      const date = new Date();
-      date.setDate(date.getDate() + offset);
-      const pad = (n: number) => String(n).padStart(2, '0');
-      return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
-    };
-    localStorage.setItem(
-      'stackrift:profile',
-      JSON.stringify({
-        games: 9,
-        lastVisit: day(-10),
-        gifts: { next: 6, lastDay: day(-11), shownDay: null },
-        streak: { count: 3, best: 3, lastDay: day(-1) },
-      }),
-    );
+    'stackrift:profile': {
+      games: 9,
+      lastVisit: localDay(-10),
+      gifts: { next: 6, lastDay: localDay(-11), shownDay: null },
+      streak: { count: 3, best: 3, lastDay: localDay(-1) },
+    },
   });
   /** The window on top scrolls by this much (0: it fits). */
   const overflow = async () => {

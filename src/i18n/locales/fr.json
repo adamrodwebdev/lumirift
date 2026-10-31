@@ -319,7 +319,7 @@
   "settings": {
     "title": "Réglages",
     "language": "Langue",
-    "ghost": "Afficher la pièce fantôme",
+    "ghost": "Afficher le faisceau d’atterrissage",
     "effects": "Effets visuels",
     "effectsFull": "Complets",
     "effectsReduced": "Sobres",

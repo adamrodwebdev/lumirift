@@ -1,5 +1,6 @@
 import { Tone } from '@/core/Tone';
 import { ParticleKind } from '@/fx/ParticlePool';
+import { BEAM, BeamPaint, lowestBlocks } from '@/families/falling/render/LandingBeam';
 import { parseHex, shade, type Rgb, type TonePalette } from '@/render/TonePalette';
 import { BADGE_BREAK_MS, type SandEffects } from '../fx/SandEffects';
 import { WORM_RADIUS } from '../engine/DuneWorm';
@@ -76,7 +77,11 @@ export class SandRenderer {
   private palette: TonePalette | null = null;
   /** Side of a cell in device pixels; a grain is cell / GRAINS_PER_CELL. */
   private cell = 0;
+  /** The player's landing guide: the landing beam since 1.43 (the setting keeps its name). */
   private ghost = true;
+  private readonly beam: BeamPaint;
+  /** The falling piece's lowest block per column, for the landing beam (reused). */
+  private readonly lows = new Int8Array(4);
   private frame = 0;
 
   constructor(
@@ -87,6 +92,7 @@ export class SandRenderer {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D is not available');
     this.ctx = ctx;
+    this.beam = new BeamPaint(ctx);
     const { width, height } = view.grid;
     this.image = document.createElement('canvas');
     this.image.width = width;
@@ -104,7 +110,7 @@ export class SandRenderer {
     this.shaded = new Uint8Array(width * height);
   }
 
-  /** Fits the 10 × 20 cell well in the box (CSS pixels); returns the cell size. */
+  /** Fits the well (10 × 18 cells) in the box (CSS pixels); returns the cell size. */
   layout(availableWidth: number, availableHeight: number, pixelRatio: number): number {
     const columns = this.view.grid.width / GRAINS_PER_CELL;
     const rows = this.view.grid.height / GRAINS_PER_CELL;
@@ -162,7 +168,7 @@ export class SandRenderer {
     if (warning) this.drawSpawnWarning(warning, grain, palette);
     const piece = this.view.active;
     if (piece) {
-      if (this.ghost) this.outline(piece, this.view.dropDistance(), palette.wellGrid, grain);
+      if (this.ghost) this.drawBeam(piece, this.view.dropDistance(), palette, grain);
       this.outline(piece, 0, palette.accent, grain);
     }
     this.drawWind(grain, palette);
@@ -530,6 +536,35 @@ export class SandRenderer {
     ctx.globalAlpha = 1;
     this.outline(piece, 0, palette.danger, grain);
     ctx.globalAlpha = 1;
+  }
+
+  /** The landing beam (1.43): from each column of the piece, light down to where it will rest. */
+  private drawBeam(piece: SandPiece, dy: number, palette: TonePalette, grain: number): void {
+    if (dy <= 0) return;
+    const { ctx, beam } = this;
+    const g = GRAINS_PER_CELL;
+    const cell = g * grain;
+    const rgb = palette.color(piece.tone);
+    const { glow, core } = beam.cap(piece.tone, rgb);
+    const lows = lowestBlocks(piece.localCells, this.lows);
+    for (let local = 0; local < lows.length; local++) {
+      const low = lows[local]!;
+      if (low < 0) continue;
+      const x = (piece.x + local * g) * grain;
+      const top = (piece.y + (low + 1) * g) * grain;
+      const bottom = top + dy * grain;
+      ctx.save();
+      ctx.translate(x, top);
+      ctx.scale(cell, bottom - top);
+      beam.fillShaft(piece.tone, rgb);
+      ctx.restore();
+      const inset = ((1 - BEAM.cap) / 2) * cell;
+      const thick = Math.max(2, cell * 0.08);
+      ctx.fillStyle = glow;
+      ctx.fillRect(x + inset * 0.6, bottom - thick * 2, cell - inset * 1.2, thick * 3);
+      ctx.fillStyle = core;
+      ctx.fillRect(x + inset, bottom - thick * 1.25, cell - inset * 2, thick);
+    }
   }
 
   private outline(piece: SandPiece, dy: number, color: string, grain: number): void {

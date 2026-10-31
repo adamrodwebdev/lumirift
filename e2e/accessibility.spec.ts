@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { freezeTime, play, playUntil } from './gameTime';
+import { localDay, seedStorage } from './seed';
 
 /*
  * Automatic WCAG 2.2 AA audits (axe-core) of every screen and dialog, in
@@ -99,13 +100,12 @@ for (const theme of ['dark'] as const) {
     }) => {
       test.setTimeout(120_000);
       await page.clock.install();
-      await page.evaluate(() => {
-        const won = ['1', '2', '3']
-          .flatMap((chapter) => [1, 2, 3, 4, 5, 6, 7].map((n) => `${chapter}-${n}`))
-          .filter((id) => id !== '1-7')
-          .concat(['4-1', '4-2', '4-3']);
-        const stars = Object.fromEntries(won.map((id) => [id, 2]));
-        localStorage.setItem('stackrift:campaign', JSON.stringify({ stars, ranks: {} }));
+      const won = ['1', '2', '3']
+        .flatMap((chapter) => [1, 2, 3, 4, 5, 6, 7].map((n) => `${chapter}-${n}`))
+        .filter((id) => id !== '1-7')
+        .concat(['4-1', '4-2', '4-3']);
+      await seedStorage(page, {
+        'stackrift:campaign': { stars: Object.fromEntries(won.map((id) => [id, 2])), ranks: {} },
       });
       await page.reload();
       await page.getByRole('tab', { name: 'Modes' }).click();
@@ -162,28 +162,18 @@ test('the gift calendar, as it rises and once claimed, and the Atelier’s sets'
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  // Back after a week away, on a streak, the day's gift waiting.
+  await seedStorage(page, {
+    'stackrift:profile': {
+      games: 9,
+      xp: 900,
+      lastVisit: localDay(-10),
+      gifts: { next: 2, lastDay: localDay(-11), shownDay: null },
+      streak: { count: 3, best: 3, lastDay: localDay(-1) },
+    },
+  });
   await page.goto('/');
   await page.locator('main').waitFor();
-  // Back after a week away, on a streak, the day's gift waiting.
-  await page.evaluate(() => {
-    const day = (offset: number) => {
-      const date = new Date();
-      date.setDate(date.getDate() + offset);
-      const pad = (n: number) => String(n).padStart(2, '0');
-      return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
-    };
-    localStorage.setItem(
-      'stackrift:profile',
-      JSON.stringify({
-        games: 9,
-        xp: 900,
-        lastVisit: day(-10),
-        gifts: { next: 2, lastDay: day(-11), shownDay: null },
-        streak: { count: 3, best: 3, lastDay: day(-1) },
-      }),
-    );
-  });
-  await page.reload();
   const gift = page.getByRole('dialog', { name: 'Cadeau du jour' });
   await expect(gift).toBeVisible();
   await audit(page);
@@ -202,20 +192,16 @@ test('the gift calendar, as it rises and once claimed, and the Atelier’s sets'
 test('the week’s event and the season’s page, with rewards waiting', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.clock.setFixedTime(new Date('2026-12-16T12:00:00Z'));
+  await seedStorage(page, {
+    'stackrift:season': {
+      season: 'embers',
+      points: 1700,
+      claimed: [1, 2],
+      week: '20261214',
+      deeds: 9,
+    },
+  });
   await page.goto('/');
-  await page.evaluate(() =>
-    localStorage.setItem(
-      'stackrift:season',
-      JSON.stringify({
-        season: 'embers',
-        points: 1700,
-        claimed: [1, 2],
-        week: '20261214',
-        deeds: 9,
-      }),
-    ),
-  );
-  await page.reload();
   await page.locator('main').waitFor();
   const event = page
     .getByRole('tabpanel', { name: 'Accueil' })
@@ -230,12 +216,9 @@ test('the week’s event and the season’s page, with rewards waiting', async (
 
 test('new looks: the badge of the Atelier tab and the marks on the shelf', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await seedStorage(page, { 'stackrift:profile': { xp: 300, seen: [] } });
   await page.goto('/');
   await page.locator('main').waitFor();
-  await page.evaluate(() =>
-    localStorage.setItem('stackrift:profile', JSON.stringify({ xp: 300, seen: [] })),
-  );
-  await page.reload();
   await audit(page);
   await page.getByRole('tab', { name: 'Atelier' }).click();
   await expect(page.getByRole('button', { name: /^Néon, Nouveau/ })).toBeVisible();

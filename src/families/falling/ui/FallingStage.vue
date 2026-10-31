@@ -16,8 +16,10 @@ import { useFormat } from '@/app/useFormat';
 import { effectsProfile } from '@/fx/EffectsProfile';
 import type { GameSession } from '@/session/GameSession';
 import AppIcon, { type IconName } from '@/ui/components/AppIcon.vue';
+import RiftQueue from '@/ui/components/RiftQueue.vue';
 import { useKeyBindings } from '@/ui/useKeyBindings';
 import SurgeButton from '@/ui/components/SurgeButton.vue';
+import { riftPieceSize } from '@/ui/riftSize';
 import { SURGE } from '@/ui/surgeControl';
 import { useLandscape } from '@/ui/useOrientation';
 import { FallingSession, type FallingCommand } from '../FallingSession';
@@ -77,10 +79,13 @@ const held = shallowRef<PieceSpec | null>(null);
 const canHold = ref(true);
 const queue = shallowRef<readonly PieceSpec[]>([]);
 const cellSize = ref(24);
-/** Previews: small in the portrait band above the well, larger beside it. */
+/** The held piece: small in the portrait band above the well, larger beside it. */
 const previewSize = computed(() =>
   landscape.value ? Math.round(Math.min(84, Math.max(40, cellSize.value * 2.6))) : 38,
 );
+/** The well's width and the next piece's in the rift above it (1.43), from the well's place. */
+const wellWidth = ref(0);
+const riftSize = ref(riftPieceSize(0));
 const wellLabel = computed(() => `${t('game.well')} · ${t(`modes.${session.modeId}.name`)}`);
 
 let renderer: FallingRenderer | null = null;
@@ -158,6 +163,8 @@ const observer = new ResizeObserver(([entry]) => {
   const { width, height } = entry.contentRect;
   // Minus the 2 px frame on each side.
   cellSize.value = renderer.layout(width - 4, height - 4, pixelRatio());
+  wellWidth.value = canvas.value?.offsetWidth ?? 0;
+  riftSize.value = riftPieceSize(width);
   renderer.render();
 });
 
@@ -267,7 +274,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="stage">
+  <div class="stage" :style="{ '--well-width': wellWidth ? `${wellWidth}px` : undefined }">
     <section class="stage__hold" :aria-label="t('hud.hold')">
       <button
         type="button"
@@ -308,17 +315,17 @@ onBeforeUnmount(() => {
       <NotchGlow v-if="glows" :beat="notch" :canvas="canvas" />
     </div>
 
-    <section class="stage__next stage__box" :aria-label="t('hud.next')">
-      <p class="stage__label" aria-hidden="true">{{ t('hud.next') }}</p>
-      <PiecePreview
-        v-for="(spec, index) in queue"
-        :key="index"
-        :spec="spec"
-        :palette="palette"
-        :material="equipment.material"
-        :size="index === 0 ? previewSize : Math.round(previewSize * 0.75)"
-      />
-    </section>
+    <RiftQueue :queue="queue" :size="riftSize">
+      <template #default="{ spec, size }">
+        <PiecePreview
+          :spec="spec"
+          :palette="palette"
+          :material="equipment.material"
+          :size="size"
+          wide
+        />
+      </template>
+    </RiftQueue>
 
     <!-- Extra panels of a mode (the opponent of a duel). -->
     <div v-if="$slots.side" class="stage__side"><slot name="side" /></div>
@@ -333,7 +340,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* The shared parts (well, boxes, labels, next) are in styles/stage.css. */
+/* The shared parts (well, boxes, labels) are in styles/stage.css, the rift in RiftQueue. */
 .stage__hold {
   grid-area: hold;
   display: flex;

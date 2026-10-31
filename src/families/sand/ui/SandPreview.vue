@@ -7,8 +7,16 @@ import { shade, type TonePalette } from '@/render/TonePalette';
 import { isElement } from '../engine/Elements';
 import type { PieceSpec } from '../engine/SandGame';
 
-/** An upcoming piece, drawn as a block of sand of its colour. */
-const props = defineProps<{ spec: PieceSpec | null; palette: TonePalette | null; size: number }>();
+/**
+ * An upcoming piece, drawn as a block of sand of its colour, in a box of `size`
+ * wide: square, or twice as wide as high in the rift (`wide`, 1.43).
+ */
+const props = defineProps<{
+  spec: PieceSpec | null;
+  palette: TonePalette | null;
+  size: number;
+  wide?: boolean;
+}>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 const { pixelRatio } = useServices();
@@ -19,18 +27,19 @@ const draw = () => {
   if (!element || !ctx || !props.palette) return;
   const ratio = pixelRatio();
   const px = Math.round(props.size * ratio);
+  const high = props.wide ? Math.round(px / 2) : px;
   element.width = px;
-  element.height = px;
+  element.height = high;
+  // The width alone: the height follows the canvas's ratio when its place narrows it.
   element.style.width = `${props.size}px`;
-  element.style.height = `${props.size}px`;
-  ctx.clearRect(0, 0, px, px);
+  ctx.clearRect(0, 0, px, high);
   if (!props.spec) return;
   const cells = shapeCells(props.spec.type, 0);
   const xs = cells.map((c) => c.x);
   const ys = cells.map((c) => c.y);
   const cell = Math.floor(px / 4.4);
   const left = (px - (Math.max(...xs) - Math.min(...xs) + 1) * cell) / 2 - Math.min(...xs) * cell;
-  const top = (px - (Math.max(...ys) - Math.min(...ys) + 1) * cell) / 2 - Math.min(...ys) * cell;
+  const top = (high - (Math.max(...ys) - Math.min(...ys) + 1) * cell) / 2 - Math.min(...ys) * cell;
   const rgb = props.palette.color(props.spec.tone);
   const grain = cell / 6;
   for (const c of cells) {
@@ -51,7 +60,7 @@ const draw = () => {
     // Elements are announced by their motif, not by their colour alone.
     const radius = cell * 0.9;
     ctx.save();
-    ctx.translate(px / 2 - radius, px / 2 - radius);
+    ctx.translate(px / 2 - radius, high / 2 - radius);
     ctx.strokeStyle = props.palette.wellBackground;
     ctx.fillStyle = props.palette.wellBackground;
     ctx.lineWidth = Math.max(2, cell * 0.22);
@@ -63,11 +72,11 @@ const draw = () => {
 };
 
 onMounted(draw);
-watch(() => [props.spec, props.palette, props.size] as const, draw);
+watch(() => [props.spec, props.palette, props.size, props.wide] as const, draw);
 </script>
 
 <template>
-  <canvas ref="canvas" class="preview" aria-hidden="true" />
+  <canvas ref="canvas" class="preview" :class="{ 'preview--wide': wide }" aria-hidden="true" />
 </template>
 
 <style scoped>
@@ -75,5 +84,10 @@ watch(() => [props.spec, props.palette, props.size] as const, draw);
   display: block;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
+}
+
+/* In the rift, the piece floats out of the light: no tile behind it. */
+.preview--wide {
+  background: none;
 }
 </style>

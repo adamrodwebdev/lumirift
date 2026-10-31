@@ -15,6 +15,7 @@
 | 1.40    | 29/10/2026 | La prise en main : la pièce suit le doigt, de côté et vers le bas, un texte reste le temps d'être lu, un seul compte des combos (§ 9 quater, lot 26).                                                                                 |
 | 1.41    | 29/10/2026 | Le poids et l'éclat : chaque bloc pèse, chaque effacement se tient et frappe, chaque combo monte (§ 9 quater, lot 27).                                                                                                                |
 | 1.42    | 30/10/2026 | Des menus qui s'enchaînent : chaque changement d'affichage a sa transition, moins de 300 ms, jamais un toucher retenu, un fondu avec le mouvement réduit (§ 9 quater, lot 28).                                                        |
+| 1.43    | 30/10/2026 | Un puits à nous : un puits de 10 × 18, des pièces d'un seul cristal, le faisceau d'atterrissage, les prochaines pièces dans la faille, la pierre de faille ; la campagne réglée au nouveau puits (§ 2.3, § 9 quinquies, lot 29).      |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -90,6 +91,20 @@ Différenciation :
   porte la couleur du standard** (I cyan, O jaune, T violet, S vert, Z rouge, J bleu, L orange) :
   I rose, O violet, T ambre, S cyan, Z citron vert, J corail, L bleu (`--tone-N` dans
   `tokens.css`, distincts des jetons `--jewel-*` de l'interface).
+- **Revue de propriété intellectuelle du 30/10/2026** (document « Lumirift IP Review »,
+  compétence `game-ip-legal-review`). Les règles restent libres. Des sept éléments que _Xio_ a
+  protégés, Lumirift en reprenait cinq : le puits d'exactement 10 × 20, les sept pièces et leur
+  mouvement, le fantôme translucide, l'affichage des prochaines pièces, les rangées d'attaque
+  percées. Les portails retirent sur notification, et leurs conditions font payer le
+  développeur. Décidé le même jour (lot 29, 1.43) :
+  - un test interdit les mots de The Tetris Company dans les quatre langues (« Tetris »,
+    « Tetrimino », « T-Spin », « Korobeiniki », cyrillique compris), ainsi que tout nom de jeu
+    ou de mode en « -tris » ;
+  - le puits passe à 10 × 18 ;
+  - les pièces, le fantôme, les prochaines pièces et les rangées d'attaque se dessinent à la
+    manière de Lumirift (§ 9 quinquies) ;
+  - un jeu de pièces propre reste en réserve, déclenché par une notification ou par le lancement
+    sur Google Play.
 - Nom de travail : **Lumirift** (« la faille dans la pile »), prononçable dans les trois
   langues. Vérification de disponibilité (marque, domaine, réseaux) à faire avant lancement.
 
@@ -97,13 +112,15 @@ Différenciation :
 
 ### 3.1 Règles communes
 
-- Puits de **10 × 20** cases visibles, plus 2 rangées masquées au-dessus.
+- Puits de **10 × 18** cases visibles, plus 2 rangées masquées au-dessus (10 × 20 jusqu'à la
+  1.42, § 9 quinquies).
 - Sept pièces de quatre blocs (I, O, T, S, Z, J, L), tirées par **sac de 7** (chaque pièce
   une fois par sac, ordre aléatoire) : pas de longue disette de barre.
 - **Rotation** dans les deux sens avec décalages muraux (système de rotation standard du
   genre, dit SRS).
 - **Réserve** (mettre une pièce de côté, une fois par pièce), **aperçu** des 3 prochaines
-  pièces, **pièce fantôme** (désactivable).
+  pièces dans la faille au-dessus du puits, **faisceau d'atterrissage** (désactivable ; une
+  pièce fantôme jusqu'à la 1.42).
 - **Délai de verrouillage** de 500 ms, réinitialisé par un mouvement ou une rotation
   (15 fois au plus), pour garder le contrôle à grande vitesse.
 - Chute douce (+1 point par case) et chute instantanée (+2 points par case).
@@ -1706,7 +1723,9 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   clavier seul. **Garde responsive** (`e2e/responsive.spec.ts`) : aucun défilement
   horizontal de 320 à 2560 px tous les 20 px, puis quatre tailles clés (320 × 568 et
   844 × 390 au toucher, zooms 200 % et 400 %) : cibles tactiles, textes du HUD, part du
-  puits.
+  puits. Les sauvegardes d'un scénario sont posées avant le premier script du jeu
+  (`e2e/seed.ts`), jamais entre deux chargements, où la sauvegarde que le jeu écrit après un
+  chargement pouvait les écraser sous la charge (1.43).
 - **Audits d'accessibilité** axe-core WCAG 2.2 AA (§ 4.3).
 - **Lighthouse** mobile et bureau : 100 dans les quatre catégories (`npm run lighthouse`).
 - `npm run verify` (lint, format, types y compris des tests e2e, tests, build) avant
@@ -1775,6 +1794,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Livré (1.40)                                                 |
 | 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
+| 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre              | Livré (1.43)                                                 |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2584,6 +2604,113 @@ des effets à la mesure du moment.
       script), côte à côte sur une page privée pour l'utilisateur ; reste son essai sur
       téléphone.
 
+## 9 quinquies. Un puits à nous (lot 29, décidé le 30/10/2026)
+
+La revue de propriété intellectuelle du 30/10/2026 (§ 2.3, document « Lumirift IP Review ») a
+proposé quatre paquets cumulables. Les choix de l'utilisateur, le même jour : les paquets 1 à 3
+dans une seule version, avant la soumission à CrazyGames ; le puits en 10 × 18 ; le paquet 4 (un
+jeu de pièces propre) en réserve. Le paquet 1 (le test des mots interdits) est livré avec ce lot
+(c95a692).
+
+- **Lot 29 · 1.43 Un puits à nous** (décidé le 30/10/2026, maquette validée le même jour).
+  Lumirift garde toutes les règles du genre. Il dessine à sa manière ce que la revue a relevé :
+  un puits de 10 × 18, des pièces d'un seul cristal, un faisceau d'atterrissage, les prochaines
+  pièces dans la faille, la pierre de faille du Duel. Jugé sur la grille de risque de la revue,
+  sur la maquette, puis sur téléphone.
+  - Constats (le code de la 1.42) :
+    - le puits mesure exactement 10 × 20 dans dix modes (`STANDARD_WELL`) : l'élément le plus
+      précis de _Xio_, et le premier que citent les notifications fondées sur l'apparence ;
+    - une pièce se dessine en quatre blocs séparés par des bordures : les « four equally-sized,
+      delineated blocks » de la trade dress américaine ;
+    - le fantôme est une copie translucide de la pièce (opacité 0,28) à son point d'arrivée ;
+    - les trois prochaines pièces sont dans une boîte à côté du puits ;
+    - les rangées d'attaque du Duel sont grises, percées d'un trou ;
+    - déjà propres à Lumirift : les couleurs (1.11), les gemmes, le verre, la défaite qui brise
+      le verre, aucune couleur changée à la pose, aucun mot ni air de The Tetris Company.
+  - **Le puits de 10 × 18**, dans tous les modes qui utilisent `STANDARD_WELL` (la Bascule garde
+    12 × 12, la Tour son cylindre de 20 × 16), et dans le Sable, à la demande de l'utilisateur
+    le 30/10/2026 : une seule taille de puits, `WELL` (les Dunes gardent leur 9 × 12) :
+    - même largeur : les stratégies, l'IA, les cibles de la Silhouette et les générateurs
+      tiennent ; deux rangées de moins serrent un peu les parties ;
+    - les seuils de danger (0,7 et 0,85 de la hauteur) restent des proportions. À relire :
+      l'apparition, les rangées cachées, la marée, le cœur de la faille, le renversement, les
+      scènes de la vitrine et des clips, les tests qui comptent 20 rangées ;
+    - le bot de courbe repasse la campagne et les chapitres générés : un niveau sorti de sa bande
+      est réglé (objectif, chrono) ou régénéré ;
+    - sur téléphone, mesurer la taille des cases à 360 × 800, 390 × 844, 844 × 390 et
+      1280 × 800 : deux rangées de moins laissent la place au HUD.
+  - **Des pièces d'un seul cristal** :
+    - une pièce se dessine comme un seul cristal, sans bordure entre ses propres cases ;
+    - posée, elle reste d'un seul tenant dans la pile jusqu'à ce qu'une ligne la coupe : le
+      plateau garde, par case, ses liens avec les cases voisines de la même pièce ;
+    - une grille très légère au fond du puits garde les cases lisibles ; les textures pour les
+      daltoniens restent ;
+    - même dessin dans la Tour, et dans le Sable avant qu'une pièce s'effrite ; la Mosaïque et
+      les Dunes ne changent pas.
+  - **Le faisceau d'atterrissage**, à la place du fantôme. Une lumière tombe des colonnes de la
+    pièce jusqu'à son point d'arrivée et trace le haut des cases d'arrivée, jamais une copie de la
+    pièce. Le réglage « Afficher le fantôme » devient « Afficher le faisceau », dans les quatre
+    langues.
+  - **Les prochaines pièces dans la faille.** Au-dessus du puits, dans la fente de la faille, la
+    suivante grande et les autres plus petites, qui en sortent à leur tour. Sur téléphone, cette
+    bande remplace la boîte latérale. La réserve garde sa place : elle n'est pas dans la liste de
+    _Xio_.
+  - **La pierre de faille** (Duel) : les rangées d'attaque montent en pierre sombre fendue, leur
+    trou marqué d'une veine de lumière ; plus de rangée grise.
+  - Hors lot : le paquet 4 (jeu de pièces propre) reste en réserve. Les visuels CrazyGames
+    (couvertures, vidéo) se refont sur le nouveau puits, après ce lot.
+  - **Porte** :
+    - la maquette validée par l'utilisateur avant le code ;
+    - la grille de risque de la revue sans ligne moyenne ni puits de 10 × 20 ;
+    - le bot de courbe vert sur toute la campagne ;
+    - tests unitaires et e2e ;
+    - Lighthouse à 100 sur trois passages ;
+    - le temps d'image : au plus +1 ms au 95e centile, le processeur ralenti quatre fois ;
+    - des clips avant/après ;
+    - l'essai sur téléphone.
+  - **Livré en 1.43** (30/10/2026). Les mesures de la porte et les écarts :
+    - la taille des cases, 1.42 → 1.43, sur la version de production : 390 × 844 31 → 35 px,
+      360 × 800 29 → 33, 320 × 568 17 → 20, 393 × 659 21 → 25, 768 × 1024 39 → 43, 1280 × 800
+      38 → 40, 844 × 390 18 → 18, 667 × 375 17 → 17 ; le Sable 32 → 36 à 390 × 844 ; le Duel
+      27 → 27 ; l'entraînement 19 → 19 à 360 × 640 ; la Tour couchée 13,6 → 12,2 (sa bande
+      au-dessus d'un cylindre qui ne perd aucune rangée) ;
+    - trois écarts de mise en page trouvés par le balayage (45 écrans, chaque famille, le russe,
+      le gaucher) et corrigés : en paysage, la bande partageait la rangée des boutons (44 px) et
+      coûtait une case de 18 à 17 px, les boutons couvrent désormais deux rangées ;
+      l'entraînement perdait sa grille sous une règle `:has()` plus forte, son guide s'empilait ;
+      la vitrine nommait encore l'aire `next` et serrait le puits de moitié dans les prises ;
+    - le temps d'image (390 × 844 à 3×, le processeur ralenti quatre fois, tours alternés), au
+      95e centile toutes prises : travail du processeur 4,3 → 4,1 ms, rendu logiciel
+      67,4 → 66,9 ms : la porte passe. Par prise, la « combo » monte de 6,2 à 8,9 ms au 95e
+      centile (moyenne égale) ; sans GPU, le faisceau ajoute 2,9 ms en médiane à la « chute »,
+      après avoir été coupé de moitié (deux dégradés de deux arrêts) ; les aperçus ne refont plus
+      leurs blocs à chaque pièce ;
+    - le bot de courbe : 7 vérifications sur 85 hors bande d'abord, corrigées aux sources (les
+      lits de sable comptés en rangées, à leur quantité de la 1.42 ; la marée au pas du puits,
+      20/18 plus lente) puis par niveau : 1-3 en 8 lignes, 2-1 en 1 min 45, le Ver de 2-7 à 90 de
+      vie, 4-5 en 6 liaisons, l'objectif de la glace à 25 ; 85 sur 85. Trois écarts confirmés
+      par l'utilisateur le 30/10/2026 : la carte de 1-3 demande un frôlement de la défaite sur
+      six parties au lieu de deux (aucun réglage ne donnait à la fois cinq victoires du nouveau
+      venu et deux frôlements) ; la marée plus lente partout, son mode libre compris ; le premier
+      combat du Ver des dunes un dixième plus faible que celui des autres Gardiens ;
+    - deux retouches demandées par l'utilisateur après la revue (30/10/2026) : la bande de la
+      faille n'est jamais plus étroite que ses pièces (la suivante et les deux d'après à leur
+      taille) et dépasse un puits étroit (la Tour couchée : 122 → 178 px, ses pièces d'après de
+      17 à 29 et 33 px ; un petit téléphone avec un objectif) ; dans le Sable, en paysage et sur
+      ordinateur, le bouton de la surcharge se range contre le tableau de bord, comme la réserve
+      des autres modes (il restait au bord de l'écran) ;
+    - tests unitaires : 95 fichiers, 876 tests ; e2e : 211 tests, 182 passés, 28 réservés à
+      l'autre appareil ; un test des saisons, tombé une fois sous la charge (ses données posées
+      entre deux chargements), les pose désormais avant le premier script du jeu et passe 40 fois
+      sur 40 ;
+    - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+      catégories à chaque passage ; sur ordinateur, 100 aussi ;
+    - les prises avant/après : `release/clips/feel-1.43.0` (six prises, filmées par la fabrique
+      sur la version finale), côte à côte avec celles de la 1.41.0, dont la 1.42 garde le puits,
+      sur une page privée pour l'utilisateur (la chute, une ligne, une faille, un combo de cinq,
+      la Tour ; la Mosaïque ne change pas) ;
+    - reste l'essai sur téléphone.
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
@@ -2661,3 +2788,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.40    | 29/10/2026 | Le ressenti (§ 9 quater) ; la prise en main : `PhoneGestures` (crans à la case, `softStep`, coup lu à l'accélération), `readingTime`, compte des combos (lot 26).      |
 | 1.41    | 29/10/2026 | Le poids et l'éclat : `FrameClock.hold`, `Impact`, `Camera`, `WellOverlay`, la Tour au niveau du puits, les prises simples de la fabrique (lot 27).                    |
 | 1.42    | 30/10/2026 | Des menus qui s'enchaînent : `MotionController`, jetons `--motion-*`, fenêtres fermées à l'instant, faille en popover, test des feuilles de style (lot 28).            |
+| 1.43    | 30/10/2026 | Un puits à nous : `WELL` 10 × 18, `links`, `LandingBeam`, `RiftQueue`, pierre de faille, lits de sable en rangées, marée au pas du puits (lot 29).                     |

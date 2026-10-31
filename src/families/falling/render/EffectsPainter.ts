@@ -39,7 +39,7 @@ export class EffectsPainter {
       const waiting = crack.age < 0;
       crack.tones.forEach((tone, x) => {
         if (tone === Tone.Empty || (waiting && crack.covered.has(x))) return;
-        ctx.drawImage(sprites.get(tone as Tone), x * cell, top);
+        ctx.drawImage(sprites.get(tone as Tone, crack.links[x]), x * cell, top);
       });
       if (waiting) continue;
 
@@ -114,11 +114,10 @@ export class EffectsPainter {
         ctx.fillStyle = gradient;
         ctx.fillRect(cell0.x * cell + cell * 0.18, from, cell * 0.64, now - from);
       }
-      const sprite = sprites.get(drop.tone);
-      for (const { x, y } of drop.cells) {
+      drop.cells.forEach(({ x, y }, index) => {
         const at = y - lift;
-        if (at > -1) ctx.drawImage(sprite, x * cell, at * cell);
-      }
+        if (at > -1) ctx.drawImage(sprites.get(drop.tone, drop.links[index]), x * cell, at * cell);
+      });
     }
   }
 

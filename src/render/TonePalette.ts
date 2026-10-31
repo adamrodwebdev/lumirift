@@ -53,6 +53,15 @@ export interface EffectColors {
   readonly petals: readonly string[];
   /** The glow around the rift (cracks, big moments). */
   readonly rift: string;
+  /** The rift's white-hot core: the vein that lights a gap in the stone (1.43). */
+  readonly riftCore: string;
+  /** Rift stone (1.43): its body, lit edge, shade and cracks. */
+  readonly stone: {
+    readonly body: string;
+    readonly edge: string;
+    readonly shade: string;
+    readonly crack: string;
+  };
   /** A combo's heat, gold to white-hot (1.41). */
   readonly heat: Readonly<Record<ComboHeat, string>>;
 }
@@ -91,6 +100,13 @@ export class TonePalette {
         gold: [read('--fx-gold-light'), read('--fx-gold'), read('--fx-gold-dark')],
         petals: [read('--fx-petal'), read('--fx-petal-dark')],
         rift: read('--rift-glow'),
+        riftCore: read('--rift-core'),
+        stone: {
+          body: read('--stone'),
+          edge: read('--stone-edge'),
+          shade: read('--stone-shade'),
+          crack: read('--stone-crack'),
+        },
         heat: {
           gold: read('--fx-heat-gold'),
           orange: read('--fx-heat-orange'),

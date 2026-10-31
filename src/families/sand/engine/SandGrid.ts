@@ -1,5 +1,6 @@
 import type { RandomSource } from '@/core/Random';
 import { CHROMA_TONES, Tone } from '@/core/Tone';
+import { WELL } from '@/core/Well';
 import {
   DENSITY,
   LIFE_STEPS,
@@ -63,9 +64,10 @@ export class SandGrid {
   private readonly queue: Int32Array;
   private steps = 0;
 
+  /** Lumirift's well by default, 10 × 18 cells (see `WELL`, 1.43); the Dunes take their own. */
   constructor(
-    readonly width = 10 * GRAINS_PER_CELL,
-    readonly height = 20 * GRAINS_PER_CELL,
+    readonly width = WELL.columns * GRAINS_PER_CELL,
+    readonly height = WELL.rows * GRAINS_PER_CELL,
   ) {
     const size = width * height;
     this.tones = new Uint8Array(size);

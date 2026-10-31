@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { closeDailyGift, giftDialog } from './dailyGift';
+import { localDay, seedStorage } from './seed';
 
 /*
  * The game in Russian, the longest of its languages: a browser set to Russian
@@ -115,12 +116,7 @@ test.describe('a neighbour of Russian, on our site', () => {
 });
 
 test('the words agree with the numbers, as Russian counts', async ({ page }) => {
-  await page.evaluate(() =>
-    localStorage.setItem(
-      'stackrift:campaign',
-      JSON.stringify({ stars: { '1-1': 3, '1-2': 2 }, ranks: {} }),
-    ),
-  );
+  await seedStorage(page, { 'stackrift:campaign': { stars: { '1-1': 3, '1-2': 2 }, ranks: {} } });
   await page.reload();
   await tab(page, 'Карта').click();
   await panel(page, 'Карта')
@@ -188,23 +184,14 @@ test('the gift calendar and the Atelier’s sets keep their Russian words inside
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   // The calendar at its fullest: back after a week away, on a streak, a look to claim.
-  await page.evaluate(() => {
-    const day = (offset: number) => {
-      const date = new Date();
-      date.setDate(date.getDate() + offset);
-      const pad = (n: number) => String(n).padStart(2, '0');
-      return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
-    };
-    localStorage.setItem(
-      'stackrift:profile',
-      JSON.stringify({
-        games: 9,
-        xp: 900,
-        lastVisit: day(-10),
-        gifts: { next: 6, lastDay: day(-11), shownDay: day(0) },
-        streak: { count: 3, best: 3, lastDay: day(-1) },
-      }),
-    );
+  await seedStorage(page, {
+    'stackrift:profile': {
+      games: 9,
+      xp: 900,
+      lastVisit: localDay(-10),
+      gifts: { next: 6, lastDay: localDay(-11), shownDay: localDay(0) },
+      streak: { count: 3, best: 3, lastDay: localDay(-1) },
+    },
   });
   const gift = giftDialog(page);
   for (const [width, height] of [
@@ -247,12 +234,9 @@ test('the week’s event and the season’s page keep their Russian words inside
   // A day of Season 1, rewards waiting on its track.
   await page.clock.setFixedTime(new Date('2026-12-16T12:00:00Z'));
   await page.goto('/');
-  await page.evaluate(() =>
-    localStorage.setItem(
-      'stackrift:season',
-      JSON.stringify({ season: 'embers', points: 1700, claimed: [1, 2], week: '20261214' }),
-    ),
-  );
+  await seedStorage(page, {
+    'stackrift:season': { season: 'embers', points: 1700, claimed: [1, 2], week: '20261214' },
+  });
   for (const [width, height] of [
     [320, 568],
     [390, 844],
@@ -307,10 +291,7 @@ test('every chapter’s name, Guardian and levels stay whole on the map, from 32
   const stars: Record<string, number> = {};
   for (let chapter = 1; chapter <= 10; chapter++)
     for (let level = 1; level <= 7; level++) stars[`${chapter}-${level}`] = 3;
-  await page.evaluate(
-    (all) => localStorage.setItem('stackrift:campaign', JSON.stringify({ stars: all, ranks: {} })),
-    stars,
-  );
+  await seedStorage(page, { 'stackrift:campaign': { stars, ranks: {} } });
   // The smallest phone both ways, where a chapter's seven levels once covered one another.
   for (const [width, height] of [
     [320, 568],
@@ -344,10 +325,7 @@ test('a level’s goal stays whole on a phone: its own row beside a hold box, on
   const stars: Record<string, number> = {};
   for (let chapter = 1; chapter <= 10; chapter++)
     for (let level = 1; level <= 7; level++) stars[`${chapter}-${level}`] = 3;
-  await page.evaluate(
-    (all) => localStorage.setItem('stackrift:campaign', JSON.stringify({ stars: all, ranks: {} })),
-    stars,
-  );
+  await seedStorage(page, { 'stackrift:campaign': { stars, ranks: {} } });
   // Classic, the Flip and its button, a duel, the Tower: the hold box's families (1.30 fix);
   // the longest goals, the Guardians': the Heart (a hold box) and the Golem (the Mosaic).
   // From 390 px, the card's level, goal and count share one line (21em of card).

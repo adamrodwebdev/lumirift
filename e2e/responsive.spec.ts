@@ -1,4 +1,5 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { seedStorage } from './seed';
 
 /*
  * The responsive guards (1.26): no sideways scroll from 320 to 2560 px, and
@@ -39,10 +40,9 @@ const RACE_OPEN = [
 
 /** The race, open once the campaign has played its three worlds; Play starts it. */
 async function openRace(page: Page) {
-  await page.evaluate((won) => {
-    const stars = Object.fromEntries(won.map((id) => [id, 2]));
-    localStorage.setItem('stackrift:campaign', JSON.stringify({ stars, ranks: {} }));
-  }, RACE_OPEN);
+  await seedStorage(page, {
+    'stackrift:campaign': { stars: Object.fromEntries(RACE_OPEN.map((id) => [id, 2])), ranks: {} },
+  });
   await page.reload();
   await page.locator('main').waitFor();
   await tab(page, 'Modes').click();
@@ -267,12 +267,9 @@ for (const size of KEY_SIZES)
     test.setTimeout(120_000);
     const { context, page } = await openAt(browser, size, undefined, SEASON_DAY);
     // Rewards waiting: their claim buttons are in the page too.
-    await page.evaluate(() =>
-      localStorage.setItem(
-        'stackrift:season',
-        JSON.stringify({ season: 'embers', points: 1700, claimed: [1, 2], week: '20261214' }),
-      ),
-    );
+    await seedStorage(page, {
+      'stackrift:season': { season: 'embers', points: 1700, claimed: [1, 2], week: '20261214' },
+    });
     await page.reload();
     await page.locator('main').waitFor();
     await settle(page);

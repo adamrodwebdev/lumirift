@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
+import { seedStorage } from './seed';
 
 /*
  * The phone controls (1.32), played with real touch events on a phone screen
@@ -55,12 +56,11 @@ const line = (from: Point, dx: number, dy: number, count: number): Point[] =>
 /** The Classic mode with these settings, past the first game's guide; its gestures loaded. */
 async function playClassic(page: Page, settings: Record<string, unknown> = {}) {
   await closeDailyGift(page);
+  await seedStorage(page, {
+    'stackrift:settings': settings,
+    'stackrift:profile': { games: 3, playedMs: 600_000 },
+  });
   await page.goto('/');
-  await page.evaluate((saved) => {
-    localStorage.setItem('stackrift:settings', JSON.stringify(saved));
-    localStorage.setItem('stackrift:profile', JSON.stringify({ games: 3, playedMs: 600_000 }));
-  }, settings);
-  await page.reload();
   await page.locator('main').waitFor();
   await page.getByRole('tab', { name: 'Modes' }).click();
   await page
@@ -142,12 +142,17 @@ test('with both, the buttons drop and the gestures only move', async ({ page }) 
   await expect.poll(() => points(page)).toBeGreaterThan(moved + 10);
 });
 
-test('left-handed, the Hold box and the coming pieces swap sides', async ({ page }) => {
+test('left-handed, the Hold box changes sides, the rift stays over the well', async ({ page }) => {
   await playClassic(page, { leftHanded: true });
   await expect(page.locator('.game')).toHaveAttribute('data-hand', 'left');
   const hold = (await page.locator('.stage__hold').boundingBox())!;
-  const next = (await page.locator('.stage__next').boundingBox())!;
-  expect(hold.x).toBeGreaterThan(next.x);
+  const rift = (await page.locator('.stage__next').boundingBox())!;
+  const well = (await page.locator('.stage__canvas').boundingBox())!;
+  const middle = well.x + well.width / 2;
+  expect(hold.x).toBeGreaterThan(middle);
+  // The coming pieces (1.43): in the rift above the well, as wide as it, in either hand.
+  expect(Math.abs(rift.x + rift.width / 2 - middle)).toBeLessThan(2);
+  expect(rift.y + rift.height).toBeLessThanOrEqual(well.y + 1);
 });
 
 test('the touch controls have their window, and the gestures their guide', async ({ page }) => {

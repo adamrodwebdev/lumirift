@@ -23,9 +23,10 @@ import { effectsProfile } from '@/fx/EffectsProfile';
 import { TonePalette } from '@/render/TonePalette';
 import type { GameSession } from '@/session/GameSession';
 import { useKeyBindings } from '@/ui/useKeyBindings';
+import RiftQueue from '@/ui/components/RiftQueue.vue';
 import SurgeButton from '@/ui/components/SurgeButton.vue';
+import { riftPieceSize } from '@/ui/riftSize';
 import { SURGE } from '@/ui/surgeControl';
-import { useLandscape } from '@/ui/useOrientation';
 import type { PieceSpec } from '../engine/SandGame';
 import { SandEffects } from '../fx/SandEffects';
 import { SandSoundscape } from '../fx/SandSoundscape';
@@ -55,17 +56,15 @@ const { theme, settings, audio, haptics, pixelRatio } = useServices();
 /** The rift surge, the game screen's: its key and its button are here. */
 const surge = inject(SURGE, null);
 const keys = useKeyBindings();
-const landscape = useLandscape();
 
 const wellArea = ref<HTMLElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const palette = shallowRef<TonePalette | null>(null);
 const queue = shallowRef<readonly PieceSpec[]>([]);
 const cellSize = ref(24);
-/** Previews: small in the portrait band above the well, larger beside it. */
-const previewSize = computed(() =>
-  landscape.value ? Math.round(Math.min(84, Math.max(40, cellSize.value * 2.6))) : 38,
-);
+/** The well's width and the next piece's in the rift above it (1.43), from the well's place. */
+const wellWidth = ref(0);
+const riftSize = ref(riftPieceSize(0));
 
 const profile = computed(() => effectsProfile(settings.current.effects, settings.current.shake));
 const effects = new SandEffects(
@@ -99,6 +98,8 @@ const observer = new ResizeObserver(([entry]) => {
   if (!entry || !renderer) return;
   const { width, height } = entry.contentRect;
   cellSize.value = renderer.layout(width - 4, height - 4, pixelRatio());
+  wellWidth.value = canvas.value?.offsetWidth ?? 0;
+  riftSize.value = riftPieceSize(width);
 });
 
 const refreshPalette = async () => {
@@ -171,7 +172,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="stage">
+  <div class="stage" :style="{ '--well-width': wellWidth ? `${wellWidth}px` : undefined }">
     <!-- No piece kept aside in the Sand: the surge has the corner to itself. -->
     <div class="stage__surge"><SurgeButton /></div>
 
@@ -180,16 +181,11 @@ onBeforeUnmount(() => {
       <NotchGlow v-if="glows" :beat="notch" :canvas="canvas" />
     </div>
 
-    <section class="stage__next stage__box" :aria-label="t('hud.next')">
-      <p class="stage__label" aria-hidden="true">{{ t('hud.next') }}</p>
-      <SandPreview
-        v-for="(spec, index) in queue"
-        :key="index"
-        :spec="spec"
-        :palette="palette"
-        :size="index === 0 ? previewSize : Math.round(previewSize * 0.75)"
-      />
-    </section>
+    <RiftQueue :queue="queue" :size="riftSize">
+      <template #default="{ spec, size }">
+        <SandPreview :spec="spec" :palette="palette" :size="size" wide />
+      </template>
+    </RiftQueue>
 
     <TouchControls
       v-if="pad !== 'none'"
