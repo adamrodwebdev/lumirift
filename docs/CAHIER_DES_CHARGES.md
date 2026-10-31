@@ -1797,6 +1797,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
 | 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre              | Livré (1.43)                                                 |
 | 30  | La faille qui casse (1.44) : l'effacement des lignes à la manière de la faille                             | Livré (1.44)                                                 |
+| 31  | La constellation d'atterrissage (1.45) : toute la pièce là où elle se posera                               | Décidé                                                       |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2793,6 +2794,41 @@ qui l'accompagnaient (les éclats de l'Atelier, la portée, le son, la version).
       ne changent pas, les images de la Mosaïque ont la même empreinte qu'en 1.43) ; la prise
       de la faille pèse 1,2 Mo au lieu de 2,1 (moins de mouvement à coder) ;
     - reste l'essai sur téléphone.
+
+## 9 septies. La constellation d'atterrissage (lot 31, décidé le 31/10/2026)
+
+Le 31/10/2026, après avoir validé l'effacement de la 1.44 (« le rendu est parfait »),
+l'utilisateur a relevé un défaut du faisceau de la 1.43 : les pièces de trois blocs de large y ont
+la même silhouette, et le joueur fait des allers-retours entre la pièce et la pile pour vérifier
+qu'elle se posera où il veut. Une page a comparé le faisceau à trois façons de montrer toute la
+pièce là où elle se posera (un contour de lumière, une constellation, des coins marqués), avec le
+risque juridique de chacune. L'utilisateur a choisi la constellation, « pour éviter une
+notification juridique ».
+
+- **Lot 31 · 1.45 La constellation d'atterrissage** (décidé le 31/10/2026 sur la page des options).
+  - Constats (la 1.43) : le faisceau ne montre que l'endroit où chaque colonne de la pièce touche
+    la pile. Le T, le J et le L couchés y tracent les mêmes trois traits, le O et un L debout les
+    mêmes deux ; seuls le I et les marches du S et du Z se distinguent.
+  - **La constellation** : les colonnes de lumière restent ; à leur pied, au lieu des traits, une
+    étincelle là où chaque bloc se posera, reliée à ses voisines de la même pièce, à la couleur de
+    la pièce sous un cœur presque blanc. La forme entière se lit là où la pièce se posera, sans
+    copie de la pièce.
+  - Lisible sur téléphone : le cœur d'une étincelle mesure 0,12 case (2 px au moins), son halo
+    0,38 case ; les liens 0,05 case (1,2 px au moins) sous une lueur de 0,16 case.
+  - **La portée** : le puits, la Tour (les étincelles du devant franches, celles du fond vues
+    faiblement à travers le verre) et le Sable. Le réglage garde son nom (« Afficher le faisceau
+    d'atterrissage »).
+  - **Le droit** : le guide classique, une copie transparente de la pièce là où elle se posera,
+    fait partie de ce que le jugement Tetris c. Xio a protégé ; montrer où une pièce se posera est
+    une règle, libre. Une constellation n'est pas une copie de la pièce : des trois options, c'est
+    la plus éloignée du guide classique et le risque le plus bas.
+  - **Porte** :
+    - le choix de l'utilisateur sur la page des options ;
+    - tests unitaires (les liens de chaque pièce dans chaque rotation) et e2e ;
+    - des captures du puits, de la Tour et du Sable aux tailles de téléphone ;
+    - le temps d'image : au plus +1 ms au 95e centile, le processeur ralenti quatre fois ;
+    - Lighthouse à 100 sur trois passages ;
+    - l'essai sur téléphone.
 
 ## 10. Hors périmètre (v1)
 
