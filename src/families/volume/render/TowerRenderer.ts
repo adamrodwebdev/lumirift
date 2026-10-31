@@ -17,7 +17,7 @@ import {
   seamLight,
   type RiftPhase,
 } from '@/families/falling/fx/RiftOpening';
-import { BEAM, BeamPaint, lowestBlocks } from '@/families/falling/render/LandingBeam';
+import { BeamPaint, lowestBlocks } from '@/families/falling/render/LandingBeam';
 import { WellOverlay } from '@/families/falling/render/WellOverlay';
 import type { Piece } from '@/families/falling/pieces/Piece';
 import { ParticleKind } from '@/fx/ParticlePool';
@@ -542,28 +542,35 @@ export class TowerRenderer {
 
   /**
    * The landing beam (1.43) on the glass: from each front column of the piece,
-   * light down to where it will rest, and a bright cap at its resting place.
+   * light down to where it will rest; at its foot, the constellation of its
+   * blocks there (1.45), the sparks behind the tower seen faintly through it.
    */
   private drawBeam(piece: Piece, distance: number, palette: TonePalette): void {
     if (distance <= 0) return;
-    const { ctx, beam } = this;
+    const { ctx, beam, projection } = this;
     const { board } = this.view;
     const rgb = palette.color(piece.tone);
-    const { glow, core } = beam.cap(piece.tone, rgb);
     const lows = lowestBlocks(piece.localCells, this.lows);
     for (let local = 0; local < lows.length; local++) {
       const low = lows[local]!;
       const column = board.column(piece.x + local);
       if (low < 0 || !this.isFront(column)) continue;
-      const top = piece.y + low + 1 - board.hiddenRows;
-      this.face(column, top, distance);
+      this.face(column, piece.y + low + 1 - board.hiddenRows, distance);
       beam.fillShaft(piece.tone, rgb);
-      this.face(column, top + distance - 0.1, 0.1);
-      ctx.fillStyle = glow;
-      ctx.fillRect(0.05, -0.5, 0.9, 1.8);
-      ctx.fillStyle = core;
-      ctx.fillRect((1 - BEAM.cap) / 2, 0.15, BEAM.cap, 0.7);
     }
+    ctx.setTransform(1, 0, 0, 1, this.offsetX, this.offsetY);
+    beam.beginConstellation(piece.localCells);
+    for (const { x, y } of piece.localCells) {
+      const middle = board.column(piece.x + x) + 0.5;
+      const depth = projection.depth(middle);
+      beam.addStar(
+        projection.screenX(middle),
+        projection.screenY(middle, piece.y + y + distance - board.hiddenRows + 0.5),
+        projection.rowHeight * (0.6 + 0.4 * Math.max(0, depth)),
+        depth > 0 ? 1 : BACK_ALPHA,
+      );
+    }
+    beam.drawConstellation(piece.tone, rgb);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 

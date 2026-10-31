@@ -3,6 +3,25 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.45.0] — 31/10/2026
+
+La constellation d'atterrissage (lot 31) : le faisceau montre toute la pièce là où elle se posera.
+
+### Modifié
+
+- **Une constellation au pied du faisceau** : les colonnes de lumière tombent toujours de la
+  pièce ; à leur pied, au lieu des traits qui ne montraient que l'endroit où chaque colonne touche
+  la pile, une étincelle là où chaque bloc se posera, reliée à ses voisines de la même pièce. Le T,
+  le J et le L couchés, que les traits confondaient, se lisent là où ils se poseront, sans
+  aller-retour entre la pièce et la pile. Dans le puits, la Tour (les étincelles du fond vues à
+  travers le verre) et le Sable.
+
+### Technique
+
+- `LandingBeam` : `constellationLinks` (les blocs côte à côte), les étincelles dans des tampons
+  réutilisés et leur halo fait une fois par teinte (`beginConstellation`, `addStar`,
+  `drawConstellation`) ; les traits (`BEAM.cap`, `cap()`) disparaissent.
+
 ## [1.44.0] — 31/10/2026
 
 La faille qui casse (lot 30) : une ligne effacée s'ouvre comme la faille, au lieu d'éclater en

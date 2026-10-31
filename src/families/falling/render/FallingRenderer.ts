@@ -6,7 +6,7 @@ import type { MaterialId } from '@/progression/Cosmetics';
 import type { BlockSprites } from './BlockSprites';
 import { blockSprites } from './materials';
 import { EffectsPainter } from './EffectsPainter';
-import { BEAM, BeamPaint, lowestBlocks } from './LandingBeam';
+import { BeamPaint, lowestBlocks } from './LandingBeam';
 import type { TonePalette } from '@/render/TonePalette';
 import type { WellDecor } from './WellDecor';
 
@@ -342,26 +342,26 @@ export class FallingRenderer {
     const { ctx, cell, beam } = this;
     const hidden = this.view.board.hiddenRows;
     const rgb = palette.color(piece.tone);
-    const { glow, core } = beam.cap(piece.tone, rgb);
     const lows = lowestBlocks(piece.localCells, this.lows);
     for (let local = 0; local < lows.length; local++) {
       const low = lows[local]!;
       if (low < 0) continue;
-      const x = (piece.x + local) * cell;
       const top = (piece.y + low + 1 - hidden) * cell;
-      const bottom = top + distance * cell;
       ctx.save();
-      ctx.translate(x, top);
-      ctx.scale(cell, bottom - top);
+      ctx.translate((piece.x + local) * cell, top);
+      ctx.scale(cell, distance * cell);
       beam.fillShaft(piece.tone, rgb);
       ctx.restore();
-      const inset = ((1 - BEAM.cap) / 2) * cell;
-      const thick = Math.max(2, cell * 0.08);
-      ctx.fillStyle = glow;
-      ctx.fillRect(x + inset * 0.6, bottom - thick * 2, cell - inset * 1.2, thick * 3);
-      ctx.fillStyle = core;
-      ctx.fillRect(x + inset, bottom - thick * 1.25, cell - inset * 2, thick);
     }
+    // At the shafts' foot, the constellation of where each block will rest (1.45).
+    beam.beginConstellation(piece.localCells);
+    for (const { x, y } of piece.localCells)
+      beam.addStar(
+        (piece.x + x + 0.5) * cell,
+        (piece.y + y + distance - hidden + 0.5) * cell,
+        cell,
+      );
+    beam.drawConstellation(piece.tone, rgb);
   }
 
   private drawPiece(piece: Piece, dy: number): void {
