@@ -17,6 +17,7 @@
 | 1.42    | 30/10/2026 | Des menus qui s'enchaînent : chaque changement d'affichage a sa transition, moins de 300 ms, jamais un toucher retenu, un fondu avec le mouvement réduit (§ 9 quater, lot 28).                                                        |
 | 1.43    | 30/10/2026 | Un puits à nous : un puits de 10 × 18, des pièces d'un seul cristal, le faisceau d'atterrissage, les prochaines pièces dans la faille, la pierre de faille ; la campagne réglée au nouveau puits (§ 2.3, § 9 quinquies, lot 29).      |
 | 1.44    | 31/10/2026 | La faille qui casse : la faille ouvre les lignes effacées, la rangée se fend en morceaux que la fente avale ; les éclats de l'Atelier et le son accordés (§ 9 sexies, lot 30).                                                        |
+| 1.45    | 31/10/2026 | La constellation d'atterrissage : au pied du faisceau, une étincelle là où chaque bloc se posera, reliée à ses voisines ; toute la pièce se lit là où elle se posera (§ 9 septies, lot 31).                                           |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1797,7 +1798,7 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
 | 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre              | Livré (1.43)                                                 |
 | 30  | La faille qui casse (1.44) : l'effacement des lignes à la manière de la faille                             | Livré (1.44)                                                 |
-| 31  | La constellation d'atterrissage (1.45) : toute la pièce là où elle se posera                               | Décidé                                                       |
+| 31  | La constellation d'atterrissage (1.45) : toute la pièce là où elle se posera                               | Livré (1.45)                                                 |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2829,6 +2830,26 @@ notification juridique ».
     - le temps d'image : au plus +1 ms au 95e centile, le processeur ralenti quatre fois ;
     - Lighthouse à 100 sur trois passages ;
     - l'essai sur téléphone.
+  - **Livré en 1.45** (31/10/2026). Les mesures de la porte :
+    - le choix de l'utilisateur : la constellation, « pour éviter une notification juridique » ;
+    - les étincelles : un cœur de 0,12 case (2 px au moins) sous un halo de 0,38 case, des liens de
+      0,05 case (1,2 px au moins) sous une lueur de 0,16 ; chaque pièce a ses trois liens, le O
+      ses quatre, dans chaque rotation (un test) ; les traits du faisceau ont disparu ;
+    - des captures à 390 × 844 sur le plateau de la vitrine : le I couché en quatre étincelles
+      alignées, le O en carré, le I debout en colonne dans son faisceau ; la Tour, ses étincelles
+      sur l'anneau du devant ; le Sable, sur les grains ; aucune erreur dans la page ;
+    - le temps d'image (390 × 844 à 3×, le processeur ralenti quatre fois, la 1.44 et la 1.45 en
+      alternance), au 95e centile toutes prises : travail du processeur 2,4, 2,5 et 2,3 →
+      2,5, 2,5 et 2,7 ms (trois tours ; +0,04 à +0,11 ms en moyenne), rendu logiciel 41,7 →
+      38,8 ms : la porte passe. Un premier relevé, un trait et un dégradé par étincelle,
+      montrait jusqu'à +1,6 ms en un tour, mais la Mosaïque, sans faisceau, bougeait autant ; la
+      constellation se dessine depuis en deux traits et un remplissage, son halo est une image
+      faite une fois par teinte ;
+    - tests unitaires : 97 fichiers, 887 tests ; e2e : 211 tests, 183 passés, 28 réservés à
+      l'autre appareil, aucun échec ;
+    - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+      catégories à chaque passage ; sur ordinateur, 100 aussi ;
+    - reste l'essai sur téléphone.
 
 ## 10. Hors périmètre (v1)
 
@@ -2909,3 +2930,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.42    | 30/10/2026 | Des menus qui s'enchaînent : `MotionController`, jetons `--motion-*`, fenêtres fermées à l'instant, faille en popover, test des feuilles de style (lot 28).            |
 | 1.43    | 30/10/2026 | Un puits à nous : `WELL` 10 × 18, `links`, `LandingBeam`, `RiftQueue`, pierre de faille, lits de sable en rangées, marée au pas du puits (lot 29).                     |
 | 1.44    | 31/10/2026 | La faille qui casse : `RiftOpening`, particules `Ember` et `Flake`, la Tour fendue en deux moitiés, `riftRun` et `riftSwallow` (§ 9 sexies, lot 30).                   |
+| 1.45    | 31/10/2026 | La constellation d'atterrissage : `constellationLinks`, `beginConstellation`, `addStar`, `drawConstellation` ; les traits du faisceau retirés (§ 9 septies, lot 31).   |

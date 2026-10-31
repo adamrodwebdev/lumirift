@@ -60,8 +60,9 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   fait rien perdre, une semaine d'absence vaut un cadeau de retour.
 - **Un puits à soi** (1.43) : 10 colonnes, comme le genre, et 18 rangées ; chaque pièce est
   un seul cristal, d'un seul tenant dans la pile jusqu'à ce qu'une ligne la coupe ; un faisceau
-  de lumière montre où elle se posera ; les prochaines pièces sortent de la faille au-dessus
-  du puits ; les rangées d'attaque du Duel montent en pierre de faille.
+  de lumière montre où elle se posera, et à son pied une constellation d'étincelles dessine la
+  pièce entière (1.45) ; les prochaines pièces sortent de la faille au-dessus du puits ; les
+  rangées d'attaque du Duel montent en pierre de faille.
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde. À la mesure du moment (1.41) :
   un bloc posé pèse, un effacement se tient un instant et secoue, un combo grandit, chauffe et
