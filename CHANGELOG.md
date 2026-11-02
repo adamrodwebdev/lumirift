@@ -3,6 +3,25 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.45.1] — 02/11/2026
+
+Les annonces du puits restent dans le puits, relevé à la revue modérateur CrazyGames de la 1.45.
+
+### Corrigé
+
+- **Les annonces débordaient du puits** (« Foudre : visez l’eau pour électrocuter »,
+  « Électrocution ! … ») :
+  plus larges que lui, elles en couvraient le milieu dès la première pièce de l'entraînement,
+  à 907 × 510 comme sur un téléphone couché. Elles se posent désormais sur le puits lui-même,
+  jamais plus larges que lui, passent à la ligne au besoin, et leur taille suit sa largeur
+  au lieu de celle de l'écran.
+
+### Technique
+
+- `WellToast` (`src/ui/components/`) : l'annonce centrée sur le canevas du puits par
+  `useWellBox`, comme les couches du danger et de la surcharge ; taille en `cqi` sur la boîte du
+  puits ; l'écran de jeu perd ses styles d'annonce.
+
 ## [1.45.0] — 31/10/2026
 
 La constellation d'atterrissage (lot 31) : le faisceau montre toute la pièce là où elle se posera.

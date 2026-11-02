@@ -1262,6 +1262,9 @@ src/
 - **Événements communs** : `state`, `clear`, `levelUp`, `notice`, `over`. Les événements
   propres au moteur (renversement, reflet, annonces des modes) deviennent des `notice` dont
   l'identifiant est une clé de traduction (`notice.mirrorSoon`, `notice.reflexBonus`…).
+- **Où s'affichent les annonces** (1.45.1) : centrées sur le canevas du puits (`WellToast`,
+  `useWellBox`), jamais plus larges que lui, dans une taille qui suit sa largeur (`cqi`) ; sur un
+  puits étroit, elles passent à la ligne au lieu de déborder de ses bords.
 - **Indicateurs** : score, lignes et niveau d'abord (précédés du temps pour un mode classé
   au temps), puis ceux du mode (`charges`, `nextRise`, `mirrorIn`…), chacun avec son format
   (`count` ou `duration`). Le HUD n'a besoin d'aucun cas particulier par mode.
