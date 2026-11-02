@@ -32,6 +32,7 @@ import { closeTo, NO_PROGRESS, type ContinueCard, type GameOutcome } from '../Ga
 import HudPanel from '../components/HudPanel.vue';
 import RecordBurst from '../components/RecordBurst.vue';
 import SurgeLayer from '../components/SurgeLayer.vue';
+import WellToast from '../components/WellToast.vue';
 import KeyLegend from '../components/KeyLegend.vue';
 import PauseDialog from '../components/PauseDialog.vue';
 import { familyPresentation, presentationFor } from '../presentation';
@@ -735,11 +736,7 @@ onBeforeUnmount(() => {
           @skip="skipCoach"
         />
       </Transition>
-      <div class="game__toasts" aria-hidden="true">
-        <Transition name="toast">
-          <p v-if="toast" :key="toast.key" class="toast">{{ toast.text }}</p>
-        </Transition>
-      </div>
+      <WellToast :toast="toast" :well="wellCanvas" />
     </div>
 
     <aside v-if="showHelp && !touch" class="game__help" :aria-label="t('game.help')">
@@ -1086,44 +1083,6 @@ onBeforeUnmount(() => {
   place-items: center;
   height: 100%;
   color: var(--text-muted);
-}
-
-.game__toasts {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-}
-
-/* A message takes the place of the last one, in the same cell: nothing jumps (1.42). */
-.toast {
-  grid-area: 1 / 1;
-  padding: var(--space-2) var(--space-4);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  box-shadow: var(--shadow);
-  font-family: var(--font-display);
-  font-size: clamp(1.1rem, 0.9rem + 1.5vw, 1.6rem);
-  font-weight: 800;
-}
-
-.toast-enter-active {
-  animation: toast-in var(--motion-in) cubic-bezier(0.2, 1.4, 0.4, 1);
-}
-
-.toast-leave-active {
-  transition: opacity var(--motion-out) var(--ease-in);
-}
-
-.toast-leave-to {
-  opacity: 0;
-}
-
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: scale(calc(1 - var(--move) * 0.4));
-  }
 }
 
 /* A new round's well comes in with a fade, the last one gone at once. */

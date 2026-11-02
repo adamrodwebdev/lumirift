@@ -141,22 +141,23 @@ puis à 821 × 462, 1216 × 684, 1280 × 720, 1366 × 768 et 1920 × 1080, et au
 390 × 844 et 844 × 390. Le débutant lâche une pièce toutes les 1,2 s. La couche `Platform` et la
 politique de pubs n'ont pas changé depuis la 1.38 ; l'écran de jeu, les gestes et les effets si.
 
-| Contrôle                             | Statut     | Preuve                                                                                                                                                                                                                                         |
-| ------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arrivée directe en jeu               | ✅         | Premier affichage à 0,25 s ; l'entraînement dès l'ouverture, aucun onglet ; `gameplayStart` à 0,55 s, dès la première pièce, à toutes les tailles                                                                                              |
-| Entrée fracassante                   | ✅         | Le choc de la foudre dans l'eau à la première pièce (+780 grains), le Ver des dunes chassé à 27 s, « Training complete! », puis le 1-1 en un clic (« Level 1-1 »)                                                                              |
-| Événements SDK                       | ✅         | `loadingStart`/`loadingStop` puis `gameplayStart` à chaque partie ; P : `gameplayStop`, puis `gameplayStart` à la reprise ; `gameplayStop` à la fin de l'entraînement                                                                          |
-| Perte du focus, onglet caché         | ✅         | Le jeu se met en pause sans `gameplayStop` ; sa reprise n'envoie pas de `gameplayStart`, puisqu'aucun arrêt n'a été signalé                                                                                                                    |
-| Pubs                                 | ✅         | Aucun appel au module `ad` pendant l'entraînement ni au début du 1-1 ; politique inchangée (8 min de grâce, 3 min d'écart, jamais après une défaite, aucune offre récompensée)                                                                 |
-| Échap, Ctrl+W                        | ✅         | Échap ne fait rien en jeu ni dans la pause, qui reste ouverte ; Ctrl jamais utilisé                                                                                                                                                            |
-| Muet du portail                      | ✅         | `?muteAudio=true` : gain principal à 0 (1 sans le paramètre), réglage du joueur intact                                                                                                                                                         |
-| Tailles d'iframe, téléphones         | ✅ / 🟡    | Aucun défilement, puits entier à l'écran aux neuf tailles ; vibrations seulement après le premier geste. 🟡 Les bulles d'annonce, plus larges que le puits, en couvrent le milieu ~2 s dès la première pièce (907 × 510, 800 × 450, 844 × 390) |
-| Console, réseau, taille              | ✅         | Aucune erreur ni avertissement ; seuls `localhost` et `sdk.crazygames.com` ; aucun mot de The Tetris Company dans le build                                                                                                                     |
-| Mode prototype                       | ✅         | Les Dunes (1.37) restent fermées : leur code est dans le paquet, aucun menu ne l'ouvre ; la fiche annonce 14 modes                                                                                                                             |
-| Covers                               | ✅ corrigé | Redessinées : la tour de verre en pièces d'un seul cristal, comme le jeu depuis la 1.43 ; le titre seul                                                                                                                                        |
-| Vidéos                               | ✅ corrigé | MP4 H.264 (WebM avant), 19,7 s, 1920 × 1080 (21,0 Mo) et 1080 × 1620 (24,2 Mo), sans piste son ; les 45 premières images sont la cover ; scènes rejouées sur le moteur 1.45                                                                    |
-| Moteurs à 144 / 165 Hz, performances | ✅         | Pas fixe inchangé ; temps d'image mesuré à chaque lot de la 1.41 à la 1.45, commits alternés                                                                                                                                                   |
-| Safari, téléphone réel               | 🟡         | Pas de WebKit sur la machine : outil QA du portail et appareil                                                                                                                                                                                 |
+| Contrôle                             | Statut     | Preuve                                                                                                                                                                                                                         |
+| ------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Arrivée directe en jeu               | ✅         | Premier affichage à 0,25 s ; l'entraînement dès l'ouverture, aucun onglet ; `gameplayStart` à 0,55 s, dès la première pièce, à toutes les tailles                                                                              |
+| Entrée fracassante                   | ✅         | Le choc de la foudre dans l'eau à la première pièce (+780 grains), le Ver des dunes chassé à 27 s, « Training complete! », puis le 1-1 en un clic (« Level 1-1 »)                                                              |
+| Événements SDK                       | ✅         | `loadingStart`/`loadingStop` puis `gameplayStart` à chaque partie ; P : `gameplayStop`, puis `gameplayStart` à la reprise ; `gameplayStop` à la fin de l'entraînement                                                          |
+| Perte du focus, onglet caché         | ✅         | Le jeu se met en pause sans `gameplayStop` ; sa reprise n'envoie pas de `gameplayStart`, puisqu'aucun arrêt n'a été signalé                                                                                                    |
+| Pubs                                 | ✅         | Aucun appel au module `ad` pendant l'entraînement ni au début du 1-1 ; politique inchangée (8 min de grâce, 3 min d'écart, jamais après une défaite, aucune offre récompensée)                                                 |
+| Échap, Ctrl+W                        | ✅         | Échap ne fait rien en jeu ni dans la pause, qui reste ouverte ; Ctrl jamais utilisé                                                                                                                                            |
+| Muet du portail                      | ✅         | `?muteAudio=true` : gain principal à 0 (1 sans le paramètre), réglage du joueur intact                                                                                                                                         |
+| Tailles d'iframe, téléphones         | ✅         | Aucun défilement, puits entier à l'écran aux neuf tailles ; vibrations seulement après le premier geste                                                                                                                        |
+| Annonces sur le puits                | ✅ corrigé | Plus larges que le puits à toutes les tailles en 1.45.0 (332 px pour un puits de 240 à 907 × 510) ; en 1.45.1, posées sur le puits, jamais plus larges que lui (224 px), taille qui suit sa largeur, aux cinq tailles mesurées |
+| Console, réseau, taille              | ✅         | Aucune erreur ni avertissement ; seuls `localhost` et `sdk.crazygames.com` ; aucun mot de The Tetris Company dans le build                                                                                                     |
+| Mode prototype                       | ✅         | Les Dunes (1.37) restent fermées : leur code est dans le paquet, aucun menu ne l'ouvre ; la fiche annonce 14 modes                                                                                                             |
+| Covers                               | ✅ corrigé | Redessinées : la tour de verre en pièces d'un seul cristal, comme le jeu depuis la 1.43 ; le titre seul                                                                                                                        |
+| Vidéos                               | ✅ corrigé | MP4 H.264 (WebM avant), 19,7 s, 1920 × 1080 (21,0 Mo) et 1080 × 1620 (24,2 Mo), sans piste son ; les 45 premières images sont la cover ; scènes rejouées sur le moteur 1.45                                                    |
+| Moteurs à 144 / 165 Hz, performances | ✅         | Pas fixe inchangé ; temps d'image mesuré à chaque lot de la 1.41 à la 1.45, commits alternés                                                                                                                                   |
+| Safari, téléphone réel               | 🟡         | Pas de WebKit sur la machine : outil QA du portail et appareil                                                                                                                                                                 |
 
 **La page qualité (grille E).** Comme en 1.38, avec trois lignes renforcées : nom et allure
 propres (puits, cristaux, faille et constellation à nous), fluidité (aucune transition au-delà de
@@ -164,10 +165,10 @@ propres (puits, cristaux, faille et constellation à nous), fluidité (aucune tr
 téléphone). Restent deux lignes subjectives, laissées aux inconnus : le style face aux cinq
 meilleurs du tag, le volume sonore à l'oreille.
 
-**Verdict.** Prêt techniquement, médias prêts. Avant de soumettre : relire les chiffres de
-Playgama (dernier relevé, le 31/10 : 85 parties, 4 min 37 en moyenne, au-dessus du seuil de
-3 minutes de Poki), passer l'outil QA du brouillon (Safari, un vrai téléphone, journal du SDK),
-et décider des bulles d'annonce qui débordent le puits.
+**Verdict.** Prêt techniquement, médias prêts ; paquet final 1.45.1 (les annonces corrigées).
+Avant de soumettre : relire les chiffres de Playgama (dernier relevé, le 31/10 : 85 parties,
+4 min 37 en moyenne, au-dessus du seuil de 3 minutes de Poki) et passer l'outil QA du brouillon
+(Safari, un vrai téléphone, journal du SDK).
 
 ## Revue modérateur du 28/10/2026 (build 1.38.0)
 
