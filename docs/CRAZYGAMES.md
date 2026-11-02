@@ -40,22 +40,24 @@ Sources (relues le 20/10/2026) : [Requirements](https://docs.crazygames.com/requ
 | Vitrine terne                                | Covers lumineuses autour d'un personnage (l'Œil de la Tour) ; vidéos sur les éléments et les quatre boss (1.17)                                                                                                                                                                                                         |
 | Premières minutes sans relief                | L'accueil joue les meilleurs moments du jeu en direct (1.18) ; danger, musique qui s'emballe et « Close call! » (1.19) ; combos (1.20) ; surcharge de la faille (1.25) ; commandes au doigt précises (1.32)                                                                                                             |
 | Peu de contenu, peu de raisons de revenir    | Campagne réglée par un bot de courbe (1.33), puis 69 niveaux en dix chapitres et des Gardiens qui reviennent plus forts (1.38) ; course contre la montre (1.34) ; cadeau du jour et collections (1.35) ; saisons de six semaines et élément de la semaine (1.36)                                                        |
+| Sensations                                   | Commandes retouchées au doigt et au clavier, temps de lecture, compteur de combo (1.40) ; poids et éclat des pièces (1.41) ; une transition de 140 à 280 ms à chaque changement d'affichage (1.42)                                                                                                                      |
+| Trop proche du classique du genre            | Un puits à nous : 10 × 18, pièces d'un seul cristal, faisceau d'atterrissage au lieu du fantôme, prochaines pièces dans la faille, rangées d'attaque en pierre de faille (1.43) ; les lignes effacées s'ouvrent comme la faille (1.44) ; la constellation d'atterrissage (1.45)                                         |
 
 ## Produire le build et les médias
 
 ```bash
 npm run package:crazygames          # build, contrôles automatiques, zip
-node scripts/crazygames-media.mjs   # 3 covers et 2 vidéos (≈ 5 min)
+node scripts/crazygames-media.mjs   # 3 covers et 2 vidéos (≈ 2 min)
 ```
 
-| Livrable                   | Fichier                                                     |
-| -------------------------- | ----------------------------------------------------------- |
-| Build à téléverser         | `release/lumirift-crazygames-<version>.zip`                 |
-| Cover paysage 16:9         | `release/crazygames-media/cover-landscape-1920x1080.png`    |
-| Cover portrait 2:3         | `release/crazygames-media/cover-portrait-800x1200.png`      |
-| Cover carrée 1:1           | `release/crazygames-media/cover-square-800x800.png`         |
-| Vidéo paysage 16:9 (1080p) | `release/crazygames-media/preview-landscape-1920x1080.webm` |
-| Vidéo portrait 2:3 (1080p) | `release/crazygames-media/preview-portrait-1080x1620.webm`  |
+| Livrable                   | Fichier                                                                           |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| Build à téléverser         | le dossier `dist-crazygames/` (le portail prend un dossier) ; zip dans `release/` |
+| Cover paysage 16:9         | `release/crazygames-media/cover-landscape-1920x1080.png`                          |
+| Cover portrait 2:3         | `release/crazygames-media/cover-portrait-800x1200.png`                            |
+| Cover carrée 1:1           | `release/crazygames-media/cover-square-800x800.png`                               |
+| Vidéo paysage 16:9 (1080p) | `release/crazygames-media/preview-landscape-1920x1080.mp4`                        |
+| Vidéo portrait 2:3 (1080p) | `release/crazygames-media/preview-portrait-1080x1620.mp4`                         |
 
 Le build CrazyGames (`vite build --mode crazygames`) ne diffère du site que par la couche
 `Platform` (`src/platform/crazygames/`) : SDK v3 chargé dans `<head>`, événements de jeu,
@@ -73,6 +75,9 @@ training ». Le build CrazyGames le rejoue de bout en bout (`e2e/portal.spec.ts`
 - **Description** :
 
   > Lumirift Blocks is a falling-blocks game where the blocks fight back.
+  >
+  > In the well, every piece is a single crystal, and every line you clear splits open like the
+  > rift and vanishes into its light.
   >
   > Pieces crumble into sand alive with elements: drop lightning into water to shock a whole
   > colour away, set oil ablaze, freeze water into ice, grow a vine across a gap. Wrap the well
@@ -126,6 +131,43 @@ training ». Le build CrazyGames le rejoue de bout en bout (`e2e/portal.spec.ts`
   **Comptes** : non (aucune connexion).
 - **Genre** : Puzzle (blocs qui tombent). **Public** : PEGI 3 de fait (aucune violence, aucun
   achat, aucun chat).
+
+## Revue modérateur du 02/11/2026 (build 1.45.0)
+
+**Méthode.** Le paquet `release/lumirift-crazygames-1.45.0.zip` (125 fichiers, 1,44 Mo, chemins
+en `/`) est servi en local (`vite preview --mode crazygames`, SDK v3 en environnement `local`),
+dans Chrome sans profil, chaque appel aux modules `game` et `ad` du SDK journalisé, à 907 × 510,
+puis à 821 × 462, 1216 × 684, 1280 × 720, 1366 × 768 et 1920 × 1080, et au toucher à 800 × 450,
+390 × 844 et 844 × 390. Le débutant lâche une pièce toutes les 1,2 s. La couche `Platform` et la
+politique de pubs n'ont pas changé depuis la 1.38 ; l'écran de jeu, les gestes et les effets si.
+
+| Contrôle                             | Statut     | Preuve                                                                                                                                                                                    |
+| ------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arrivée directe en jeu               | ✅         | Premier affichage à 0,25 s ; l'entraînement dès l'ouverture, aucun onglet ; `gameplayStart` à 0,55 s, dès la première pièce, à toutes les tailles                                         |
+| Entrée fracassante                   | ✅         | Le choc de la foudre dans l'eau à la première pièce (+780 grains), le Ver des dunes chassé à 27 s, « Training complete! », puis le 1-1 en un clic (« Level 1-1 »)                         |
+| Événements SDK                       | ✅         | `loadingStart`/`loadingStop` puis `gameplayStart` à chaque partie ; P : `gameplayStop`, puis `gameplayStart` à la reprise ; `gameplayStop` à la fin de l'entraînement                     |
+| Perte du focus, onglet caché         | ✅         | Le jeu se met en pause sans `gameplayStop` ; sa reprise n'envoie pas de `gameplayStart`, puisqu'aucun arrêt n'a été signalé                                                               |
+| Pubs                                 | ✅         | Aucun appel au module `ad` pendant l'entraînement ni au début du 1-1 ; politique inchangée (8 min de grâce, 3 min d'écart, jamais après une défaite, aucune offre récompensée)            |
+| Échap, Ctrl+W                        | ✅         | Échap ne fait rien en jeu ni dans la pause, qui reste ouverte ; Ctrl jamais utilisé                                                                                                       |
+| Muet du portail                      | ✅         | `?muteAudio=true` : gain principal à 0 (1 sans le paramètre), réglage du joueur intact                                                                                                    |
+| Tailles d'iframe, téléphones         | ✅ / 🟡    | Aucun défilement, puits entier à l'écran aux neuf tailles ; vibrations seulement après le premier geste. 🟡 Les bulles d'annonce débordent le puits pendant ~2 s à 800 × 450 et 844 × 390 |
+| Console, réseau, taille              | ✅         | Aucune erreur ni avertissement ; seuls `localhost` et `sdk.crazygames.com` ; aucun mot de The Tetris Company dans le build                                                                |
+| Mode prototype                       | ✅         | Les Dunes (1.37) restent fermées : leur code est dans le paquet, aucun menu ne l'ouvre ; la fiche annonce 14 modes                                                                        |
+| Covers                               | ✅ corrigé | Redessinées : la tour de verre en pièces d'un seul cristal, comme le jeu depuis la 1.43 ; le titre seul                                                                                   |
+| Vidéos                               | ✅ corrigé | MP4 H.264 (WebM avant), 19,7 s, 1920 × 1080 (21,0 Mo) et 1080 × 1620 (24,2 Mo), sans piste son ; les 45 premières images sont la cover ; scènes rejouées sur le moteur 1.45               |
+| Moteurs à 144 / 165 Hz, performances | ✅         | Pas fixe inchangé ; temps d'image mesuré à chaque lot de la 1.41 à la 1.45, commits alternés                                                                                              |
+| Safari, téléphone réel               | 🟡         | Pas de WebKit sur la machine : outil QA du portail et appareil                                                                                                                            |
+
+**La page qualité (grille E).** Comme en 1.38, avec trois lignes renforcées : nom et allure
+propres (puits, cristaux, faille et constellation à nous), fluidité (aucune transition au-delà de
+300 ms hors des célébrations), réactivité (commandes retouchées en 1.40, sensations validées sur
+téléphone). Restent deux lignes subjectives, laissées aux inconnus : le style face aux cinq
+meilleurs du tag, le volume sonore à l'oreille.
+
+**Verdict.** Prêt techniquement, médias prêts. Avant de soumettre : relire les chiffres de
+Playgama (dernier relevé, le 31/10 : 85 parties, 4 min 37 en moyenne, au-dessus du seuil de
+3 minutes de Poki), passer l'outil QA du brouillon (Safari, un vrai téléphone, journal du SDK),
+et décider des bulles d'annonce sur petit écran couché.
 
 ## Revue modérateur du 28/10/2026 (build 1.38.0)
 
@@ -356,8 +398,8 @@ moins de 10 s et pèsent moins de 20 Mo).
 
 ## Reste à faire sur le portail
 
-1. Nouveau brouillon (ou celui qui existe) : téléverser le **dossier** du build décompressé,
-   les trois covers et les deux vidéos ; saisir description et commandes ; résumer les
+1. Nouveau brouillon (ou celui qui existe) : téléverser le **dossier** `dist-crazygames/`, les
+   trois covers et les deux vidéos MP4 ; saisir description et commandes ; résumer les
    améliorations ci-dessus dans le message de soumission.
 2. Cocher **Progress Save** (module Data) et les orientations paysage et portrait.
 3. Passer l'**outil QA** du Developer Portal (aperçu, contrôle des exigences, SDK) et essayer
