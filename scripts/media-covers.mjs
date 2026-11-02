@@ -280,6 +280,11 @@ const page = (width, height, glow, body) =>
   ${motes(width, height, Math.round((width * height) / 22000), 21)}
   ${body}</body></html>`;
 
+/**
+ * The title keeps clear of CrazyGames' label zone, top left, where the "New"
+ * and "Hot" badges go (Developer Portal, "Show label zone"): 40 % × 20 % of the
+ * landscape cover, 40 % × 10 % of the portrait one, 35 % × 30 % of the square.
+ */
 export const COVERS = {
   landscape: (w = 1920, h = 1080) =>
     page(
@@ -292,15 +297,15 @@ export const COVERS = {
     page(
       w,
       h,
-      '50% 50%',
-      `${eye(w * 0.5, h * 0.5, w * 0.74)}${tower(w * 0.5, h * 0.665, h * 1.02, w * 0.33, 6)}${gaze(w * 0.5, h * 0.54, h * 0.88, w * 0.5)}${blast(w * 0.5 + w * 0.27, h * 0.84, w * 0.13)}${title(w / 2, h * 0.05, w * 0.2, 'center')}`,
+      '50% 53%',
+      `${eye(w * 0.5, h * 0.53, w * 0.74)}${tower(w * 0.5, h * 0.695, h * 1.05, w * 0.33, 6)}${gaze(w * 0.5, h * 0.57, h * 0.91, w * 0.5)}${blast(w * 0.5 + w * 0.27, h * 0.87, w * 0.13)}${title(w / 2, h * 0.105, w * 0.18, 'center')}`,
     ),
   square: (w = 800, h = 800) =>
     page(
       w,
       h,
       '50% 58%',
-      `${eye(w * 0.5, h * 0.585, w * 0.56)}${tower(w * 0.5, h * 0.74, h * 1.03, w * 0.26, 4)}${gaze(w * 0.5, h * 0.625, h * 0.95, w * 0.4)}${blast(w * 0.5 + w * 0.21, h * 0.89, w * 0.1)}${title(w / 2, h * 0.04, w * 0.15, 'center')}`,
+      `${eye(w * 0.5, h * 0.585, w * 0.56)}${tower(w * 0.5, h * 0.74, h * 1.03, w * 0.26, 4)}${gaze(w * 0.5, h * 0.625, h * 0.95, w * 0.4)}${blast(w * 0.5 + w * 0.21, h * 0.89, w * 0.1)}${title(w * 0.72, h * 0.04, w * 0.15, 'center')}`,
     ),
   /**
    * The app icon (Yandex Games, 512 × 512): the Eye over the top of its tower,
