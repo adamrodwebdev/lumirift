@@ -67,16 +67,125 @@ function eye(cx, cy, w) {
 </svg>`;
 }
 
-/** A gem block, as in the game: light band top-left, shadow bottom-right, a gloss. */
-const gem = (x, y, sw, sh, colour, shade = 0) =>
-  `<div style="position:absolute;left:${x}px;top:${y}px;width:${sw}px;height:${sh}px;border-radius:${Math.min(sw, sh) * 0.16}px;background:${colour};filter:brightness(${1 - shade});box-shadow:inset ${sw * 0.1}px ${sh * 0.1}px 0 rgb(255 255 255 / .32),inset -${sw * 0.1}px -${sh * 0.1}px 0 rgb(0 0 0 / .3)"><div style="position:absolute;left:${sw * 0.2}px;top:${sh * 0.16}px;width:${sw * 0.3}px;height:${sh * 0.12}px;border-radius:${sh * 0.06}px;background:rgb(255 255 255 / .6)"></div></div>`;
+/** The seven pieces (cells x, y), for the tower's crystals. */
+const PIECES = [
+  [
+    [0, 0],
+    [1, 0],
+    [2, 0],
+    [3, 0],
+  ],
+  [
+    [0, 0],
+    [1, 0],
+    [0, 1],
+    [1, 1],
+  ],
+  [
+    [0, 0],
+    [1, 0],
+    [2, 0],
+    [1, 1],
+  ],
+  [
+    [1, 0],
+    [2, 0],
+    [0, 1],
+    [1, 1],
+  ],
+  [
+    [0, 0],
+    [1, 0],
+    [1, 1],
+    [2, 1],
+  ],
+  [
+    [0, 0],
+    [0, 1],
+    [1, 1],
+    [2, 1],
+  ],
+  [
+    [2, 0],
+    [0, 1],
+    [1, 1],
+    [2, 1],
+  ],
+];
+const turn = (cells) => cells.map(([x, y]) => [-y, x]);
 
 /**
- * The glass tower of gems, seen face on: columns narrow towards its edges as on
- * the cylinder, darker on the right (the light comes from the left). The gaze
- * of the Eye lights its top red; a bomb goes off on its flank. `fill` gives
- * the share of gems in each row (by default, gaps at the top: the tower is
- * still being built).
+ * The tower's crystals (1.43): cells grouped into pieces, each a single crystal
+ * as in the game, with no border between its blocks. Returns each cell's piece
+ * (or -1) and colour, row by row; `fill` gives the share of cells filled.
+ */
+function crystals(columns, rows, fill, next) {
+  const wanted = Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: columns }, () => next() <= fill(r)),
+  );
+  const piece = Array.from({ length: rows }, () => new Array(columns).fill(-1));
+  const colours = [];
+  const free = (x, y) =>
+    y >= 0 && y < rows && x >= 0 && x < columns && wanted[y][x] && piece[y][x] < 0;
+  for (let y = rows - 1; y >= 0; y--) {
+    for (let x = 0; x < columns; x++) {
+      if (!free(x, y)) continue;
+      // A whole piece where it fits, turned at random; else a pair, else a lone block.
+      let placed = null;
+      const start = Math.floor(next() * PIECES.length);
+      for (let k = 0; k < PIECES.length * 4 && !placed; k++) {
+        let cells = PIECES[(start + Math.floor(k / 4)) % PIECES.length];
+        for (let t = 0; t < k % 4; t++) cells = turn(cells);
+        const [ax, ay] = cells.reduce(
+          ([mx, my], [cx, cy]) => (cy > my || (cy === my && cx < mx) ? [cx, cy] : [mx, my]),
+          [Infinity, -Infinity],
+        );
+        const moved = cells.map(([cx, cy]) => [x + cx - ax, y + cy - ay]);
+        if (moved.every(([mx, my]) => free(mx, my))) placed = moved;
+      }
+      placed ??= free(x + 1, y)
+        ? [
+            [x, y],
+            [x + 1, y],
+          ]
+        : [[x, y]];
+      for (const [px, py] of placed) piece[py][px] = colours.length;
+      colours.push(TONES[Math.floor(next() * TONES.length)]);
+    }
+  }
+  return { piece, colours };
+}
+
+/**
+ * One block of a crystal, as in the game (1.43): joined to its piece's blocks
+ * with no border between them, a light edge on its outer top and left, a shade
+ * on its outer bottom and right, rounded only at the piece's outer corners.
+ */
+function crystalCell(box, colour, shade, outer, gloss) {
+  const { x, y, w, h } = box;
+  const e = Math.min(w, h) * 0.1;
+  const round = Math.min(w, h) * 0.18;
+  const corner = (a, b) => (outer[a] && outer[b] ? `${round}px` : '0');
+  const radius = `${corner('top', 'left')} ${corner('top', 'right')} ${corner('bottom', 'right')} ${corner('bottom', 'left')}`;
+  const edges = [
+    outer.top ? `inset 0 ${e}px 0 rgb(255 255 255 / .32)` : '',
+    outer.left ? `inset ${e}px 0 0 rgb(255 255 255 / .22)` : '',
+    outer.bottom ? `inset 0 -${e}px 0 rgb(0 0 0 / .3)` : '',
+    outer.right ? `inset -${e}px 0 0 rgb(0 0 0 / .24)` : '',
+  ].filter(Boolean);
+  const shine = gloss
+    ? `<div style="position:absolute;left:${w * 0.2}px;top:${h * 0.16}px;width:${w * 0.3}px;height:${h * 0.12}px;border-radius:${h * 0.06}px;background:rgb(255 255 255 / .6)"></div>`
+    : '';
+  return `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;border-radius:${radius};background:${colour};filter:brightness(${1 - shade});box-shadow:${edges.join(',') || 'none'}">${shine}</div>`;
+}
+
+/**
+ * The glass tower, seen face on: columns narrow towards its edges as on the
+ * cylinder, darker on the right (the light comes from the left); its pieces
+ * are single crystals, as in the game since 1.43. The gaze of the Eye lights
+ * its top red; a bomb goes off on its flank. `fill` gives the share of cells
+ * filled in each row (by default, gaps at the top: the tower is still being
+ * built).
  */
 function tower(cx, top, bottom, radius, rows, fill = (r) => (r < 2 ? 0.35 : r < 4 ? 0.7 : 0.94)) {
   const columns = 9;
@@ -85,25 +194,44 @@ function tower(cx, top, bottom, radius, rows, fill = (r) => (r < 2 ? 0.35 : r < 
   let html = '';
   // The glass body.
   html += `<div style="position:absolute;left:${cx - radius}px;top:${top - rowH * 0.6}px;width:${radius * 2}px;height:${bottom - top + rowH * 0.6}px;border-radius:${radius}px / ${rowH * 0.6}px;background:linear-gradient(90deg,rgb(120 210 255 / .22),rgb(180 160 255 / .1) 45%,rgb(40 10 80 / .4));box-shadow:inset 0 0 ${radius * 0.2}px rgb(160 220 255 / .45),0 0 ${radius * 0.6}px rgb(120 80 255 / .5)"></div>`;
+  const { piece, colours } = crystals(columns, rows, fill, next);
+  const seenPiece = new Set();
   for (let r = 0; r < rows; r++) {
-    const filled = fill(r);
     for (let c = 0; c < columns; c++) {
+      const id = piece[r][c];
+      if (id < 0) continue;
       const a0 = -Math.PI / 2 + (c / columns) * Math.PI;
       const a1 = -Math.PI / 2 + ((c + 1) / columns) * Math.PI;
       const x0 = cx + Math.sin(a0) * radius;
       const x1 = cx + Math.sin(a1) * radius;
-      if (next() > filled) continue;
       const w = x1 - x0;
       const pad = w * 0.06;
+      const same = (dc, dr) => piece[r + dr]?.[c + dc] === id;
+      const outer = {
+        top: !same(0, -1),
+        bottom: !same(0, 1),
+        left: !same(-1, 0),
+        right: !same(1, 0),
+      };
+      // Gaps only between pieces: within a crystal the blocks meet.
+      const left = outer.left ? pad : 0;
+      const right = outer.right ? pad : 0;
+      const yTop = top + r * rowH + (outer.top ? rowH * 0.05 : 0);
+      const yBottom = top + (r + 1) * rowH - (outer.bottom ? rowH * 0.05 : 0);
       const shade = Math.max(0, Math.sin((a0 + a1) / 2)) * 0.35;
-      html += gem(
-        x0 + pad,
-        top + r * rowH + rowH * 0.05 + Math.cos((a0 + a1) / 2) * rowH * 0.1,
-        w - pad * 2,
-        rowH * 0.9,
-        TONES[(c * 3 + r * 5) % TONES.length],
+      html += crystalCell(
+        {
+          x: x0 + left,
+          y: yTop + Math.cos((a0 + a1) / 2) * rowH * 0.1,
+          w: w - left - right,
+          h: yBottom - yTop,
+        },
+        colours[id],
         shade,
+        outer,
+        !seenPiece.has(id),
       );
+      seenPiece.add(id);
     }
   }
   // The rims of the rings: thin ellipses, so that the stack reads as a cylinder.

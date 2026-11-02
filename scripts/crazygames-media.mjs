@@ -6,14 +6,14 @@
 // 800×1200 (2:3), 800×800 (1:1); the title as the only text; no border, no
 // icon. Videos: 15–20 s, 1080p landscape (16:9) and portrait (2:3), no sound,
 // no cursor, no black bars, opening on the cover. They are rendered frame by
-// frame from the real game (showcase-frames.mjs) and encoded in VP9 (WebM)
-// with the ffmpeg that comes with Playwright.
-import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
-import { homedir } from 'node:os';
+// frame from the real game (showcase-frames.mjs) and encoded in H.264 (MP4) by
+// Chrome (mp4-encoder.mjs), the format every upload form takes (1.45; WebM
+// before).
+import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
 import { COVERS } from './media-covers.mjs';
+import { Mp4Encoder } from './mp4-encoder.mjs';
 import { sceneFrames, startShowcase } from './showcase-frames.mjs';
 
 const OUT = join('release', 'crazygames-media');
@@ -39,7 +39,7 @@ mkdirSync(OUT, { recursive: true });
 // The art lives in media-covers.mjs: the Eye of the Tower over the glass tower.
 const browser = await chromium.launch({ channel: 'chrome' });
 
-/** A picture of a page: PNG for the covers, JPEG frames for the videos (the encoder reads MJPEG). */
+/** A picture of a page: PNG for the covers, JPEG frames for the videos. */
 const FRAME = { type: 'jpeg', quality: 95 };
 const shoot = async (html, width, height, options = { type: 'png' }) => {
   const tab = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
@@ -82,69 +82,14 @@ if (COVERS_ONLY) {
   process.exit(0);
 }
 
-const ffmpegDir = readdirSync(join(homedir(), 'AppData', 'Local', 'ms-playwright')).find((d) =>
-  d.startsWith('ffmpeg'),
-);
-// LUMIRIFT_FFMPEG may point to another ffmpeg executable (with VP9); Playwright's by default.
-const custom = process.env.LUMIRIFT_FFMPEG;
-const FFMPEG =
-  custom && existsSync(custom) && statSync(custom).isFile()
-    ? custom
-    : join(homedir(), 'AppData', 'Local', 'ms-playwright', ffmpegDir ?? '', 'ffmpeg-win64.exe');
-
 const server = await startShowcase();
 
-/** Records one video: the cover, then each scene, frame by frame. */
+/** Records one video: the cover, then each scene, frame by frame, in H.264. */
 async function record(name, width, height, coverHtml) {
-  const file = join(OUT, `preview-${name}-${width}x${height}.webm`);
-  const encoder = spawn(
-    FFMPEG,
-    [
-      '-y',
-      '-f',
-      'image2pipe',
-      '-framerate',
-      String(FPS),
-      '-c:v',
-      'mjpeg',
-      '-i',
-      'pipe:0',
-      '-c:v',
-      'libvpx-vp9',
-      '-pix_fmt',
-      'yuv420p',
-      '-b:v',
-      '0',
-      '-crf',
-      '31',
-      '-row-mt',
-      '1',
-      '-deadline',
-      'good',
-      '-cpu-used',
-      '3',
-      '-an',
-      file,
-    ],
-    { stdio: ['pipe', 'ignore', 'inherit'] },
-  );
-  // Stops at once if the encoder dies (instead of waiting for it forever).
-  let failure = null;
-  encoder.on(
-    'close',
-    (code) => (failure ??= code === 0 ? null : new Error(`ffmpeg exited with ${code}`)),
-  );
-  encoder.on('error', (error) => (failure = error));
-  const write = (png) =>
-    failure
-      ? Promise.reject(failure)
-      : new Promise((resolve) =>
-          encoder.stdin.write(png) ? resolve() : encoder.stdin.once('drain', resolve),
-        );
-
+  const file = join(OUT, `preview-${name}-${width}x${height}.mp4`);
+  const video = await Mp4Encoder.open(browser, { width, height, fps: FPS });
   const cover = await shoot(coverHtml, width, height, FRAME);
-  for (let i = 0; i < COVER_SECONDS * FPS; i++) await write(cover);
-
+  for (let i = 0; i < COVER_SECONDS * FPS; i++) await video.add(cover);
   const frames = sceneFrames(browser, {
     width,
     height,
@@ -152,10 +97,9 @@ async function record(name, width, height, coverHtml) {
     scenes: SCENES,
     onScene: (scene) => console.log(`${name}: ${scene}`),
   });
-  for await (const frame of frames) await write(frame);
-  encoder.stdin.end();
-  await new Promise((resolve) => encoder.on('close', resolve));
-  console.log(`${file} (${(statSync(file).size / 1024 / 1024).toFixed(1)} MB)`);
+  for await (const frame of frames) await video.add(frame);
+  const bytes = await video.save(file);
+  console.log(`${file} (${(bytes / 1024 / 1024).toFixed(1)} MB)`);
 }
 
 try {

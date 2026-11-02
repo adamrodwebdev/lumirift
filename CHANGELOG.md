@@ -21,6 +21,9 @@ La constellation d'atterrissage (lot 31) : le faisceau montre toute la pièce l�
 - `LandingBeam` : `constellationLinks` (les blocs côte à côte), les étincelles dans des tampons
   réutilisés et leur halo fait une fois par teinte (`beginConstellation`, `addStar`,
   `drawConstellation`) ; les traits (`BEAM.cap`, `cap()`) disparaissent.
+- **Médias des portails** : la tour des covers (CrazyGames, Playgama, carte sociale du site) se
+  dessine en pièces d'un seul cristal, comme le jeu ; les vidéos CrazyGames passent du WebM au
+  MP4 (H.264, `Mp4Encoder`), le format que prennent tous les formulaires.
 
 ## [1.44.0] — 31/10/2026
 
