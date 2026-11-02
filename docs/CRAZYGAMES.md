@@ -169,7 +169,15 @@ téléphone Android de l'auteur (1.42 sur Playgama) : aucun iPhone pour vérifie
 posent les badges (« New », « Hot ») : en haut à gauche, 40 % × 20 % de la cover paysage,
 40 % × 10 % de la portrait, 35 % × 30 % de la carrée. Le titre de la carrée y perdait son L et
 son R, celui de la portrait le haut de « LU » : `scripts/media-covers.mjs` le place désormais hors
-de la zone (en haut à droite sur la carrée, sous la zone sur la portrait).
+de la zone (en haut à droite sur la carrée, sous la zone sur la portrait). Les vidéos envoyées
+reviennent en vignettes de survol plus petites et accélérées (13,1 s pour 19,7 s).
+
+**Soumission.** Le 02/11/2026, build 1.45.1 : « Awaiting review ». La dernière étape fait accepter
+les conditions du Developer Portal, version du 14/04/2026 : licence non exclusive (Playgama reste
+permis), refus ou retrait sans justification, promotion libre, garanties d'originalité, de
+non-contrefaçon et d'exactitude des informations, réponse obligatoire à toute demande de retrait
+(sinon manquement grave), indemnisation, un an à partir du Full Launch renouvelable, tribunaux de
+Louvain ; aucune clause sur l'IA. Elle fait aussi attester que le jeu convient au PEGI 12.
 
 ## Revue modérateur du 02/11/2026 (build 1.45.0)
 
@@ -438,9 +446,10 @@ moins de 10 s et pèsent moins de 20 Mo).
 
 ## Reste à faire sur le portail
 
-1. Nouveau brouillon (ou celui qui existe) : téléverser le **dossier** `dist-crazygames/`, les
-   trois covers et les deux vidéos MP4 ; saisir description et commandes ; résumer les
-   améliorations ci-dessus dans le message de soumission.
-2. Cocher **Progress Save** (module Data) et les orientations paysage et portrait.
-3. Passer l'**outil QA** du Developer Portal (aperçu, contrôle des exigences, SDK) et essayer
-   Safari et un téléphone réel.
+1. Attendre la revue de la 1.45.1 (soumise le 02/11/2026). Le portail n'a pas de champ de
+   message : les améliorations depuis la 1.2.0 ne se disent que par le jeu.
+2. Si le jeu est accepté : la 1.45.2 (carte du guide sur les téléphones bas en paysage) par
+   « Submit new version », mise en ligne aussitôt pendant le Basic Launch ; suivre les
+   indicateurs ci-dessus ; vérifier le son sur un iPhone dès qu'un appareil est disponible.
+3. S'il est refusé : ne resoumettre qu'après avoir changé ce que voit un nouveau joueur dans les
+   premières minutes, et passé le test d'inconnus.
