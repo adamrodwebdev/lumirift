@@ -15,6 +15,10 @@ Les annonces du puits restent dans le puits, relevé à la revue modérateur Cra
   à 907 × 510 comme sur un téléphone couché. Elles se posent désormais sur le puits lui-même,
   jamais plus larges que lui, passent à la ligne au besoin, et leur taille suit sa largeur
   au lieu de celle de l'écran.
+- **Le badge du portail sur le titre des covers** : la zone d'étiquette de CrazyGames (« New »,
+  « Hot », en haut à gauche) recouvrait le L de LUMI et le R de RIFT sur la cover carrée, le haut
+  de « LU » sur la portrait et à l'ouverture de la vidéo portrait. Le titre de la carrée passe en
+  haut à droite, celui de la portrait sous la zone, l'Œil et la tour descendus d'autant.
 
 ### Technique
 

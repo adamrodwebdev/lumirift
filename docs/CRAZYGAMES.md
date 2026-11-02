@@ -131,6 +131,53 @@ training ». Le build CrazyGames le rejoue de bout en bout (`e2e/portal.spec.ts`
   **Comptes** : non (aucune connexion).
 - **Genre** : Puzzle (blocs qui tombent). **Public** : PEGI 3 de fait (aucune violence, aucun
   achat, aucun chat).
+- **Catégorie** : Puzzle. **Tags** (5 au plus) : Brain, Logic, Physics, Color, Skill. Jamais
+  « Tetris » : la revue juridique du 30/10 écarte toute marque d'un autre jeu de nos fiches ; les
+  tags « gérés par l'admin » restent au choix du portail.
+- **Outils** (« Which tools did you use? ») : Claude. **Plein écran** : oui (« The game works
+  well in fullscreen »).
+
+## Outil QA du portail, 02/11/2026 (build 1.45.1)
+
+**Un ancien build dans le brouillon.** Le premier passage dans l'outil QA a joué une 1.11.0
+(59 fichiers, « Version 1.11.0 » dans les réglages) : le « Delete all files » d'avant le
+téléversement ne vaut que si le nouveau dossier est enregistré, et l'outil QA rouvre le dernier
+build enregistré. Ce vieux build envoyait `gameplayStop` à chaque perte du focus (le correctif,
+`stopsOnAutoPause`, date de la 1.30). Toujours lire la version dans les réglages avant de juger
+le journal. Le dossier `dist-crazygames/` (125 fichiers) a ensuite été renvoyé et enregistré.
+
+| Contrôle (environnement réel du portail) | Statut | Preuve                                                                                            |
+| ---------------------------------------- | ------ | ------------------------------------------------------------------------------------------------- |
+| Version, tailles                         | ✅     | « Version 1.45.1 » ; 1,4 Mo au total, 0,2 Mo au démarrage                                         |
+| Arrivée en jeu                           | ✅     | Temps de chargement 2,9 s, jusqu'au premier `gameplayStart` ; l'entraînement d'emblée, aucun menu |
+| Fonctions SDK détectées                  | ✅     | Loading Start/Stop, Gameplay Start/Stop, Mute audio, Data Get/Set ; aucune pub (Basic Launch)     |
+| Pause du joueur (P)                      | ✅     | `gameplayStop`, puis `gameplayStart` à la reprise                                                 |
+| Perte du focus                           | ✅     | Pause sans `gameplayStop` ; la reprise n'envoie rien                                              |
+| « Skip the training »                    | ✅     | `gameplayStop`, puis l'accueil 1.45 et ses menus                                                  |
+| Bouton muet de la barre CrazyGames       | ✅     | Détecté (« Mute audio support ») ; aucun événement de jeu en plus                                 |
+| Onglet Warnings, bandeau de consentement | ✅     | Vide ; aucun bandeau pendant la session                                                           |
+
+**Grille « QA Results » (Basic).** Yes à « First gameplay start implemented correctly »,
+« Complies to Gameplay requirements », « Runs on all CrazyGames domains » (aucun verrou de
+domaine, chemins relatifs), « Browser checks » (Chrome et Edge, Chromium vérifié),
+« Device checks: Mobile », « No external ads » et « Does not offer external login options » ;
+N/A à la mention des conditions et de la confidentialité (aucune donnée personnelle collectée).
+« Device checks: Mobile » repose sur les tests émulés Mobile Safari et Mobile Chrome et sur le
+téléphone Android de l'auteur (1.42 sur Playgama) : aucun iPhone pour vérifier le son sur iOS.
+
+**Zone d'étiquette des covers.** La case « Show label zone » de l'étape Details montre où se
+posent les badges (« New », « Hot ») : en haut à gauche, 40 % × 20 % de la cover paysage,
+40 % × 10 % de la portrait, 35 % × 30 % de la carrée. Le titre de la carrée y perdait son L et
+son R, celui de la portrait le haut de « LU » : `scripts/media-covers.mjs` le place désormais hors
+de la zone (en haut à droite sur la carrée, sous la zone sur la portrait). Les vidéos envoyées
+reviennent en vignettes de survol plus petites et accélérées (13,1 s pour 19,7 s).
+
+**Soumission.** Le 02/11/2026, build 1.45.1 : « Awaiting review ». La dernière étape fait accepter
+les conditions du Developer Portal, version du 14/04/2026 : licence non exclusive (Playgama reste
+permis), refus ou retrait sans justification, promotion libre, garanties d'originalité, de
+non-contrefaçon et d'exactitude des informations, réponse obligatoire à toute demande de retrait
+(sinon manquement grave), indemnisation, un an à partir du Full Launch renouvelable, tribunaux de
+Louvain ; aucune clause sur l'IA. Elle fait aussi attester que le jeu convient au PEGI 12.
 
 ## Revue modérateur du 02/11/2026 (build 1.45.0)
 
@@ -399,9 +446,10 @@ moins de 10 s et pèsent moins de 20 Mo).
 
 ## Reste à faire sur le portail
 
-1. Nouveau brouillon (ou celui qui existe) : téléverser le **dossier** `dist-crazygames/`, les
-   trois covers et les deux vidéos MP4 ; saisir description et commandes ; résumer les
-   améliorations ci-dessus dans le message de soumission.
-2. Cocher **Progress Save** (module Data) et les orientations paysage et portrait.
-3. Passer l'**outil QA** du Developer Portal (aperçu, contrôle des exigences, SDK) et essayer
-   Safari et un téléphone réel.
+1. Attendre la revue de la 1.45.1 (soumise le 02/11/2026). Le portail n'a pas de champ de
+   message : les améliorations depuis la 1.2.0 ne se disent que par le jeu.
+2. Si le jeu est accepté : la 1.45.2 (carte du guide sur les téléphones bas en paysage) par
+   « Submit new version », mise en ligne aussitôt pendant le Basic Launch ; suivre les
+   indicateurs ci-dessus ; vérifier le son sur un iPhone dès qu'un appareil est disponible.
+3. S'il est refusé : ne resoumettre qu'après avoir changé ce que voit un nouveau joueur dans les
+   premières minutes, et passé le test d'inconnus.
