@@ -15,12 +15,40 @@ portails, lue en entier le 23/10/2026 (exigences du 9 octobre 2026).
   l'ouzbek mènent au russe, sauf si une langue du jeu vient avant dans les préférences du
   joueur. Sur ce build seulement depuis la 1.30.1 (`russianForNeighbours`) : ailleurs,
   l'anglais, la langue de repli que Playgama demande.
-- **VK** : en attente d'un avis juridique (sanctions de l'UE sur la holding VK depuis le
-  13/07/2026), comme Ball Mania.
+- **VK** : abandonné le 03/11/2026 (sanctions de l'UE sur la holding VK depuis le
+  13/07/2026), OK.ru aussi, du même groupe.
 - **Un seul compte développeur et un seul contrat pour Ball Mania et Lumirift** : un contrat
   couvre tous les jeux du compte et leurs revenus s'additionnent pour les versements (réponse du
   support du 23/10/2026). La voie se choisit quand le premier des deux jeux est prêt pour la
   modération (voir « À faire par l'auteur »).
+
+## Où en est le compte (03/11/2026)
+
+- **Profil développeur créé : « AdamRodWebDev »**, public et définitif (un changement passe par
+  un courriel à games-partners@yandex-team.ru). Le compte est ouvert sur yandex.com ;
+  games.yandex.ru demande encore de se connecter.
+- **Textes acceptés** : la licence pour les non-résidents, avec les règles de placement
+  (version du 28/10/2026, Direct Cursus Technology L.L.C., Dubaï), et les conditions de
+  diffusion dans l'UE (Playhop). Les points à retenir :
+  - § 1.4 : **l'accord écrit préalable de Yandex avant de faire connaître la coopération**.
+    Aucun message « disponible sur Yandex Games » sans cet accord.
+  - Notre responsabilité est illimitée, celle de Yandex plafonnée à 1 500 USD ou EUR.
+  - Yandex peut modifier les textes sans préavis.
+  - Litiges : droit anglais, arbitrage à Dubaï.
+  - Un relevé non contesté sous 10 jours ouvrés vaut accord.
+- **Bloqué** : la console n'accepte plus de nouveaux partenaires depuis l'incident du
+  11/10/2026 (« We're not accepting applications from new partners right now ») ; la réouverture
+  sera annoncée sur le canal Telegram de Yandex Games. Pas de contrat ni de modération d'ici
+  là ; un brouillon (« Add app ») reste possible.
+- **Voie du contrat choisie : la régie (РСЯ)**, dès qu'un brouillon existe, après vérification
+  URSSAF et TVA. Réponse du support de la régie, transmise le 03/11/2026 :
+  - les entrepreneurs individuels étrangers acceptent l'offre pour les non-Russes, signée avec
+    Air Smart Advertising Solutions FZ-LLC, à Dubaï (version du 28/11/2024) ;
+  - versement en euros sur un IBAN, au plus une fois par mois, au-delà de 100 €, dans les
+    60 jours bancaires suivant le relevé ;
+  - pièces à fournir : un extrait d'immatriculation traduit en anglais, l'IBAN, le SWIFT, le
+    nom de la banque, un contact comptable et une adresse postale ;
+  - les impôts restent à notre charge.
 
 ## Construire et livrer
 
@@ -85,9 +113,9 @@ D'après la réponse du support du 23/10/2026 (détail : `references/yandex-game
 l'incident du 11/10/2026 (incendie de centres de données de Yandex : inscriptions, modération et
 statistiques coupées pendant la remise en état, sans date de retour).
 
-1. **Compte développeur** (commun avec Ball Mania) : un identifiant Yandex avec une adresse
-   Yandex (une adresse gmail peut empêcher la monétisation), nom de développeur en lettres
-   latines, langue de contact choisie (les modérateurs écrivent dans celle-ci).
+1. **Compte développeur** (commun avec Ball Mania) : fait le 03/11/2026, « AdamRodWebDev ».
+   Restent la langue de contact (les modérateurs écrivent dans celle-ci) et la remarque du
+   support : une adresse gmail peut empêcher la monétisation.
 2. **Titre** : vérifier dans la console que « Lumirift Blocks » est libre (5.12).
 3. **Brouillon** : « Добавить игру », les champs ci-dessous, l'archive ; tester avec « Открыть
    черновик с debug-панелью » (chargeur `IT`, point vert, 文 « I18N is used », 🎮 juste).
@@ -102,8 +130,9 @@ statistiques coupées pendant la remise en état, sans date de retour).
      (jamais une inscription à la régie à part). Signer la régie ferme ensuite la voie de
      l'ЕЛС en libre-service.
 
-   Documents, TVA (franchise en base) et versements en euros : question transmise à l'équipe
-   de la régie, réponse attendue.
+   Documents, TVA (franchise en base) et versements en euros : la régie a répondu le
+   03/11/2026 (voir « Où en est le compte ») ; la vérification URSSAF et TVA reste à faire
+   avant de signer.
 
 6. **Envoi en modération**, une fois la modération rouverte : un seul jeu nouveau à la fois
    pour un compte sans historique ; après un refus, l'attente double (24 h, puis 2, 4, 8 et

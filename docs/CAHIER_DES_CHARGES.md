@@ -2854,6 +2854,68 @@ notification juridique ».
       catégories à chaque passage ; sur ordinateur, 100 aussi ;
     - reste l'essai sur téléphone.
 
+## 9 octies. Yandex Games, après CrazyGames (lots 32 à 34, décidés le 03/11/2026)
+
+Le 03/11/2026, CrazyGames a refusé la 1.45.1 avec la même phrase qu'en octobre, sans autre retour.
+L'auteur a abandonné CrazyGames, puis VK (le groupe est sous sanctions de l'UE depuis le
+13/07/2026), et porte l'effort sur Yandex Games. Le profil développeur « AdamRodWebDev » existe,
+mais Yandex n'accepte plus de nouveaux partenaires depuis l'incident du 11/10/2026 : pas de
+contrat ni de modération avant la réouverture (`docs/YANDEX.md`).
+
+Les dernières mesures de Playgama (30 jours, 87 parties) montrent où agir :
+
+- 73,4 % des sessions sont perdues avant le chargement ou avant 30 s de jeu ;
+- 82 % seulement atteignent le chargement ;
+- une partie dure 4 min 32 en moyenne ;
+- 2,7 % des joueurs reviennent le lendemain ;
+- 37,8 % ferment le jeu après une pub, la première venant à 2 min 12.
+
+Le public de Yandex : 60 % en Russie et dans la CEI, la moitié sur téléphone. Le classement de
+son catalogue suit les premières mesures d'un jeu : il faut y arriver avec de bonnes premières
+secondes.
+
+- **Lot 32 · 1.45.2 Corrections**.
+  - La carte du guide de l'entraînement déborde sur les téléphones bas en paysage (750 × 342,
+    667 × 375, 640 × 360 ; elle tient à 844 × 390) : la phrase sort de la carte et l'écran la
+    coupe. À vérifier en anglais, français, indonésien et russe, la langue la plus longue.
+  - Le réglage garde son nom (« Afficher le faisceau d'atterrissage ») : les colonnes de lumière
+    restent, la constellation se dessine à leur pied (§ 9 septies).
+  - **Porte** : aucun débordement aux tailles des portails et des téléphones couchés, dans les
+    quatre langues ; e2e verts sur Chromium et WebKit (Firefox en CI) ; Lighthouse à 100.
+- **Lot 33 · 1.46 Les 30 premières secondes et les pubs**.
+  - **Diagnostic d'abord**, image par image, en russe, au téléphone en portrait (360 × 640,
+    390 × 844) et à l'ordinateur :
+    - le délai avant la première action proposée ;
+    - les mots à lire avant de jouer ;
+    - le moment du premier effet marquant ;
+    - ce qui se passe si le joueur ne fait rien ;
+    - la page de chargement, que 18 % des sessions de Playgama n'ont pas franchie.
+  - Des propositions et une maquette (téléphone et ordinateur, clair et sombre), validées avant
+    tout code.
+  - **Le rythme des pubs** par portail (Yandex et Playgama) : quand vient la première, l'écart
+    entre deux, jamais après une défaite, et ce qui fait moins fermer le jeu.
+  - **Porte** :
+    - la maquette validée ;
+    - des critères mesurés sur le build (par exemple la première action proposée en moins de
+      2 s, le premier effet marquant en moins de 5 s) ;
+    - un essai par des inconnus, si l'auteur en trouve sans frais ;
+    - les contrôles habituels.
+- **Lot 34 · 1.47 Prêt pour Yandex**.
+  - Le build Yandex remis à niveau depuis la 1.30 : toutes les clés de sauvegarde ajoutées
+    depuis, les pubs, la pause et `GameplayAPI`, les nouveautés jusqu'à la 1.46 ; le russe relu.
+  - La revue modérateur selon les règles numérotées de Yandex (la version en vigueur relue), aux
+    tailles de Yandex.
+  - La fiche en quatre langues, sans marque d'un autre jeu ; l'icône, la couverture, les
+    captures et les vidéos refaites sur la 1.47.
+  - Un brouillon dans la console (« Add app »), essayé sur le vrai SDK avec les pubs de test.
+  - **Porte** : une revue sans échec, le brouillon chargé et essayé, Lighthouse à 100, trois
+    moteurs.
+- **À la réouverture des inscriptions** :
+  - le contrat avec la régie (РСЯ), après vérification URSSAF, TVA et facturation ;
+  - l'envoi en modération, puis les corrections des refus numérotés ;
+  - une demande d'accord écrit à Yandex avant toute annonce de la coopération (licence,
+    § 1.4).
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
