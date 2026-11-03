@@ -2948,9 +2948,9 @@ secondes.
       le différer ne valait pas la refonte, l'auteur a choisi la mesure.
     - **Les pubs** : rien à changer. La politique ne montre aucune pub dans l'entraînement, ni
       avant 8 min de jeu, ni après une défaite ; Yandex impose la sienne au lancement.
-    - **Écart à confirmer** : un joueur qui ne touche à rien gagne l'entraînement vers 18,7 s.
-      Le feu tombe près de la tête du Ver et le chasse. Le joueur voit tout le spectacle, puis
-      la fenêtre de fin.
+    - **Écart confirmé par l'auteur (03/11)** : un joueur qui ne touche à rien gagne
+      l'entraînement vers 18,7 s. Le feu tombe près de la tête du Ver et le chasse. Le joueur voit
+      tout le spectacle, puis la fenêtre de fin ; la campagne demande ensuite de vraies parties.
     - **Contrôles** : types, lint, mise en forme ; 98 fichiers et 909 tests unitaires ; le bot
       de l'ouverture sur 1 000 parties ; e2e sur Chromium : 185 réussis et 28 réservés à
       l'autre appareil (les six tests du portail et de Yandex, réécrits pour la nouvelle
