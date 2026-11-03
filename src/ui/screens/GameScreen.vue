@@ -1236,6 +1236,29 @@ onBeforeUnmount(() => {
     .game[data-layout='race'] :deep(.stage__hold) {
       justify-self: start;
     }
+
+    /*
+     * The training on a short landscape screen (a phone): its goal goes to the
+     * right column, empty in the training, so that the guide keeps the room of
+     * its longest line under the score (1.45.2: in Russian, that line needs
+     * 200 px, and the left column gave it 110 to 145).
+     */
+    .game--training[data-layout='well'] {
+      grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
+      grid-template-areas:
+        'pause rift sound'
+        'pause well sound'
+        'score well goal'
+        'stats well goal'
+        'hold well .'
+        'help well .'
+        'padm well pada';
+    }
+
+    .game--training[data-layout='well'] .game__goal {
+      justify-self: start;
+      align-self: start;
+    }
   }
 
   /*

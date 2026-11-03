@@ -18,6 +18,7 @@
 | 1.43    | 30/10/2026 | Un puits à nous : un puits de 10 × 18, des pièces d'un seul cristal, le faisceau d'atterrissage, les prochaines pièces dans la faille, la pierre de faille ; la campagne réglée au nouveau puits (§ 2.3, § 9 quinquies, lot 29).      |
 | 1.44    | 31/10/2026 | La faille qui casse : la faille ouvre les lignes effacées, la rangée se fend en morceaux que la fente avale ; les éclats de l'Atelier et le son accordés (§ 9 sexies, lot 30).                                                        |
 | 1.45    | 31/10/2026 | La constellation d'atterrissage : au pied du faisceau, une étincelle là où chaque bloc se posera, reliée à ses voisines ; toute la pièce se lit là où elle se posera (§ 9 septies, lot 31).                                           |
+| 1.45.2  | 03/11/2026 | Corrections : la carte du guide tient sur les téléphones couchés, l'objectif de l'entraînement passe dans la colonne de droite (§ 9 octies, lot 32).                                                                                  |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -2882,6 +2883,21 @@ secondes.
     restent, la constellation se dessine à leur pied (§ 9 septies).
   - **Porte** : aucun débordement aux tailles des portails et des téléphones couchés, dans les
     quatre langues ; e2e verts sur Chromium et WebKit (Firefox en CI) ; Lighthouse à 100.
+  - **Livré en 1.45.2** (03/11/2026).
+    - **La cause** : la colonne de gauche (pause, score, objectif, carte) laissait à la carte 110
+      à 145 px, quand sa plus longue ligne en demande 160 à 200. La carte commençait à 194 px du
+      haut de l'écran. Elle débordait dans 13 cas sur 16, et à 844 × 390 en russe.
+    - **La correction** : sur un écran paysage de moins de 30rem de haut, l'objectif de
+      l'entraînement passe dans la colonne de droite, vide pendant l'entraînement, comme la
+      réserve de la course. La carte commence à 118 px. Les 16 cas (4 tailles, 4 langues)
+      tiennent, avec 40 px de marge au moins.
+    - **Les mesures de la porte** :
+      - types, lint, mise en forme ; 97 fichiers et 887 tests unitaires ;
+      - e2e sur Chromium : 184 passés, 28 réservés à l'autre appareil, aucun échec, dont le
+        nouveau test de la carte à 640 × 360 en russe ;
+      - les tests du portail sur WebKit (Safari de bureau et iPhone 13) : 4 sur 4 ;
+      - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+        catégories à chaque passage.
 - **Lot 33 · 1.46 Les 30 premières secondes et les pubs**.
   - **Diagnostic d'abord**, image par image, en russe, au téléphone en portrait (360 × 640,
     390 × 844) et à l'ordinateur :
@@ -2996,3 +3012,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.43    | 30/10/2026 | Un puits à nous : `WELL` 10 × 18, `links`, `LandingBeam`, `RiftQueue`, pierre de faille, lits de sable en rangées, marée au pas du puits (lot 29).                     |
 | 1.44    | 31/10/2026 | La faille qui casse : `RiftOpening`, particules `Ember` et `Flake`, la Tour fendue en deux moitiés, `riftRun` et `riftSwallow` (§ 9 sexies, lot 30).                   |
 | 1.45    | 31/10/2026 | La constellation d'atterrissage : `constellationLinks`, `beginConstellation`, `addStar`, `drawConstellation` ; les traits du faisceau retirés (§ 9 septies, lot 31).   |
+| 1.45.2  | 03/11/2026 | § 9 octies : la feuille de route Yandex (lots 32 à 34). Lot 32 livré : la grille de l'entraînement sur les écrans paysage bas, le test de la carte en russe.           |

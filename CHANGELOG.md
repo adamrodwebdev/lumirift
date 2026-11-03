@@ -3,6 +3,28 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.45.2] — 03/11/2026
+
+La carte du guide tient sur les téléphones couchés (lot 32, § 9 octies du cahier des charges).
+
+### Corrigé
+
+- **La carte du guide débordait sur les téléphones bas en paysage** : la phrase sortait de la
+  carte et l'écran la coupait.
+  - Tailles touchées : 750 × 342 (un iPhone, barres de Safari visibles), 667 × 375 (un iPhone
+    SE) et 640 × 360, dans les quatre langues, et 844 × 390 en russe.
+  - Cause : la colonne de gauche laissait à la carte 110 à 145 px, quand sa plus longue ligne
+    en demande 160 à 200.
+  - Correction : sur un écran paysage bas, l'objectif de l'entraînement passe dans la colonne de
+    droite, vide pendant l'entraînement. La carte garde sa place sous le score et tient entière,
+    avec 40 px de marge au moins.
+
+### Technique
+
+- `GameScreen` : une grille de l'entraînement pour les écrans paysage de moins de 30rem de haut,
+  comme celle de la course.
+- `e2e/portal.spec.ts` : la carte mesurée à 640 × 360 en russe.
+
 ## [1.45.1] — 02/11/2026
 
 Les annonces du puits restent dans le puits, relevé à la revue modérateur CrazyGames de la 1.45.
