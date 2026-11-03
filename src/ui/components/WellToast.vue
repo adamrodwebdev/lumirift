@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GuideLine, WellPoint } from '@/session/GameSession';
 import { toastParts } from '../toastParts';
@@ -37,11 +37,16 @@ const props = withDefaults(
 
 const { t } = useI18n();
 const layer = ref<HTMLElement | null>(null);
-const { boxStyle } = useWellBox(() => props.well, layer);
+const { box: wellBox, boxStyle } = useWellBox(() => props.well, layer);
 
 const parts = computed(() => toastParts(props.toast?.text ?? ''));
 
-/** The rows the line covers, as shares of the well's height (layout boxes: no animation in them). */
+/**
+ * The rows the line covers, as shares of the well's height (layout boxes: no animation in
+ * them), measured once the box has taken the well's size, and at each new line. No observer
+ * of its own: the box resizes only with the well, and a second observer, told a step behind
+ * the well's, made the browser report a loop at each game's start (Safari, 1.46).
+ */
 const box = ref<HTMLElement | null>(null);
 const band = ref<{ top: number; bottom: number } | null>(null);
 const measure = () => {
@@ -55,16 +60,8 @@ const measure = () => {
         }
       : null;
 };
-const observer = new ResizeObserver(measure);
-watch(
-  () => [props.toast?.key, props.line?.text],
-  () => void nextTick(measure),
-);
-onMounted(() => {
-  if (box.value) observer.observe(box.value);
-  measure();
-});
-onBeforeUnmount(() => observer.disconnect());
+watch([wellBox, () => props.toast?.key, () => props.line?.text], measure, { flush: 'post' });
+onMounted(measure);
 
 /** About half a piece's height, as a share of the well's: its edge, from its centre. */
 const PIECE_REACH = 0.07;
