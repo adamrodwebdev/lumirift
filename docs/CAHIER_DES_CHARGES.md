@@ -19,6 +19,7 @@
 | 1.44    | 31/10/2026 | La faille qui casse : la faille ouvre les lignes effacées, la rangée se fend en morceaux que la fente avale ; les éclats de l'Atelier et le son accordés (§ 9 sexies, lot 30).                                                        |
 | 1.45    | 31/10/2026 | La constellation d'atterrissage : au pied du faisceau, une étincelle là où chaque bloc se posera, reliée à ses voisines ; toute la pièce se lit là où elle se posera (§ 9 septies, lot 31).                                           |
 | 1.45.2  | 03/11/2026 | Corrections : la carte du guide tient sur les téléphones couchés, l'objectif de l'entraînement passe dans la colonne de droite (§ 9 octies, lot 32).                                                                                  |
+| 1.46    | 03/11/2026 | Les 30 premières secondes : la décharge en 1,3 s, une consigne de cinq mots sur le puits et son geste, la récompense sans attente, le Ver vers 15 s, l'objectif avec lui, un chargement plus court (§ 9 octies, lot 33).              |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -2923,6 +2924,39 @@ secondes.
       2 s, le premier effet marquant en moins de 5 s) ;
     - un essai par des inconnus, si l'auteur en trouve sans frais ;
     - les contrôles habituels.
+  - **Livré en 1.46** (03/11/2026), d'après le diagnostic et la maquette validée le même jour.
+    Mesures en russe sur la version du portail, du chargement de la page :
+    - **A, la décharge** : la première molnia arrive deux cases au-dessus de l'eau ; sans geste,
+      la décharge part à 1,45 s (9,2 s en 1.45.2). Le bot la voit en moins de 2 s de jeu sur
+      1 000 parties, quel que soit le premier geste.
+    - **B, une consigne** : cinq mots au plus dans les quatre langues (un test le vérifie), en
+      haut du puits, avec le geste en grand sur écran tactile ou la touche sur ordinateur. Au
+      départ, 5 mots affichés sur téléphone et 6 sur ordinateur (13 et 15 avec la mesure du
+      3/11, qui compte le texte des lecteurs d'écran ; 32 et 54 avant).
+    - **C, la récompense** : elle remplace la consigne à l'instant ; à 1,2 s pour qui lâche
+      l'éclair à 1 s (3,8 s avant).
+    - **D, le Ver** : il fend le sable à 12,2 s et sort la tête à 14,4 s (25,8 et 29,6 s). Les
+      pièces tombent à l'allure du niveau 4, la liane passe au premier niveau de la campagne.
+      Le bot, sur 1 000 parties : le brasier avant le Ver, le Ver avant 16 s.
+    - **E, l'objectif** : il arrive avec le premier avertissement du Ver, en pastille dans une
+      rangée gardée dès le départ ; le puits ne bouge pas (vérifié en e2e). Sur ordinateur, la
+      légende des deux touches utiles arrive avec lui.
+    - **F, le chargement** : le code de la première partie se charge avec le reste, en priorité
+      basse. Sur un téléphone moyen simulé, la consigne s'affiche à 2,88 s au lieu de 3,36 s
+      avec des fichiers compressés (Playgama sert du Brotli), à 4,97 s au lieu de 5,41 s sans
+      (comparaison A/B sur le même build, médiane de 5). Le code des sons ne pèse que 24 Ko :
+      le différer ne valait pas la refonte, l'auteur a choisi la mesure.
+    - **Les pubs** : rien à changer. La politique ne montre aucune pub dans l'entraînement, ni
+      avant 8 min de jeu, ni après une défaite ; Yandex impose la sienne au lancement.
+    - **Écart confirmé par l'auteur (03/11)** : un joueur qui ne touche à rien gagne
+      l'entraînement vers 18,7 s. Le feu tombe près de la tête du Ver et le chasse. Le joueur voit
+      tout le spectacle, puis la fenêtre de fin ; la campagne demande ensuite de vraies parties.
+    - **Contrôles** : types, lint, mise en forme ; 98 fichiers et 909 tests unitaires ; le bot
+      de l'ouverture sur 1 000 parties ; e2e sur Chromium : 185 réussis et 28 réservés à
+      l'autre appareil (les six tests du portail et de Yandex, réécrits pour la nouvelle
+      consigne, repassés à part, trois fois pour le portail) ; le premier passage du portail sur
+      WebKit (Safari de bureau et iPhone 13), 12 sur 12 ; Lighthouse mobile à 100 dans les
+      quatre catégories, à chacun des trois passages.
 - **Lot 34 · 1.47 Prêt pour Yandex**.
   - Le build Yandex remis à niveau depuis la 1.30 : toutes les clés de sauvegarde ajoutées
     depuis, les pubs, la pause et `GameplayAPI`, les nouveautés jusqu'à la 1.46 ; le russe relu.
@@ -3020,3 +3054,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.44    | 31/10/2026 | La faille qui casse : `RiftOpening`, particules `Ember` et `Flake`, la Tour fendue en deux moitiés, `riftRun` et `riftSwallow` (§ 9 sexies, lot 30).                   |
 | 1.45    | 31/10/2026 | La constellation d'atterrissage : `constellationLinks`, `beginConstellation`, `addStar`, `drawConstellation` ; les traits du faisceau retirés (§ 9 septies, lot 31).   |
 | 1.45.2  | 03/11/2026 | § 9 octies : la feuille de route Yandex (lots 32 à 34). Lot 32 livré : la grille de l'entraînement sur les écrans paysage bas, le test de la carte en russe.           |
+| 1.46    | 03/11/2026 | Lot 33 livré : `landsIn`, `HOOK_LEVEL`, `HOOK_WYRM_MS`, `guideAt`, `goalInView`, `WellGesture`, `GuideKeys`, `toastParts`, `bootPlugin({ firstRun })` ; mesures.       |

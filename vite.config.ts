@@ -12,6 +12,28 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
   version: string;
 };
 
+/** The portals' builds: a new player starts in the training, straight away (1.29). */
+const PORTALS: readonly string[] = ['crazygames', 'playgama', 'yandex'];
+/** The first game of a portal build: the training's Sand, or the mode of a test build (1.37). */
+const FIRST_GAME: Readonly<Record<string, readonly string[]>> = {
+  sand: ['src/families/sand/index.ts', 'src/families/sand/ui/SandStage.vue'],
+  dunes: ['src/families/dunes/index.ts', 'src/families/dunes/ui/DunesStage.vue'],
+};
+
+/**
+ * What a portal build's new player needs before anything shows (1.46): its
+ * platform, the game screen and the first game. The boot fetches it with the
+ * code, not after it.
+ */
+const firstRunOf = (platform: string | undefined, solo: string | undefined): string[] =>
+  platform && PORTALS.includes(platform)
+    ? [
+        `src/platform/${platform}/`,
+        'src/ui/screens/GameScreen.vue',
+        ...(FIRST_GAME[solo ?? 'sand'] ?? []),
+      ]
+    : [];
+
 // Relative base: the build can be served from any sub-folder or game portal.
 // `--mode crazygames` builds the CrazyGames version into dist-crazygames/; a
 // test build of one mode alone (1.37), `--mode playgama-dunes`, into dist-playgama-dunes/.
@@ -36,7 +58,7 @@ export default defineConfig(({ mode }) => {
       seoPlugin(platform ? undefined : process.env.SITE_URL),
       portalPlugin(platform),
       // The first screen without waiting: inline styles, the player's language fetched early.
-      bootPlugin(),
+      bootPlugin({ firstRun: firstRunOf(platform, env.VITE_SOLO) }),
     ],
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

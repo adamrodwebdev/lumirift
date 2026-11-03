@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { FamilyId, ModeId } from '@/session/ModeId';
-import { keyLegendFor } from '../keyLegend';
+import { keyLegendFor, trainingLegendFor } from '../keyLegend';
 import { useKeyBindings } from '../useKeyBindings';
 import { useKeyLabels } from '../useKeyLabels';
 
@@ -16,14 +16,20 @@ const props = withDefaults(
     modeId: ModeId;
     /** The game has its rift surge (none in the training). */
     surge?: boolean;
+    /** Beside the training's well: the keys its guide asks for alone (1.46). */
+    training?: boolean;
   }>(),
-  { surge: true },
+  { surge: true, training: false },
 );
 
 const { t } = useI18n();
 const keys = useKeyLabels();
 const bindings = useKeyBindings();
-const rows = computed(() => keyLegendFor(props.family, props.modeId, bindings.value, props.surge));
+const rows = computed(() =>
+  props.training
+    ? trainingLegendFor(bindings.value)
+    : keyLegendFor(props.family, props.modeId, bindings.value, props.surge),
+);
 </script>
 
 <template>

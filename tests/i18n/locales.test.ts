@@ -170,6 +170,22 @@ describe('translations', () => {
       expect(leaf(fr, `over.reason.${reason}`), reason).toBeTypeOf('string');
     }
   });
+
+  /*
+   * The training says one short thing at a time over the well (1.46): five words
+   * at most, in every language (a word has a letter: « ! » and « … » are not words).
+   */
+  it.each(Object.keys(LOCALES))(
+    '%s gives the training’s guide lines of five words at most',
+    (locale) => {
+      const lines = messages(locale).filter(([key]) => key.startsWith('training.guide.'));
+      expect(lines.length).toBeGreaterThan(5);
+      for (const [key, line] of lines) {
+        const words = line.split(/\s+/).filter((word) => /\p{L}/u.test(word));
+        expect(words.length, `${key}: ${line}`).toBeLessThanOrEqual(5);
+      }
+    },
+  );
 });
 
 describe('detectLocale', () => {

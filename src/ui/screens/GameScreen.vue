@@ -18,7 +18,7 @@ import { runKindFor, type RunKindId } from '@/run/RunKind';
 import { Coach, type CoachStep } from '@/session/Coach';
 import { CONTINUE_OFFER_MS } from '@/session/ContinueRule';
 import type { DailyChallenge } from '@/session/DailyChallenge';
-import type { GameSession, GuideLine, Indicator } from '@/session/GameSession';
+import type { GameSession, GuideLine, Indicator, WellPoint } from '@/session/GameSession';
 import type { ModeId } from '@/session/ModeId';
 import { observeCommands } from '@/session/observeCommands';
 import AppIcon from '../components/AppIcon.vue';
@@ -26,12 +26,12 @@ import CampaignGoal from '../components/CampaignGoal.vue';
 import CoachCard from '../components/CoachCard.vue';
 import DangerLayer from '../components/DangerLayer.vue';
 import GameOverDialog from '../components/GameOverDialog.vue';
-import GuideCard from '../components/GuideCard.vue';
 import TapZones from '../components/TapZones.vue';
 import { closeTo, NO_PROGRESS, type ContinueCard, type GameOutcome } from '../GameOutcome';
 import HudPanel from '../components/HudPanel.vue';
 import RecordBurst from '../components/RecordBurst.vue';
 import SurgeLayer from '../components/SurgeLayer.vue';
+import WellGesture from '../components/WellGesture.vue';
 import WellToast from '../components/WellToast.vue';
 import KeyLegend from '../components/KeyLegend.vue';
 import PauseDialog from '../components/PauseDialog.vue';
@@ -190,17 +190,31 @@ const skipCoach = () => {
   coachStep.value = null;
 };
 /**
- * The training's guide (1.29): the game says what to do now, the card shows
- * it. Between two pieces it has nothing new to say: the last line stays.
+ * The training's guide (1.29): the game says what to do now, over the well,
+ * its gesture drawn beside the piece (1.46). Between two pieces it has
+ * nothing new to say: the last line stays. A line goes as soon as the game
+ * has something else to say: a deed's reward replaces it at once (1.46; it
+ * waited for the line's reading time since 1.40).
  */
 const guide = shallowRef<GuideLine | null>(null);
-/** A line stays its reading time even when its step is done at once; the next one waits (1.40). */
-const guideHold = new ReadingHold<GuideLine>(
-  (line) => readingMs(t(line.text)),
-  (a, b) => a.text === b.text && a.action === b.action,
-);
-const guideLines = computed(() => session.value?.guideLines?.() ?? []);
-const guideHidden = ref(false);
+/** Where the guided piece stands, to the hundredth of the well: the gesture moves when it does. */
+const guideAt = shallowRef<WellPoint | null>(null);
+/** The training's goal comes into view with its Guardian (1.46); a level's is there from the start. */
+const goalInView = ref(props.training === null);
+/** The training's guide, read each frame: its line, where its piece stands, whether its goal shows. */
+const followGuide = (current: GameSession) => {
+  const line = current.guide?.() ?? guide.value;
+  if (line !== guide.value) {
+    guide.value = line;
+    // Read out as it comes (the words over the well are drawn for the eyes alone).
+    if (line) announce(t(line.text), false);
+  }
+  const at = current.guideAt?.() ?? null;
+  const near = at && { x: Math.round(at.x * 100) / 100, y: Math.round(at.y * 100) / 100 };
+  if (near?.x !== guideAt.value?.x || near?.y !== guideAt.value?.y) guideAt.value = near;
+  const inView = current.goalInView?.() ?? true;
+  if (inView !== goalInView.value) goalInView.value = inView;
+};
 /**
  * While a guide asks to turn the piece, on a touch screen played with taps by
  * side, the two halves show which way each turns (1.32).
@@ -211,7 +225,7 @@ const turnZones = computed(
     phase.value === 'playing' &&
     settings.current.tapSides &&
     settings.current.controls !== 'buttons' &&
-    (coachStep.value === 'rotate' || (!guideHidden.value && guide.value?.action === 'rotate')),
+    (coachStep.value === 'rotate' || guide.value?.action === 'rotate'),
 );
 const campaignText = useCampaignText();
 /** The goal over the game: a campaign level's, or a training step's. */
@@ -324,9 +338,7 @@ clock.subscribe((delta, real) => {
   const current = run.session;
   if (!current) return;
   run.update(delta);
-  // Between two pieces the guide has nothing new to say: the last line stays.
-  guideHold.update(current.guide?.() ?? guideHold.line, real);
-  if (guideHold.line !== guide.value) guide.value = guideHold.line;
+  if (props.training) followGuide(current);
   if (coach) {
     coachHold.update(coach.step, real);
     if (coachHold.line !== coachStep.value) coachStep.value = coachHold.line;
@@ -353,9 +365,10 @@ const listen = (current: GameSession) => {
       // The Sand clears regions (linking the walls), the other families lines; the race, its world's.
       const board = current.boardFamily?.();
       const text = t((board ? familyPresentation(board) : presentation).clearNotice, lines);
+      // In the training every clear is told: the words of a deed done (1.46).
       announce(
         combo > 0 ? `${text} · ${t('notice.combo', { n: combo + 1 })}` : text,
-        lines >= 2 || combo > 0,
+        lines >= 2 || combo > 0 || props.training !== null,
       );
     }),
     events.on('levelUp', ({ level }) => announce(t('notice.levelUp', { level }))),
@@ -505,9 +518,10 @@ const continued = () => {
 
 const start = async () => {
   dispose();
-  // A new game's guide starts from its own first line, at once.
-  guideHold.replace(null);
+  // A new game's guide starts from its own first line, at once; its goal waits for its Guardian.
   guide.value = null;
+  guideAt.value = null;
+  goalInView.value = props.training === null;
   tension.reset();
   recordBurst.value = 0;
   // A look tried for an ad is worn by this game, or ends if the last one wore it.
@@ -658,7 +672,7 @@ onBeforeUnmount(() => {
     >
       <AppIcon :name="muted ? 'mute' : 'sound'" />
     </button>
-    <!-- In the training, the guide takes the counters' place: they say what the goal says. -->
+    <!-- No counters in the training: they would say what its goal says. -->
     <HudPanel
       v-if="!training"
       class="game__stats"
@@ -667,26 +681,21 @@ onBeforeUnmount(() => {
       :urgent="timeUrgent ? ['timeLeft'] : []"
     />
     <Transition name="ui-fade">
-      <div v-if="shownSubtitle || (goalCard && goal)" class="game__goal">
+      <div v-if="shownSubtitle || (goalCard && goal) || training" class="game__goal">
         <!-- Part of the game (the shape to fill): shown at every screen size. -->
         <p v-if="shownSubtitle" class="game__subtitle">{{ shownSubtitle }}</p>
-        <CampaignGoal
-          v-if="goalCard && goal"
-          :label="goalCard.label"
-          :text="goalCard.text"
-          :goal="goalCard.goal"
-          :value="goal.value"
-        />
+        <!-- The training's comes with its Guardian, in the place kept for it: nothing moves (1.46). -->
+        <Transition name="ui-rise">
+          <CampaignGoal
+            v-if="goalCard && goal && goalInView"
+            :label="goalCard.label"
+            :text="goalCard.text"
+            :goal="goalCard.goal"
+            :value="goal.value"
+            :compact="training !== null"
+          />
+        </Transition>
       </div>
-    </Transition>
-    <Transition name="ui-rise">
-      <GuideCard
-        v-if="training && guide && !guideHidden"
-        class="game__guide"
-        :line="guide"
-        :lines="guideLines"
-        @skip="guideHidden = true"
-      />
     </Transition>
 
     <!-- A new round (play again, the next level): the well fades in (1.42). -->
@@ -736,11 +745,25 @@ onBeforeUnmount(() => {
           @skip="skipCoach"
         />
       </Transition>
-      <WellToast :toast="toast" :well="wellCanvas" />
+      <!-- The training's voice: its guide's line, or a deed's reward, at the top of the well (1.46). -->
+      <WellToast
+        :toast="toast"
+        :well="wellCanvas"
+        :line="training ? guide : null"
+        :place="training ? 'top' : 'middle'"
+        :piece="guideAt"
+      />
+      <WellGesture
+        v-if="training && touch"
+        :action="toast ? null : (guide?.action ?? null)"
+        :at="guideAt"
+        :well="wellCanvas"
+      />
     </div>
 
-    <aside v-if="showHelp && !touch" class="game__help" :aria-label="t('game.help')">
-      <KeyLegend :family="descriptor.family" :mode-id="modeId" :surge="!training" />
+    <!-- In the training, the two keys its guide asks for, once there is more to remember (1.46). -->
+    <aside v-if="showHelp && !touch && goalInView" class="game__help" :aria-label="t('game.help')">
+      <KeyLegend :family="descriptor.family" :mode-id="modeId" :training="training !== null" />
     </aside>
 
     <RecordBurst v-if="recordBurst > 0" :key="recordBurst" />
@@ -871,8 +894,10 @@ onBeforeUnmount(() => {
 
 /*
  * Portrait, a goal (a level's card, the silhouette's name): the band's width,
- * under the hold and the counters, as in the Mosaic. The training has no
- * counters: its goal stands beside the hold, its guide under them.
+ * under the hold and the counters, as in the Mosaic. The training (1.46) has
+ * neither counters nor hold: its goal's row is kept from the start, empty
+ * until the Wyrm shows itself, so that the well never moves; its guide
+ * speaks over the well.
  */
 @media (orientation: portrait) {
   .game[data-layout='well']:has(.game__goal) {
@@ -889,11 +914,10 @@ onBeforeUnmount(() => {
 
   /* As specific as the rule above, and after it: the training's own grid wins. */
   .game--training[data-layout='well']:has(.game__goal) {
-    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto calc(var(--hud-size) * 2.25) auto minmax(0, 1fr) auto auto;
     grid-template-areas:
       'pause score sound'
-      'hold goal goal'
-      'stats stats stats'
+      'goal goal goal'
       'rift rift rift'
       'well well well'
       'padm padm padm'
@@ -1020,7 +1044,6 @@ onBeforeUnmount(() => {
 /* The HUD's parts are sized in `em`: they follow its size, the windows keep theirs. */
 .game__score,
 .game__stats,
-.game__guide,
 .game__goal,
 .game__help,
 .game :deep(.stage__hold),
@@ -1043,9 +1066,9 @@ onBeforeUnmount(() => {
   align-self: center;
 }
 
-/* The training's guide, in the counters' place: never over the well. */
-.game__guide {
-  grid-area: stats;
+/* No surge in the training (its corner has no place in the training's grid). */
+.game--training :deep(.stage__surge) {
+  display: none;
 }
 
 .game__goal {
@@ -1168,15 +1191,14 @@ onBeforeUnmount(() => {
       max(var(--space-4), env(safe-area-inset-left, 0px));
   }
 
-  /* The training's guide under its goal, above the keys. */
+  /* The training: its goal under the score (when the Wyrm shows itself), then its two keys. */
   .game--training[data-layout='well'] {
-    grid-template-rows: repeat(7, minmax(0, auto)) minmax(0, 1fr);
+    grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
     grid-template-areas:
       'pause rift sound'
       'pause well sound'
       'score well .'
       'goal well .'
-      'stats well .'
       'hold well .'
       'help well .'
       'padm well pada';
@@ -1239,17 +1261,15 @@ onBeforeUnmount(() => {
 
     /*
      * The training on a short landscape screen (a phone): its goal goes to the
-     * right column, empty in the training, so that the guide keeps the room of
-     * its longest line under the score (1.45.2: in Russian, that line needs
-     * 200 px, and the left column gave it 110 to 145).
+     * right column, empty in the training (1.45.2: the left column was the
+     * guide's; it speaks over the well since 1.46).
      */
     .game--training[data-layout='well'] {
-      grid-template-rows: repeat(6, minmax(0, auto)) minmax(0, 1fr);
+      grid-template-rows: repeat(5, minmax(0, auto)) minmax(0, 1fr);
       grid-template-areas:
         'pause rift sound'
         'pause well sound'
         'score well goal'
-        'stats well goal'
         'hold well .'
         'help well .'
         'padm well pada';
@@ -1294,7 +1314,6 @@ onBeforeUnmount(() => {
    */
   .game__score,
   .game__stats,
-  .game__guide,
   .game__goal,
   .game__help,
   .game :deep(.stage__hold),
@@ -1378,8 +1397,8 @@ onBeforeUnmount(() => {
 }
 
 /*
- * A tiny window (a 400 % zoom): the keys' help, the counters and the guide would
- * cover the dashboard; the score, the hold and the well stay (the pause keeps the rest).
+ * A tiny window (a 400 % zoom): the keys' help and the counters would cover the
+ * dashboard; the score, the hold and the well stay (the pause keeps the rest).
  */
 @media (orientation: landscape) and (height < 20rem) {
   .game {
@@ -1387,8 +1406,7 @@ onBeforeUnmount(() => {
   }
 
   .game__help,
-  .game__stats,
-  .game__guide {
+  .game__stats {
     display: none;
   }
 }

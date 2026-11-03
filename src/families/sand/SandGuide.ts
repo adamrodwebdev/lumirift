@@ -1,5 +1,5 @@
 import { Tone } from '@/core/Tone';
-import type { GuideLine, TrainingStage } from '@/session/GameSession';
+import type { GuideLine } from '@/session/GameSession';
 import type { WormState } from './engine/DuneWorm';
 import type { SandGame } from './engine/SandGame';
 
@@ -30,23 +30,6 @@ const WAIT: GuideLine = { text: 'training.guide.missed', action: null };
 /** Struck: it leaves the well. */
 const HIT: GuideLine = { text: 'training.guide.hit', action: null };
 
-/** Every line of a stage, each sentence once. */
-function distinct(lines: readonly (GuideLine | null | undefined)[]): readonly GuideLine[] {
-  const texts = new Map<string, GuideLine>();
-  for (const line of lines) if (line && !texts.has(line.text)) texts.set(line.text, line);
-  return [...texts.values()];
-}
-const STAGE_LINES: Readonly<Record<TrainingStage, readonly GuideLine[]>> = {
-  hook: distinct([
-    ...Object.values(ELEMENT_LINES),
-    ON_SEED,
-    LINK,
-    ...Object.values(WYRM_LINES),
-    WAIT,
-    HIT,
-  ]),
-};
-
 /**
  * The guide of the portals' training in the Sand (1.29, one game since
  * 1.33): what to do with the piece in play, until the Dune Wyrm first
@@ -63,10 +46,7 @@ export class SandGuide {
   private surfaced = false;
   private readonly offs: (() => void)[];
 
-  constructor(
-    private readonly game: SandGame,
-    private readonly stage: TrainingStage,
-  ) {
+  constructor(private readonly game: SandGame) {
     this.offs = [
       game.events.on('lock', ({ piece }) => (this.landed = piece.tone)),
       game.events.on('boss', ({ event }) => {
@@ -80,9 +60,9 @@ export class SandGuide {
     return this.woken ? this.encounter() : this.elements();
   }
 
-  /** Every line this stage may say. */
-  lines(): readonly GuideLine[] {
-    return STAGE_LINES[this.stage];
+  /** The Wyrm has shown itself (its first cracks): the step's goal comes into view (1.46). */
+  get wyrmShown(): boolean {
+    return this.woken;
   }
 
   dispose(): void {

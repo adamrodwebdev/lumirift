@@ -28,6 +28,21 @@ describe('SandGame', () => {
     expect(game.preview()).toHaveLength(3);
   });
 
+  it('brings a scripted piece in low, the cells it lands in above the sand (1.46)', () => {
+    const game = new SandGame({
+      random: new SeededRandom(4),
+      hazards: false,
+      bed: { rows: 4, variant: 0 },
+      script: [{ at: 1, tone: Tone.Lightning, type: 'O', landsIn: 2 }],
+    });
+    game.start();
+    expect(game.active!.y).toBe(game.grid.height - 4 * G - 2 * G - 2 * G);
+    expect(game.dropDistance()).toBe(2 * G);
+    // The next piece comes in at the top again.
+    game.hardDrop();
+    expect(game.active!.y).toBe(0);
+  });
+
   it('takes the piece down a whole cell for a finger, as far as it fits (1.40)', () => {
     const game = started();
     const y = game.active!.y;

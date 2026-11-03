@@ -93,10 +93,10 @@ const fakeSdk = (lang, player) => `(() => {
   window.YaGames = { init: () => Promise.resolve(ysdk) };
 })();`;
 
-/** The words that mark a moment: the guide's line in the training, a toast in a level. */
+/** The words that mark a moment: the guide's line in the training (over the well, 1.46), a toast in a level. */
 const guideSays = (page) =>
   page
-    .locator('.guide__line:not(.guide__line--room) .guide__text')
+    .locator('.toast--line p')
     .first()
     .textContent({ timeout: 50 })
     .catch(() => '');

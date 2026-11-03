@@ -2,8 +2,15 @@ import { Emitter, type Listener } from '@/core/Emitter';
 import { Tone } from '@/core/Tone';
 import type { ComboView } from '@/session/ComboGauge';
 import { CONTINUE_FREES } from '@/session/ContinueRule';
-import type { BossId, BossStatus, GuideLine, TrainingStage } from '@/session/GameSession';
+import type {
+  BossId,
+  BossStatus,
+  GuideLine,
+  TrainingStage,
+  WellPoint,
+} from '@/session/GameSession';
 import type { DuneWorm } from './engine/DuneWorm';
+import { NOTICE_OF } from './engine/Elements';
 import type { FallingCommand } from '@/families/falling/FallingSession';
 import type {
   GameSession,
@@ -37,6 +44,9 @@ export const POURED: Readonly<Partial<Record<Tone, ElementName>>> = {
   [Tone.Oil]: 'oil',
   [Tone.Ice]: 'ice',
 };
+
+/** The words an element's piece brings with it, as it comes in. */
+const ELEMENT_NOTICES: ReadonlySet<string> = new Set(Object.values(NOTICE_OF));
 
 /** Read-only view of a Sand game, for the renderer. */
 export interface SandView {
@@ -98,7 +108,7 @@ export class SandSession implements GameSession<FallingCommand> {
     private readonly training: TrainingStage | null = null,
   ) {
     this.view = game;
-    this.trainingGuide = training ? new SandGuide(game, training) : null;
+    this.trainingGuide = training ? new SandGuide(game) : null;
     this.forwardEvents();
   }
 
@@ -202,8 +212,23 @@ export class SandSession implements GameSession<FallingCommand> {
     return this.trainingGuide?.line() ?? null;
   }
 
-  guideLines(): readonly GuideLine[] {
-    return this.trainingGuide?.lines() ?? [];
+  /** The centre of the piece in play, in a training: the guide's gesture stands beside it (1.46). */
+  guideAt(): WellPoint | null {
+    const piece = this.game.active;
+    if (!this.trainingGuide || !piece) return null;
+    const cells = piece.localCells;
+    const { width, height } = this.game.grid;
+    const middle = (of: (cell: (typeof cells)[number]) => number) =>
+      (cells.reduce((sum, cell) => sum + of(cell) + 0.5, 0) / cells.length) * GRAINS_PER_CELL;
+    return {
+      x: (piece.x + middle((cell) => cell.x)) / width,
+      y: (piece.y + middle((cell) => cell.y)) / height,
+    };
+  }
+
+  /** The training's goal shows once the Wyrm has shown itself (1.46). */
+  goalInView(): boolean {
+    return this.trainingGuide?.wyrmShown ?? true;
   }
 
   dispose(): void {
@@ -233,7 +258,11 @@ export class SandSession implements GameSession<FallingCommand> {
     });
     events.on('rescue', () => this.events.emit('notice', { id: 'rescue' }));
     events.on('levelUp', (event) => this.events.emit('levelUp', event));
-    events.on('notice', (event) => this.events.emit('notice', event));
+    events.on('notice', (event) => {
+      // In a training, the guide says what to do with each element: no second word on it (1.46).
+      if (this.training && ELEMENT_NOTICES.has(event.id)) return;
+      this.events.emit('notice', event);
+    });
     events.on('overflow', () => this.events.emit('overflow', {}));
     events.on('closeCall', (event) => this.events.emit('closeCall', event));
     events.on('over', ({ reason }) => this.events.emit('over', { reason }));
