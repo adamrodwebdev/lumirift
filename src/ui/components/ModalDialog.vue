@@ -75,6 +75,11 @@ const sync = async () => {
   if (element.open) element.close();
   // Gone for taps, keys and assistive technologies at once: it only fades away.
   element.inert = true;
+  // The browser gives the focus back to what had it before the window opened. When nothing
+  // had it, the focus stays on the closed window, which takes the keys meant for the screen
+  // behind (the pause key after Resume, on Safari): it leaves the window.
+  const focused = document.activeElement;
+  if (focused instanceof HTMLElement && element.contains(focused)) focused.blur();
 };
 
 onMounted(() => void sync());

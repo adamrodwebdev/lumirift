@@ -51,7 +51,8 @@ const ownKeys = computed(() => !props.touch && props.family !== 'placement');
  * take the same key as a new pause.
  */
 const onKey = (event: KeyboardEvent) => {
-  if (event.repeat || keysOpen.value || guideOpen.value) return;
+  // Closed, it hears no key, even one aimed at it: the game takes its pause key.
+  if (!props.open || event.repeat || keysOpen.value || guideOpen.value) return;
   const pause =
     props.family === 'placement'
       ? event.code === 'KeyP'
