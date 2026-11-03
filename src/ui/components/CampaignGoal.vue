@@ -7,9 +7,13 @@ import { useCampaignText } from '../useCampaignText';
 /**
  * The goal of a campaign level or of a training step, over the game, and how
  * far along it is: its name (`label`, the level or the step), what to do
- * (`text`), the gauge.
+ * (`text`), the gauge. `compact`: the training's, a pill on one line in a
+ * portrait band (1.46), a card beside the well elsewhere.
  */
-const props = defineProps<{ label: string; text: string; goal: Goal; value: number }>();
+const props = withDefaults(
+  defineProps<{ label: string; text: string; goal: Goal; value: number; compact?: boolean }>(),
+  { compact: false },
+);
 
 const { t } = useI18n();
 const { goalAmount } = useCampaignText();
@@ -21,7 +25,12 @@ const shown = (n: number) => goalAmount(props.goal.kind, n);
 </script>
 
 <template>
-  <div class="goal" role="group" :aria-label="t('campaign.goalLabel')">
+  <div
+    class="goal"
+    :class="{ 'goal--compact': compact }"
+    role="group"
+    :aria-label="t('campaign.goalLabel')"
+  >
     <p class="goal__level">{{ label }}</p>
     <p class="goal__text">{{ text }}</p>
     <template v-if="measured">
@@ -133,6 +142,41 @@ const shown = (n: number) => goalAmount(props.goal.kind, n);
 
   .goal__bar {
     grid-row: 2;
+  }
+}
+
+/*
+ * The training's goal in a portrait band (1.46): a pill, its name, what to do
+ * and the count on one line, no gauge (one Wyrm to drive off). Sized by its
+ * words, so no container of its own.
+ */
+@media (orientation: portrait) {
+  /* As specific as it takes to win over the desktop's card below (a portrait tablet). */
+  .goal.goal--compact {
+    container-type: normal;
+    display: inline-flex;
+    flex: none;
+    inline-size: auto;
+    align-items: baseline;
+    gap: 0.6em;
+    max-inline-size: 100%;
+    padding: 0.3em 0.95em;
+    border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    border-radius: 999px;
+    background: var(--surface);
+    box-shadow: 0 0.4em 1.1em rgb(0 0 0 / 0.4);
+    white-space: nowrap;
+  }
+
+  .goal--compact .goal__text {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .goal--compact .goal__bar {
+    display: none;
   }
 }
 

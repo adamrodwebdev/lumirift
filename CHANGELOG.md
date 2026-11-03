@@ -3,6 +3,64 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.46.0] — 03/11/2026
+
+Les 30 premières secondes (lot 33, § 9 octies du cahier des charges) : l'effet signature tout de
+suite, une seule consigne courte, le Ver des dunes vers 15 s, un chargement plus court. Mesures
+en russe, sur la version du portail, à 360 × 640, 390 × 844 et 1280 × 720.
+
+### Modifié
+
+- **La décharge tout de suite** : la première molnia arrive deux cases au-dessus de l'eau. Sans
+  geste, elle tombe et décharge le sable en 1,3 s (1,45 s après l'ouverture de la page, 9,2 s en
+  1.45.2) ; avec un geste, à l'instant.
+- **Une seule consigne, courte, sur le puits** : cinq mots au plus dans chaque langue
+  (« Lâchez l'éclair dans l'eau ! »), en haut du puits. Sur un écran tactile, le geste est dessiné
+  en grand à côté de la pièce ; sur ordinateur, la touche est sous les mots. La carte du guide à
+  côté du puits et l'annonce de chaque élément disparaissent : 5 mots affichés au départ sur
+  téléphone et 6 sur ordinateur. Avec la mesure du 3/11, qui compte aussi le texte réservé aux
+  lecteurs d'écran : 13 mots au lieu de 32 sur téléphone, 15 au lieu de 54 sur ordinateur. La
+  consigne pâlit quand la pièce passe derrière elle.
+- **La récompense sans attente** : dès que la consigne est accomplie, la récompense prend sa
+  place (« Électrocution ! » en grand, ce qu'elle a fait dessous). Elle n'attend plus le temps de
+  lecture de la consigne : 1,2 s après l'ouverture pour qui lâche l'éclair à 1 s, au lieu de
+  3,8 s. Toute annonce qui commence par une exclamation la montre en titre, en or. Dans
+  l'entraînement, chaque zone effacée est annoncée.
+- **Le Ver des dunes vers 15 s** : le sable se fend à 12,2 s et sa tête sort à 14,4 s (25,8 et
+  29,6 s en 1.45.2). Les pièces de l'entraînement tombent à l'allure du niveau 4, et la liane
+  (graine et eau) est laissée au premier niveau de la campagne : le débutant voit la décharge,
+  puis le brasier, puis le Ver.
+- **L'objectif arrive avec le Ver** : « Repoussez le Ver 0/1 » apparaît quand le sable se fend.
+  Sur téléphone, c'est une pastille, dans une rangée gardée vide dès le départ : le puits ne
+  bouge pas. Sur ordinateur, la carte de l'objectif et les deux touches utiles (bouger, lâcher)
+  arrivent avec lui.
+- **Un chargement plus court** : un nouveau joueur d'un portail reçoit le code de sa première
+  partie avec le reste, et non plus après. Sur un téléphone moyen simulé (4G lente, processeur
+  ralenti 4 fois), la consigne s'affiche à 2,9 s au lieu de 3,4 s avec des fichiers compressés,
+  comme Playgama les sert, et à 5,0 s au lieu de 5,4 s sans compression. Un joueur dont
+  l'entraînement est derrière lui ne télécharge rien de plus.
+
+### Technique
+
+- `ScriptedPiece.landsIn` (`SandDealer`) : une pièce du script qui apparaît ce nombre de cases
+  au-dessus de son point d'arrivée. `HOOK_LEVEL` (4) et `HOOK_WYRM_MS` (12 000) dans `Showcase`.
+- `GameSession.guideAt()` (le centre de la pièce guidée, en parts du puits) et `goalInView()`
+  (l'objectif de l'entraînement, après le premier avertissement du Ver) ; `guideLines()` retiré.
+- `WellToast` montre aussi la ligne du guide (`line`, `place="top"`, `piece` pour le fondu) ;
+  `WellGesture.vue` (le geste, sur écran tactile) et `GuideKeys.vue` (les touches, au clavier)
+  remplacent `GuideCard.vue`. `toastParts` coupe une annonce après sa première exclamation.
+- `trainingLegendFor` : la légende de l'entraînement (bouger, lâcher). `CampaignGoal` a une
+  forme `compact`, une pastille sur téléphone en portrait.
+- `bootPlugin({ firstRun })` : les fichiers de la première partie d'un portail (plateforme,
+  écran de jeu, famille et scène du Sable), préchargés après l'entrée, en priorité basse, sauf si
+  le profil dit l'entraînement fait. La liste est tirée du build ; un module absent fait échouer
+  le build.
+- Tests : la décharge en moins de 2 s sans geste, le brasier avant le Ver et le Ver avant 16 s,
+  sur 1 000 parties du bot (`tests/curve/hook*.test.ts`) ; les consignes de cinq mots au plus
+  dans les quatre langues ; le préchargement (`tests/app/bootPlugin.test.ts`) ; e2e : la
+  consigne, le geste, l'objectif qui arrive sans que le puits bouge, la consigne qui tient dans
+  le puits à 640 × 360 en russe.
+
 ## [1.45.2] — 03/11/2026
 
 La carte du guide tient sur les téléphones couchés (lot 32, § 9 octies du cahier des charges).

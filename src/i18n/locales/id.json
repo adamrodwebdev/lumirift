@@ -839,18 +839,18 @@
     "menu": "Menu",
     "skip": "Lewati latihan",
     "guide": {
-      "placeWater": "Letakkan air di atas pasir.",
-      "dropLightning": "Petir di air memecah pasir di sekitarnya: jatuhkan!",
-      "placeOil": "Letakkan minyak: ia akan menyebar.",
-      "dropFire": "Api membakar minyak: jatuhkan di atasnya.",
-      "placeSeed": "Letakkan benih.",
-      "dropWater": "Siram benihnya: ia tumbuh jadi sulur.",
-      "link": "Hubungkan kedua dinding dengan satu warna.",
-      "roam": "Cacing Pasir berkeliaran di bawah pasir…",
-      "warn": "Pasir retak: tahan petir di atas retakan!",
-      "exposed": "Kepalanya terbuka: jatuhkan petir!",
-      "missed": "Ia menyelam lagi… Awasi retakan berikutnya.",
-      "hit": "Kena! Cacing Pasir kembali menyelam."
+      "placeWater": "Letakkan airnya.",
+      "dropLightning": "Jatuhkan petir ke air!",
+      "placeOil": "Letakkan minyaknya.",
+      "dropFire": "Jatuhkan api ke minyak!",
+      "placeSeed": "Letakkan benihnya.",
+      "dropWater": "Siram benihnya!",
+      "link": "Satu warna, dinding ke dinding!",
+      "roam": "Cacing mengintai di bawah…",
+      "warn": "Petir di atas retakan!",
+      "exposed": "Kepalanya! Jatuhkan petir!",
+      "missed": "Ia menyelam… Awasi retakan.",
+      "hit": "Kena! Cacing Pasir kabur."
     }
   },
   "race": {

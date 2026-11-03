@@ -117,3 +117,89 @@ describe('bootPlugin', () => {
     );
   });
 });
+
+/** A portal build (1.46): the game screen and the training's family, their shared chunk and styles. */
+const portal = {
+  ...bundle,
+  'assets/Game-5.js': {
+    ...chunk('assets/Game-5.js', ''),
+    facadeModuleId: 'C:\\project\\src\\ui\\screens\\GameScreen.vue',
+    imports: ['assets/shared-6.js', 'assets/vendor-2.js'],
+    viteMetadata: { importedCss: new Set(['assets/Game-7.css']) },
+  },
+  'assets/sand-8.js': {
+    ...chunk('assets/sand-8.js', ''),
+    facadeModuleId: '/project/src/families/sand/index.ts',
+    imports: ['assets/shared-6.js'],
+    viteMetadata: { importedCss: new Set<string>() },
+  },
+  'assets/shared-6.js': {
+    ...chunk('assets/shared-6.js', ''),
+    isDynamicEntry: false,
+    imports: [],
+    viteMetadata: { importedCss: new Set(['assets/shared-9.css']) },
+  },
+};
+
+/** The links the page's script appends for a player with this save, once the first paint is reported. */
+function fetchedWith(page: string, profile: string | null) {
+  const script = /<script type="module">(.*?)<\/script>/s.exec(page)?.[1] ?? '';
+  const links: { rel: string; href: string; as?: string; fetchPriority?: string }[] = [];
+  runInNewContext(script.replace(/\bimport\(/g, 'load('), {
+    document: {
+      visibilityState: 'hidden',
+      createElement: () => ({}),
+      head: { append: (link: (typeof links)[number]) => links.push(link) },
+    },
+    localStorage: {
+      getItem: (key: string) => (key === 'stackrift:profile' ? profile : null),
+    },
+    navigator: { languages: ['ru-RU'] },
+    // A hidden page starts at once: the paint is never awaited.
+    PerformanceObserver: { supportedEntryTypes: [] },
+    setTimeout: () => {},
+    requestAnimationFrame: () => {},
+    load: () => {},
+  });
+  return links.map(
+    ({ rel, href, as, fetchPriority }) =>
+      `${rel}${as ? `:${as}` : ''} ${href}${fetchPriority ? ` (${fetchPriority})` : ''}`,
+  );
+}
+
+describe('bootPlugin, in a portal build (1.46)', () => {
+  const plugin = bootPlugin({ firstRun: ['src/ui/screens/GameScreen.vue', 'src/families/sand/'] });
+  const transform = (plugin.transformIndexHtml as { handler: Handler }).handler;
+  const page = transform(html, { bundle: portal });
+
+  it('fetches a new player’s first game after the code: its chunks, what they import, their styles', () => {
+    expect(fetchedWith(page, null)).toEqual([
+      'modulepreload ./assets/d.js',
+      'modulepreload ./assets/index-1.js',
+      'modulepreload ./assets/vendor-2.js',
+      // Behind the code, which runs first: at a low priority.
+      'modulepreload ./assets/Game-5.js (low)',
+      'modulepreload ./assets/shared-6.js (low)',
+      'modulepreload ./assets/sand-8.js (low)',
+      'preload:style ./assets/Game-7.css (low)',
+      'preload:style ./assets/shared-9.css (low)',
+    ]);
+  });
+
+  it('leaves it to a player whose training is behind them: they open on the menus', () => {
+    const code = [
+      'modulepreload ./assets/d.js',
+      'modulepreload ./assets/index-1.js',
+      'modulepreload ./assets/vendor-2.js',
+    ];
+    expect(fetchedWith(page, JSON.stringify({ trained: true, games: 0 }))).toEqual(code);
+    expect(fetchedWith(page, JSON.stringify({ trained: false, games: 3 }))).toEqual(code);
+  });
+
+  it('refuses a first run whose module the build does not have', () => {
+    const missing = bootPlugin({ firstRun: ['src/families/tower/'] }).transformIndexHtml as {
+      handler: Handler;
+    };
+    expect(() => missing.handler(html, { bundle: portal })).toThrow(/no chunk for the first run/);
+  });
+});

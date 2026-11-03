@@ -400,8 +400,11 @@ export class SandGame {
   }
 
   dropDistance(): number {
-    const piece = this._active;
-    if (!piece) return 0;
+    return this._active ? this.distanceDown(this._active) : 0;
+  }
+
+  /** How far a piece would fall from where it stands, in grains. */
+  private distanceDown(piece: SandPiece): number {
     let distance = 0;
     while (this.fits(piece, 0, distance + 1)) distance++;
     return distance;
@@ -969,12 +972,18 @@ export class SandGame {
     const spec = this.dealer.next();
     this.spawned++;
     let piece = SandPiece.spawn(spec.type, spec.tone, this.grid.width);
-    if (this.script.get(this.spawned)?.above && this.landedAt !== null) {
+    const scripted = this.script.get(this.spawned);
+    if (scripted?.above && this.landedAt !== null) {
       // Lined up over the previous element: a player who just drops it sees them meet.
       const g = GRAINS_PER_CELL;
       const shift = Math.round((this.landedAt - this.centreOf(piece)) / g) * g;
       const lined = piece.moved(shift, 0);
       if (this.fits(lined)) piece = lined;
+    }
+    if (scripted?.landsIn !== undefined && this.fits(piece)) {
+      // Low over the sand: it lands within moments, even if the player does nothing.
+      const above = Math.round(scripted.landsIn * GRAINS_PER_CELL);
+      piece = piece.moved(0, Math.max(0, this.distanceDown(piece) - above));
     }
     if (!this.fits(piece)) {
       if (this.rescueReady || this.forgiving) {

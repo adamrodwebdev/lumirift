@@ -34,6 +34,11 @@ export interface ScriptedPiece {
   readonly type?: PieceType;
   /** Appears right above where the previous piece landed (so that the two meet). */
   readonly above?: boolean;
+  /**
+   * Appears this many cells above where it would land, not at the top of the
+   * well: the training's first bolt, whose shock comes at once (1.46).
+   */
+  readonly landsIn?: number;
 }
 
 /** What a game of Sand deals: its elements (if any), their pace, its script, the fire's boost. */

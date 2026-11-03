@@ -97,6 +97,12 @@ export type TrainingStage = 'hook';
 /** What the training's guide asks for: the gesture or keys it shows. */
 export type GuideAction = 'move' | 'rotate' | 'drop';
 
+/** A point of the well, as shares of its width and height (0 at the left and the top). */
+export interface WellPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
 /** A line of the training's guide: a sentence (a translation key), and the gesture it asks for. */
 export interface GuideLine {
   readonly text: string;
@@ -174,8 +180,18 @@ export interface GameSession<C extends Command = Command> {
    * outside a training, or when it has nothing to say.
    */
   guide?(): GuideLine | null;
-  /** Every line the training's guide may say in this game: its card keeps the room of the longest. */
-  guideLines?(): readonly GuideLine[];
+  /**
+   * Where the piece the guide speaks of stands now, as shares of the well
+   * (its centre; 0 at the left and the top): the gesture is drawn beside it
+   * (1.46). Null when no piece is in play; absent outside a training.
+   */
+  guideAt?(): WellPoint | null;
+  /**
+   * The training's goal has come into view (1.46): its Guardian has shown
+   * itself, and the goal shows from then on. Absent: the goal is in view from
+   * the start.
+   */
+  goalInView?(): boolean;
   /** Releases listeners; the session cannot be used afterwards. */
   dispose(): void;
 }

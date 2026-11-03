@@ -5,6 +5,7 @@ import type { ModeId } from '@/session/ModeId';
 import { ELEMENT_TONES } from './engine/Elements';
 import { SandGame, type SandOptions } from './engine/SandGame';
 import {
+  HOOK_LEVEL,
   HOOK_SCRIPT,
   HOOK_WYRM_MS,
   PRACTICE_BED,
@@ -20,13 +21,15 @@ import { SandSession } from './SandSession';
  * The portals' training, staged in the Sand (1.33): a prepared well, the
  * pieces in their order, no wind, no defeat. The first bolt shocks the bed
  * wherever it lands; the elements react in pairs; the Dune Wyrm surfaces
- * on its own clock, a bolt never far.
+ * on its own clock, a bolt never far. Its pieces fall briskly (1.46): the
+ * level it starts at sets only their pace, the training showing no level.
  */
 const TRAINING_GAMES: Readonly<Record<TrainingStage, Omit<SandOptions, 'random'>>> = {
   hook: {
     hazards: false,
     bed: { rows: 7.2, variant: 0, water: 3 },
     script: HOOK_SCRIPT,
+    startLevel: HOOK_LEVEL,
     boss: 'duneWorm',
     bossDelayMs: HOOK_WYRM_MS,
     bossSeenFirst: true,

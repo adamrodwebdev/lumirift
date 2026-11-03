@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { GATE_TIMEOUT_MS, hookProblems } from './hookGate';
 
-describe('The training’s opening, games 251 to 500 of 1,000 (1.33)', () => {
+describe('The training’s opening, games 251 to 500 of 1,000 (1.33, 1.46)', () => {
   it(
-    'shocks the bed with the first bolt and brings the Wyrm out before 50 s, whatever the first move',
+    'shocks the bed within 2 s, then shows the blaze, and the Wyrm by 16 s, whatever the first move',
     () => {
       expect(hookProblems(251, 500)).toEqual([]);
     },

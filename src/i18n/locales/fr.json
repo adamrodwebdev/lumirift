@@ -839,18 +839,18 @@
     "menu": "Menu",
     "skip": "Passer l’entraînement",
     "guide": {
-      "placeWater": "Posez l’eau sur le sable.",
-      "dropLightning": "L’éclair sur l’eau brise le sable autour : lâchez-le !",
-      "placeOil": "Posez l’huile : elle s’étale.",
-      "dropFire": "Le feu embrase l’huile : lâchez-le dessus.",
+      "placeWater": "Posez l’eau.",
+      "dropLightning": "Lâchez l’éclair dans l’eau !",
+      "placeOil": "Posez l’huile.",
+      "dropFire": "Lâchez le feu sur l’huile !",
       "placeSeed": "Posez la graine.",
-      "dropWater": "Arrosez la graine : elle pousse en liane.",
-      "link": "Reliez les deux murs d’une même couleur pour l’effacer.",
-      "roam": "Le Ver des dunes rôde sous le sable…",
-      "warn": "Le sable se fend : placez l’éclair au-dessus !",
-      "exposed": "Sa tête est à découvert : lâchez l’éclair !",
-      "missed": "Il replonge… Guettez les prochaines fissures.",
-      "hit": "Touché ! Le Ver replonge."
+      "dropWater": "Arrosez la graine !",
+      "link": "Reliez les murs d’une couleur !",
+      "roam": "Le Ver rôde dessous…",
+      "warn": "L’éclair au-dessus des fissures !",
+      "exposed": "Sa tête ! Lâchez l’éclair !",
+      "missed": "Il replonge… Guettez les fissures.",
+      "hit": "Touché ! Le Ver s’enfuit."
     }
   },
   "race": {

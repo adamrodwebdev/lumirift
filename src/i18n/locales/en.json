@@ -839,18 +839,18 @@
     "menu": "Menu",
     "skip": "Skip the training",
     "guide": {
-      "placeWater": "Place the water on the sand.",
-      "dropLightning": "Lightning on water shatters the sand around it: drop it!",
-      "placeOil": "Place the oil: it spreads out.",
-      "dropFire": "Fire sets the oil ablaze: drop it on top.",
+      "placeWater": "Place the water.",
+      "dropLightning": "Drop lightning into the water!",
+      "placeOil": "Place the oil.",
+      "dropFire": "Drop fire on the oil!",
       "placeSeed": "Place the seed.",
-      "dropWater": "Water the seed: it grows into a vine.",
-      "link": "Link both walls with one colour to clear it.",
-      "roam": "The Dune Wyrm prowls under the sand…",
-      "warn": "The sand cracks: keep the lightning above them!",
-      "exposed": "Its head is bare: drop the lightning!",
-      "missed": "It dives back down… Watch for the next cracks.",
-      "hit": "Hit! The Wyrm dives back down."
+      "dropWater": "Water the seed!",
+      "link": "One colour, wall to wall!",
+      "roam": "The Wyrm prowls below…",
+      "warn": "Lightning over the cracks!",
+      "exposed": "Its head! Drop the lightning!",
+      "missed": "It dived… Watch the cracks.",
+      "hit": "Hit! The Wyrm flees."
     }
   },
   "race": {

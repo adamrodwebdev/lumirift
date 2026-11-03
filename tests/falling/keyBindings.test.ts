@@ -5,7 +5,7 @@ import {
   KEY_ACTIONS,
   KeyBindings,
 } from '@/families/falling/input/KeyBindings';
-import { keyLegendFor } from '@/ui/keyLegend';
+import { keyLegendFor, trainingLegendFor } from '@/ui/keyLegend';
 
 const DEFAULT = KeyBindings.DEFAULT;
 
@@ -110,5 +110,13 @@ describe('KeyBindings', () => {
     ).toBe(false);
     const mosaic = keyLegendFor('placement', 'mosaic', custom);
     expect(mosaic.find((row) => row.action === 'keys.place')?.codes).toEqual(['Enter']);
+  });
+
+  it('draws beside the training’s well the two keys its guide asks for, the player’s (1.46)', () => {
+    const custom = DEFAULT.with('hardDrop', 0, 'KeyW');
+    expect(trainingLegendFor(custom)).toEqual([
+      { action: 'controls.move', codes: ['ArrowLeft', 'ArrowRight'] },
+      { action: 'controls.hardDrop', codes: ['KeyW'] },
+    ]);
   });
 });

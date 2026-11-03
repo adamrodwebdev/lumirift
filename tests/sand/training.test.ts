@@ -54,6 +54,22 @@ describe('The portals’ training in the Sand (1.29, one game since 1.33)', () =
     expect(ids).not.toContain('level');
   });
 
+  it('brings the first bolt in low, two cells over the water it will shock (1.46)', () => {
+    const session = training();
+    expect(session.view.active!.y).toBeGreaterThan(0);
+    expect(session.view.dropDistance()).toBe(2 * G);
+  });
+
+  it('shocks the bed within two seconds when the player does nothing (1.46; 8.8 s before)', () => {
+    const session = training();
+    const shocks: number[] = [];
+    let now = 0;
+    session.onGame('strike', ({ kind }) => kind === 'shock' && shocks.push(now));
+    for (; now < 5000 && shocks.length === 0; now += STEP) session.update(STEP);
+    expect(shocks).toHaveLength(1);
+    expect(shocks[0]).toBeLessThan(2000);
+  });
+
   it('shocks the bed with the first bolt, wherever it lands and however long it waits', () => {
     for (let cells = -5; cells <= 5; cells++) {
       for (const drops of [true, false]) {
@@ -70,15 +86,19 @@ describe('The portals’ training in the Sand (1.29, one game since 1.33)', () =
   });
 
   it(
-    'shows a beginner the blaze and the vine after the shock, within twenty seconds',
+    'shows a beginner the shock, then the blaze, before the Wyrm bursts out (1.46: the vine is the campaign’s)',
     () => {
       for (const seed of [1, 2, 3, 4]) {
         const session = training(seed);
-        const seen = new Set<string>();
-        session.onGame('strike', ({ kind }) => seen.add(kind));
-        session.onGame('react', ({ kind }) => seen.add(kind));
-        beginner(session)(20_000);
-        expect([...seen]).toEqual(expect.arrayContaining(['shock', 'blaze', 'sprout']));
+        const seen: string[] = [];
+        session.onGame('strike', ({ kind }) => seen.push(kind));
+        session.onGame('react', ({ kind }) => seen.push(kind));
+        session.onGame('boss', ({ event }) => event.type === 'surge' && seen.push('surge'));
+        beginner(session)(16_000);
+        expect(seen[0], seen.join()).toBe('shock');
+        expect(seen.indexOf('blaze'), seen.join()).toBeGreaterThan(0);
+        expect(seen.indexOf('blaze'), seen.join()).toBeLessThan(seen.indexOf('surge'));
+        expect(seen).not.toContain('sprout');
       }
     },
     SIMULATION_TIMEOUT_MS,
@@ -111,7 +131,7 @@ describe('The portals’ training in the Sand (1.29, one game since 1.33)', () =
   );
 
   it(
-    'brings the Dune Wyrm out on its own clock, before half a minute, then lets it be struck',
+    'brings the Dune Wyrm out on its own clock, by fifteen seconds (1.46), then lets it be struck',
     () => {
       for (const seed of [1, 2, 3]) {
         const session = training(seed);
@@ -124,7 +144,7 @@ describe('The portals’ training in the Sand (1.29, one game since 1.33)', () =
         }
         const surge = moves.find((move) => move.type === 'surge')!;
         expect(surge.at).toBeGreaterThan(HOOK_WYRM_MS);
-        expect(surge.at).toBeLessThan(30_000);
+        expect(surge.at).toBeLessThan(16_000);
         const hurt = moves.find((move) => move.type === 'hurt')!;
         expect(hurt.at).toBeGreaterThan(surge.at);
       }
@@ -186,15 +206,15 @@ describe('The portals’ training in the Sand (1.29, one game since 1.33)', () =
         session.execute({ type: 'hardDrop' });
         for (let t = 0; t < 1500; t += STEP) session.update(STEP);
       }
-      expect(lines[0]).toBe('training.guide.dropLightning:drop');
-      expect(lines[1]).toBe('training.guide.link:move');
-      expect(lines.slice(2, 4)).toEqual([
+      expect(lines).toEqual([
+        'training.guide.dropLightning:drop',
+        'training.guide.link:move',
         'training.guide.placeOil:move',
         'training.guide.dropFire:drop',
-      ]);
-      expect(lines.slice(5, 7)).toEqual([
-        'training.guide.placeSeed:move',
-        'training.guide.dropWater:drop',
+        'training.guide.link:move',
+        // A bolt every other piece from there: one is never far when the Wyrm comes out.
+        'training.guide.dropLightning:drop',
+        'training.guide.link:move',
       ]);
 
       const said = new Set<string>();
@@ -213,6 +233,45 @@ describe('The portals’ training in the Sand (1.29, one game since 1.33)', () =
       // Outside the training, no guide.
       const free = createSandSession('sand', { random: new SeededRandom(1), timeLimitMs: null });
       expect(free.guide?.()).toBeNull();
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
+
+  it(
+    'leaves the elements’ words to the guide (1.46), and tells the deeds',
+    () => {
+      const session = training();
+      const notices: string[] = [];
+      session.events.on('notice', ({ id }) => notices.push(id));
+      beginner(session)(10_000);
+      expect(notices.filter((id) => id.startsWith('element'))).toEqual([]);
+      expect(notices).toContain('strike.shock');
+    },
+    SIMULATION_TIMEOUT_MS,
+  );
+
+  it(
+    'brings its goal into view with the Wyrm’s first cracks, and says where its piece stands (1.46)',
+    () => {
+      const session = training();
+      // The first bolt, in the middle of the well, low over the water.
+      const at = session.guideAt()!;
+      expect(at.x).toBeCloseTo(0.5, 2);
+      expect(at.y).toBeGreaterThan(0.3);
+      expect(at.y).toBeLessThan(0.55);
+      const play = beginner(session);
+      play(HOOK_WYRM_MS - 500);
+      expect(session.goalInView()).toBe(false);
+      play(1000);
+      expect(session.goalInView()).toBe(true);
+      // Outside the training, a goal is there from the start, and no piece is guided.
+      const free = createSandSession('sand', {
+        random: new SeededRandom(1),
+        timeLimitMs: null,
+      }) as SandSession;
+      free.start();
+      expect(free.goalInView()).toBe(true);
+      expect(free.guideAt()).toBeNull();
     },
     SIMULATION_TIMEOUT_MS,
   );

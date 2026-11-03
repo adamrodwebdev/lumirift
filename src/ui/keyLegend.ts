@@ -85,12 +85,20 @@ const EXTRA: Readonly<Partial<Record<ModeId, RowSpec>>> = {
   flip: row('controls.ability.flip', main('ability')),
 };
 
+/** The rows of a legend, with the player's keys. */
+const legendOf = (specs: readonly RowSpec[], bindings: KeyBindings): readonly LegendRow[] =>
+  specs.map(({ action, keys, minor: isMinor }) => ({
+    action,
+    codes: keys(bindings),
+    ...(isMinor ? { minor: true } : {}),
+  }));
+
 /** The legend of a mode, with the player's keys: its family's rows, its own and the surge, before Pause. */
 export function keyLegendFor(
   family: FamilyId,
   modeId: ModeId,
   bindings: KeyBindings = KeyBindings.DEFAULT,
-  /** False where the game has no surge after all (the training). */
+  /** False where the game has no surge after all (the training's pause). */
   surge = true,
 ): readonly LegendRow[] {
   const specs = BY_FAMILY[family];
@@ -98,10 +106,15 @@ export function keyLegendFor(
     ...(EXTRA[modeId] ? [EXTRA[modeId]] : []),
     ...(surge && surgeTuningFor(family, modeId) ? [SURGE] : []),
   ];
-  const rows = [...specs.slice(0, -1), ...extras, ...specs.slice(-1)];
-  return rows.map(({ action, keys, minor: isMinor }) => ({
-    action,
-    codes: keys(bindings),
-    ...(isMinor ? { minor: true } : {}),
-  }));
+  return legendOf([...specs.slice(0, -1), ...extras, ...specs.slice(-1)], bindings);
+}
+
+/**
+ * The training's legend (1.46): the two keys its guide asks for, to move and
+ * to drop. No surge there, and nothing else to remember.
+ */
+export function trainingLegendFor(
+  bindings: KeyBindings = KeyBindings.DEFAULT,
+): readonly LegendRow[] {
+  return legendOf([MOVE, HARD_DROP], bindings);
 }

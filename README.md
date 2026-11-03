@@ -86,9 +86,10 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   qu'aucun autre jeu de blocs n'a : les éléments du Sable, les puits qui se retournent,
   basculent et se reflètent, les quatre Gardiens de la faille.
 - **Sur les portails** (CrazyGames, Playgama, Yandex Games) : un nouveau joueur arrive directement dans
-  l'entraînement, une seule partie guidée et passable : le premier éclair brise le sable où
-  qu'il tombe, l'embrasement et la liane suivent, le Ver des dunes surgit avant 30 s ; les
-  menus s'ouvrent ensuite. Notre site garde son écran titre.
+  l'entraînement, une seule partie guidée et passable. Le premier éclair, tout près de l'eau,
+  brise le sable dans les deux premières secondes ; une consigne de cinq mots au plus et son
+  geste guident chaque pièce ; l'embrasement suit, et le Ver des dunes surgit vers 15 s avec
+  l'objectif. Les menus s'ouvrent ensuite. Notre site garde son écran titre.
 - **Menu en quatre pages** (Accueil, Modes, Carte, Atelier) : onglets sous le pouce ou rail
   en paysage, glissement d'une page à l'autre, rien à faire défiler ; les fenêtres sont des
   feuilles qui tiennent à l'écran, et la fin de partie se dévoile pas à pas.

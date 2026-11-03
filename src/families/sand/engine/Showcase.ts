@@ -67,20 +67,30 @@ export const PAIRS_SCRIPT: readonly ScriptedPiece[] = PAIRS.flatMap(([first, sec
 export const WYRM_ELEMENTS: readonly ElementTone[] = [Tone.Lightning, Tone.Water, Tone.Fire];
 export const WYRM_PACE: ElementPace = { after: 2, chance: 0.3 };
 
-/** The Wyrm of the training surfaces after this long (ms), whatever the player does: by 30 s. */
-export const HOOK_WYRM_MS = 25_000;
+/**
+ * The Wyrm of the training cracks the sand after this long (ms), whatever the
+ * player does, and bursts out two seconds later: by 15 s (1.46; 25 s before,
+ * and out by 30).
+ */
+export const HOOK_WYRM_MS = 12_000;
+
+/**
+ * The training's pieces fall at this level's pace (1.46): briskly, so that a
+ * beginner sees the blaze before the Wyrm, and one who waits does not wait long.
+ */
+export const HOOK_LEVEL = 4;
 
 /**
  * The training's pieces (1.33): a bolt first, over the water set on the bed,
- * so that it shocks the sand wherever it lands; the blaze and the vine in
- * pairs, each second piece right above the first; then a bolt every other
- * piece, so that one is never far when the Wyrm comes out.
+ * so that it shocks the sand wherever it lands, and low over it, so that the
+ * shock comes within moments even if the player does nothing (1.46); the
+ * blaze, the fire right above the oil; then a bolt every other piece, so that
+ * one is never far when the Wyrm comes out. The vine is left to the
+ * campaign's first level (1.46): one step less before the Wyrm.
  */
 export const HOOK_SCRIPT: readonly ScriptedPiece[] = [
-  { at: 1, tone: Tone.Lightning, type: SQUARE },
+  { at: 1, tone: Tone.Lightning, type: SQUARE, landsIn: 2 },
   { at: 3, tone: Tone.Oil, type: LONG },
   { at: 4, tone: Tone.Fire, type: SQUARE, above: true },
-  { at: 6, tone: Tone.Seed, type: LONG },
-  { at: 7, tone: Tone.Water, type: SQUARE, above: true },
-  ...Array.from({ length: 40 }, (_, k) => ({ at: 9 + k * 2, tone: Tone.Lightning, type: SQUARE })),
+  ...Array.from({ length: 40 }, (_, k) => ({ at: 6 + k * 2, tone: Tone.Lightning, type: SQUARE })),
 ];
