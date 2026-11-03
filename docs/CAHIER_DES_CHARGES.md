@@ -20,6 +20,7 @@
 | 1.45    | 31/10/2026 | La constellation d'atterrissage : au pied du faisceau, une étincelle là où chaque bloc se posera, reliée à ses voisines ; toute la pièce se lit là où elle se posera (§ 9 septies, lot 31).                                           |
 | 1.45.2  | 03/11/2026 | Corrections : la carte du guide tient sur les téléphones couchés, l'objectif de l'entraînement passe dans la colonne de droite (§ 9 octies, lot 32).                                                                                  |
 | 1.46    | 03/11/2026 | Les 30 premières secondes : la décharge en 1,3 s, une consigne de cinq mots sur le puits et son geste, la récompense sans attente, le Ver vers 15 s, l'objectif avec lui, un chargement plus court (§ 9 octies, lot 33).              |
+| 1.46.1  | 03/11/2026 | Trois moteurs en CI (Chrome, Firefox, WebKit) et les défauts qu'ils ont montrés : une boucle d'observateurs de taille, le cadeau sur un lecteur d'écran, le focus des fenêtres fermées (§ 6).                                         |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1727,7 +1728,11 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   (390 × 844) et bureau (1280 × 800)**, dans **trois moteurs** : le Chrome installé, et le
   Firefox et le WebKit de Playwright (`E2E_ENGINE`), WebKit étant le moteur de Safari. Le
   téléphone est un Pixel 7 dans Chrome, son écran dans Firefox, un iPhone 13 dans WebKit. Le
-  test du doigt passe par le protocole de Chrome : Chromium seul. Accueil, ouverture, pause,
+  test du doigt passe par le protocole de Chrome : Chromium seul. Sous Firefox au téléphone,
+  la souris de Playwright n'envoie pas d'événements de pointeur : les tests qui soulèvent,
+  glissent ou posent une pièce à la souris y sont joués sur ordinateur. Le WebKit de la CI
+  dessine sans carte graphique : deux fois le temps pour chaque test, et le délai du premier
+  toucher n'y est pas chronométré. Accueil, ouverture, pause,
   reprise et sortie des 14 modes, partie complète au clavier jusqu'au record, défi du jour,
   Mosaïque au clavier, langue et thème retenus, Atelier, console sans erreur, navigation au
   clavier seul. **Garde responsive** (`e2e/responsive.spec.ts`) : aucun défilement
@@ -3063,4 +3068,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.45    | 31/10/2026 | La constellation d'atterrissage : `constellationLinks`, `beginConstellation`, `addStar`, `drawConstellation` ; les traits du faisceau retirés (§ 9 septies, lot 31).   |
 | 1.45.2  | 03/11/2026 | § 9 octies : la feuille de route Yandex (lots 32 à 34). Lot 32 livré : la grille de l'entraînement sur les écrans paysage bas, le test de la carte en russe.           |
 | 1.46    | 03/11/2026 | Lot 33 livré : `landsIn`, `HOOK_LEVEL`, `HOOK_WYRM_MS`, `guideAt`, `goalInView`, `WellGesture`, `GuideKeys`, `toastParts`, `bootPlugin({ firstRun })` ; mesures.       |
-| 1.46    | 03/11/2026 | § 6 : les parcours de bout en bout en CI dans trois moteurs (Chrome, Firefox, WebKit), `E2E_ENGINE` ; la porte du lot 32 corrigée.                                     |
+| 1.46.1  | 03/11/2026 | § 6 : les parcours en CI dans trois moteurs, `E2E_ENGINE` ; la porte du lot 32 corrigée ; trois défauts corrigés (WellToast, cadeau, focus).                           |
