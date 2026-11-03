@@ -96,11 +96,19 @@ test('a window the player opens answers at once; closed, the page behind does to
 test('back from a game, the menu takes a tap as it rises', async ({ page }) => {
   await playClassic(page);
   await page.keyboard.press('KeyP');
+  // A slow device: each frame comes 100 ms late, so the menu waits a while for its first paint.
+  await page.evaluate(() => {
+    const raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = (callback) =>
+      raf((time) => void setTimeout(() => callback(time), 100));
+  });
   await page
     .getByRole('dialog', { name: 'Pause' })
     .getByRole('button', { name: 'Quitter' })
     .click();
-  await page.locator('.hub').waitFor();
+  // As soon as the menu is in place, before its first paint: the light that still covers it
+  // lets the tap through (1.45.2: it took the taps of those two frames, lost on a slow machine).
+  await page.locator('.hub').waitFor({ state: 'attached' });
   await tapNow(tab(page, 'Atelier'));
   await expect(tab(page, 'Atelier')).toHaveAttribute('aria-selected', 'true');
 });

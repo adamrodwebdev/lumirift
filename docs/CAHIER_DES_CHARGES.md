@@ -2898,6 +2898,13 @@ secondes.
       - les tests du portail sur WebKit (Safari de bureau et iPhone 13) : 4 sur 4 ;
       - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
         catégories à chaque passage.
+    - **Un second défaut, relevé par la CI**. Au retour d'une partie, la lumière de la faille
+      gardait les touchers pendant les deux images où elle attend que le menu soit peint, alors
+      que le menu était déjà en place : sur un appareil lent, le toucher était perdu (un run de
+      la CI, un clic 11 ms après l'apparition du menu). La lumière les laisse désormais passer
+      (`wipe--passing`) et se lève toujours après la première image. Le test simule un appareil
+      lent (chaque image 100 ms en retard) : l'ancien code échoue 6 fois sur 6, le nouveau passe
+      10 fois sur 10.
 - **Lot 33 · 1.46 Les 30 premières secondes et les pubs**.
   - **Diagnostic d'abord**, image par image, en russe, au téléphone en portrait (360 × 640,
     390 × 844) et à l'ordinateur :
@@ -2906,8 +2913,8 @@ secondes.
     - le moment du premier effet marquant ;
     - ce qui se passe si le joueur ne fait rien ;
     - la page de chargement, que 18 % des sessions de Playgama n'ont pas franchie.
-  - Des propositions et une maquette (téléphone et ordinateur, clair et sombre), validées avant
-    tout code.
+  - Des propositions et une maquette (téléphone et ordinateur, dans le seul thème du jeu, le
+    sombre, depuis la 1.4), validées avant tout code.
   - **Le rythme des pubs** par portail (Yandex et Playgama) : quand vient la première, l'écart
     entre deux, jamais après une défaite, et ce qui fait moins fermer le jeu.
   - **Porte** :
