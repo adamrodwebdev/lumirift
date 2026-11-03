@@ -3,6 +3,55 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.46.1] — 03/11/2026
+
+Les parcours de bout en bout dans les trois moteurs (Chrome, Firefox, WebKit), et les défauts
+que leur premier passage a montrés.
+
+### Corrigé
+
+- **Une erreur à chaque début de partie** : « ResizeObserver loop completed with undelivered
+  notifications », relevée par WebKit. La consigne du puits (1.46) avait son propre observateur
+  de taille, prévenu un pas après celui du puits. Elle se mesure désormais une fois le puits
+  mesuré, sans second observateur.
+- **Le cadeau du jour sur un joueur au lecteur d'écran** : un lecteur d'écran presse un bouton
+  d'un clic seul, sans toucher ni touche. Un joueur qui ouvrait ainsi les réglages au moment où
+  le calendrier allait monter le voyait couvrir sa fenêtre. Un clic compte désormais comme un
+  geste.
+- **Une fenêtre fermée ne garde plus le focus** : le navigateur rend le focus à ce qui l'avait
+  avant l'ouverture. Quand rien ne l'avait, il restait sur la fenêtre fermée, qui recevait les
+  touches destinées à l'écran derrière (vu dans Chrome et WebKit sur une page d'essai). Il en
+  sort. La fenêtre de pause fermée n'écoute plus aucune touche.
+
+### Ajouté
+
+- **Trois moteurs en CI** : les parcours de bout en bout se jouent aussi dans Firefox et dans
+  WebKit, le moteur de Safari, au téléphone et sur ordinateur, chacun dans sa tâche, en
+  parallèle de la première. Jusqu'ici, la CI ne lançait que Chrome : Firefox n'avait tourné
+  nulle part, et WebKit seulement à la main, sur le poste de développement. Le moteur se
+  choisit avec la variable `E2E_ENGINE` (Chrome par défaut). Le téléphone est un iPhone 13
+  dans WebKit.
+- **Ce qui ne se joue pas partout, et pourquoi** :
+  - le test du doigt passe par le protocole de Chrome : il reste propre à Chromium ;
+  - sous Firefox au téléphone, la souris de Playwright n'envoie pas les événements de pointeur
+    que le jeu écoute : les trois tests qui soulèvent, glissent ou posent une pièce à la souris
+    y sont joués sur ordinateur seulement ;
+  - le délai du premier toucher d'une page qui arrive n'est pas chronométré dans WebKit, que la
+    CI dessine sans carte graphique, deux fois plus lentement : WebKit y a deux fois le temps
+    pour chaque test.
+
+### Modifié
+
+- **La CI une fois par envoi** : elle part à chaque envoi sur `dev` et `main` et pour chaque
+  pull request. Avant, chaque envoi sur la branche d'une pull request la lançait deux fois.
+- **Des tests qui attendent ce qu'ils doivent attendre** :
+  - l'audit d'accessibilité attend la fin des animations d'une fenêtre tout juste ouverte (WebKit
+    lisait le texte à 62 % de sa couleur) ;
+  - les transformations « immobiles » se calculent au lieu de se lire, chaque moteur les écrivant
+    à sa façon ;
+  - la carte attend son chapitre au lieu de 300 ms ;
+  - le parcours sans erreur laisse la première visite finir ses chargements avant de recharger.
+
 ## [1.46.0] — 03/11/2026
 
 Les 30 premières secondes (lot 33, § 9 octies du cahier des charges) : l'effet signature tout de

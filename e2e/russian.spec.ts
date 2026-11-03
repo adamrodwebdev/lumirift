@@ -305,7 +305,9 @@ test('every chapter’s name, Guardian and levels stay whole on the map, from 32
     await expect(map.getByRole('heading', { name: 'За Разломом' })).toBeVisible();
     const back = map.getByRole('button', { name: 'Предыдущая глава' });
     for (let chapter = 10; chapter >= 1; chapter--) {
-      await page.waitForTimeout(300);
+      // The chapter in place, the one before it gone: it fades, even with reduced motion.
+      await expect(map.getByText(`Глава ${chapter}`, { exact: true })).toBeVisible();
+      await expect(map.locator('.path__field')).toHaveCount(1);
       const where = `${width} × ${height}: chapter ${chapter}`;
       expect(await misfits(page), where).toEqual([]);
       expect(await crowdedLevels(page), where).toEqual([]);
@@ -340,13 +342,15 @@ test('a level’s goal stays whole on a phone: its own row beside a hold box, on
       await tab(page, 'Карта').click();
       const map = panel(page, 'Карта');
       const back = map.getByRole('button', { name: 'Предыдущая глава' });
+      // Each turn done, the chapter before it gone (it fades, even with reduced motion).
+      const turned = () => expect(map.locator('.path__field')).toHaveCount(1);
       while (await back.isEnabled()) {
         await back.click();
-        await page.waitForTimeout(300);
+        await turned();
       }
       for (let turn = 1; turn < Number(id.split('-')[0]); turn++) {
         await map.getByRole('button', { name: 'Следующая глава' }).click();
-        await page.waitForTimeout(300);
+        await turned();
       }
       await map.getByRole('button', { name: new RegExp(`(^|[^0-9])${id}([^0-9]|$)`) }).click();
       await page.getByRole('dialog').getByRole('button', { name: 'Играть', exact: true }).click();

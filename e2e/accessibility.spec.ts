@@ -11,21 +11,27 @@ import { localDay, seedStorage } from './seed';
 /**
  * The transitions done (1.42): an audit never reads a window or a page halfway
  * through its fade. Polled from here: some tests freeze the page's own clock.
+ * Still twice in a row, 100 ms apart: a window opened a moment ago may not
+ * have started its animations yet (WebKit, 3 November: one look, 20 ms after
+ * the opening, found none, and the audit read the text at 62 % of its colour).
  */
 const settled = async (page: Page) => {
-  for (let tries = 0; tries < 40; tries++) {
-    const moving = await page.evaluate(() =>
-      document.getAnimations().some((animation) => {
+  for (let tries = 0, still = 0; tries < 60; tries++) {
+    const moving = await page.evaluate(() => {
+      // The styles brought up to date: the animations they start are made.
+      document.documentElement.getBoundingClientRect();
+      return document.getAnimations().some((animation) => {
         const timing = animation.effect?.getTiming();
         return (
-          animation.playState === 'running' &&
+          (animation.pending || animation.playState === 'running') &&
           timing?.iterations !== Infinity &&
           Number(timing?.duration) <= 1000
         );
-      }),
-    );
-    if (!moving) return;
-    await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+    });
+    still = moving ? 0 : still + 1;
+    if (still === 2) return;
+    await new Promise((resolve) => setTimeout(resolve, moving ? 50 : 100));
   }
 };
 

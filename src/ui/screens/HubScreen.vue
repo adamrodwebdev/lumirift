@@ -138,13 +138,14 @@ const giftReady = computed(() => gifts.calendar.ready);
 /**
  * The menu shows a moment before the calendar rises over it, once a day by
  * itself; back from a game, once the pages have risen (700 ms). A player
- * already busy (a tap, a key) is not interrupted, nor a window they opened
- * covered: the calendar waits for the next visit, its dot on the Home tab.
+ * already busy (a tap, a key, a click: a screen reader presses a button with
+ * a click alone) is not interrupted, nor a window they opened covered: the
+ * calendar waits for the next visit, its dot on the Home tab.
  */
 const GIFT_DELAY_MS = 600;
 const GIFT_DELAY_RETURNING_MS = 900;
 let giftTimer: number | undefined;
-const BUSY_EVENTS = ['pointerdown', 'keydown'] as const;
+const BUSY_EVENTS = ['pointerdown', 'keydown', 'click'] as const;
 const stopGiftTimer = () => {
   window.clearTimeout(giftTimer);
   for (const type of BUSY_EVENTS) window.removeEventListener(type, stopGiftTimer, true);

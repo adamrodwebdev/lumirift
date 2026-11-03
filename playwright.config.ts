@@ -1,4 +1,9 @@
-import { defineConfig, devices } from '@playwright/test';
+import {
+  defineConfig,
+  devices,
+  type PlaywrightTestOptions,
+  type PlaywrightWorkerOptions,
+} from '@playwright/test';
 
 const PORT = 4177;
 /** The CrazyGames build, for the portals' first run (its SDK runs in its local mode). */
@@ -11,22 +16,76 @@ const YANDEX = /yandex\.spec\.ts/;
 const DUNES_PORT = 4181;
 const DUNES = /dunes\.spec\.ts/;
 
+type Engine = 'chrome' | 'firefox' | 'webkit';
+/** What a project says of its browser: the engine, and the device it plays. */
+type BrowserUse = Partial<PlaywrightTestOptions & PlaywrightWorkerOptions>;
+interface EngineUse {
+  readonly desktop: BrowserUse;
+  readonly phone: BrowserUse;
+  /** How many times the usual time its tests and their waits are given. */
+  readonly pace: number;
+}
+
+/**
+ * The three engines (1.46): the installed Chrome by default (channel
+ * `chrome`, the browser most players have); Playwright's own Firefox and
+ * WebKit, Safari's engine, when `E2E_ENGINE` names one. The CI plays the
+ * whole suite in each, one job per engine, under the same projects: a test
+ * played by one project only is played once per engine. A phone is a Pixel 7
+ * in Chrome, the Pixel's screen in Firefox (with its own user agent), an
+ * iPhone 13 in WebKit; the projects set the sizes. Playwright's Firefox does
+ * not start on the Windows machine of development (a missing system
+ * library): the CI plays it, on Linux. The CI's WebKit draws without a
+ * graphics card, about twice as slowly as the others (21 min of journeys
+ * against 12 for Firefox, 3 November): twice the time.
+ */
+const ENGINES: Readonly<Record<Engine, EngineUse>> = {
+  chrome: {
+    desktop: { channel: 'chrome' },
+    phone: { ...devices['Pixel 7'], channel: 'chrome' },
+    pace: 1,
+  },
+  firefox: {
+    desktop: { browserName: 'firefox' },
+    phone: {
+      browserName: 'firefox',
+      deviceScaleFactor: devices['Pixel 7'].deviceScaleFactor,
+      isMobile: true,
+      hasTouch: true,
+    },
+    pace: 1,
+  },
+  webkit: {
+    desktop: { browserName: 'webkit' },
+    phone: devices['iPhone 13'],
+    pace: 2,
+  },
+};
+
+const isEngine = (name: string): name is Engine => Object.hasOwn(ENGINES, name);
+const ENGINE = process.env.E2E_ENGINE ?? 'chrome';
+if (!isEngine(ENGINE)) {
+  throw new Error(`E2E_ENGINE="${ENGINE}": expected one of ${Object.keys(ENGINES).join(', ')}`);
+}
+const { desktop, phone, pace } = ENGINES[ENGINE];
+
 /**
  * End-to-end journeys on the production build, at the two sizes of the
- * specification: a phone (390 × 844) and a desktop (1280 × 800). The
- * installed Chrome runs them (channel `chrome`). The portals' first run is
- * played on the CrazyGames build, and the Yandex integration on the Yandex
- * build, each built and served beside it.
+ * specification: a phone (390 × 844) and a desktop (1280 × 800), in the
+ * engine chosen above. The portals' first run is played on the CrazyGames
+ * build, and the Yandex integration on the Yandex build, each built and
+ * served beside it.
  */
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  timeout: 30_000 * pace,
+  expect: { timeout: 5_000 * pace },
   reporter: [['list']],
   use: {
     baseURL: `http://localhost:${PORT}/`,
-    channel: 'chrome',
     locale: 'fr-FR',
     trace: 'retain-on-failure',
   },
@@ -34,52 +93,47 @@ export default defineConfig({
     {
       name: 'mobile',
       testIgnore: [PORTAL, YANDEX, DUNES],
-      use: {
-        ...devices['Pixel 7'],
-        viewport: { width: 390, height: 844 },
-        channel: 'chrome',
-      },
+      use: { ...phone, viewport: { width: 390, height: 844 } },
     },
     {
       name: 'desktop',
       testIgnore: [PORTAL, YANDEX, DUNES],
-      use: { viewport: { width: 1280, height: 800 }, channel: 'chrome' },
+      use: { ...desktop, viewport: { width: 1280, height: 800 } },
     },
     {
       name: 'portal',
       testMatch: PORTAL,
       use: {
+        ...desktop,
         baseURL: `http://localhost:${PORTAL_PORT}/`,
         viewport: { width: 1280, height: 800 },
-        channel: 'chrome',
       },
     },
     {
       name: 'dunes-mobile',
       testMatch: DUNES,
       use: {
-        ...devices['Pixel 7'],
+        ...phone,
         baseURL: `http://localhost:${DUNES_PORT}/`,
         viewport: { width: 390, height: 844 },
-        channel: 'chrome',
       },
     },
     {
       name: 'dunes-desktop',
       testMatch: DUNES,
       use: {
+        ...desktop,
         baseURL: `http://localhost:${DUNES_PORT}/`,
         viewport: { width: 1280, height: 800 },
-        channel: 'chrome',
       },
     },
     {
       name: 'yandex',
       testMatch: YANDEX,
       use: {
+        ...desktop,
         baseURL: `http://localhost:${YANDEX_PORT}/`,
         viewport: { width: 1280, height: 800 },
-        channel: 'chrome',
       },
     },
   ],
