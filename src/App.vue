@@ -83,14 +83,12 @@ const change = async (origin: Element | null, next: () => Promise<Screen> | Scre
   const swap = async () => {
     screen.value = await next();
     await nextTick();
-    // Two frames: the new screen is painted before the light lifts.
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    focusMain();
   };
   try {
+    // The light waits for the new screen's first paint before it lifts (`RiftWipe`).
     if (wipe.value) await wipe.value.run(origin, swap);
     else await swap();
+    focusMain();
   } finally {
     changing.value = false;
   }

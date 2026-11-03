@@ -444,12 +444,12 @@ moins de 10 s et pèsent moins de 20 Mo).
 - Temps de jeu et rétention : campagne de 69 niveaux dont neuf combats de Gardiens, défi du jour,
   objectifs, série, niveaux et Atelier (nouveautés signalées, un cosmétique par boss).
 
-## Reste à faire sur le portail
+## Piste abandonnée (03/11/2026)
 
-1. Attendre la revue de la 1.45.1 (soumise le 02/11/2026). Le portail n'a pas de champ de
-   message : les améliorations depuis la 1.2.0 ne se disent que par le jeu.
-2. Si le jeu est accepté : la 1.45.2 (carte du guide sur les téléphones bas en paysage) par
-   « Submit new version », mise en ligne aussitôt pendant le Basic Launch ; suivre les
-   indicateurs ci-dessus ; vérifier le son sur un iPhone dès qu'un appareil est disponible.
-3. S'il est refusé : ne resoumettre qu'après avoir changé ce que voit un nouveau joueur dans les
-   premières minutes, et passé le test d'inconnus.
+La 1.45.1 a été refusée avec la même phrase que la 1.2.0 en octobre, sans autre retour : « The
+overall quality of the game does not yet meet the expectations of our platform ». C'est le
+quatrième jeu refusé sur ce compte. L'onglet Metrics du brouillon n'a aucune donnée, puisque le
+jeu n'a jamais été mis en ligne. Décision de l'auteur : CrazyGames est abandonné pour de bon, et
+l'effort passe à Yandex Games (VK est écarté le même jour : le groupe est sous sanctions de l'UE
+depuis le 13/07/2026). Le brouillon reste en l'état sur le portail ; ce document garde
+l'historique des revues et des leçons.

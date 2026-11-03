@@ -3,6 +3,37 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.45.2] — 03/11/2026
+
+La carte du guide tient sur les téléphones couchés (lot 32, § 9 octies du cahier des charges).
+
+### Corrigé
+
+- **La carte du guide débordait sur les téléphones bas en paysage** : la phrase sortait de la
+  carte et l'écran la coupait.
+  - Tailles touchées : 750 × 342 (un iPhone, barres de Safari visibles), 667 × 375 (un iPhone
+    SE) et 640 × 360, dans les quatre langues, et 844 × 390 en russe.
+  - Cause : la colonne de gauche laissait à la carte 110 à 145 px, quand sa plus longue ligne
+    en demande 160 à 200.
+  - Correction : sur un écran paysage bas, l'objectif de l'entraînement passe dans la colonne de
+    droite, vide pendant l'entraînement. La carte garde sa place sous le score et tient entière,
+    avec 40 px de marge au moins.
+- **Un toucher perdu au retour au menu**, relevé par la CI : en revenant d'une partie, la
+  lumière de la faille attend deux images avant de se lever, le temps que le menu soit peint.
+  Pendant ces deux images, elle gardait les touchers, alors que le menu était déjà en place :
+  sur un appareil lent, un toucher rapide se perdait. Le menu prend désormais les touchers dès
+  qu'il est en place ; la lumière se lève toujours après sa première image.
+
+### Technique
+
+- `GameScreen` : une grille de l'entraînement pour les écrans paysage de moins de 30rem de haut,
+  comme celle de la course.
+- `e2e/portal.spec.ts` : la carte mesurée à 640 × 360 en russe.
+- `RiftWipe` : les deux images d'attente passent d'`App` à la lumière, qui laisse passer les
+  touchers pendant ce temps (`wipe--passing`).
+- `e2e/transitions.spec.ts` : le test « back from a game » simule un appareil lent (chaque image
+  arrive 100 ms en retard). Il échoue sur l'ancien code et passe sur le nouveau.
+
 ## [1.45.1] — 02/11/2026
 
 Les annonces du puits restent dans le puits, relevé à la revue modérateur CrazyGames de la 1.45.

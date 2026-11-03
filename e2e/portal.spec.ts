@@ -34,3 +34,36 @@ test('a new player on a portal starts in the training, and may pass it', async (
   await page.reload();
   await expect(page.getByRole('tab', { name: 'Home' })).toBeVisible();
 });
+
+/**
+ * A phone held sideways (640 × 360) in the longest language: the guide keeps
+ * the room of its longest line under the score, whole and on the screen, the
+ * training's goal standing in the right column (1.45.2). Without the SDK, the
+ * saved language applies.
+ */
+test.describe('on a short landscape phone', () => {
+  test.use({ viewport: { width: 640, height: 360 }, isMobile: true, hasTouch: true });
+
+  test('the guide fits, in Russian', async ({ page }) => {
+    await page.route(/sdk\.crazygames\.com/, (route) => route.abort());
+    await page.addInitScript(() =>
+      localStorage.setItem('stackrift:settings', JSON.stringify({ locale: 'ru' })),
+    );
+    await page.goto('/');
+    const card = page.locator('.game__guide');
+    await expect(card).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Цель' })).toContainText('Обучение');
+    const fit = await card.evaluate((guide) => {
+      const box = guide.getBoundingClientRect();
+      const line = guide.querySelector('.guide__line:not(.guide__line--room)')!;
+      return {
+        spill: guide.scrollHeight - guide.clientHeight,
+        lineBelow: line.getBoundingClientRect().bottom - box.bottom,
+        cardBelow: box.bottom - innerHeight,
+      };
+    });
+    expect(fit.spill).toBeLessThanOrEqual(1);
+    expect(fit.lineBelow).toBeLessThanOrEqual(1);
+    expect(fit.cardBelow).toBeLessThanOrEqual(0);
+  });
+});

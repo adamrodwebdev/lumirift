@@ -18,11 +18,14 @@ const REVEAL_MS = 240;
 const { motion } = useServices();
 const light = ref<HTMLElement | null>(null);
 const phase = ref<Phase>('idle');
+/** The new screen is in place: taps go through to it while the light still covers its first paint. */
+const passing = ref(false);
 /** Each change of screen; a new one takes over the light of the last. */
 let generation = 0;
 const origin = ref({ x: '50%', y: '50%' });
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 /** The light in the top layer, over any window (where the browser has popovers). */
 const shown = (open: boolean) => {
   const element = light.value;
@@ -35,7 +38,10 @@ const shown = (open: boolean) => {
 /**
  * Covers the screen from `from` (its centre; the screen's without one) and
  * runs `swap` behind the light; done once the new screen is in place, while
- * the light still fades (another change may start during the fade).
+ * the light still fades (another change may start during the fade). The new
+ * screen takes taps as soon as it is in place; the light lifts two frames
+ * later, once it is painted (1.45.2: the light took those taps, and a quick
+ * tap on the menu coming back from a game was lost).
  */
 async function run(from: Element | null, swap: () => Promise<void> | void): Promise<void> {
   const fades = motion.fades;
@@ -48,9 +54,13 @@ async function run(from: Element | null, swap: () => Promise<void> | void): Prom
     : { x: '50%', y: '50%' };
   const mine = ++generation;
   shown(true);
+  passing.value = false;
   phase.value = 'cover';
   await wait(transitionMs(COVER_MS, fades));
   await swap();
+  passing.value = true;
+  await frame();
+  await frame();
   phase.value = 'reveal';
   void wait(transitionMs(REVEAL_MS, fades)).then(() => {
     if (generation !== mine) return;
@@ -67,7 +77,7 @@ defineExpose({ run });
     ref="light"
     popover="manual"
     class="wipe"
-    :class="`wipe--${phase}`"
+    :class="[`wipe--${phase}`, { 'wipe--passing': passing }]"
     :style="{ '--x': origin.x, '--y': origin.y }"
     aria-hidden="true"
   />
@@ -110,6 +120,11 @@ defineExpose({ run });
 
 .wipe--reveal {
   animation: rift-reveal 240ms ease-out forwards;
+}
+
+/* The new screen is in place under the light: its taps go through (after `.wipe--cover`). */
+.wipe--passing {
+  pointer-events: none;
 }
 
 @keyframes rift-cover {

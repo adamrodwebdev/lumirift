@@ -18,6 +18,7 @@
 | 1.43    | 30/10/2026 | Un puits à nous : un puits de 10 × 18, des pièces d'un seul cristal, le faisceau d'atterrissage, les prochaines pièces dans la faille, la pierre de faille ; la campagne réglée au nouveau puits (§ 2.3, § 9 quinquies, lot 29).      |
 | 1.44    | 31/10/2026 | La faille qui casse : la faille ouvre les lignes effacées, la rangée se fend en morceaux que la fente avale ; les éclats de l'Atelier et le son accordés (§ 9 sexies, lot 30).                                                        |
 | 1.45    | 31/10/2026 | La constellation d'atterrissage : au pied du faisceau, une étincelle là où chaque bloc se posera, reliée à ses voisines ; toute la pièce se lit là où elle se posera (§ 9 septies, lot 31).                                           |
+| 1.45.2  | 03/11/2026 | Corrections : la carte du guide tient sur les téléphones couchés, l'objectif de l'entraînement passe dans la colonne de droite (§ 9 octies, lot 32).                                                                                  |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -2854,6 +2855,90 @@ notification juridique ».
       catégories à chaque passage ; sur ordinateur, 100 aussi ;
     - reste l'essai sur téléphone.
 
+## 9 octies. Yandex Games, après CrazyGames (lots 32 à 34, décidés le 03/11/2026)
+
+Le 03/11/2026, CrazyGames a refusé la 1.45.1 avec la même phrase qu'en octobre, sans autre retour.
+L'auteur a abandonné CrazyGames, puis VK (le groupe est sous sanctions de l'UE depuis le
+13/07/2026), et porte l'effort sur Yandex Games. Le profil développeur « AdamRodWebDev » existe,
+mais Yandex n'accepte plus de nouveaux partenaires depuis l'incident du 11/10/2026 : pas de
+contrat ni de modération avant la réouverture (`docs/YANDEX.md`).
+
+Les dernières mesures de Playgama (30 jours, 87 parties) montrent où agir :
+
+- 73,4 % des sessions sont perdues avant le chargement ou avant 30 s de jeu ;
+- 82 % seulement atteignent le chargement ;
+- une partie dure 4 min 32 en moyenne ;
+- 2,7 % des joueurs reviennent le lendemain ;
+- 37,8 % ferment le jeu après une pub, la première venant à 2 min 12.
+
+Le public de Yandex : 60 % en Russie et dans la CEI, la moitié sur téléphone. Le classement de
+son catalogue suit les premières mesures d'un jeu : il faut y arriver avec de bonnes premières
+secondes.
+
+- **Lot 32 · 1.45.2 Corrections**.
+  - La carte du guide de l'entraînement déborde sur les téléphones bas en paysage (750 × 342,
+    667 × 375, 640 × 360 ; elle tient à 844 × 390) : la phrase sort de la carte et l'écran la
+    coupe. À vérifier en anglais, français, indonésien et russe, la langue la plus longue.
+  - Le réglage garde son nom (« Afficher le faisceau d'atterrissage ») : les colonnes de lumière
+    restent, la constellation se dessine à leur pied (§ 9 septies).
+  - **Porte** : aucun débordement aux tailles des portails et des téléphones couchés, dans les
+    quatre langues ; e2e verts sur Chromium et WebKit (Firefox en CI) ; Lighthouse à 100.
+  - **Livré en 1.45.2** (03/11/2026).
+    - **La cause** : la colonne de gauche (pause, score, objectif, carte) laissait à la carte 110
+      à 145 px, quand sa plus longue ligne en demande 160 à 200. La carte commençait à 194 px du
+      haut de l'écran. Elle débordait dans 13 cas sur 16, et à 844 × 390 en russe.
+    - **La correction** : sur un écran paysage de moins de 30rem de haut, l'objectif de
+      l'entraînement passe dans la colonne de droite, vide pendant l'entraînement, comme la
+      réserve de la course. La carte commence à 118 px. Les 16 cas (4 tailles, 4 langues)
+      tiennent, avec 40 px de marge au moins.
+    - **Les mesures de la porte** :
+      - types, lint, mise en forme ; 97 fichiers et 887 tests unitaires ;
+      - e2e sur Chromium : 184 passés, 28 réservés à l'autre appareil, aucun échec, dont le
+        nouveau test de la carte à 640 × 360 en russe ;
+      - les tests du portail sur WebKit (Safari de bureau et iPhone 13) : 4 sur 4 ;
+      - Lighthouse sur mobile, trois passages sur la version de production : 100 dans les quatre
+        catégories à chaque passage.
+    - **Un second défaut, relevé par la CI**. Au retour d'une partie, la lumière de la faille
+      gardait les touchers pendant les deux images où elle attend que le menu soit peint, alors
+      que le menu était déjà en place : sur un appareil lent, le toucher était perdu (un run de
+      la CI, un clic 11 ms après l'apparition du menu). La lumière les laisse désormais passer
+      (`wipe--passing`) et se lève toujours après la première image. Le test simule un appareil
+      lent (chaque image 100 ms en retard) : l'ancien code échoue 6 fois sur 6, le nouveau passe
+      10 fois sur 10.
+- **Lot 33 · 1.46 Les 30 premières secondes et les pubs**.
+  - **Diagnostic d'abord**, image par image, en russe, au téléphone en portrait (360 × 640,
+    390 × 844) et à l'ordinateur :
+    - le délai avant la première action proposée ;
+    - les mots à lire avant de jouer ;
+    - le moment du premier effet marquant ;
+    - ce qui se passe si le joueur ne fait rien ;
+    - la page de chargement, que 18 % des sessions de Playgama n'ont pas franchie.
+  - Des propositions et une maquette (téléphone et ordinateur, dans le seul thème du jeu, le
+    sombre, depuis la 1.4), validées avant tout code.
+  - **Le rythme des pubs** par portail (Yandex et Playgama) : quand vient la première, l'écart
+    entre deux, jamais après une défaite, et ce qui fait moins fermer le jeu.
+  - **Porte** :
+    - la maquette validée ;
+    - des critères mesurés sur le build (par exemple la première action proposée en moins de
+      2 s, le premier effet marquant en moins de 5 s) ;
+    - un essai par des inconnus, si l'auteur en trouve sans frais ;
+    - les contrôles habituels.
+- **Lot 34 · 1.47 Prêt pour Yandex**.
+  - Le build Yandex remis à niveau depuis la 1.30 : toutes les clés de sauvegarde ajoutées
+    depuis, les pubs, la pause et `GameplayAPI`, les nouveautés jusqu'à la 1.46 ; le russe relu.
+  - La revue modérateur selon les règles numérotées de Yandex (la version en vigueur relue), aux
+    tailles de Yandex.
+  - La fiche en quatre langues, sans marque d'un autre jeu ; l'icône, la couverture, les
+    captures et les vidéos refaites sur la 1.47.
+  - Un brouillon dans la console (« Add app »), essayé sur le vrai SDK avec les pubs de test.
+  - **Porte** : une revue sans échec, le brouillon chargé et essayé, Lighthouse à 100, trois
+    moteurs.
+- **À la réouverture des inscriptions** :
+  - le contrat avec la régie (РСЯ), après vérification URSSAF, TVA et facturation ;
+  - l'envoi en modération, puis les corrections des refus numérotés ;
+  - une demande d'accord écrit à Yandex avant toute annonce de la coopération (licence,
+    § 1.4).
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
@@ -2934,3 +3019,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.43    | 30/10/2026 | Un puits à nous : `WELL` 10 × 18, `links`, `LandingBeam`, `RiftQueue`, pierre de faille, lits de sable en rangées, marée au pas du puits (lot 29).                     |
 | 1.44    | 31/10/2026 | La faille qui casse : `RiftOpening`, particules `Ember` et `Flake`, la Tour fendue en deux moitiés, `riftRun` et `riftSwallow` (§ 9 sexies, lot 30).                   |
 | 1.45    | 31/10/2026 | La constellation d'atterrissage : `constellationLinks`, `beginConstellation`, `addStar`, `drawConstellation` ; les traits du faisceau retirés (§ 9 septies, lot 31).   |
+| 1.45.2  | 03/11/2026 | § 9 octies : la feuille de route Yandex (lots 32 à 34). Lot 32 livré : la grille de l'entraînement sur les écrans paysage bas, le test de la carte en russe.           |
