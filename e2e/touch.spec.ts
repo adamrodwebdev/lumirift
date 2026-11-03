@@ -9,6 +9,9 @@ import { seedStorage } from './seed';
  * with the gestures; the left-handed mirror; the touch controls' window.
  */
 test.skip(({ isMobile }) => !isMobile, 'Touch screens only');
+// The finger goes through Chrome's DevTools protocol, the one way to give each
+// touch the screen's own time: Firefox and WebKit play the other phone journeys.
+test.skip(({ browserName }) => browserName !== 'chromium', 'Touch through CDP: Chromium only');
 
 interface Point {
   readonly x: number;

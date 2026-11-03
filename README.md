@@ -167,6 +167,11 @@ npm run dev
 | `npm run verify`          | Lint, format, types, tests et build : à passer avant chaque commit                                 |
 
 Les tests de bout en bout et Lighthouse utilisent le build : lancez `npm run build` avant.
+Les parcours se jouent dans le Chrome installé ; la variable `E2E_ENGINE` les rejoue dans
+Firefox ou WebKit, le moteur de Safari, ceux de Playwright (`npx playwright install firefox
+webkit` une fois) : `E2E_ENGINE=webkit npm run test:e2e`, ou sous PowerShell
+`$env:E2E_ENGINE='webkit'; npm run test:e2e`. Sur le poste de développement (Windows), le
+Firefox de Playwright ne démarre pas : la CI le joue.
 Les images de partage (`public/og-image.png`, icônes) se régénèrent avec
 `node scripts/social-images.mjs`.
 
@@ -272,7 +277,8 @@ du son et les contrôles). Les semaines sont des recettes dans `media/clips.ts`,
 - Près de 700 tests unitaires : moteurs, modes, IA, effets et sons, services, progression,
   parité des traductions ; et un projet à part, `npm run test:curve`, où des joueurs simulés
   jouent toute la campagne et 24 courses de la faille.
-- Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800) : les 14
+- Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800), dans
+  Chrome, Firefox et WebKit (le moteur de Safari, où le téléphone est un iPhone 13) : les 14
   modes, une partie complète, une course de la faille jusqu'à sa fin, défi du jour, le
   calendrier des cadeaux sur une horloge réglée (minuit, retour en arrière), l'ouverture d'une
   saison à minuit UTC vue d'Auckland et de Los Angeles, réglages
@@ -287,7 +293,9 @@ du son et les contrôles). Les semaines sont des recettes dans `media/clips.ts`,
   et du russe, typographie de chaque langue, vérifiés par des tests.
 - Lighthouse : 100 dans les quatre catégories, mobile et bureau (seuils exigés : 98 en
   Performance, 95 dans les trois autres).
-- Intégration continue : `.github/workflows/ci.yml` rejoue tout cela à chaque envoi.
+- Intégration continue : `.github/workflows/ci.yml` rejoue tout cela à chaque envoi sur
+  `dev` et `main` et pour chaque pull request ; les parcours dans Firefox et dans WebKit
+  tournent chacun dans sa tâche, en parallèle.
 
 ## Architecture en bref
 

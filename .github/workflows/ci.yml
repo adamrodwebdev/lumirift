@@ -1,7 +1,10 @@
 name: CI
 
 on:
+  # Once per change: every push to `dev` and `main`, and every pull request (a
+  # push to a pull request's branch ran everything twice before).
   push:
+    branches: [dev, main]
   pull_request:
 
 jobs:
@@ -30,4 +33,34 @@ jobs:
           path: |
             reports/
             test-results/
+          if-no-files-found: ignore
+
+  # The same journeys in the two other engines, Playwright's own Firefox and
+  # WebKit (Safari's engine), each in its own job beside the first.
+  engines:
+    name: e2e (${{ matrix.engine }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # The engine, and the system libraries it needs.
+      - run: npx playwright install --with-deps ${{ matrix.engine }}
+      # The production build the journeys play (the first job checks its types).
+      - run: npx vite build
+      - run: npm run test:e2e
+        env:
+          E2E_ENGINE: ${{ matrix.engine }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-${{ matrix.engine }}
+          path: test-results/
           if-no-files-found: ignore

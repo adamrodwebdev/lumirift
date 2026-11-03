@@ -3,6 +3,24 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [Non publié]
+
+Les outils de test seulement : le jeu ne change pas.
+
+### Ajouté
+
+- **Trois moteurs en CI** : les parcours de bout en bout se jouent aussi dans Firefox et dans
+  WebKit, le moteur de Safari, au téléphone et sur ordinateur, chacun dans sa tâche, en
+  parallèle de la première. Jusqu'ici, la CI ne lançait que Chrome : Firefox n'avait tourné
+  nulle part, et WebKit seulement à la main, sur le poste de développement. Le moteur se
+  choisit avec la variable `E2E_ENGINE` (Chrome par défaut). Le téléphone est un iPhone 13
+  dans WebKit. Le test du doigt passe par le protocole de Chrome : il reste propre à Chromium.
+
+### Modifié
+
+- **La CI une fois par envoi** : elle part à chaque envoi sur `dev` et `main` et pour chaque
+  pull request. Avant, chaque envoi sur la branche d'une pull request la lançait deux fois.
+
 ## [1.46.0] — 03/11/2026
 
 Les 30 premières secondes (lot 33, § 9 octies du cahier des charges) : l'effet signature tout de
