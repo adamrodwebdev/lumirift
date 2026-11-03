@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
+import { FIREFOX_TOUCH_MOUSE } from './engines';
 
 /*
  * Dunes (1.37), on the build of its sandbox test: Dunes alone, its home and
@@ -57,7 +58,10 @@ test('the build shows Dunes alone: its home and its Atelier, Play starts it', as
 
 test('the opening: the first piece put on its mark links the walls, D-2 and a swap more', async ({
   page,
+  browserName,
+  hasTouch,
 }) => {
+  test.skip(browserName === 'firefox' && hasTouch, FIREFOX_TOUCH_MOUSE);
   await startDunes(page);
   // Picked with a tap, put down with a tap on its cell.
   await hand(page).getByRole('button').first().click();

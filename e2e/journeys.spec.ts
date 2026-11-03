@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
+import { FIREFOX_TOUCH_MOUSE } from './engines';
 import { localDay, seedStorage } from './seed';
 
 /*
@@ -29,6 +30,16 @@ const tab = (page: Page, name: Tab) => page.getByRole('tab', { name });
 const panel = (page: Page, name: Tab) => page.getByRole('tabpanel', { name });
 const modeTile = (page: Page, name: string) =>
   panel(page, 'Modes').getByRole('button', { name, exact: true });
+
+/** What has the keyboard's focus, for a failure's message. */
+const focusOf = (page: Page) =>
+  page.evaluate(() => {
+    const focused = document.activeElement;
+    if (!focused || focused === document.body) return 'the page';
+    const sheet = focused.closest('dialog');
+    const where = sheet ? ` in a ${sheet.open ? 'open' : 'closed'} window` : '';
+    return `${focused.tagName.toLowerCase()}${focused.id ? `#${focused.id}` : ''}${where}`;
+  });
 
 /** The page never scrolls sideways. */
 async function expectNoHorizontalScroll(page: Page) {
@@ -91,7 +102,9 @@ test('the first game is guided, step by step, and the guide can be skipped', asy
   const coach = page.getByRole('status').filter({ hasText: 'Déplacez la pièce' });
   await expect(coach).toBeVisible();
   await page.keyboard.press('ArrowLeft');
-  await expect(page.getByText('Tournez-la')).toBeVisible();
+  // Once the first line is read: 2.1 s of the game's time, which counts 100 ms at most a
+  // frame, so a slow machine stretches it (6 s and more on the CI's WebKit).
+  await expect(page.getByText('Tournez-la')).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Passer le guide' }).click();
   await expect(page.getByText('Tournez-la')).toBeHidden();
 });
@@ -107,8 +120,9 @@ for (const name of MODES) {
     await pause.getByRole('button', { name: 'Reprendre' }).click();
     await expect(pause).toBeHidden();
     // P resumes as well as it pauses.
+    const focus = await focusOf(page);
     await page.keyboard.press('KeyP');
-    await expect(pause).toBeVisible();
+    await expect(pause, `P after Resume, the focus on ${focus}`).toBeVisible();
     await page.keyboard.press('KeyP');
     await expect(pause).toBeHidden();
     await page.keyboard.press('KeyP');
@@ -308,7 +322,10 @@ test('the Mosaic shows its five jokers from the start, the dim ones telling how 
 
 test('a Mosaic piece is dragged from the hand to the board, or back; the record falls', async ({
   page,
+  browserName,
+  hasTouch,
 }) => {
+  test.skip(browserName === 'firefox' && hasTouch, FIREFOX_TOUCH_MOUSE);
   await seedStorage(page, { 'stackrift:records': { mosaic: 2 } });
   await page.reload();
   await openMode(page, 'Mosaïque');
@@ -441,6 +458,9 @@ test('no error reaches the console while playing', async ({ page }) => {
     if (message.type() === 'error') errors.push(message.text());
   });
   page.on('pageerror', (error) => errors.push(error.message));
+  // The first visit's loads done: a page reloaded in the middle of them reports the ones it
+  // drops (WebKit: "Importing a module script failed"), which no player of this page meets.
+  await page.waitForLoadState('networkidle');
   await page.reload();
   for (const name of ['Classique', 'Sable', 'Mosaïque', 'Tour']) {
     await openMode(page, name);
@@ -470,7 +490,12 @@ test('keyboard users skip to the content and land on each new screen', async ({ 
   await expect(page.getByRole('dialog', { name: 'Pause' })).toBeVisible();
 });
 
-test('the menu pages follow a swipe, and the tabs follow the pages', async ({ page }) => {
+test('the menu pages follow a swipe, and the tabs follow the pages', async ({
+  page,
+  browserName,
+  hasTouch,
+}) => {
+  test.skip(browserName === 'firefox' && hasTouch, FIREFOX_TOUCH_MOUSE);
   const box = await page.locator('.hub__pages').boundingBox();
   if (!box) throw new Error('No pages');
   const y = box.y + box.height * 0.3;

@@ -22,6 +22,8 @@ type BrowserUse = Partial<PlaywrightTestOptions & PlaywrightWorkerOptions>;
 interface EngineUse {
   readonly desktop: BrowserUse;
   readonly phone: BrowserUse;
+  /** How many times the usual time its tests and their waits are given. */
+  readonly pace: number;
 }
 
 /**
@@ -33,12 +35,15 @@ interface EngineUse {
  * in Chrome, the Pixel's screen in Firefox (with its own user agent), an
  * iPhone 13 in WebKit; the projects set the sizes. Playwright's Firefox does
  * not start on the Windows machine of development (a missing system
- * library): the CI plays it, on Linux.
+ * library): the CI plays it, on Linux. The CI's WebKit draws without a
+ * graphics card, about twice as slowly as the others (21 min of journeys
+ * against 12 for Firefox, 3 November): twice the time.
  */
 const ENGINES: Readonly<Record<Engine, EngineUse>> = {
   chrome: {
     desktop: { channel: 'chrome' },
     phone: { ...devices['Pixel 7'], channel: 'chrome' },
+    pace: 1,
   },
   firefox: {
     desktop: { browserName: 'firefox' },
@@ -48,10 +53,12 @@ const ENGINES: Readonly<Record<Engine, EngineUse>> = {
       isMobile: true,
       hasTouch: true,
     },
+    pace: 1,
   },
   webkit: {
     desktop: { browserName: 'webkit' },
     phone: devices['iPhone 13'],
+    pace: 2,
   },
 };
 
@@ -60,7 +67,7 @@ const ENGINE = process.env.E2E_ENGINE ?? 'chrome';
 if (!isEngine(ENGINE)) {
   throw new Error(`E2E_ENGINE="${ENGINE}": expected one of ${Object.keys(ENGINES).join(', ')}`);
 }
-const { desktop, phone } = ENGINES[ENGINE];
+const { desktop, phone, pace } = ENGINES[ENGINE];
 
 /**
  * End-to-end journeys on the production build, at the two sizes of the
@@ -74,6 +81,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  timeout: 30_000 * pace,
+  expect: { timeout: 5_000 * pace },
   reporter: [['list']],
   use: {
     baseURL: `http://localhost:${PORT}/`,
