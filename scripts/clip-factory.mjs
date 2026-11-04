@@ -231,16 +231,23 @@ const set = await browser.newPage({
 const step = () => set.evaluate((ms) => window.showcase.step(ms), FRAME_MS);
 const shoot = (crop) => set.screenshot({ type: 'jpeg', quality: 92, clip: crop });
 
-/** The set's font files that failed, as they answered: a junction the dev server refused, a file missing. */
-const fontFailures = [];
+/**
+ * The set's font files that failed, by address, as they first answered: a
+ * junction the dev server refused (403, then aborted), a file missing.
+ */
+const fontFailures = new Map();
 set.on('response', (response) => {
-  if (FONT_FILE.test(response.url()) && response.status() >= 400) {
-    fontFailures.push(`${response.status()} ${response.url()}`);
+  if (
+    FONT_FILE.test(response.url()) &&
+    response.status() >= 400 &&
+    !fontFailures.has(response.url())
+  ) {
+    fontFailures.set(response.url(), String(response.status()));
   }
 });
 set.on('requestfailed', (request) => {
-  if (FONT_FILE.test(request.url())) {
-    fontFailures.push(`${request.failure()?.errorText ?? 'failed'} ${request.url()}`);
+  if (FONT_FILE.test(request.url()) && !fontFailures.has(request.url())) {
+    fontFailures.set(request.url(), request.failure()?.errorText ?? 'failed');
   }
 });
 
@@ -252,11 +259,12 @@ set.on('requestfailed', (request) => {
 async function checkFonts() {
   const faces = await set.evaluate(() => window.showcase.fonts());
   const problems = [
-    ...fontFailures.splice(0),
+    ...[...fontFailures].map(([url, answer]) => `${answer} ${url}`),
     ...faces
       .filter((face) => face.status !== 'loaded')
-      .map((face) => `${face.family} (${face.range.slice(0, 30)}…): ${face.status}`),
+      .map((face) => `${face.family} (${face.range.slice(0, 30)}...): ${face.status}`),
   ];
+  fontFailures.clear();
   if (!faces.length) problems.push("no face of the game's types on the set");
   if (problems.length) {
     throw new Error(
@@ -761,7 +769,8 @@ async function render(recipes, all, about) {
 }
 
 const started = Date.now();
-const built = `${BUILD.version} · ${BUILD.commit}${BUILD.dirty ? ' (changed since)' : ''}`;
+// Plain ASCII: a Windows console shows the terminal's own code page.
+const built = `${BUILD.version} (${BUILD.commit}${BUILD.dirty ? ', changed since' : ''})`;
 const minutes = () => ((Date.now() - started) / 60_000).toFixed(1);
 try {
   await openSet();

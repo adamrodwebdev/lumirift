@@ -21,7 +21,7 @@
 | 1.45.2  | 03/11/2026 | Corrections : la carte du guide tient sur les téléphones couchés, l'objectif de l'entraînement passe dans la colonne de droite (§ 9 octies, lot 32).                                                                                  |
 | 1.46    | 03/11/2026 | Les 30 premières secondes : la décharge en 1,3 s, une consigne de cinq mots sur le puits et son geste, la récompense sans attente, le Ver vers 15 s, l'objectif avec lui, un chargement plus court (§ 9 octies, lot 33).              |
 | 1.46.1  | 03/11/2026 | Trois moteurs en CI (Chrome, Firefox, WebKit) et les défauts qu'ils ont montrés : une boucle d'observateurs de taille, le cadeau sur un lecteur d'écran, le focus des fenêtres fermées (§ 6).                                         |
-| 1.46.2  | 04/11/2026 | La fabrique sans retouche : recettes en fichier, ligne à l'écran, contrôle de fraîcheur, polices contrôlées ; l'image noire à la coupe des clips corrigée (§ 9 nonies, lot 35).                                                      |
+| 1.46.2  | 04/11/2026 | La fabrique sans retouche : recettes en fichier, ligne à l'écran, contrôle de fraîcheur, polices contrôlées ; l'image noire à la coupe des clips corrigée (§ 9 nonies, lot 35).                                                       |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -3175,4 +3175,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.45.2  | 03/11/2026 | § 9 octies : la feuille de route Yandex (lots 32 à 34). Lot 32 livré : la grille de l'entraînement sur les écrans paysage bas, le test de la carte en russe.           |
 | 1.46    | 03/11/2026 | Lot 33 livré : `landsIn`, `HOOK_LEVEL`, `HOOK_WYRM_MS`, `guideAt`, `goalInView`, `WellGesture`, `GuideKeys`, `toastParts`, `bootPlugin({ firstRun })` ; mesures.       |
 | 1.46.1  | 03/11/2026 | § 6 : les parcours en CI dans trois moteurs, `E2E_ENGINE` ; la porte du lot 32 corrigée ; trois défauts corrigés (WellToast, cadeau, focus).                           |
-| 1.46.2  | 04/11/2026 | § 9 nonies, lot 35 : `--recipes`, `onScreen`, `--check`, `buildOf`, `ClipLine`, `checkFonts`, `settle`, `server.fs.allow` ; deux défauts du plateau ; mesures.       |
+| 1.46.2  | 04/11/2026 | § 9 nonies, lot 35 : `--recipes`, `onScreen`, `--check`, `buildOf`, `ClipLine`, `checkFonts`, `settle`, `server.fs.allow` ; deux défauts du plateau ; mesures.         |
