@@ -4,6 +4,7 @@ import {
   type PlaywrightTestOptions,
   type PlaywrightWorkerOptions,
 } from '@playwright/test';
+import { ENGINE_PACE } from './e2e/engines';
 
 const PORT = 4177;
 /** The CrazyGames build, for the portals' first run (its SDK runs in its local mode). */
@@ -43,7 +44,7 @@ const ENGINES: Readonly<Record<Engine, EngineUse>> = {
   chrome: {
     desktop: { channel: 'chrome' },
     phone: { ...devices['Pixel 7'], channel: 'chrome' },
-    pace: 1,
+    pace: ENGINE_PACE.chrome,
   },
   firefox: {
     desktop: { browserName: 'firefox' },
@@ -53,12 +54,12 @@ const ENGINES: Readonly<Record<Engine, EngineUse>> = {
       isMobile: true,
       hasTouch: true,
     },
-    pace: 1,
+    pace: ENGINE_PACE.firefox,
   },
   webkit: {
     desktop: { browserName: 'webkit' },
     phone: devices['iPhone 13'],
-    pace: 2,
+    pace: ENGINE_PACE.webkit,
   },
 };
 

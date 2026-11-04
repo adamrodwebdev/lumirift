@@ -1732,8 +1732,9 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   test du doigt passe par le protocole de Chrome : Chromium seul. Sous Firefox au téléphone,
   la souris de Playwright n'envoie pas d'événements de pointeur : les tests qui soulèvent,
   glissent ou posent une pièce à la souris y sont joués sur ordinateur. Le WebKit de la CI
-  dessine sans carte graphique : deux fois le temps pour chaque test, et le délai du premier
-  toucher n'y est pas chronométré. Accueil, ouverture, pause,
+  dessine sans carte graphique : deux fois le temps pour chaque test et pour les attentes
+  écrites à la main (`paced`, 1.46.2), et le délai du premier toucher n'y est pas chronométré.
+  Accueil, ouverture, pause,
   reprise et sortie des 14 modes, partie complète au clavier jusqu'au record, défi du jour,
   Mosaïque au clavier, langue et thème retenus, Atelier, console sans erreur, navigation au
   clavier seul. **Garde responsive** (`e2e/responsive.spec.ts`) : aucun défilement

@@ -26,6 +26,11 @@ build. Le jeu ne change pas.
   la première prise, et la fabrique le vérifie. Les nombres du sable (« +213 ») gardent leur
   police à eux, `ui-rounded`, comme dans le jeu.
 
+- **Un test du guide trop pressé sur WebKit** : l'attente de la deuxième consigne, écrite à la
+  main (15 s), ne suivait pas le rythme du moteur ; sur l'iPhone du WebKit de la CI, les 2,1 s
+  de jeu de la première consigne ont pris plus de 15 s sur une machine lente. Les attentes
+  écrites à la main suivent désormais le rythme du moteur (`paced`, deux fois dans WebKit).
+
 ### Ajouté
 
 - **Les recettes dans un fichier** : `npm run clips -- --week <lundi> --recipes <fichier>` lit
