@@ -22,10 +22,17 @@ export class SetTime {
   private readonly animations = new WeakMap<Animation, number>();
   /** The machine's timer, for the page's own waits (a stage mounting, the first picture). */
   readonly realTimeout: (callback: () => void, ms: number) => void;
+  /**
+   * The browser's next frame (1.46.2): the page laid out, its size observers
+   * run. Two in a row hold one whole frame of the browser's.
+   */
+  readonly realFrame: () => Promise<void>;
 
   constructor(private readonly page: Window & typeof globalThis) {
     const timeout = page.setTimeout.bind(page);
     this.realTimeout = (callback, ms) => void timeout(callback, ms);
+    const frame = page.requestAnimationFrame.bind(page);
+    this.realFrame = () => new Promise((resolve) => void frame(() => resolve()));
   }
 
   /** From now on, the page's timers, frames and `performance.now()` run on the set's clock. */
