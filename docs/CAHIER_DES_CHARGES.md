@@ -1733,7 +1733,8 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   la souris de Playwright n'envoie pas d'événements de pointeur : les tests qui soulèvent,
   glissent ou posent une pièce à la souris y sont joués sur ordinateur. Le WebKit de la CI
   dessine sans carte graphique : deux fois le temps pour chaque test et pour les attentes
-  écrites à la main (`paced`, 1.46.2), et le délai du premier toucher n'y est pas chronométré.
+  écrites à la main (`paced`, 1.46.2), et les délais du premier toucher (une page, une
+  fenêtre) n'y sont pas chronométrés.
   Accueil, ouverture, pause,
   reprise et sortie des 14 modes, partie complète au clavier jusqu'au record, défi du jour,
   Mosaïque au clavier, langue et thème retenus, Atelier, console sans erreur, navigation au

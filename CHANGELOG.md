@@ -29,7 +29,10 @@ build. Le jeu ne change pas.
 - **Un test du guide trop pressé sur WebKit** : l'attente de la deuxième consigne, écrite à la
   main (15 s), ne suivait pas le rythme du moteur ; sur l'iPhone du WebKit de la CI, les 2,1 s
   de jeu de la première consigne ont pris plus de 15 s sur une machine lente. Les attentes
-  écrites à la main suivent désormais le rythme du moteur (`paced`, deux fois dans WebKit).
+  écrites à la main suivent désormais le rythme du moteur (`paced`, deux fois dans WebKit). Le
+  délai d'ouverture d'une fenêtre (300 ms) n'est plus chronométré dans WebKit, comme celui
+  d'une page depuis la 1.46.1 (419 ms mesurés une fois) ; qu'un toucher y arrive reste vérifié
+  partout.
 
 ### Ajouté
 
