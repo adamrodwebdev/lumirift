@@ -162,7 +162,7 @@ npm run dev
 | `npm run lint`            | ESLint (règles TypeScript strictes, typées)                                                        |
 | `npm run format`          | Prettier                                                                                           |
 | `npm run lighthouse`      | Audit Lighthouse du build, mobile (`-- --desktop` pour le bureau)                                  |
-| `npm run clips`           | Les clips d'une semaine pour les réseaux (`-- --week AAAA-MM-JJ`, quelques minutes)                |
+| `npm run clips`           | Les clips d'une semaine pour les réseaux (`-- --week AAAA-MM-JJ`, `--recipes`, `--check`)          |
 | `npm run frame-time`      | Temps d'image des prises du ressenti, processeur ralenti 4× (`-- --raster software` : le pire cas) |
 | `npm run verify`          | Lint, format, types, tests et build : à passer avant chaque commit                                 |
 
@@ -263,13 +263,24 @@ TikTok, Instagram et YouTube Shorts :
 ```bash
 npm run clips -- --week 2026-11-02                          # la semaine dans release/clips/2026-11-02/
 npm run clips -- --week 2026-11-02 --clip mon-fire-on-oil   # un seul clip
+npm run clips -- --week 2026-11-09 --recipes semaine.json   # les recettes d'un fichier (1.46.2)
+npm run clips -- --week 2026-11-02 --check                  # les images toujours les mêmes ? rien n'est écrit
 ```
 
 Chaque clip est un MP4 vertical (1080 × 1920, H.264 et AAC, 7 à 15 s) qui s'ouvre sur son pic et
 boucle sans couture, avec le son du jeu (vers −14 LUFS, crêtes vraies sous −2 dBTP), sa
 couverture et une entrée de `manifest.json` (les mesures que citent les légendes, les niveaux
-du son et les contrôles). Les semaines sont des recettes dans `media/clips.ts`, les scènes dans
-`src/showcase/`. La fabrique n'écrit que des fichiers : l'envoi reste à la main.
+du son, les contrôles, la version et le commit filmés). Les semaines sont des recettes dans
+`media/clips.ts`, les scènes dans `src/showcase/`. La fabrique n'écrit que des fichiers : l'envoi
+reste à la main.
+
+Depuis la 1.46.2, une semaine peut venir d'un fichier JSON hors du dépôt, de la forme d'une
+semaine de `media/clips.ts` (`element`, `guardian`, `clips`), contrôlé champ par champ avant toute
+prise. Une recette peut porter sa ligne à l'écran (`onScreen`, et sa hauteur `onScreenY`),
+écrite dans le clip dans la police du jeu, blanche au contour du puits, dans la zone sûre des
+applications. `--check` refilme chaque clip et compare l'empreinte de ses images à celle du
+manifeste : code de sortie 0 si tout est pareil, 2 si un clip diffère, 1 sur une erreur. Une
+police qui ne charge pas arrête le rendu.
 
 ## Qualité
 

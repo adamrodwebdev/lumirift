@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
-import { FIREFOX_TOUCH_MOUSE } from './engines';
+import { FIREFOX_TOUCH_MOUSE, paced } from './engines';
 import { localDay, seedStorage } from './seed';
 
 /*
@@ -103,8 +103,9 @@ test('the first game is guided, step by step, and the guide can be skipped', asy
   await expect(coach).toBeVisible();
   await page.keyboard.press('ArrowLeft');
   // Once the first line is read: 2.1 s of the game's time, which counts 100 ms at most a
-  // frame, so a slow machine stretches it (6 s and more on the CI's WebKit).
-  await expect(page.getByText('Tournez-la')).toBeVisible({ timeout: 15_000 });
+  // frame, so a slow machine stretches it (13 s on the CI's WebKit iPhone, over 15 s on a
+  // slow runner): the wait follows the engine's pace.
+  await expect(page.getByText('Tournez-la')).toBeVisible({ timeout: paced(15_000) });
   await page.getByRole('button', { name: 'Passer le guide' }).click();
   await expect(page.getByText('Tournez-la')).toBeHidden();
 });

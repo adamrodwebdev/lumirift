@@ -21,6 +21,7 @@
 | 1.45.2  | 03/11/2026 | Corrections : la carte du guide tient sur les téléphones couchés, l'objectif de l'entraînement passe dans la colonne de droite (§ 9 octies, lot 32).                                                                                  |
 | 1.46    | 03/11/2026 | Les 30 premières secondes : la décharge en 1,3 s, une consigne de cinq mots sur le puits et son geste, la récompense sans attente, le Ver vers 15 s, l'objectif avec lui, un chargement plus court (§ 9 octies, lot 33).              |
 | 1.46.1  | 03/11/2026 | Trois moteurs en CI (Chrome, Firefox, WebKit) et les défauts qu'ils ont montrés : une boucle d'observateurs de taille, le cadeau sur un lecteur d'écran, le focus des fenêtres fermées (§ 6).                                         |
+| 1.46.2  | 04/11/2026 | La fabrique sans retouche : recettes en fichier, ligne à l'écran, contrôle de fraîcheur, polices contrôlées ; l'image noire à la coupe des clips corrigée (§ 9 nonies, lot 35).                                                       |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1731,8 +1732,10 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   test du doigt passe par le protocole de Chrome : Chromium seul. Sous Firefox au téléphone,
   la souris de Playwright n'envoie pas d'événements de pointeur : les tests qui soulèvent,
   glissent ou posent une pièce à la souris y sont joués sur ordinateur. Le WebKit de la CI
-  dessine sans carte graphique : deux fois le temps pour chaque test, et le délai du premier
-  toucher n'y est pas chronométré. Accueil, ouverture, pause,
+  dessine sans carte graphique : deux fois le temps pour chaque test et pour les attentes
+  écrites à la main (`paced`, 1.46.2), et les délais du premier toucher (une page, une
+  fenêtre) n'y sont pas chronométrés.
+  Accueil, ouverture, pause,
   reprise et sortie des 14 modes, partie complète au clavier jusqu'au record, défi du jour,
   Mosaïque au clavier, langue et thème retenus, Atelier, console sans erreur, navigation au
   clavier seul. **Garde responsive** (`e2e/responsive.spec.ts`) : aucun défilement
@@ -1815,6 +1818,10 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre              | Livré (1.43)                                                 |
 | 30  | La faille qui casse (1.44) : l'effacement des lignes à la manière de la faille                             | Livré (1.44)                                                 |
 | 31  | La constellation d'atterrissage (1.45) : toute la pièce là où elle se posera                               | Livré (1.45)                                                 |
+| 32  | Corrections (1.45.2) : la carte du guide sur les téléphones couchés                                        | Livré (1.45.2)                                               |
+| 33  | Les 30 premières secondes (1.46) : la décharge tout de suite, une consigne de cinq mots, le Ver vers 15 s  | Livré (1.46)                                                 |
+| 34  | Prêt pour Yandex (1.47) : le build remis à niveau, la revue modérateur, la fiche, un brouillon             | Prévu                                                        |
+| 35  | La fabrique sans retouche (1.46.2) : recettes en fichier, ligne incrustée, polices et images contrôlées    | Livré (1.46.2)                                               |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2986,6 +2993,110 @@ secondes.
   - une demande d'accord écrit à Yandex avant toute annonce de la coopération (licence,
     § 1.4).
 
+## 9 nonies. La fabrique sans retouche (lot 35, décidé le 04/11/2026)
+
+Le 04/11/2026, l'utilisateur a validé la stratégie « Lumirift Publishing Automation » :
+
+- chaque semaine, les clips sont rendus depuis le dernier `dev`, et Playgama reçoit le même build
+  avant les publications ;
+- l'utilisateur relit la semaine une fois ; ensuite seulement, les publications sont programmées
+  dans les planificateurs web des plateformes (TikTok Studio, Meta Business Suite, YouTube
+  Studio) ;
+- chaque matin, un rendu à blanc du prochain clip vérifie que le dernier `dev` dessine toujours
+  les mêmes images (l'empreinte du manifeste, § 9 ter).
+
+Ce lot donne à la fabrique ce qu'il faut pour qu'une semaine tourne sans toucher au code.
+
+- **Lot 35 · 1.46.2 La fabrique sans retouche.** Le jeu ne change pas : seuls la fabrique et le
+  serveur de développement changent.
+  - **Les recettes dans un fichier** : `npm run clips -- --week 2026-11-09 --recipes <fichier>`.
+    Le fichier, un JSON hors du dépôt, a la forme d'une semaine de `media/clips.ts` : `element`,
+    `guardian` et `clips`. Il est contrôlé avant toute prise : une scène inconnue, un jour, un
+    pic ou un champ mal écrit arrête le rendu, avec le nom du clip et du champ. Une semaine n'a
+    plus besoin de commit ni de PR ; `media/clips.ts` garde les semaines déjà rendues.
+  - **Le code du rendu** en tête de `manifest.json` : la version du jeu (`package.json`) et le
+    commit court de `HEAD`, avec `dirty: true` quand des fichiers suivis diffèrent du commit
+    (l'empreinte ne vaut alors pas pour ce commit). Chaque publication se relie ainsi au build
+    qui l'a filmée.
+  - **La ligne à l'écran, incrustée** : le champ `onScreen` d'une recette.
+    - Elle s'écrit dans la police des mots du jeu (Unbounded, graisse 900), en blanc, avec le
+      contour des mots du puits (la couleur du fond du puits, environ 11 % de la taille).
+    - Elle tient sur une ligne, ou sur deux lignes équilibrées ; sa taille descend jusqu'à un
+      minimum, en dessous duquel le rendu s'arrête.
+    - Elle est centrée dans la zone sûre (entre 3 et 85 % de la largeur), à la hauteur que donne
+      la recette (`onScreenY`, la part de la hauteur de l'image en son milieu) : 0,27 par défaut,
+      0,735 pour la réponse côte à côte.
+    - Elle est sur chaque image du clip et sur sa couverture. Le contrôle `textClear` vérifie
+      qu'elle ne couvre ni le point du pic ni son étendue.
+    - L'empreinte `framesSha256` reste celle des images du jeu, sans la ligne : le contrôle du
+      matin compare les images du jeu. Le manifeste garde le texte de chaque clip.
+    - Elle revient sur la décision du 28/10/2026 (« aucun texte incrusté », § 9 ter) : les
+      planificateurs web n'ont pas d'autocollant de texte. La légende garde les mots de
+      recherche.
+  - **Le contrôle des polices arrête le rendu.** Avant la première prise, aucun fichier de police
+    ne répond en erreur et aucune police du plateau n'est en échec. Le texte de la ligne n'est
+    dessiné que par la police du jeu : Chrome nomme les polices réellement employées pour un
+    nœud, une police de secours comprise quand un glyphe manque. Le rendu du 01/11/2026 dans un
+    worktree était retombé sans le dire sur une police du système.
+  - **Rendre depuis n'importe quelle copie** : quand `node_modules` est une jonction (un worktree
+    qui partage celui du dépôt principal), le serveur de développement sert aussi son chemin réel
+    (`server.fs.allow`), sinon il refuse les fichiers des polices.
+  - **Le contrôle de fraîcheur, `--check`** : il filme les images de chaque clip comme un rendu,
+    calcule leur empreinte, la compare à celle du manifeste existant et écrit « même » ou
+    « différent » par clip, sans encoder ni écrire aucun fichier. Le code de sortie vaut 0 si
+    tout est pareil, 2 si un clip diffère, 1 sur une erreur ; `--clip <id>` le limite au
+    prochain clip.
+  - **Porte** :
+    - la semaine du 2 novembre, ses recettes lues dans un fichier, donne les mêmes empreintes
+      que depuis `media/clips.ts` ;
+    - `--check` dit « même » juste après un rendu, et « différent » quand une scène change ;
+    - un fichier de recettes faux est refusé avant toute prise, avec le nom du champ ;
+    - la ligne reste dans la zone sûre et hors du pic, dans la police du jeu ;
+    - une police introuvable arrête le rendu ;
+    - un rendu depuis un worktree à jonction trouve ses polices ;
+    - les vidéos des portails ne changent pas, et la fabrique ne fait toujours qu'écrire des
+      fichiers, sans publication ni API de plateforme.
+  - Hors du lot : un lecteur qui proposerait les moments de la semaine depuis l'élément et le
+    Gardien (plus tard, si les semaines le justifient) ; la programmation dans les
+    planificateurs, qui se fait dans le navigateur de l'utilisateur après sa relecture.
+  - **Livré en 1.46.2** (04/11/2026). Le rendu à blanc de la semaine du 2 novembre sur la 1.46.1,
+    demandé avant le lot, a montré deux défauts du plateau, corrigés ici :
+    - **une image noire à la coupe** : la première image filmée (l'image 80 des clips, à 2,67 s,
+      la coupe vers le début) montrait un puits noir dans trois rendus sur quatre. Au premier
+      pas, les pièces à venir apparaissent, le puits rétrécit (470 → 450 px CSS), et
+      l'observateur de taille de la scène redimensionne son canevas, ce qui l'efface, au moment
+      que choisit le navigateur : parfois pendant la prise de vue. D'où des empreintes qui
+      changeaient d'un rendu à l'autre (le lundi : égal à la 1.45.0 dans un rendu, différent
+      cinq minutes plus tard). Après chaque pas, le plateau attend deux vraies images du
+      navigateur (`SetTime.realFrame`) ; un canevas redimensionné est redessiné par une image
+      de 0 ms, le temps du jeu arrêté. Quatre rendus dans quatre processus donnent les mêmes
+      empreintes ; l'image 80 a la luminosité de ses voisines (66,0, contre 0,0) ;
+    - **les polices jamais chargées** : Unbounded restait « non chargée » toute une prise ; un
+      canevas qui la demande ne la fait pas charger, et les repères A et B la chargeaient à leur
+      première image. Le plateau charge toutes les polices avant la première prise. Les nombres
+      du sable gardent leur police, `ui-rounded`, comme dans le jeu.
+  - Les choix au-delà de la spécification :
+    - les empreintes de la semaine 1 changent une fois (l'image 3 n'est plus noire ; les braises
+      tirées au hasard semé se décalent avec l'image de 0 ms) ; le jeu, lui, est le même : mesures
+      du moteur, temps et lieux des pics, nombres d'images identiques à la 1.45.0 ;
+    - les octets d'un MP4 changent d'un rendu à l'autre à images égales (l'encodeur H.264 de
+      Chrome) : on compare l'empreinte des images, jamais les fichiers ; le son d'une prise varie
+      aussi de peu (crête décodée −1,77 ou −1,81 dBFS, même niveau en LUFS), ce qui n'entre pas
+      dans l'empreinte ;
+    - la version, le commit et `dirty` vont aussi dans chaque clip : `--clip` garde les entrées
+      d'un rendu plus ancien ;
+    - la ligne : 72 px au plus pour 1 080 de large, une ligne dès 56 px, deux dès 44. Le sens
+      passe avant la taille (revue du 04/11/2026) : une coupe qui laisse un mot court seul sur
+      une ligne passe en dernier, une coupe après une ponctuation l'emporte tant que sa taille
+      reste à 10 % de la plus grande, puis la plus grande taille, puis la plus équilibrée
+      (« Where should / the fire go? », « A lights the oil, / B the water ») ; le contour à
+      0,114 de la taille, aux coins arrondis ; elle n'entre pas dans l'empreinte ;
+    - `--week` refuse un jour qui n'est pas un lundi ; un fichier enregistré avec une marque
+      d'ordre des octets (le Bloc-notes) est lu.
+  - Mesures : `--check` de la semaine 1, 3,0 minutes ; le rendu de la semaine avec ses lignes,
+    4,2 minutes ; le contrôle juste après, 5 clips sur 5 « même » ; une variante changée,
+    « différent » (code 2) ; un fichier faux, refusé avant toute prise avec ses quatre problèmes.
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
@@ -3069,3 +3180,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.45.2  | 03/11/2026 | § 9 octies : la feuille de route Yandex (lots 32 à 34). Lot 32 livré : la grille de l'entraînement sur les écrans paysage bas, le test de la carte en russe.           |
 | 1.46    | 03/11/2026 | Lot 33 livré : `landsIn`, `HOOK_LEVEL`, `HOOK_WYRM_MS`, `guideAt`, `goalInView`, `WellGesture`, `GuideKeys`, `toastParts`, `bootPlugin({ firstRun })` ; mesures.       |
 | 1.46.1  | 03/11/2026 | § 6 : les parcours en CI dans trois moteurs, `E2E_ENGINE` ; la porte du lot 32 corrigée ; trois défauts corrigés (WellToast, cadeau, focus).                           |
+| 1.46.2  | 04/11/2026 | § 9 nonies, lot 35 : `--recipes`, `onScreen`, `--check`, `buildOf`, `ClipLine`, `checkFonts`, `settle`, `server.fs.allow` ; deux défauts du plateau ; mesures.         |

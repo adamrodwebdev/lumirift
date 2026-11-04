@@ -12,14 +12,23 @@
 // writes files: no upload, no platform API (CAHIER § 9 ter).
 // Usage: npm run clips -- --week 2026-11-02 [--clip mon-fire-on-oil]
 //        →  release/clips/<week>/
+// A week's recipes from a file (1.46.2), the shape of a week of media/clips.ts,
+// each clip with its on-screen line (`onScreen`), written into the clip:
+//        npm run clips -- --week 2026-11-09 --recipes <file.json>
+// The morning's check (1.46.2): the clips filmed again, their frames' print
+// set against the manifest's, nothing written; exit 0 same, 2 different, 1 error:
+//        npm run clips -- --week 2026-11-02 --check [--recipes <file>] [--clip <id>]
 // A set of plain takes (1.41), filmed before and after a change of the game,
 // to be seen side by side: each scene from its start, its sound, no montage.
 //        npm run clips -- --set feel --label 1.40.0 [--clip rift]
 //        →  release/clips/feel-1.40.0/
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
+import { lineCovers } from '../media/clipLine.ts';
+import { ClipLine } from './clip-line.mjs';
 import { loudness, normalise, truePeakDb } from './loudness.mjs';
 import { Mp4Encoder } from './mp4-encoder.mjs';
 import { SHOWCASE_URL, startShowcase } from './showcase-frames.mjs';
@@ -61,6 +70,10 @@ const WARM_UP = 2;
 const SEARCH_MS = 20_000;
 /** A fade at each cut of the sound (samples): a cut never clicks. */
 const FADE = Math.round(0.005 * SAMPLE_RATE);
+/** The on-screen line's middle (share of the frame's height): over the action, or under an answer's wells. */
+const LINE_Y = { usual: 0.27, answer: 0.735 };
+/** A font file of the game's types: the set's requests for them are watched. */
+const FONT_FILE = /\.woff2?(?:[?#]|$)/;
 
 const arg = (name) => {
   const at = process.argv.indexOf(`--${name}`);
@@ -72,14 +85,42 @@ const TAKE_SET = arg('set');
 const LABEL = arg('label');
 /** `--clip <id>`: that clip alone (the others in the manifest are kept). */
 const ONLY = arg('clip');
+/** `--recipes <file>`: the week's recipes from a file, not from media/clips.ts (1.46.2). */
+const RECIPES = arg('recipes');
+/** `--check`: the clips filmed again and their frames set against the manifest, nothing written (1.46.2). */
+const CHECK = process.argv.includes('--check');
 if (!/^\d{4}-\d{2}-\d{2}$/.test(WEEK ?? '') && !(TAKE_SET && /^[\w.-]+$/.test(LABEL ?? ''))) {
   console.error(
-    'Usage: npm run clips -- --week YYYY-MM-DD [--clip <id>]\n' +
+    'Usage: npm run clips -- --week YYYY-MM-DD [--recipes <file>] [--check] [--clip <id>]\n' +
       '       npm run clips -- --set <name> --label <version> [--clip <id>]',
   );
   process.exit(1);
 }
+if (WEEK && !TAKE_SET && new Date(`${WEEK}T12:00:00Z`).getUTCDay() !== 1) {
+  console.error(`--week ${WEEK} is not a Monday: a week of clips goes by its Monday`);
+  process.exit(1);
+}
+if (RECIPES && TAKE_SET) {
+  console.error('--recipes reads a week of clips, not a set of takes');
+  process.exit(1);
+}
 const OUT = join('release', 'clips', TAKE_SET ? `${TAKE_SET}-${LABEL}` : WEEK);
+
+/**
+ * What a render films (1.46.2): the game's version and commit, and whether
+ * tracked files differ from that commit (the frames are then not quite its).
+ * Each post can name the build it shows.
+ */
+function buildOf() {
+  const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
+  const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
+  return {
+    version,
+    commit: git('rev-parse', '--short', 'HEAD'),
+    dirty: git('status', '--porcelain', '--untracked-files=no') !== '',
+  };
+}
+const BUILD = buildOf();
 
 const frames = (ms) => Math.round(ms / FRAME_MS);
 const easeOut = (t) => 1 - (1 - t) ** 3;
@@ -190,14 +231,60 @@ const set = await browser.newPage({
 const step = () => set.evaluate((ms) => window.showcase.step(ms), FRAME_MS);
 const shoot = (crop) => set.screenshot({ type: 'jpeg', quality: 92, clip: crop });
 
-/** Puts the set up again (one take per load) and opens the page's API. */
+/**
+ * The set's font files that failed, by address, as they first answered: a
+ * junction the dev server refused (403, then aborted), a file missing.
+ */
+const fontFailures = new Map();
+set.on('response', (response) => {
+  if (
+    FONT_FILE.test(response.url()) &&
+    response.status() >= 400 &&
+    !fontFailures.has(response.url())
+  ) {
+    fontFailures.set(response.url(), String(response.status()));
+  }
+});
+set.on('requestfailed', (request) => {
+  if (FONT_FILE.test(request.url()) && !fontFailures.has(request.url())) {
+    fontFailures.set(request.url(), request.failure()?.errorText ?? 'failed');
+  }
+});
+
+/**
+ * Stops the render when a face of the game's types is not loaded on the set
+ * (1.46.2): its words would be drawn in a system font, as a render from a
+ * worktree whose fonts the dev server refused was on 1 November.
+ */
+async function checkFonts() {
+  const faces = await set.evaluate(() => window.showcase.fonts());
+  const problems = [
+    ...[...fontFailures].map(([url, answer]) => `${answer} ${url}`),
+    ...faces
+      .filter((face) => face.status !== 'loaded')
+      .map((face) => `${face.family} (${face.range.slice(0, 30)}...): ${face.status}`),
+  ];
+  fontFailures.clear();
+  if (!faces.length) problems.push("no face of the game's types on the set");
+  if (problems.length) {
+    throw new Error(
+      "The game's types did not load on the set: the clips would draw in a system font\n- " +
+        problems.join('\n- '),
+    );
+  }
+}
+
+/** Puts the set up again (one take per load) and opens the page's API, its types loaded. */
 async function openSet() {
   await set.goto(`${SHOWCASE_URL}?clip`);
   // `window.showcase` first names the page's <div id="showcase">: wait for the real API. Asked
   // again and again from here: the set's frames are its own, so `waitForFunction` (which waits
   // on the page's requestAnimationFrame) would wait for ever.
   for (const started = Date.now(); Date.now() - started < 120_000;) {
-    if (await set.evaluate(() => typeof window.showcase?.scene === 'function')) return;
+    if (await set.evaluate(() => typeof window.showcase?.scene === 'function')) {
+      await checkFonts();
+      return;
+    }
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   throw new Error('The clip set did not come up in 2 minutes');
@@ -490,12 +577,28 @@ async function plainTake(recipe) {
 
 const MONTAGES = { setup: setupClip, answer: answerClip };
 
+/** A clip's takes, filmed and cut: its runs, sound, cover, peak, counts and frames' print. */
+const filmed = (recipe) =>
+  recipe.ms ? plainTake(recipe) : (MONTAGES[recipe.challenge] ?? momentClip)(recipe);
+
+/** The tab that draws the clips' on-screen lines, opened for the first one. */
+let lineTab = null;
+
+/** A clip's on-screen line (1.46.2), drawn where its recipe puts it, outlined like the well's words. */
+async function drawLine(recipe) {
+  lineTab ??= await ClipLine.open(browser);
+  const y = recipe.onScreenY ?? (recipe.challenge === 'answer' ? LINE_Y.answer : LINE_Y.usual);
+  const outline = await set.evaluate(() => window.showcase.outline());
+  return { ...(await lineTab.draw(recipe.onScreen, { frame: VIDEO, safe: SAFE, y, outline })), y };
+}
+
 /** One clip: filmed, cut, levelled, encoded; its cover and its manifest entry. */
 async function makeClip(recipe) {
   const started = Date.now();
-  const clip = await (recipe.ms
-    ? plainTake(recipe)
-    : (MONTAGES[recipe.challenge] ?? momentClip)(recipe));
+  const clip = await filmed(recipe);
+  const line = recipe.onScreen ? await drawLine(recipe) : null;
+  /** A frame's layers, the on-screen line over them. */
+  const framed = (layers) => (line ? [...layers, line.layer] : layers);
   const count = clip.runs.reduce((sum, run) => sum + run.count, 0);
   const seconds = count / FPS;
   const levelled = normalise(join2(clip.runs.map((run) => soundOf(clip.sound, run))), {
@@ -507,13 +610,16 @@ async function makeClip(recipe) {
   const background = clip.background ?? null;
   for (const run of clip.runs) {
     for (let i = 0; i < run.count; i++)
-      await encoder.add(run.view(run.from + i, i), { background });
+      await encoder.add(framed(run.view(run.from + i, i)), { background });
   }
   const { priming, decodedPeakDb } = await encoder.setAudio({
     channels: levelled,
     sampleRate: SAMPLE_RATE,
   });
-  writeFileSync(join(OUT, `${recipe.id}.jpg`), await encoder.still(clip.cover, { background }));
+  writeFileSync(
+    join(OUT, `${recipe.id}.jpg`),
+    await encoder.still(framed(clip.cover), { background }),
+  );
   const bytes = await encoder.save(join(OUT, `${recipe.id}.mp4`));
   // Measured to a hundredth, as the meters show them.
   const soundChecks = {
@@ -521,6 +627,8 @@ async function makeClip(recipe) {
     decodedPeak: Math.round(decodedPeakDb * 100) <= SOUND.decodedPeakDb * 100,
   };
   const { peak } = clip;
+  // What of the peak the on-screen line would hide: its point, its action's reach, a letter.
+  const covered = line ? lineCovers(line.box, VIDEO, peak) : [];
   // A plain take has no peak: the apps' rules (length, hook, safe area) are the clips'.
   const checks = peak
     ? {
@@ -529,11 +637,13 @@ async function makeClip(recipe) {
         safe:
           [peak.at, ...(peak.answers ?? [])].filter(Boolean).every(isSafe) &&
           (!peak.extent || (peak.extent.top >= SAFE.top && peak.extent.bottom <= SAFE.bottom)),
+        ...(line ? { textClear: covered.length === 0 } : {}),
         ...soundChecks,
       }
     : soundChecks;
   const entry = {
     id: recipe.id,
+    ...BUILD,
     ...(recipe.day ? { day: recipe.day } : {}),
     video: `${recipe.id}.mp4`,
     cover: `${recipe.id}.jpg`,
@@ -561,6 +671,9 @@ async function makeClip(recipe) {
           },
         }
       : {}),
+    ...(line
+      ? { onScreen: { text: recipe.onScreen, y: line.y, size: line.size, lines: line.lines } }
+      : {}),
     measures: clip.measures,
     sound: {
       lufs: Number(loudness(levelled).toFixed(1)),
@@ -574,18 +687,47 @@ async function makeClip(recipe) {
   };
   const failed = Object.entries(checks)
     .filter(([, ok]) => !ok)
-    .map(([name]) => name);
+    .map(([name]) =>
+      name === 'textClear' ? `textClear (the line hides ${covered.join(', ')})` : name,
+    );
   console.log(
     `${recipe.id}: ${seconds.toFixed(1)} s, ` +
       (entry.peak
         ? `peak ${recipe.peak} at ${(entry.peak.sceneMs / 1000).toFixed(2)} s, `
         : 'plain take, ') +
+      (line ? `line ${line.size} px on ${line.lines.length} line(s), ` : '') +
       `${entry.sound.lufs} LUFS, ${entry.sound.truePeakDb} dBTP, decoded ${entry.sound.decodedPeakDb} dBFS, ` +
       `priming ${priming.measured} (reported ${priming.reported}), ` +
       `${entry.megabytes} MB, ${((Date.now() - started) / 1000).toFixed(0)} s` +
       (failed.length ? `  CHECK FAILED: ${failed.join(', ')}` : ''),
   );
   return entry;
+}
+
+/**
+ * The morning's check (1.46.2): each clip filmed again and its frames' print
+ * set against the manifest's, nothing encoded nor written. The exit code is 0
+ * when every clip draws the same frames, 2 when one differs or is new.
+ */
+async function checkFresh(recipes) {
+  const file = join(OUT, 'manifest.json');
+  if (!existsSync(file)) throw new Error(`No manifest in ${OUT} to check the clips against`);
+  const { clips } = JSON.parse(readFileSync(file, 'utf8'));
+  let stale = 0;
+  for (const recipe of recipes) {
+    const { hash } = await filmed(recipe);
+    const was = clips.find((entry) => entry.id === recipe.id)?.framesSha256;
+    const verdict = !was ? 'new' : was === hash ? 'same' : 'different';
+    if (verdict !== 'same') stale++;
+    console.log(
+      `${recipe.id}: ${verdict}, ` +
+        (verdict === 'same'
+          ? hash.slice(0, 16)
+          : `manifest ${was?.slice(0, 16) ?? 'none'}, now ${hash.slice(0, 16)}`),
+    );
+  }
+  process.exitCode = stale ? 2 : 0;
+  return stale;
 }
 
 /** The recipes asked for: a week's clips, or a set of plain takes; and what the manifest says of them. */
@@ -595,17 +737,19 @@ async function asked() {
     if (!takes) throw new Error(`No set of takes ${TAKE_SET} in media/clips.ts`);
     return { all: takes, about: { set: TAKE_SET, label: LABEL } };
   }
-  const week = await set.evaluate((monday) => window.showcase.week(monday), WEEK);
+  const week = RECIPES
+    ? await set.evaluate(
+        (text) => window.showcase.parseWeek(text),
+        // A file saved with a byte-order mark (Windows' Notepad) is still JSON: trimStart drops it.
+        readFileSync(RECIPES, 'utf8').trimStart(),
+      )
+    : await set.evaluate((monday) => window.showcase.week(monday), WEEK);
   if (!week) throw new Error(`No clips for the week of ${WEEK} in media/clips.ts`);
   return { all: week.clips, about: { week: WEEK, element: week.element, guardian: week.guardian } };
 }
 
-const started = Date.now();
-try {
-  await openSet();
-  const { all, about } = await asked();
-  const recipes = all.filter((recipe) => !ONLY || recipe.id === ONLY);
-  if (!recipes.length) throw new Error(`No clip ${ONLY} in ${TAKE_SET ?? `the week of ${WEEK}`}`);
+/** The clips asked for, rendered, and the manifest written: `all`'s other clips are kept from it. */
+async function render(recipes, all, about) {
   mkdirSync(OUT, { recursive: true });
   const file = join(OUT, 'manifest.json');
   const kept = ONLY && existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).clips : [];
@@ -614,11 +758,35 @@ try {
   const clips = all
     .map(({ id }) => made.find((entry) => entry.id === id) ?? kept.find((entry) => entry.id === id))
     .filter(Boolean);
-  const manifest = { ...about, video: { ...VIDEO, fps: FPS, codecs: 'H.264 + AAC' }, clips };
+  const manifest = {
+    ...about,
+    ...BUILD,
+    video: { ...VIDEO, fps: FPS, codecs: 'H.264 + AAC' },
+    clips,
+  };
   writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
-  console.log(
-    `${OUT}: ${made.length} clip(s) in ${((Date.now() - started) / 60_000).toFixed(1)} min`,
-  );
+  return made.length;
+}
+
+const started = Date.now();
+// Plain ASCII: a Windows console shows the terminal's own code page.
+const built = `${BUILD.version} (${BUILD.commit}${BUILD.dirty ? ', changed since' : ''})`;
+const minutes = () => ((Date.now() - started) / 60_000).toFixed(1);
+try {
+  await openSet();
+  const { all, about } = await asked();
+  const recipes = all.filter((recipe) => !ONLY || recipe.id === ONLY);
+  if (!recipes.length) throw new Error(`No clip ${ONLY} in ${TAKE_SET ?? `the week of ${WEEK}`}`);
+  if (CHECK) {
+    const stale = await checkFresh(recipes);
+    console.log(
+      `${OUT}: ${recipes.length - stale} of ${recipes.length} clip(s) the same on ${built}, ` +
+        `in ${minutes()} min`,
+    );
+  } else {
+    const made = await render(recipes, all, about);
+    console.log(`${OUT}: ${made} clip(s) on ${built} in ${minutes()} min`);
+  }
 } finally {
   await browser.close();
   await server.close();

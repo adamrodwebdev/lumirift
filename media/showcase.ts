@@ -8,12 +8,15 @@ import { SandSession } from '@/families/sand/SandSession';
 import { createAppI18n } from '@/i18n';
 import { WebPlatform } from '@/platform/Platform';
 import { MemoryStorage } from '@/services/KeyValueStorage';
+import { ELEMENT_NAMES } from '@/session/Elements';
+import { BOSS_IDS } from '@/session/GameSession';
 import '@/styles/fonts.css';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
 import '@/styles/stage.css';
 import '@/styles/ambiances.css';
 import { CLIP_WEEKS, TAKE_SETS, type ClipWeek, type TakeRecipe } from './clips';
+import { parseClipWeek } from './clipRecipes';
 import { SCENES, type FireChoice, type Scene, type SceneName } from './scenes';
 import { SetTime } from './SetTime';
 import ShowcaseView from './ShowcaseView.vue';
@@ -44,6 +47,16 @@ const MARKER_UNDER = 80;
 const time = clip ? new SetTime(window) : null;
 time?.install();
 if (clip) document.documentElement.style.setProperty('--clip-margin', `${CLIP_MARGIN}px`);
+/**
+ * The clip set loads every face of the game's types before its first take
+ * (1.46.2). The game asks for them as its screens show text; the set shows
+ * none of its own. A canvas that asks for one (the falling well's words) does
+ * not fetch it and would draw in a system font, and a challenge's A and B
+ * fetched it on their first frame, a race with the camera.
+ */
+const fontsLoaded = clip
+  ? Promise.allSettled([...document.fonts].map((face) => face.load()))
+  : Promise.resolve();
 /** The page's own waits keep the machine's clock. */
 const wait = (ms: number) =>
   new Promise<void>((resolve) =>
@@ -315,6 +328,32 @@ function toBase64(samples: Float32Array): string {
   return btoa(binary);
 }
 
+/** The sizes of the set's canvases: one whose size changes is cleared. */
+const canvasSizes = () =>
+  [...document.querySelectorAll<HTMLCanvasElement>('#showcase canvas')]
+    .map((canvas) => `${canvas.width}x${canvas.height}`)
+    .join();
+
+/**
+ * A frame of the clip set made ready to film (1.46.2). The browser lays the
+ * page out on its own clock: a change of size a frame brought (the coming
+ * pieces appear, the well narrows) reached the stage's size observer whenever
+ * the browser drew next, sometimes between the well's picture and the
+ * camera's shot, and the resized canvas, cleared, went into the clip black.
+ * Two real frames let every observer run; a canvas they resized is drawn
+ * again by a frame that lasts no time (each listener gets 0 ms).
+ */
+async function settle(played: { step(ms: number): void }, clock: SetTime): Promise<void> {
+  for (let round = 0; round < 3; round++) {
+    const before = canvasSizes();
+    await clock.realFrame();
+    await clock.realFrame();
+    if (canvasSizes() === before) return;
+    played.step(0);
+    await nextTick();
+  }
+}
+
 let current: { scene: Scene; peaks: Peak[]; measures: Measures } | null = null;
 let sceneMs = 0;
 
@@ -350,7 +389,16 @@ declare global {
       layout(): SetLayout;
       markers(labels: readonly string[] | null, under?: boolean): readonly Mark[];
       background(): string;
+      /** The colour of the outline of the well's words (1.46.2): the well's background. */
+      outline(): string;
+      /**
+       * The faces of the game's types and their state (1.46.2): on the clip set,
+       * once it has loaded them all. One not loaded would draw in a system font.
+       */
+      fonts(): Promise<readonly { family: string; range: string; status: FontFaceLoadStatus }[]>;
       week(monday: string): ClipWeek | null;
+      /** A week read from a recipes file's text (1.46.2); throws the problems it has. */
+      parseWeek(text: string): ClipWeek;
       /** A set of plain takes (1.41), or null. */
       takes(set: string): readonly TakeRecipe[] | null;
       /** The take's sound (one text of 32-bit float samples per channel), or null without sound. */
@@ -390,6 +438,7 @@ window.showcase = {
     await nextTick();
     time?.stepAnimations(ms);
     if (sound && current) sound.played(current.scene.session.pressure(), ms);
+    if (time) await settle(set, time);
   },
   peaks: () => current?.peaks ?? [],
   measures: () => ({ ...(current?.measures ?? { burnt: 0, struck: 0, cleared: 0 }) }),
@@ -416,7 +465,25 @@ window.showcase = {
   },
   markers: showMarkers,
   background: () => getComputedStyle(document.body).backgroundColor,
+  outline: () =>
+    getComputedStyle(wellCanvas() ?? document.documentElement)
+      .getPropertyValue('--well-bg')
+      .trim(),
+  async fonts() {
+    await fontsLoaded;
+    return [...document.fonts].map((face) => ({
+      family: face.family,
+      range: face.unicodeRange,
+      status: face.status,
+    }));
+  },
   week: (monday) => CLIP_WEEKS[monday] ?? null,
+  parseWeek: (text) =>
+    parseClipWeek(text, {
+      scenes: Object.keys(SCENES),
+      elements: ELEMENT_NAMES,
+      guardians: BOSS_IDS,
+    }),
   takes: (name) => TAKE_SETS[name] ?? null,
   async audio() {
     const channels = await sound?.samples();

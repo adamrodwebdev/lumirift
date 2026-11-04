@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url';
-import { readFileSync } from 'node:fs';
-import { loadEnv } from 'vite';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { loadEnv, searchForWorkspaceRoot } from 'vite';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
@@ -11,6 +11,18 @@ import { seoPlugin } from './scripts/seoPlugin.ts';
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
   version: string;
 };
+
+/**
+ * What the dev server may serve (1.46.2): the project, and the real place of
+ * its node_modules when that is a junction (a worktree that shares the main
+ * checkout's): the fonts' files are there, and were refused, so the clip set
+ * drew in a system font.
+ */
+const modules = fileURLToPath(new URL('./node_modules', import.meta.url));
+const SERVABLE = [
+  searchForWorkspaceRoot(process.cwd()),
+  ...(existsSync(modules) ? [realpathSync(modules)] : []),
+];
 
 /** The portals' builds: a new player starts in the training, straight away (1.29). */
 const PORTALS: readonly string[] = ['crazygames', 'playgama', 'yandex'];
@@ -63,6 +75,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },
+    server: { fs: { allow: SERVABLE } },
     build: {
       outDir: ['dist', platform, env.VITE_SOLO].filter(Boolean).join('-'),
       target: 'es2022',

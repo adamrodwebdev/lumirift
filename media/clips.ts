@@ -25,6 +25,13 @@ export interface ClipRecipe {
   readonly afterMs: number;
   /** A challenge: the decision frozen with its A and B, or both answers side by side. */
   readonly challenge?: 'setup' | 'answer';
+  /**
+   * The on-screen line written into the clip (1.46.2): the web schedulers
+   * have no text stickers. One line, two balanced at most, in the game's type.
+   */
+  readonly onScreen?: string;
+  /** Where the line's middle sits, as a share of the frame's height: 0.27 by default, 0.735 under an answer's wells. */
+  readonly onScreenY?: number;
 }
 
 /** A week of clips: what the game features that week, and its clips. */
