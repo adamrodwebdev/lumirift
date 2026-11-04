@@ -62,6 +62,37 @@ describe('the on-screen line of a clip', () => {
     ]);
   });
 
+  it('cuts after a mark while its size stays within a tenth of the largest', () => {
+    const choices = [
+      ['A lights the oil, B the water'],
+      ['A lights the', 'oil, B the water'],
+      ['A lights the oil,', 'B the water'],
+    ];
+    // At 100 px: whole, too long; cut mid-phrase, 72 px; cut after the comma, 66 px.
+    expect(chooseLayout(choices, [[2600], [1150, 1200], [1300, 1000]], { width: WIDTH })).toEqual({
+      lines: ['A lights the oil,', 'B the water'],
+      size: 66,
+    });
+    // After the comma at 64 px, more than a tenth under 72: the size wins.
+    expect(
+      chooseLayout(choices, [[2600], [1150, 1200], [1340, 1000]], { width: WIDTH })?.lines,
+    ).toEqual(['A lights the', 'oil, B the water']);
+  });
+
+  it('leaves no short word alone on a line, though alone it would stand larger', () => {
+    const choices = [
+      ['Where should the fire go?'],
+      ['Where', 'should the fire go?'],
+      ['Where should', 'the fire go?'],
+      ['Where should the fire', 'go?'],
+    ];
+    const widths = [[2600], [400, 1100], [1250, 1000], [1450, 250]];
+    expect(chooseLayout(choices, widths, { width: WIDTH })).toEqual({
+      lines: ['Where should', 'the fire go?'],
+      size: 69,
+    });
+  });
+
   it('has no layout when even two lines are too long', () => {
     // 30 characters on the longer line: 41 px, under the two lines' least size.
     const choices = lineChoices('Lightningintostillwaterforever takesitallatonce');

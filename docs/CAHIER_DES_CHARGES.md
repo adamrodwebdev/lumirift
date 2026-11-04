@@ -3083,8 +3083,11 @@ Ce lot donne à la fabrique ce qu'il faut pour qu'une semaine tourne sans touche
       dans l'empreinte ;
     - la version, le commit et `dirty` vont aussi dans chaque clip : `--clip` garde les entrées
       d'un rendu plus ancien ;
-    - la ligne : 72 px au plus pour 1 080 de large, une ligne dès 56 px, deux dès 44 ; entre
-      tailles égales, une coupe après une ponctuation, puis la plus équilibrée ; le contour à
+    - la ligne : 72 px au plus pour 1 080 de large, une ligne dès 56 px, deux dès 44. Le sens
+      passe avant la taille (revue du 04/11/2026) : une coupe qui laisse un mot court seul sur
+      une ligne passe en dernier, une coupe après une ponctuation l'emporte tant que sa taille
+      reste à 10 % de la plus grande, puis la plus grande taille, puis la plus équilibrée
+      (« Where should / the fire go? », « A lights the oil, / B the water ») ; le contour à
       0,114 de la taille, aux coins arrondis ; elle n'entre pas dans l'empreinte ;
     - `--week` refuse un jour qui n'est pas un lundi ; un fichier enregistré avec une marque
       d'ordre des octets (le Bloc-notes) est lu.

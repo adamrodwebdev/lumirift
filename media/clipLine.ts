@@ -55,14 +55,19 @@ export function lineChoices(text: string): string[][] {
 
 /** A cut just after a mark reads best: "A lights the oil, / B the water". */
 const AFTER_MARK = /[,;:.!?…–—]$/;
+/** A cut after a mark wins while its size stays within this share of the largest: sense before size. */
+const MARK_SLACK = 0.1;
+/** A line of one word this short, alone, reads as a fragment ("Where / should…", "… / go?"). */
+const LONE_WORD = 5;
 
 /**
  * The line's layout: whole and as large as fits from `sizes.oneLine` up,
- * else the largest of the cuts in two or of the whole, from `sizes.min` up;
- * between equal sizes (the largest is capped), a cut after a mark, then the
- * most balanced. Null when nothing fits `width` (video px). `widthsAt100`
- * holds each choice's line widths drawn at 100 px; the outline reaches half
- * its width beyond the letters on each side.
+ * else one of the cuts in two (or the whole) from `sizes.min` up. A cut that
+ * leaves one short word alone on a line comes last; a cut after a mark wins
+ * when its size is within `MARK_SLACK` of the largest; then the largest size,
+ * then the most balanced. Null when nothing fits `width` (video px).
+ * `widthsAt100` holds each choice's line widths drawn at 100 px; the outline
+ * reaches half its width beyond the letters on each side.
  */
 export function chooseLayout(
   choices: readonly (readonly string[])[],
@@ -75,17 +80,28 @@ export function chooseLayout(
   if (!first) return null;
   const whole = sizeOf(widthsAt100[0] ?? []);
   if (whole >= sizes.oneLine) return { lines: first, size: whole };
-  const [best] = choices
+  const fits = choices
     .map((lines, i) => ({
       lines,
       size: sizeOf(widthsAt100[i] ?? []),
       longest: Math.max(...(widthsAt100[i] ?? [])),
       marked: lines.length > 1 && AFTER_MARK.test(lines[0] ?? ''),
+      lone:
+        lines.length > 1 && lines.some((line) => !line.includes(' ') && line.length <= LONE_WORD),
     }))
-    .filter(({ size }) => size >= sizes.min)
-    .sort(
-      (a, b) => b.size - a.size || Number(b.marked) - Number(a.marked) || a.longest - b.longest,
-    );
+    .filter(({ size }) => size >= sizes.min);
+  // The largest size among the cuts that leave no word alone (among all, when every cut does).
+  const clean = fits.filter(({ lone }) => !lone);
+  const largest = Math.max(...(clean.length ? clean : fits).map(({ size }) => size));
+  const sensible = (fit: (typeof fits)[number]) =>
+    fit.marked && fit.size >= largest * (1 - MARK_SLACK);
+  const [best] = fits.sort(
+    (a, b) =>
+      Number(a.lone) - Number(b.lone) ||
+      Number(sensible(b)) - Number(sensible(a)) ||
+      b.size - a.size ||
+      a.longest - b.longest,
+  );
   return best ? { lines: best.lines, size: best.size } : null;
 }
 
