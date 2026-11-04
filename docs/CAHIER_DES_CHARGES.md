@@ -1146,6 +1146,19 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 - Alertes `npm audit` (12/10/2026) : 5 alertes « high » sur `braces`, dépendance de
   l'outillage de développement uniquement (lint, plugin i18n), sans entrée non fiable ; rien
   n'est livré au joueur. À réévaluer à chaque mise à jour.
+- Alertes du 04/11/2026 (1.46.2) : 22 entrées `npm audit` (4 « high », 18 « moderate ») et
+  10 alertes Dependabot, toutes dans l'outillage de développement ; `npm audit --omit=dev` n'en
+  trouve aucune et rien n'est livré au joueur.
+  - `vue-i18n`, `@intlify/core-base` et `@intlify/shared` 10.0.8, la copie interne du plugin
+    i18n du build (`@intlify/vue-i18n-extensions` 8.0.0) : `escapeParameter` laisse passer du
+    XSS (GHSA-83rm-6c8r-g728 « high », GHSA-8rc2-428q-7ww3 « low »). Le jeu livre
+    `vue-i18n` 11.4.14, la version corrigée (vérifié dans le paquet Playgama), et n'emploie ni
+    `escapeParameter`, ni `v-html`, ni `innerHTML`, ni `srcdoc`.
+  - `fast-uri` 3.1.8 (Lighthouse, par `ajv`) et `minimatch` 10.2.6 (ESLint) : « moderate » et
+    « low », des outils lancés sur nos propres fichiers, sans entrée non fiable.
+  - Décision de l'utilisateur (04/11/2026) : acceptées pour l'envoi Playgama 1.46.2 ;
+    l'outillage est mis à jour au lot suivant (1.46.3). Les alertes Dependabot sont activées
+    sur le dépôt depuis ce jour ; elles lisent la branche par défaut, `main`.
 
 ### 4.7 Compatibilité
 
