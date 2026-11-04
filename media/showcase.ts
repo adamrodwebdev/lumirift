@@ -8,12 +8,15 @@ import { SandSession } from '@/families/sand/SandSession';
 import { createAppI18n } from '@/i18n';
 import { WebPlatform } from '@/platform/Platform';
 import { MemoryStorage } from '@/services/KeyValueStorage';
+import { ELEMENT_NAMES } from '@/session/Elements';
+import { BOSS_IDS } from '@/session/GameSession';
 import '@/styles/fonts.css';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
 import '@/styles/stage.css';
 import '@/styles/ambiances.css';
 import { CLIP_WEEKS, TAKE_SETS, type ClipWeek, type TakeRecipe } from './clips';
+import { parseClipWeek } from './clipRecipes';
 import { SCENES, type FireChoice, type Scene, type SceneName } from './scenes';
 import { SetTime } from './SetTime';
 import ShowcaseView from './ShowcaseView.vue';
@@ -386,12 +389,16 @@ declare global {
       layout(): SetLayout;
       markers(labels: readonly string[] | null, under?: boolean): readonly Mark[];
       background(): string;
+      /** The colour of the outline of the well's words (1.46.2): the well's background. */
+      outline(): string;
       /**
        * The faces of the game's types and their state (1.46.2): on the clip set,
        * once it has loaded them all. One not loaded would draw in a system font.
        */
       fonts(): Promise<readonly { family: string; range: string; status: FontFaceLoadStatus }[]>;
       week(monday: string): ClipWeek | null;
+      /** A week read from a recipes file's text (1.46.2); throws the problems it has. */
+      parseWeek(text: string): ClipWeek;
       /** A set of plain takes (1.41), or null. */
       takes(set: string): readonly TakeRecipe[] | null;
       /** The take's sound (one text of 32-bit float samples per channel), or null without sound. */
@@ -458,6 +465,10 @@ window.showcase = {
   },
   markers: showMarkers,
   background: () => getComputedStyle(document.body).backgroundColor,
+  outline: () =>
+    getComputedStyle(wellCanvas() ?? document.documentElement)
+      .getPropertyValue('--well-bg')
+      .trim(),
   async fonts() {
     await fontsLoaded;
     return [...document.fonts].map((face) => ({
@@ -467,6 +478,12 @@ window.showcase = {
     }));
   },
   week: (monday) => CLIP_WEEKS[monday] ?? null,
+  parseWeek: (text) =>
+    parseClipWeek(text, {
+      scenes: Object.keys(SCENES),
+      elements: ELEMENT_NAMES,
+      guardians: BOSS_IDS,
+    }),
   takes: (name) => TAKE_SETS[name] ?? null,
   async audio() {
     const channels = await sound?.samples();

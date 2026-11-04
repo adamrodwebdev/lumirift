@@ -3,6 +3,49 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.46.2] — 04/11/2026
+
+La fabrique sans retouche (§ 9 nonies, lot 35) : une semaine de clips se rend depuis un fichier,
+avec sa ligne à l'écran, et un contrôle dit chaque matin si les clips montrent encore le dernier
+build. Le jeu ne change pas.
+
+### Corrigé
+
+- **Une image noire à la coupe de chaque clip** : la première image de la reprise montrait un
+  puits noir dans trois rendus sur quatre (l'image 80, à 2,67 s, des clips de la semaine du
+  2 novembre). Au premier pas, les pièces à venir apparaissent et le puits rétrécit ; son
+  canevas, redimensionné donc effacé, l'était au moment que choisissait le navigateur, parfois
+  entre le dessin et la prise de vue. Le plateau laisse désormais le navigateur poser la page
+  après chaque pas, et redessine un canevas redimensionné sans avancer le temps. Les empreintes
+  des images ne changent plus d'un rendu à l'autre.
+- **Les polices du jeu, jamais chargées sur le plateau** : Unbounded restait « non chargée »
+  pendant toute une prise. Dans le jeu, le texte du tableau de bord la fait charger ; le plateau
+  n'en montre pas, et un canevas qui la demande (les mots du puits de la chute) ne la fait pas
+  charger : il aurait dessiné dans une police du système. Les repères A et B la chargeaient à
+  leur première image, au hasard du réseau. Le plateau charge désormais toutes les polices avant
+  la première prise, et la fabrique le vérifie. Les nombres du sable (« +213 ») gardent leur
+  police à eux, `ui-rounded`, comme dans le jeu.
+
+### Ajouté
+
+- **Les recettes dans un fichier** : `npm run clips -- --week <lundi> --recipes <fichier>` lit
+  une semaine d'un JSON hors du dépôt, de la forme de `media/clips.ts`, contrôlé champ par champ
+  avant toute prise (chaque problème nommé, clip et champ).
+- **La ligne à l'écran** : le champ `onScreen` d'une recette est écrit dans le clip et sa
+  couverture, dans la police des mots du jeu, en blanc au contour du puits, centré dans la zone
+  sûre, sur une ligne ou deux équilibrées ; le contrôle `textClear` vérifie qu'il ne cache pas le
+  pic. Les planificateurs web n'ont pas d'autocollant de texte.
+- **Le code du rendu** : la version du jeu, le commit et `dirty` en tête du manifeste et dans
+  chaque clip.
+- **Le contrôle de fraîcheur** : `--check` refilme les clips et compare l'empreinte de leurs
+  images à celle du manifeste, sans rien écrire ; code de sortie 0 (pareil), 2 (différent),
+  1 (erreur). Cinq clips en 3 minutes.
+- **Le contrôle des polices** : une police du jeu qui ne charge pas sur le plateau arrête le
+  rendu, avec le fichier en cause.
+- **Rendre depuis un worktree** : quand `node_modules` est une jonction, le serveur de
+  développement sert aussi son chemin réel (`server.fs.allow`) ; il refusait les polices.
+- `--week` refuse un jour qui n'est pas un lundi.
+
 ## [1.46.1] — 03/11/2026
 
 Les parcours de bout en bout dans les trois moteurs (Chrome, Firefox, WebKit), et les défauts
