@@ -59,29 +59,52 @@ async function played(length: number, options: BedOptions, last: number): Promis
   engine.setIntensity(options.intensity);
   engine.setDanger(0);
   engine.unlock();
-  // Where the music is, read the way a sound reads it: its first beat is a little ahead.
-  const heard: { groove?: Groove } = {};
-  engine.play((_, groove) => {
-    heard.groove = groove;
-  });
-  const { groove } = heard;
-  if (!groove) throw new Error('The music bed found no music to play');
-  const beatOne = -groove.beat * groove.beatS * SAMPLE_RATE;
-  const firstBeat = Math.round(beatOne);
-  if (Math.abs(beatOne - firstBeat) > 1e-6) {
-    throw new Error(`The music's first beat falls between two samples (${beatOne})`);
-  }
-  // The music hands each beat to the audio clock a little ahead (its look-ahead, under a beat
-  // and over a tick): ticking only before beat `last` plays, it hands over `last` and no later.
-  const lastBeatS = (last - groove.beat) * groove.beatS;
-  for (let tick = 1; (tick * MUSIC_TICK_MS) / 1000 < lastBeatS; tick++) {
-    void context.suspend((tick * MUSIC_TICK_MS) / 1000).then(() => {
-      engine.tick();
+  // Where the music's first beat fell, read at its first tick, after that beat, the way a sound
+  // reads the music: before it, the music says "beat 0" (it never says a beat below zero).
+  const grid: { firstBeatS?: number; lastBeatS: number; error?: Error } = {
+    lastBeatS: Infinity,
+  };
+  const ticks = Math.floor((length / SAMPLE_RATE / MUSIC_TICK_MS) * 1000);
+  for (let tick = 1; tick < ticks; tick++) {
+    const at = (tick * MUSIC_TICK_MS) / 1000;
+    void context.suspend(at).then(() => {
+      try {
+        if (grid.firstBeatS === undefined) {
+          const groove = grooveOf(engine);
+          grid.firstBeatS = at - groove.beat * groove.beatS;
+          grid.lastBeatS = grid.firstBeatS + last * groove.beatS;
+        }
+        // The music hands each beat to the audio clock a little ahead (its look-ahead, under a
+        // beat and over a tick): ticking only before beat `last` plays, it hands over `last`
+        // and no later.
+        if (at < grid.lastBeatS) engine.tick();
+      } catch (error) {
+        // A render left suspended would never end: the error waits for the render's end.
+        grid.error ??=
+          error instanceof Error ? error : new Error('The music bed failed as it played');
+      }
       return context.resume();
     });
   }
   const buffer = await context.startRendering();
+  if (grid.error) throw grid.error;
+  const beatOne = (grid.firstBeatS ?? NaN) * SAMPLE_RATE;
+  const firstBeat = Math.round(beatOne);
+  if (!(Math.abs(beatOne - firstBeat) < 1e-6)) {
+    throw new Error(`The music's first beat falls between two samples (${beatOne})`);
+  }
   return { channels: [0, 1].map((channel) => buffer.getChannelData(channel)), firstBeat };
+}
+
+/** Where the music is now, read the way a sound reads it (AudioEngine.play hands it the groove). */
+function grooveOf(engine: AudioEngine): Groove {
+  const heard: { groove?: Groove } = {};
+  engine.play((_, groove) => {
+    heard.groove = groove;
+  });
+  if (!heard.groove) throw new Error('The music bed found no music to play');
+  if (heard.groove.beat <= 0) throw new Error('The music bed read the music before its first beat');
+  return heard.groove;
 }
 
 /** How far `level` is under `peak` (dB). */
