@@ -264,11 +264,11 @@ TikTok, Instagram et YouTube Shorts :
 npm run clips -- --week 2026-11-02                          # la semaine dans release/clips/2026-11-02/
 npm run clips -- --week 2026-11-02 --clip mon-fire-on-oil   # un seul clip
 npm run clips -- --week 2026-11-09 --recipes semaine.json   # les recettes d'un fichier (1.46.2)
-npm run clips -- --week 2026-11-02 --check                  # les images toujours les mêmes ? rien n'est écrit
+npm run clips -- --week 2026-11-02 --check                  # mêmes images, son qui boucle ? rien n'est écrit
 ```
 
-Chaque clip est un MP4 vertical (1080 × 1920, H.264 et AAC, 7 à 15 s) qui s'ouvre sur son pic et
-boucle sans couture, avec le son du jeu (vers −14 LUFS, crêtes vraies sous −2 dBTP), sa
+Chaque clip est un MP4 vertical (1080 × 1920, H.264 et AAC) qui s'ouvre sur son pic et boucle
+sans couture, avec le son du jeu (vers −14 LUFS, crêtes vraies sous −2 dBTP), sa
 couverture et une entrée de `manifest.json` (les mesures que citent les légendes, les niveaux
 du son, les contrôles, la version et le commit filmés). Les semaines sont des recettes dans
 `media/clips.ts`, les scènes dans `src/showcase/`. La fabrique n'écrit que des fichiers : l'envoi
@@ -281,6 +281,16 @@ prise. Une recette peut porter sa ligne à l'écran (`onScreen`, et sa hauteur `
 applications. `--check` refilme chaque clip et compare l'empreinte de ses images à celle du
 manifeste : code de sortie 0 si tout est pareil, 2 si un clip diffère, 1 sur une erreur. Une
 police qui ne charge pas arrête le rendu.
+
+Depuis la 1.46.3, un clip de la semaine dure quatre mesures de la musique du jeu à 96 BPM, soit
+10 s (300 images). Sa musique est un lit à part (`media/MusicBed.ts`) : ces quatre mesures jouées
+seules, posées dès leur premier échantillon, leur résonance repliée sur leur début, leur premier
+temps fort sur l'image 5 (le zoom, le pic). Le lit passe la coupe du montage et la jointure de la
+boucle ; les effets de la prise suivent l'image, sa musique jouée sans être entendue. L'AAC reçoit
+les 2 048 derniers échantillons du clip avant lui, que la liste d'édition saute. Le manifeste
+garde la musique (`music`), les coupes (`cuts`) et les contrôles du son tel qu'un lecteur le
+décode : longueur, trou, clic, niveau à la jointure, lit à l'heure ; `--check` les refait sur
+les fichiers.
 
 ## Qualité
 

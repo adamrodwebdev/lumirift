@@ -3,6 +3,42 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.46.3] — 05/11/2026
+
+La musique qui boucle (§ 9 decies, lot 36) : la musique des clips n'est plus coupée au milieu.
+Un clip de la semaine dure quatre mesures de la musique du jeu à 96 BPM, 10 s, et sa musique
+boucle sans couture. Le jeu ne change pas.
+
+### Corrigé
+
+- **La musique coupée à la coupe du montage** : à la reprise (2,67 s, le mardi 1,2 s), la
+  musique de la prise revenait à sa première note, son niveau tombait de −16 à −58 dB et la basse
+  ne revenait que 1,4 s plus tard ; le mardi, elle reculait aussi de 2,5 s à la jointure. Elle est
+  désormais un lit à part, joué tel quel à travers la coupe et la jointure.
+- **Un petit clic à chaque relecture** : chaque MP4 commençait par 8 ms de silence, la première
+  trame AAC n'ayant pas de trame avant elle pour se décoder. L'encodeur reçoit désormais les
+  2 048 derniers échantillons du clip avant lui, et la liste d'édition les saute.
+- **16 échantillons de son en moins** quand la durée ne tombait pas sur une milliseconde entière :
+  le film compte désormais en échantillons quand il a du son.
+- **Un limiteur qui ne savait pas que le clip boucle** : la sonie, la crête vraie et le limiteur
+  lisent désormais un clip qui boucle à travers sa jointure.
+
+### Ajouté
+
+- **Le lit de musique** (`media/MusicBed.ts`) : quatre mesures de la musique du jeu (Dm puis B♭),
+  jouées seules sur son moteur à l'intensité des prises (0,68 : pad, basse et arpège), posées dès
+  leur premier échantillon (la musique joue huit mesures avant, et un second rendu arrêté avant
+  elles est soustrait), leur résonance repliée sur leur début, leur premier temps fort sur
+  l'image 5, où le zoom arrive. L'arpège tire ses notes d'un hasard semé par clip.
+- **Des clips de 10 s** : le temps gagné va à la suite du pic et à l'arrêt final de la question
+  (`afterMs` devient un minimum ; un pic trop tardif arrête le rendu).
+- **Les effets avec l'image** : la musique de la prise joue sans être entendue (les images restent
+  les mêmes) ; à la coupe, les effets qui sortent s'éteignent en 0,1 s ; une image figée ne fait
+  pas de bruit. Les prises simples de `--set` gardent leur musique.
+- **Les contrôles du son**, dans le manifeste et refaits par `--check` sur les fichiers décodés :
+  des mesures entières, les seules notes du lit, la basse sur la grille, le niveau à la jointure,
+  la longueur exacte, aucun trou, aucun clic, le lit à l'heure à la jointure et à chaque coupe.
+
 ## [1.46.2] — 04/11/2026
 
 La fabrique sans retouche (§ 9 nonies, lot 35) : une semaine de clips se rend depuis un fichier,
