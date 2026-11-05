@@ -40,8 +40,10 @@ npm run clips -- --week AAAA-MM-JJ                               # la fabrique d
 
 Node 24 (`.nvmrc`). `E2E_ENGINE=firefox|webkit npm run test:e2e` rejoue les parcours dans les
 autres moteurs ; sur le poste Windows de l'auteur, le Firefox de Playwright ne démarre pas (la
-CI le joue). Ports de `.claude/launch.json` : dev 5175, preview 4175, Playgama 5176,
-CrazyGames 4180.
+CI le joue). Ports : ceux de `.claude/launch.json`, et 4174 pour `npm run preview` ; ce projet garde les
+41xx et 51xx, Ballmania les 42xx et 52xx. `.claude/settings.json` autorise les commandes de vérification sans
+demander ; un hook y formate avec Prettier chaque fichier que Claude écrit
+(`.claude/hooks/format.mjs`).
 
 ## Pile et carte du code
 
