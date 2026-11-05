@@ -76,6 +76,8 @@ export default defineConfig(({ mode }) => {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },
     server: { fs: { allow: SERVABLE } },
+    // Its own port: 4173, Vite's default, is every other project's preview too.
+    preview: { port: 4174 },
     build: {
       outDir: ['dist', platform, env.VITE_SOLO].filter(Boolean).join('-'),
       target: 'es2022',
