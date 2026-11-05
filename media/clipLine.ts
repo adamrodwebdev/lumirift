@@ -17,6 +17,25 @@ export const LINE_PAD = 6;
 /** How close to the line a peak's point may come (share of the frame's height): a letter's badge is ~0.07 high. */
 export const POINT_MARGIN = 0.035;
 
+/**
+ * The clips' identity label (1.46.3, CAHIER § 9 undecies): who made them and
+ * which game, from the first frame to the last, in place of a greeting. Small
+ * and quiet in the game's interface type (Sora, 32 px for 1 080 wide: about
+ * 11 points on a phone), white at 90 % with the well's outline, at the top of
+ * the safe area (its middle at `y`, a share of the height), above any line.
+ */
+export const LABEL = {
+  text: 'Lumirift Blocks · @adamrodwebdev',
+  size: 32,
+  weight: 600,
+  alpha: 0.9,
+  y: 0.118,
+} as const;
+
+/** Whether two boxes of the frame overlap. */
+export const boxesMeet = (a: FrameBox, b: FrameBox): boolean =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
 export interface LineSizes {
   readonly max: number;
   readonly oneLine: number;

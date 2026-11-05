@@ -35,7 +35,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
-import { lineCovers } from '../media/clipLine.ts';
+import { boxesMeet, lineCovers } from '../media/clipLine.ts';
 import { ClipLine } from './clip-line.mjs';
 import {
   BASS_EVERY_BEATS,
@@ -799,13 +799,40 @@ async function drawLine(recipe) {
   return { ...(await lineTab.draw(recipe.onScreen, { frame: VIDEO, safe: SAFE, y, outline })), y };
 }
 
+/** The clips' identity label (1.46.3), outlined like the well's words of the clip's scene. */
+async function drawLabel() {
+  lineTab ??= await ClipLine.open(browser);
+  const outline = await set.evaluate(() => window.showcase.outline());
+  return lineTab.label({ frame: VIDEO, safe: SAFE, outline });
+}
+
+/**
+ * What of a clip's peak, or of each other, its texts would hide (1.46.3): the
+ * line's and the label's covers of the peak, and the label over the line.
+ */
+function textCovers(line, labelled, peak) {
+  return [
+    ...(line ? lineCovers(line.box, VIDEO, peak).map((what) => `the line hides the ${what}`) : []),
+    ...(labelled
+      ? lineCovers(labelled.box, VIDEO, peak).map((what) => `the label hides the ${what}`)
+      : []),
+    ...(line && labelled && boxesMeet(line.box, labelled.box) ? ['the label meets the line'] : []),
+  ];
+}
+
 /** One clip: filmed, cut, levelled, encoded; its cover and its manifest entry. */
 async function makeClip(recipe) {
   const started = Date.now();
   const clip = await filmed(recipe);
   const line = recipe.onScreen ? await drawLine(recipe) : null;
-  /** A frame's layers, the on-screen line over them. */
-  const framed = (layers) => (line ? [...layers, line.layer] : layers);
+  // A week's clip carries the label from its first frame to its last (1.46.3); a plain take does not.
+  const labelled = clip.peak ? await drawLabel() : null;
+  /** A frame's layers, the on-screen line and the label over them. */
+  const framed = (layers) => [
+    ...layers,
+    ...(line ? [line.layer] : []),
+    ...(labelled ? [labelled.layer] : []),
+  ];
   const count = clip.runs.reduce((sum, run) => sum + run.count, 0);
   const seconds = count / FPS;
   // A week's clip loops on its music bed (1.46.3); a plain take keeps its own sound, cut and faded.
@@ -860,8 +887,8 @@ async function makeClip(recipe) {
     ...(looped?.checks ?? {}),
   };
   const { peak } = clip;
-  // What of the peak the on-screen line would hide: its point, its action's reach, a letter.
-  const covered = line ? lineCovers(line.box, VIDEO, peak) : [];
+  // What of the peak the on-screen texts would hide: its point, its action's reach, a letter.
+  const covered = textCovers(line, labelled, peak);
   // A plain take has no peak: the apps' rules (length, hook, safe area) are the clips'.
   const checks = peak
     ? {
@@ -870,7 +897,7 @@ async function makeClip(recipe) {
         safe:
           [peak.at, ...(peak.answers ?? [])].filter(Boolean).every(isSafe) &&
           (!peak.extent || (peak.extent.top >= SAFE.top && peak.extent.bottom <= SAFE.bottom)),
-        ...(line ? { textClear: covered.length === 0 } : {}),
+        ...(line || labelled ? { textClear: covered.length === 0 } : {}),
         ...soundChecks,
       }
     : soundChecks;
@@ -908,6 +935,7 @@ async function makeClip(recipe) {
     ...(line
       ? { onScreen: { text: recipe.onScreen, y: line.y, size: line.size, lines: line.lines } }
       : {}),
+    ...(labelled ? { label: { text: labelled.text, y: labelled.y, size: labelled.size } } : {}),
     measures: clip.measures,
     sound: {
       lufs: Number(loudness(levelled, { loop: loops }).toFixed(1)),
@@ -922,9 +950,7 @@ async function makeClip(recipe) {
   };
   const failed = Object.entries(checks)
     .filter(([, ok]) => !ok)
-    .map(([name]) =>
-      name === 'textClear' ? `textClear (the line hides ${covered.join(', ')})` : name,
-    );
+    .map(([name]) => (name === 'textClear' ? `textClear (${covered.join(', ')})` : name));
   console.log(
     `${recipe.id}: ${seconds.toFixed(1)} s, ` +
       (entry.peak

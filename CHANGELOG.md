@@ -7,7 +7,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 
 La musique qui boucle (§ 9 decies, lot 36) : la musique des clips n'est plus coupée au milieu.
 Un clip de la semaine dure quatre mesures de la musique du jeu à 96 BPM, 10 s, et sa musique
-boucle sans couture. Le jeu ne change pas.
+boucle sans couture. Chaque clip porte aussi l'étiquette du jeu et du compte (§ 9 undecies,
+lot 37). Le jeu ne change pas.
 
 ### Corrigé
 
@@ -36,8 +37,13 @@ boucle sans couture. Le jeu ne change pas.
   les mêmes) ; à la coupe, les effets qui sortent s'éteignent en 0,1 s ; une image figée ne fait
   pas de bruit. Les prises simples de `--set` gardent leur musique.
 - **Les contrôles du son**, dans le manifeste et refaits par `--check` sur les fichiers décodés :
-  des mesures entières, les seules notes du lit, la basse sur la grille, le niveau à la jointure,
-  la longueur exacte, aucun trou, aucun clic, le lit à l'heure à la jointure et à chaque coupe.
+  des mesures entières, les seules notes du lit, la basse sur la grille, la longueur exacte, aucun
+  silence numérique, aucun clic, le niveau à la jointure comparé au mélange, le lit à l'heure à la
+  jointure et à chaque coupe.
+- **L'étiquette** (§ 9 undecies, lot 37) : « Lumirift Blocks · @adamrodwebdev » de la première à
+  la dernière image de chaque clip de la semaine et sur sa couverture, petite et discrète dans la
+  police d'interface du jeu (Sora, 32 px), en haut de la zone sûre, hors de l'empreinte des
+  images ; `textClear` vérifie qu'elle ne cache ni le pic ni la ligne.
 
 ## [1.46.2] — 04/11/2026
 

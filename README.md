@@ -289,8 +289,9 @@ temps fort sur l'image 5 (le zoom, le pic). Le lit passe la coupe du montage et 
 boucle ; les effets de la prise suivent l'image, sa musique jouée sans être entendue. L'AAC reçoit
 les 2 048 derniers échantillons du clip avant lui, que la liste d'édition saute. Le manifeste
 garde la musique (`music`), les coupes (`cuts`) et les contrôles du son tel qu'un lecteur le
-décode : longueur, trou, clic, niveau à la jointure, lit à l'heure ; `--check` les refait sur
-les fichiers.
+décode : longueur, silence, clic, niveau à la jointure, lit à l'heure ; `--check` les refait sur
+les fichiers. Chaque clip de la semaine porte l'étiquette « Lumirift Blocks · @adamrodwebdev »
+(`LABEL` dans `media/clipLine.ts`), en haut de la zone sûre, de la première à la dernière image.
 
 ## Qualité
 
