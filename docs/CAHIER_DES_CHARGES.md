@@ -3220,9 +3220,12 @@ jeu et quel compte il voit, sans que le crochet du clip perde sa place.
 
 - **Lot 37 · 1.46.3 L'étiquette**, avec la musique qui boucle (lot 36) : les quatre clips de la
   semaine sont refaits une seule fois pour les deux.
-  - **Où** : centrée dans la largeur de la zone sûre (3 à 85 %), en haut de la zone sûre (son
-    milieu à 0,118 de la hauteur, sa boîte sous les 10 % des onglets), loin de la ligne de la
-    recette (0,2 au plus haut, celle du vendredi).
+  - **Où** : centrée dans la largeur de la zone sûre (3 à 85 %), juste sous la ligne de la
+    recette, comme une signature (4 px sous sa boîte), quand elle y tient dans la zone sûre ;
+    sinon en haut de la zone sûre (son milieu à 0,118 de la hauteur, sa boîte sous les 10 % des
+    onglets) : la ligne basse d'une réponse côte à côte, ou un clip sans ligne. Choix de
+    l'utilisateur (05/11/2026) après le premier rendu, où l'étiquette en haut croisait la pièce
+    qui tombe (le mardi, pendant les 4,8 s d'arrêt de la question).
   - **Comment** : petite et discrète, dans la police d'interface du jeu (Sora, graisse 600,
     32 px pour 1 080 de large, soit environ 11 points sur un téléphone), blanche à 90 %, avec le
     contour des mots du puits. Une police de secours arrête le rendu, comme pour la ligne.

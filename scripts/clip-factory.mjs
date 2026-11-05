@@ -799,11 +799,11 @@ async function drawLine(recipe) {
   return { ...(await lineTab.draw(recipe.onScreen, { frame: VIDEO, safe: SAFE, y, outline })), y };
 }
 
-/** The clips' identity label (1.46.3), outlined like the well's words of the clip's scene. */
-async function drawLabel() {
+/** The clips' identity label (1.46.3), signing the clip's line, outlined like the well's words of its scene. */
+async function drawLabel(line) {
   lineTab ??= await ClipLine.open(browser);
   const outline = await set.evaluate(() => window.showcase.outline());
-  return lineTab.label({ frame: VIDEO, safe: SAFE, outline });
+  return lineTab.label({ frame: VIDEO, safe: SAFE, outline, under: line?.box ?? null });
 }
 
 /**
@@ -826,7 +826,7 @@ async function makeClip(recipe) {
   const clip = await filmed(recipe);
   const line = recipe.onScreen ? await drawLine(recipe) : null;
   // A week's clip carries the label from its first frame to its last (1.46.3); a plain take does not.
-  const labelled = clip.peak ? await drawLabel() : null;
+  const labelled = clip.peak ? await drawLabel(line) : null;
   /** A frame's layers, the on-screen line and the label over them. */
   const framed = (layers) => [
     ...layers,

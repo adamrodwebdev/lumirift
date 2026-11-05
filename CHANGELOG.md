@@ -42,7 +42,8 @@ lot 37). Le jeu ne change pas.
   jointure et à chaque coupe.
 - **L'étiquette** (§ 9 undecies, lot 37) : « Lumirift Blocks · @adamrodwebdev » de la première à
   la dernière image de chaque clip de la semaine et sur sa couverture, petite et discrète dans la
-  police d'interface du jeu (Sora, 32 px), en haut de la zone sûre, hors de l'empreinte des
+  police d'interface du jeu (Sora, 32 px), juste sous la ligne du clip comme une signature, ou
+  en haut de la zone sûre quand la ligne est trop basse (une réponse) ; hors de l'empreinte des
   images ; `textClear` vérifie qu'elle ne cache ni le pic ni la ligne.
 
 ## [1.46.2] — 04/11/2026

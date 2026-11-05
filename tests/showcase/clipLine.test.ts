@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   LABEL,
+  LABEL_GAP,
   LINE_PAD,
   LINE_SIZE,
   OUTLINE,
@@ -9,6 +10,7 @@ import {
   chooseLayout,
   fontFaces,
   lineBox,
+  labelY,
   lineChoices,
   lineCovers,
 } from '../../media/clipLine';
@@ -181,5 +183,32 @@ describe("the clips' identity label", () => {
       y: 0.13 * FRAME.height,
     });
     expect(boxesMeet(label, line)).toBe(true);
+  });
+});
+
+describe("the label's place", () => {
+  const middle = 0.44 * FRAME.width;
+  const height = 48;
+  const safe = { frame: FRAME, safeBottom: 0.78 };
+  const question = lineBox(
+    { lines: ['A or B:', 'which burns more?'], size: 70 },
+    [7 * 0.7 * 70, 17 * 0.7 * 70],
+    { x: middle, y: 0.27 * FRAME.height },
+  );
+
+  it("signs the clip's line, right under it", () => {
+    const y = labelY(question, height, safe) * FRAME.height;
+    expect(y - height / 2).toBeCloseTo(question.y + question.height + LABEL_GAP, 6);
+  });
+
+  it('goes to the top of the safe area when the line is too low for it, or missing', () => {
+    // An answer's line, under its wells: no room left above the apps' caption.
+    const answer = lineBox(
+      { lines: ["Thursday's answer:", 'A or B?'], size: 67 },
+      [18 * 0.7 * 67, 7 * 0.7 * 67],
+      { x: middle, y: 0.735 * FRAME.height },
+    );
+    expect(labelY(answer, height, safe)).toBe(LABEL.y);
+    expect(labelY(null, height, safe)).toBe(LABEL.y);
   });
 });

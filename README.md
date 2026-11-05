@@ -291,7 +291,8 @@ les 2 048 derniers échantillons du clip avant lui, que la liste d'édition saut
 garde la musique (`music`), les coupes (`cuts`) et les contrôles du son tel qu'un lecteur le
 décode : longueur, silence, clic, niveau à la jointure, lit à l'heure ; `--check` les refait sur
 les fichiers. Chaque clip de la semaine porte l'étiquette « Lumirift Blocks · @adamrodwebdev »
-(`LABEL` dans `media/clipLine.ts`), en haut de la zone sûre, de la première à la dernière image.
+(`LABEL` dans `media/clipLine.ts`) de la première à la dernière image, juste sous la ligne du clip,
+ou en haut de la zone sûre quand la ligne est trop basse.
 
 ## Qualité
 

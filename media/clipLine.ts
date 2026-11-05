@@ -21,8 +21,10 @@ export const POINT_MARGIN = 0.035;
  * The clips' identity label (1.46.3, CAHIER § 9 undecies): who made them and
  * which game, from the first frame to the last, in place of a greeting. Small
  * and quiet in the game's interface type (Sora, 32 px for 1 080 wide: about
- * 11 points on a phone), white at 90 % with the well's outline, at the top of
- * the safe area (its middle at `y`, a share of the height), above any line.
+ * 11 points on a phone), white at 90 % with the well's outline. It signs the
+ * clip's line, right under it (the user's choice, 05/11/2026); at the top of
+ * the safe area (its middle at `y`, a share of the height) when the line is
+ * too low for it (an answer's) or when there is none.
  */
 export const LABEL = {
   text: 'Lumirift Blocks · @adamrodwebdev',
@@ -31,6 +33,30 @@ export const LABEL = {
   alpha: 0.9,
   y: 0.118,
 } as const;
+
+/** Between the line's picture and the label's (video px): the label signs the line, close under it. */
+export const LABEL_GAP = 4;
+
+/**
+ * Where the label's middle goes (share of the frame's height): right under
+ * the line's box when it stays inside the safe area there, else at the top of
+ * the safe area (`LABEL.y`).
+ */
+export function labelY(
+  line: FrameBox | null,
+  labelHeight: number,
+  {
+    frame,
+    safeBottom,
+  }: { readonly frame: { readonly height: number }; readonly safeBottom: number },
+): number {
+  if (line) {
+    const top = line.y + line.height + LABEL_GAP;
+    if (top + labelHeight <= safeBottom * frame.height)
+      return (top + labelHeight / 2) / frame.height;
+  }
+  return LABEL.y;
+}
 
 /** Whether two boxes of the frame overlap. */
 export const boxesMeet = (a: FrameBox, b: FrameBox): boolean =>

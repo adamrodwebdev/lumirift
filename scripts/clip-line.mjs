@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   LABEL,
+  labelY,
   LINE_PAD,
   LINE_SIZE,
   LINE_SPACING,
@@ -204,17 +205,18 @@ export class ClipLine {
   /**
    * The clips' identity label (1.46.3, LABEL), drawn for a frame of `frame`'s
    * size: one line in the interface type at its size, centred across `safe`
-   * (shares of the width) at the label's height, white at its alpha with the
-   * outline `outline`. A layer for the encoder, with its box.
+   * (shares of the width), right under the line's box `under` when it fits
+   * there, else at the top of the safe area (labelY); white at its alpha with
+   * the outline `outline`. A layer for the encoder, with its box and height.
    */
-  async label({ frame, safe, outline }) {
-    const { text, size, alpha, y } = LABEL;
+  async label({ frame, safe, outline, under = null }) {
+    const { text, size, alpha } = LABEL;
     await this.#checkGlyphs(text, `${LABEL.weight} 100px '${LABEL_FAMILY}'`);
     const widths = await this.#measure([text], size, LABEL_FONT);
-    const box = lineBox({ lines: [text], size }, widths, {
-      x: ((safe.left + safe.right) / 2) * frame.width,
-      y: y * frame.height,
-    });
+    const x = ((safe.left + safe.right) / 2) * frame.width;
+    const { height } = lineBox({ lines: [text], size }, widths, { x, y: 0 });
+    const y = labelY(under, height, { frame, safeBottom: safe.bottom });
+    const box = lineBox({ lines: [text], size }, widths, { x, y: y * frame.height });
     const base64 = await this.#page.evaluate(
       async ({ text, box, outline, colour, font, alpha }) => {
         const canvas = new OffscreenCanvas(box.width, box.height);
