@@ -5,18 +5,26 @@
 // set by hand), and its aftermath, then goes back to the start and plays up
 // to the frame before the one it opened on: the loop has no seam, picture and
 // sound run through it, and the peak plays once a loop. 1080 × 1920 at 30
-// frames a second, H.264 and AAC (mp4-encoder.mjs), with the game's own sound
-// rendered with the picture, levelled near −14 LUFS with its true peaks under
-// −2 dBTP (loudness.mjs); a JPEG cover (the peak) and manifest.json (scene,
-// variant, length, peak, the engines' counts, the sound's levels). It only
-// writes files: no upload, no platform API (CAHIER § 9 ter).
+// frames a second, H.264 and AAC (mp4-encoder.mjs), levelled near −14 LUFS
+// with its true peaks under −2 dBTP (loudness.mjs); a JPEG cover (the peak)
+// and manifest.json (scene, variant, length, peak, the engines' counts, the
+// sound's levels and checks). It only writes files: no upload, no platform
+// API (CAHIER § 9 ter).
+// The music that loops (1.46.3, CAHIER § 9 decies): a week's clip lasts four
+// bars of the game's own music at 96 BPM, 10 s, 300 frames. The music is a
+// bed of its own (media/MusicBed.ts), a loop of those bars that runs through
+// the montage's cuts and the seam, its first downbeat on the punch-in; the
+// take's effects go with the picture, its music unheard. The sound is checked
+// as the file plays it: its length, no dropout, no click, the bed in time.
 // Usage: npm run clips -- --week 2026-11-02 [--clip mon-fire-on-oil]
 //        →  release/clips/<week>/
 // A week's recipes from a file (1.46.2), the shape of a week of media/clips.ts,
 // each clip with its on-screen line (`onScreen`), written into the clip:
 //        npm run clips -- --week 2026-11-09 --recipes <file.json>
 // The morning's check (1.46.2): the clips filmed again, their frames' print
-// set against the manifest's, nothing written; exit 0 same, 2 different, 1 error:
+// set against the manifest's, and their files' sound checked (1.46.3),
+// nothing written; exit 0 same and sound, 2 different or a sound check
+// failed, 1 error:
 //        npm run clips -- --week 2026-11-02 --check [--recipes <file>] [--clip <id>]
 // A set of plain takes (1.41), filmed before and after a change of the game,
 // to be seen side by side: each scene from its start, its sound, no montage.
@@ -29,8 +37,23 @@ import { join } from 'node:path';
 import { chromium } from '@playwright/test';
 import { lineCovers } from '../media/clipLine.ts';
 import { ClipLine } from './clip-line.mjs';
+import {
+  BASS_EVERY_BEATS,
+  BEATS_PER_BAR,
+  BED,
+  LOOP_LIMITS,
+  barSamples,
+  bassOffsets,
+  bedMatch,
+  clickRatio,
+  levelStepDb,
+  median,
+  mixed,
+  turn,
+  worstDropout,
+} from '../media/loopSound.ts';
 import { loudness, normalise, truePeakDb } from './loudness.mjs';
-import { Mp4Encoder } from './mp4-encoder.mjs';
+import { decodedSound, Mp4Encoder } from './mp4-encoder.mjs';
 import { SHOWCASE_URL, startShowcase } from './showcase-frames.mjs';
 
 const FPS = 30;
@@ -47,10 +70,12 @@ const SPF = SAMPLE_RATE / FPS;
 const LEAD_MS = 150;
 /** The punch-in: × 1 → × 1.15 in the 150 ms before the peak, held 1.2 s, then back in 0.3 s. */
 const PUNCH = { zoom: 1.15, inMs: 150, holdMs: 1200, outMs: 300 };
-/** A challenge's decision: a moment after the fire appears; frozen to open the clip and to end it (ms). */
+/** A challenge's decision: a moment after the fire appears; frozen to open the clip and to end it, for at least the end's (ms). */
 const DECISION_MS = 200;
 const OPEN_FREEZE_MS = 1200;
 const END_FREEZE_MS = 2500;
+/** The effects that leave at a cut go on this long after it, fading out (an L-cut, ms; 1.46.3). */
+const L_CUT_MS = 100;
 /** A clip's length (s). */
 const LENGTH = { min: 7, max: 15 };
 /**
@@ -123,6 +148,14 @@ function buildOf() {
 const BUILD = buildOf();
 
 const frames = (ms) => Math.round(ms / FRAME_MS);
+/** A week's clip (1.46.3): its music bed's bars at their tempo, 10 s; the montage fills them. */
+const CLIP_SAMPLES = barSamples(BED.bars, BED.bpm, SAMPLE_RATE);
+const CLIP_FRAMES = CLIP_SAMPLES / SPF;
+if (!Number.isInteger(CLIP_FRAMES)) {
+  throw new Error(`The music bed's ${CLIP_SAMPLES} samples are not a whole number of frames`);
+}
+/** The bed's first downbeat lands on this frame of every clip: where the punch-in lands, the peak plays. */
+const DOWNBEAT_FRAME = frames(LEAD_MS);
 const easeOut = (t) => 1 - (1 - t) ** 3;
 const easeInOut = (t) => 0.5 - Math.cos(Math.PI * t) / 2;
 /** A value on the set's pixel grid (CSS px, at 3×): a crop never blurs by a third of a pixel. */
@@ -188,18 +221,17 @@ function zoomed(picture, crop, anchor, zoom) {
 const fromBase64 = (text) => new Float32Array(new Uint8Array(Buffer.from(text, 'base64')).buffer);
 
 /**
- * The sound of a run (`count` frames from frame `from`), faded in and out at
- * its cuts so that a cut never clicks; not at a seamless loop's point
- * (`fadeIn` or `fadeOut` false), where the sound runs on.
+ * The sound of a plain take's run (`count` frames from frame `from`), its
+ * music in it, faded in and out at its ends so that a cut never clicks.
  */
-function soundOf(channels, { from, count, fadeIn = true, fadeOut = true }) {
+function soundOf(channels, { from, count }) {
   return channels.map((samples) => {
     const part = new Float32Array(count * SPF);
     part.set(samples.subarray(from * SPF, Math.min(samples.length, (from + count) * SPF)));
     const fade = Math.min(FADE, part.length >> 1);
     for (let i = 0; i < fade; i++) {
-      if (fadeIn) part[i] *= i / fade;
-      if (fadeOut) part[part.length - 1 - i] *= i / fade;
+      part[i] *= i / fade;
+      part[part.length - 1 - i] *= i / fade;
     }
     return part;
   });
@@ -212,8 +244,46 @@ const join2 = (parts) =>
     return out;
   });
 
-/** Two takes heard together, at half level each (their music is the same). */
+/** Two takes heard together, at half level each. */
 const mix = (a, b) => a.map((samples, channel) => samples.map((v, i) => (v + b[channel][i]) / 2));
+
+/**
+ * The take's effects along a clip's runs (1.46.3), its music unheard: each
+ * run's sound goes with its picture. A run that follows on from the one before
+ * (the loop's seam) runs on unfaded; at a cut, the effects that come in fade in
+ * over 5 ms, and those that leave go on 0.1 s past it, fading out (an L-cut). A
+ * run without effects (a frozen picture) makes no sound. The clip loops: an
+ * L-cut at its end goes on over its head.
+ */
+function effectsOf(sound, runs) {
+  const total = runs.reduce((sum, run) => sum + run.count, 0) * SPF;
+  const tail = Math.round((L_CUT_MS / 1000) * SAMPLE_RATE);
+  const out = sound.map(() => new Float32Array(total));
+  const heard = (run) => run.effects !== false;
+  const follows = (a, b) => heard(a) && heard(b) && a.from + a.count === b.from;
+  let at = 0;
+  runs.forEach((run, i) => {
+    const length = run.count * SPF;
+    if (heard(run)) {
+      const fadeIn = !follows(runs.at(i - 1), run);
+      const ring = follows(run, runs[(i + 1) % runs.length]) ? 0 : tail;
+      sound.forEach((samples, channel) => {
+        const part = samples.subarray(run.from * SPF, run.from * SPF + length + ring);
+        for (let j = 0; j < part.length; j++) {
+          let gain = fadeIn && j < FADE ? j / FADE : 1;
+          if (j >= length) gain *= 0.5 + 0.5 * Math.cos((Math.PI * (j - length)) / ring);
+          out[channel][(at + j) % total] += part[j] * gain;
+        }
+      });
+    }
+    at += length;
+  });
+  return out;
+}
+
+/** The frames where a clip's runs after its first begin: its cuts. */
+const cutsOf = (runs) =>
+  runs.slice(1).map((_, i) => runs.slice(0, i + 1).reduce((sum, run) => sum + run.count, 0));
 
 // --- The set ---------------------------------------------------------------------
 
@@ -329,14 +399,24 @@ async function findPeak(recipe, choice, event = recipe.peak, nth = recipe.nth ??
  * each frame `from` to `to`, its sound to `soundTo`, the engine's counts at
  * `to`. `crop(layout, badges)` frames it; `badge` shows one answer under the
  * well (a split screen's take, `plain`); `decision` also films the last frame
- * with both answers over the well.
+ * with both answers over the well; `music: false` plays its music unheard (a
+ * week's clip lays its bed, 1.46.3).
  */
 async function film(
   recipe,
   choice,
-  { from, to, soundTo = to, crop: frameIt, plain = false, badge = null, decision = false },
+  {
+    from,
+    to,
+    soundTo = to,
+    crop: frameIt,
+    plain = false,
+    badge = null,
+    decision = false,
+    music = true,
+  },
 ) {
-  await take(recipe, choice, { soundMs: (soundTo + 2) * FRAME_MS, plain });
+  await take(recipe, choice, { soundMs: (soundTo + 2) * FRAME_MS, plain, music });
   const badges = badge
     ? await set.evaluate((label) => window.showcase.markers([label], true), badge)
     : [];
@@ -382,37 +462,46 @@ async function film(
 
 /**
  * A seamless loop around a peak (the frames of the take): the hook, from
- * 0.15 s before the peak through `afterMs` of its aftermath, then the replay,
- * from the scene's start to the frame just before the hook. The last frame
- * leads into the first, so the loop has no seam and the peak plays once a
- * loop. A clip that would last under 7 s gets a longer aftermath: the replay
- * never reaches the peak. `end` is the last frame to film.
+ * 0.15 s before the peak through its aftermath, then the replay, from the
+ * scene's start to the frame just before the hook. The last frame leads into
+ * the first, so the loop has no seam and the peak plays once a loop. The
+ * clip lasts its music bed's bars (1.46.3): the aftermath takes what the
+ * replay leaves, `afterMs` at least, or the peak comes too late for the clip.
+ * `end` is the last frame to film.
  */
-function seamlessLoop(peakFrame, afterMs) {
+function seamlessLoop(peakFrame, { id, afterMs }) {
   const hook = peakFrame - frames(LEAD_MS);
   const replay = hook - (WARM_UP + 1);
-  const hookFrames = Math.max(frames(LEAD_MS + afterMs), Math.ceil(LENGTH.min * FPS) - replay);
+  const hookFrames = CLIP_FRAMES - replay;
+  if (hookFrames < frames(LEAD_MS + afterMs)) {
+    throw new Error(
+      `${id}: its peak comes ${(peakFrame / FPS).toFixed(2)} s in, too late for a clip of ` +
+        `${CLIP_FRAMES / FPS} s with ${afterMs} ms after it`,
+    );
+  }
   return { hook, hookFrames, replay, end: hook + hookFrames - 1 };
 }
 
-/** The runs of a seamless loop: the sound runs through its loop point, unfaded (a cut between). */
+/** The runs of a seamless loop: the sound runs through its loop point (a cut between). */
 const loopRuns = ({ hook, hookFrames, replay }, view) => [
-  { from: hook, count: hookFrames, view, fadeIn: false },
-  { from: WARM_UP + 1, count: replay, view, fadeOut: false },
+  { from: hook, count: hookFrames, view },
+  { from: WARM_UP + 1, count: replay, view },
 ];
 
 /**
  * A moment: it opens 0.15 s before its peak with the punch-in, holds it 1.2 s
- * and its aftermath ~2.5 s, then replays from the start up to the frame
- * before the one it opened on (a seamless loop).
+ * and its aftermath, then replays from the start up to the frame before the
+ * one it opened on (a seamless loop).
  */
 async function momentClip(recipe) {
   const peak = await findPeak(recipe, null);
-  const loop = seamlessLoop(peak.frame, recipe.afterMs);
+  const loop = seamlessLoop(peak.frame, recipe);
   const shot = await film(recipe, null, {
     from: WARM_UP + 1,
     to: loop.end,
+    soundTo: loop.end + frames(L_CUT_MS) + 1,
     crop: (layout) => screenCrop(layout, peak.at, peak.extent),
+    music: false,
   });
   const view = (frame) => [
     zoomed(shot.pictures.get(frame), shot.crop, peak.at, punch((frame - peak.frame) * FRAME_MS)),
@@ -439,35 +528,46 @@ async function momentClip(recipe) {
 /**
  * A challenge's question: it opens on the decision (the fire just appeared,
  * A and B over the well) with the punch-in, goes back to the start, plays up
- * to the decision, and holds it there with its A and B: the first picture.
+ * to the decision, and holds it there with its A and B, the first picture,
+ * for the rest of the clip's bars (1.46.3).
  */
 async function setupClip(recipe) {
   const spawn = await findPeak(recipe, null);
   const decision = spawn.frame + frames(DECISION_MS);
-  const holdFrames = frames(END_FREEZE_MS);
+  const openFrames = frames(OPEN_FREEZE_MS);
+  const replayFrames = decision - WARM_UP;
+  const holdFrames = CLIP_FRAMES - openFrames - replayFrames;
+  if (holdFrames < frames(END_FREEZE_MS)) {
+    throw new Error(
+      `${recipe.id}: its decision comes ${(decision / FPS).toFixed(2)} s in, too late for a ` +
+        `clip of ${CLIP_FRAMES / FPS} s that holds it ${END_FREEZE_MS} ms`,
+    );
+  }
   const shot = await film(recipe, null, {
     from: WARM_UP + 1,
     to: decision,
-    soundTo: decision + holdFrames,
+    soundTo: decision + frames(L_CUT_MS) + 1,
     crop: (layout) => screenCrop(layout, null),
     decision: true,
+    music: false,
   });
   const [a, b] = shot.answers;
   const anchor = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   const asked = (zoom) => [zoomed(shot.asked, shot.crop, anchor, zoom)];
   const runs = [
-    // The music goes on under the frozen decision.
+    // The bed goes on under the frozen decision; a frozen picture makes no sound.
     {
       from: decision,
-      count: frames(OPEN_FREEZE_MS),
+      count: openFrames,
       view: (_, i) => asked(punch(i * FRAME_MS - PUNCH.inMs)),
+      effects: false,
     },
     {
       from: WARM_UP + 1,
-      count: decision - WARM_UP,
+      count: replayFrames,
       view: (frame) => [zoomed(shot.pictures.get(frame), shot.crop, null, 1)],
     },
-    { from: decision, count: holdFrames, view: () => asked(1) },
+    { from: decision, count: holdFrames, view: () => asked(1), effects: false },
   ];
   return {
     runs,
@@ -492,7 +592,7 @@ async function setupClip(recipe) {
  */
 async function answerClip(recipe) {
   const peak = await findPeak(recipe, 'A');
-  const loop = seamlessLoop(peak.frame, recipe.afterMs);
+  const loop = seamlessLoop(peak.frame, recipe);
   const end = loop.end;
   const wellAndBadge = ({ well }, [badge]) => {
     // The letter's glow fades within 32 px of its edge.
@@ -510,9 +610,11 @@ async function answerClip(recipe) {
       await film(recipe, choice, {
         from: WARM_UP + 1,
         to: end,
+        soundTo: end + frames(L_CUT_MS) + 1,
         crop: wellAndBadge,
         plain: true,
         badge: choice,
+        music: false,
       }),
     );
   }
@@ -581,6 +683,103 @@ const MONTAGES = { setup: setupClip, answer: answerClip };
 const filmed = (recipe) =>
   recipe.ms ? plainTake(recipe) : (MONTAGES[recipe.challenge] ?? momentClip)(recipe);
 
+/**
+ * A clip's music bed (1.46.3), rendered on the set after its takes (it seeds
+ * the page's Math.random; the next take loads the set again): `bars` bars of
+ * the game's music, a loop that starts on its first downbeat.
+ */
+async function musicBed({ bpm, bars, intensity, seed }) {
+  const bed = await set.evaluate((asked) => window.showcase.bed(asked), {
+    bpm,
+    bars,
+    intensity,
+    seed,
+  });
+  return { ...bed, channels: bed.channels.map(fromBase64) };
+}
+
+/** A clip's music (1.46.3), as the manifest keeps it: what plays the same bed again. */
+const musicOf = (recipe) => ({
+  ...BED,
+  seed: `bed:${recipe.id}`,
+  downbeatFrame: DOWNBEAT_FRAME,
+});
+
+/** A measure for the manifest: a hundredth, or its name when it is not a number one can write. */
+const kept = (value, digits = 2) =>
+  Number.isFinite(value) ? Number(value.toFixed(digits)) : String(value);
+
+/**
+ * The checks of a looping clip's sound (1.46.3, CAHIER § 9 decies): the bed
+ * as it was made, and the file's sound as a player decodes it (`heard`),
+ * with its `frames` and its `cuts` (frames). Without a bed (a clip made
+ * before), the bed's checks and the bed in time fail. Returns the measures
+ * and the checks.
+ */
+function loopChecks({ heard, bed, music, frames: count, cuts }) {
+  const length = count * SPF;
+  const turned = bed && bed.channels.map((samples) => turn(samples, music.downbeatFrame * SPF));
+  const beat = (60 / music.bpm) * SAMPLE_RATE;
+  const notes = bed
+    ? Array.from({ length: (music.bars * BEATS_PER_BAR) / BASS_EVERY_BEATS }, (_, k) =>
+        Math.round(k * BASS_EVERY_BEATS * beat),
+      )
+    : [];
+  const offsets = bed ? bassOffsets(bed.channels, notes, SAMPLE_RATE) : [];
+  const middle = offsets.length ? median(offsets) : NaN;
+  const spread = offsets.length ? Math.max(...offsets.map((o) => Math.abs(o - middle))) : Infinity;
+  const bedSeam = turned ? levelStepDb(turned, 0, SAMPLE_RATE) : NaN;
+  const dropout = worstDropout(heard, SAMPLE_RATE);
+  const points = [0, ...cuts.map((frame) => frame * SPF)];
+  const clicks = points.map((at) => clickRatio(heard, at, SAMPLE_RATE));
+  const seam = levelStepDb(heard, 0, SAMPLE_RATE);
+  const inTime = turned
+    ? points.map((at) => ({ atFrame: at / SPF, ...bedMatch(heard, turned, at, SAMPLE_RATE) }))
+    : [];
+  const measures = {
+    bed: bed
+      ? {
+          beforeDb: kept(bed.beforeDb, 1),
+          ringDb: kept(bed.ringDb, 1),
+          bassOffsetMs: kept(middle, 1),
+          bassSpreadMs: kept(spread, 1),
+          seamStepDb: kept(bedSeam),
+        }
+      : null,
+    heard: {
+      samples: heard[0].length,
+      dropout: { atMs: kept(dropout.atMs, 1), depthDb: kept(dropout.depthDb, 1) },
+      clicks: clicks.map((ratio) => kept(ratio)),
+      seamStepDb: kept(seam),
+      bed: inTime.map(({ atFrame, lagMs, correlation }) => ({
+        atFrame,
+        lagMs: kept(lagMs),
+        correlation: kept(correlation),
+      })),
+    },
+  };
+  const checks = {
+    bedWholeBars: Boolean(bed) && bed.channels.every((samples) => samples.length === length),
+    bedOwnNotes:
+      Boolean(bed) &&
+      bed.beforeDb <= LOOP_LIMITS.ownNotesDb &&
+      bed.ringDb <= LOOP_LIMITS.ownNotesDb,
+    bedOnBeat: Boolean(bed) && spread <= LOOP_LIMITS.bassSpreadMs,
+    bedSeamLevel: Boolean(bed) && Math.abs(bedSeam) <= LOOP_LIMITS.seamStepDb,
+    soundLength: heard.every((samples) => samples.length === length),
+    noDropout: dropout.depthDb < LOOP_LIMITS.dropoutDb,
+    noClick: clicks.every((ratio) => ratio <= LOOP_LIMITS.clickRatio),
+    seamLevel: Math.abs(seam) <= LOOP_LIMITS.seamStepDb,
+    bedInTime:
+      inTime.length > 0 &&
+      inTime.every(
+        ({ lagMs, correlation }) =>
+          Math.abs(lagMs) <= LOOP_LIMITS.bedLagMs && correlation >= LOOP_LIMITS.bedCorrelation,
+      ),
+  };
+  return { measures, checks };
+}
+
 /** The tab that draws the clips' on-screen lines, opened for the first one. */
 let lineTab = null;
 
@@ -601,11 +800,25 @@ async function makeClip(recipe) {
   const framed = (layers) => (line ? [...layers, line.layer] : layers);
   const count = clip.runs.reduce((sum, run) => sum + run.count, 0);
   const seconds = count / FPS;
-  const levelled = normalise(join2(clip.runs.map((run) => soundOf(clip.sound, run))), {
+  // A week's clip loops on its music bed (1.46.3); a plain take keeps its own sound, cut and faded.
+  const music = clip.peak ? musicOf(recipe) : null;
+  if (music && count !== CLIP_FRAMES) {
+    throw new Error(`${recipe.id}: ${count} frames, not the music bed's ${CLIP_FRAMES}`);
+  }
+  const bed = music ? await musicBed(music) : null;
+  const sound = bed
+    ? mixed([
+        bed.channels.map((samples) => turn(samples, music.downbeatFrame * SPF)),
+        effectsOf(clip.sound, clip.runs),
+      ])
+    : join2(clip.runs.map((run) => soundOf(clip.sound, run)));
+  const loops = Boolean(bed);
+  const levelled = normalise(sound, {
     target: SOUND.lufs,
     ceiling: SOUND.truePeakDb,
+    loop: loops,
   });
-  const truePeak = truePeakDb(levelled);
+  const truePeak = truePeakDb(levelled, { loop: loops });
   const encoder = await Mp4Encoder.open(browser, { ...VIDEO, fps: FPS, bitrate: BITRATE });
   const background = clip.background ?? null;
   for (const run of clip.runs) {
@@ -615,16 +828,24 @@ async function makeClip(recipe) {
   const { priming, decodedPeakDb } = await encoder.setAudio({
     channels: levelled,
     sampleRate: SAMPLE_RATE,
+    loop: loops,
   });
   writeFileSync(
     join(OUT, `${recipe.id}.jpg`),
     await encoder.still(framed(clip.cover), { background }),
   );
-  const bytes = await encoder.save(join(OUT, `${recipe.id}.mp4`));
+  const video = join(OUT, `${recipe.id}.mp4`);
+  const bytes = await encoder.save(video);
+  const cuts = cutsOf(clip.runs);
+  // The file's sound as a player decodes it, checked as a loop (1.46.3).
+  const looped = bed
+    ? loopChecks({ heard: await decodedSound(browser, video), bed, music, frames: count, cuts })
+    : null;
   // Measured to a hundredth, as the meters show them.
   const soundChecks = {
     truePeak: Math.round(truePeak * 100) <= SOUND.truePeakDb * 100,
     decodedPeak: Math.round(decodedPeakDb * 100) <= SOUND.decodedPeakDb * 100,
+    ...(looped?.checks ?? {}),
   };
   const { peak } = clip;
   // What of the peak the on-screen line would hide: its point, its action's reach, a letter.
@@ -652,6 +873,7 @@ async function makeClip(recipe) {
     ...(recipe.challenge ? { challenge: recipe.challenge } : {}),
     seconds: Number(seconds.toFixed(2)),
     frames: count,
+    ...(music ? { music, cuts } : {}),
     ...(peak
       ? {
           peak: {
@@ -676,10 +898,11 @@ async function makeClip(recipe) {
       : {}),
     measures: clip.measures,
     sound: {
-      lufs: Number(loudness(levelled).toFixed(1)),
+      lufs: Number(loudness(levelled, { loop: loops }).toFixed(1)),
       truePeakDb: Number(truePeak.toFixed(2)),
       decodedPeakDb: Number(decodedPeakDb.toFixed(2)),
       priming,
+      ...(looped ? { loop: looped.measures } : {}),
     },
     checks,
     framesSha256: clip.hash,
@@ -697,7 +920,7 @@ async function makeClip(recipe) {
         : 'plain take, ') +
       (line ? `line ${line.size} px on ${line.lines.length} line(s), ` : '') +
       `${entry.sound.lufs} LUFS, ${entry.sound.truePeakDb} dBTP, decoded ${entry.sound.decodedPeakDb} dBFS, ` +
-      `priming ${priming.measured} (reported ${priming.reported}), ` +
+      `priming ${priming.measured} (reported ${priming.reported}, pre-roll ${priming.preRoll}), ` +
       `${entry.megabytes} MB, ${((Date.now() - started) / 1000).toFixed(0)} s` +
       (failed.length ? `  CHECK FAILED: ${failed.join(', ')}` : ''),
   );
@@ -705,9 +928,34 @@ async function makeClip(recipe) {
 }
 
 /**
+ * The sound checks of a clip's file (1.46.3), against its manifest entry: its
+ * bed played again from the entry's music, its file decoded. A clip made
+ * before the bed has none: its bed's checks fail. The names of the checks
+ * that fail.
+ */
+async function soundFailures(entry) {
+  const video = join(OUT, entry.video);
+  if (!existsSync(video)) return ['no file'];
+  const bed = entry.music ? await musicBed(entry.music) : null;
+  const music = entry.music ?? { ...BED, downbeatFrame: DOWNBEAT_FRAME };
+  const { checks } = loopChecks({
+    heard: await decodedSound(browser, video),
+    bed,
+    music,
+    frames: entry.frames,
+    cuts: entry.cuts ?? [],
+  });
+  return Object.entries(checks)
+    .filter(([, ok]) => !ok)
+    .map(([name]) => name);
+}
+
+/**
  * The morning's check (1.46.2): each clip filmed again and its frames' print
- * set against the manifest's, nothing encoded nor written. The exit code is 0
- * when every clip draws the same frames, 2 when one differs or is new.
+ * set against the manifest's, nothing encoded nor written; and the sound of
+ * its file checked as it plays (1.46.3). The exit code is 0 when every clip
+ * draws the same frames and its sound passes, 2 when one differs, is new or
+ * fails a sound check.
  */
 async function checkFresh(recipes) {
   const file = join(OUT, 'manifest.json');
@@ -716,14 +964,17 @@ async function checkFresh(recipes) {
   let stale = 0;
   for (const recipe of recipes) {
     const { hash } = await filmed(recipe);
-    const was = clips.find((entry) => entry.id === recipe.id)?.framesSha256;
+    const entry = clips.find((clip) => clip.id === recipe.id);
+    const was = entry?.framesSha256;
     const verdict = !was ? 'new' : was === hash ? 'same' : 'different';
-    if (verdict !== 'same') stale++;
+    const failed = entry ? await soundFailures(entry) : [];
+    if (verdict !== 'same' || failed.length) stale++;
     console.log(
       `${recipe.id}: ${verdict}, ` +
         (verdict === 'same'
           ? hash.slice(0, 16)
-          : `manifest ${was?.slice(0, 16) ?? 'none'}, now ${hash.slice(0, 16)}`),
+          : `manifest ${was?.slice(0, 16) ?? 'none'}, now ${hash.slice(0, 16)}`) +
+        (entry ? `; sound ${failed.length ? `FAILED: ${failed.join(', ')}` : 'passes'}` : ''),
     );
   }
   process.exitCode = stale ? 2 : 0;
@@ -780,7 +1031,7 @@ try {
   if (CHECK) {
     const stale = await checkFresh(recipes);
     console.log(
-      `${OUT}: ${recipes.length - stale} of ${recipes.length} clip(s) the same on ${built}, ` +
+      `${OUT}: ${recipes.length - stale} of ${recipes.length} clip(s) the same and sound on ${built}, ` +
         `in ${minutes()} min`,
     );
   } else {

@@ -17,6 +17,7 @@ import '@/styles/stage.css';
 import '@/styles/ambiances.css';
 import { CLIP_WEEKS, TAKE_SETS, type ClipWeek, type TakeRecipe } from './clips';
 import { parseClipWeek } from './clipRecipes';
+import { renderMusicBed } from './MusicBed';
 import { SCENES, type FireChoice, type Scene, type SceneName } from './scenes';
 import { SetTime } from './SetTime';
 import ShowcaseView from './ShowcaseView.vue';
@@ -364,6 +365,16 @@ interface TakeOptions {
   readonly fps?: number;
   /** For a split screen: a plain background, no piece boxes. */
   readonly plain?: boolean;
+  /** The take's music heard (true, a plain take's), or played unheard: a week's clip lays its own bed (1.46.3). */
+  readonly music?: boolean;
+}
+
+/** The music bed asked for (1.46.3): its tempo, bars, intensity and the seed of its arpeggio. */
+interface BedAsked {
+  readonly bpm: number;
+  readonly bars: number;
+  readonly intensity: number;
+  readonly seed: string;
 }
 
 /** Where the camera can look: the page, the game's screen on it and its well (CSS px). */
@@ -403,12 +414,28 @@ declare global {
       takes(set: string): readonly TakeRecipe[] | null;
       /** The take's sound (one text of 32-bit float samples per channel), or null without sound. */
       audio(): Promise<string[] | null>;
+      /**
+       * The clips' music bed (1.46.3), its channels as `audio()` gives them, and
+       * how clean its making was. It seeds Math.random: ask for it after the takes.
+       */
+      bed(asked: BedAsked): Promise<{
+        channels: string[];
+        sampleRate: number;
+        peak: number;
+        beforeDb: number;
+        ringDb: number;
+      }>;
     };
   }
 }
 
 window.showcase = {
-  async scene(name, variant = 0, choice = null, { soundMs = 0, fps = 30, plain = false } = {}) {
+  async scene(
+    name,
+    variant = 0,
+    choice = null,
+    { soundMs = 0, fps = 30, plain = false, music = true } = {},
+  ) {
     showMarkers(null);
     if (clip) {
       if (set) throw new Error('One take per load of the clip set: reload it for the next');
@@ -416,6 +443,7 @@ window.showcase = {
       // The sound's own noise first: the scene's draws stay the same with or without it.
       seedRandom('sound');
       sound = soundMs > 0 ? new TakeSound(soundMs, fps) : null;
+      if (!music) sound?.muteMusic();
       set = mountSet(sound ? { ...services, audio: sound.engine } : services);
     }
     if (!set) throw new Error('The set is not up');
@@ -488,5 +516,9 @@ window.showcase = {
   async audio() {
     const channels = await sound?.samples();
     return channels ? channels.map(toBase64) : null;
+  },
+  async bed({ bpm, bars, intensity, seed }) {
+    const bed = await renderMusicBed({ bpm, bars, intensity, reseed: () => seedRandom(seed) });
+    return { ...bed, channels: bed.channels.map(toBase64) };
   },
 };

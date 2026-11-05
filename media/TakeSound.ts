@@ -38,6 +38,15 @@ export class TakeSound {
     this.rendering = this.context.startRendering();
   }
 
+  /**
+   * The take's music plays unheard (1.46.3): a week's clip lays the music bed
+   * of its own (MusicBed). It still plays: the music draws its arpeggio from the
+   * same Math.random as the scene, so the scene draws the same frames.
+   */
+  muteMusic(): void {
+    this.engine.setMusicVolume(0);
+  }
+
   /** Resolves once the sound is at the coming frame's time: that frame's sounds start there. */
   ready(): Promise<void> {
     return this.reached;
