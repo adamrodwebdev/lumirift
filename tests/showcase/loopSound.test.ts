@@ -11,7 +11,7 @@ import {
   median,
   mixed,
   turn,
-  worstDropout,
+  longestSilence,
 } from '../../media/loopSound';
 
 /** A low sample rate keeps the searches quick; every check takes the rate it is given. */
@@ -87,35 +87,35 @@ describe("a loop's seam", () => {
     expect(levelStepDb(lower, 0, RATE)).toBeLessThan(-LOOP_LIMITS.seamStepDb);
   });
 
-  it('shows the silence the old AAC start put after it as a dropout', () => {
+  it('shows the silence the old AAC start put after it', () => {
     // 8 ms of digital silence at the start, as every clip of 4 November had.
     const muted = whole.map((samples) => samples.map((value, i) => (i < 64 ? 0 : value)));
-    expect(worstDropout(muted, RATE)).toEqual({ atMs: 0, depthDb: Infinity });
+    expect(longestSilence(muted, RATE)).toEqual({ atMs: 0, ms: 8 });
   });
 
   it('shows a hole of 20 ms cut into a sound', () => {
     const holed = stereo(
-      noise(4000, 6, 0.3).map((value, i) => (i >= 1600 && i < 1760 ? value * 0.001 : value)),
+      noise(4000, 6, 0.3).map((value, i) => (i >= 1600 && i < 1760 ? 0 : value)),
     );
-    const dropout = worstDropout(holed, RATE);
-    expect(dropout.atMs).toBe(200);
-    expect(dropout.depthDb).toBeGreaterThan(LOOP_LIMITS.dropoutDb);
+    expect(longestSilence(holed, RATE)).toEqual({ atMs: 200, ms: 20 });
   });
 
-  it('finds no dropout in sound that runs on, nor before an onset', () => {
-    expect(worstDropout(stereo(noise(4000, 1, 0.3)), RATE).depthDb).toBeLessThan(10);
-    // Quiet sound, then a burst 30 dB louder: the window before the burst is no hole.
+  it('finds no silence in sound that runs on, nor before an onset', () => {
+    expect(longestSilence(stereo(noise(4000, 1, 0.3)), RATE).ms).toBeLessThan(
+      LOOP_LIMITS.silenceMs,
+    );
+    // Quiet sound, then a burst 30 dB louder: the quiet sound is no hole.
     const onset = noise(4000, 2, 0.01).map((value, i) => (i >= 2000 ? value * 31.6 : value));
-    expect(worstDropout(stereo(onset), RATE).depthDb).toBeLessThan(LOOP_LIMITS.dropoutDb);
+    expect(longestSilence(stereo(onset), RATE).ms).toBeLessThan(LOOP_LIMITS.silenceMs);
   });
 
-  it('finds no dropout where a sound dies away just before the next one', () => {
+  it('finds no silence where a sound dies away just before the next one', () => {
     // Bursts that fade 40 dB over 20 ms, each straight into the next, as the game's effects do
-    // (Tuesday's clip at 3.92 s): the window before each burst is far under the 20 ms around it.
+    // (Tuesday's clip at 3.92 s, the Heart's fight): far under the 20 ms around, never silent.
     const bursts = noise(4000, 7, 0.3).map(
       (value, i) => value * 10 ** ((-40 * (i % 160)) / 160 / 20),
     );
-    expect(worstDropout(stereo(bursts), RATE).depthDb).toBeLessThan(LOOP_LIMITS.dropoutDb);
+    expect(longestSilence(stereo(bursts), RATE).ms).toBeLessThan(LOOP_LIMITS.silenceMs);
   });
 
   it('does not click where the wave runs on, and clicks where it jumps', () => {
@@ -168,7 +168,7 @@ describe('the bed in a clip', () => {
 
   it('is found in time, alone or under louder effects', () => {
     expect(bedMatch(bed, bed, 8000, RATE)).toEqual({ lagMs: 0, correlation: expect.closeTo(1, 6) });
-    const effects = stereo(noise(16_000, 4, 0.6));
+    const effects = stereo(noise(16_000, 4, 2));
     const clip = mixed([bed, effects]);
     const match = bedMatch(clip, bed, 8000, RATE);
     expect(match.lagMs).toBe(0);

@@ -47,10 +47,10 @@ import {
   bedMatch,
   clickRatio,
   levelStepDb,
+  longestSilence,
   median,
   mixed,
   turn,
-  worstDropout,
 } from '../media/loopSound.ts';
 import { loudness, normalise, truePeakDb } from './loudness.mjs';
 import { decodedSound, Mp4Encoder } from './mp4-encoder.mjs';
@@ -711,12 +711,13 @@ const kept = (value, digits = 2) =>
 
 /**
  * The checks of a looping clip's sound (1.46.3, CAHIER § 9 decies): the bed
- * as it was made, and the file's sound as a player decodes it (`heard`),
- * with its `frames` and its `cuts` (frames). Without a bed (a clip made
- * before), the bed's checks and the bed in time fail. Returns the measures
- * and the checks.
+ * as it was made, and the file's sound as a player decodes it (`heard`), with
+ * its `frames` and its `cuts` (frames), against the `mix` it was made from
+ * (the bed and the effects, before the levelling). Without a bed (a clip made
+ * before it), the checks that need one fail. Returns the measures and the
+ * checks.
  */
-function loopChecks({ heard, bed, music, frames: count, cuts }) {
+function loopChecks({ heard, bed, music, frames: count, cuts, mix }) {
   const length = count * SPF;
   const turned = bed && bed.channels.map((samples) => turn(samples, music.downbeatFrame * SPF));
   const beat = (60 / music.bpm) * SAMPLE_RATE;
@@ -728,14 +729,17 @@ function loopChecks({ heard, bed, music, frames: count, cuts }) {
   const offsets = bed ? bassOffsets(bed.channels, notes, SAMPLE_RATE) : [];
   const middle = offsets.length ? median(offsets) : NaN;
   const spread = offsets.length ? Math.max(...offsets.map((o) => Math.abs(o - middle))) : Infinity;
-  const bedSeam = turned ? levelStepDb(turned, 0, SAMPLE_RATE) : NaN;
-  const dropout = worstDropout(heard, SAMPLE_RATE);
+  const silence = longestSilence(heard, SAMPLE_RATE);
   const points = [0, ...cuts.map((frame) => frame * SPF)];
   const clicks = points.map((at) => clickRatio(heard, at, SAMPLE_RATE));
+  // The seam's level step against the mix's own: what the levelling and the AAC added to it.
   const seam = levelStepDb(heard, 0, SAMPLE_RATE);
+  const mixSeam = mix ? levelStepDb(mix, 0, SAMPLE_RATE) : NaN;
   const inTime = turned
     ? points.map((at) => ({ atFrame: at / SPF, ...bedMatch(heard, turned, at, SAMPLE_RATE) }))
     : [];
+  // Where the bed is heard over the effects: the places it can be timed.
+  const timed = inTime.filter(({ correlation }) => correlation >= LOOP_LIMITS.bedCorrelation);
   const measures = {
     bed: bed
       ? {
@@ -743,14 +747,13 @@ function loopChecks({ heard, bed, music, frames: count, cuts }) {
           ringDb: kept(bed.ringDb, 1),
           bassOffsetMs: kept(middle, 1),
           bassSpreadMs: kept(spread, 1),
-          seamStepDb: kept(bedSeam),
         }
       : null,
     heard: {
       samples: heard[0].length,
-      dropout: { atMs: kept(dropout.atMs, 1), depthDb: kept(dropout.depthDb, 1) },
+      silence: { atMs: kept(silence.atMs, 1), ms: kept(silence.ms, 2) },
       clicks: clicks.map((ratio) => kept(ratio)),
-      seamStepDb: kept(seam),
+      seamStepDb: { heard: kept(seam), mix: kept(mixSeam) },
       bed: inTime.map(({ atFrame, lagMs, correlation }) => ({
         atFrame,
         lagMs: kept(lagMs),
@@ -765,20 +768,25 @@ function loopChecks({ heard, bed, music, frames: count, cuts }) {
       bed.beforeDb <= LOOP_LIMITS.ownNotesDb &&
       bed.ringDb <= LOOP_LIMITS.ownNotesDb,
     bedOnBeat: Boolean(bed) && spread <= LOOP_LIMITS.bassSpreadMs,
-    bedSeamLevel: Boolean(bed) && Math.abs(bedSeam) <= LOOP_LIMITS.seamStepDb,
     soundLength: heard.every((samples) => samples.length === length),
-    noDropout: dropout.depthDb < LOOP_LIMITS.dropoutDb,
+    noDropout: silence.ms < LOOP_LIMITS.silenceMs,
     noClick: clicks.every((ratio) => ratio <= LOOP_LIMITS.clickRatio),
-    seamLevel: Math.abs(seam) <= LOOP_LIMITS.seamStepDb,
+    seamLevel: Boolean(mix) && Math.abs(seam - mixSeam) <= LOOP_LIMITS.seamStepDb,
     bedInTime:
-      inTime.length > 0 &&
-      inTime.every(
-        ({ lagMs, correlation }) =>
-          Math.abs(lagMs) <= LOOP_LIMITS.bedLagMs && correlation >= LOOP_LIMITS.bedCorrelation,
-      ),
+      timed.length > 0 && timed.every(({ lagMs }) => Math.abs(lagMs) <= LOOP_LIMITS.bedLagMs),
   };
   return { measures, checks };
 }
+
+/**
+ * A week's clip's sound before its levelling (1.46.3): its music bed, turned
+ * onto its downbeat, under the take's effects along its runs.
+ */
+const mixOf = (bed, clip, music) =>
+  mixed([
+    bed.channels.map((samples) => turn(samples, music.downbeatFrame * SPF)),
+    effectsOf(clip.sound, clip.runs),
+  ]);
 
 /** The tab that draws the clips' on-screen lines, opened for the first one. */
 let lineTab = null;
@@ -807,10 +815,7 @@ async function makeClip(recipe) {
   }
   const bed = music ? await musicBed(music) : null;
   const sound = bed
-    ? mixed([
-        bed.channels.map((samples) => turn(samples, music.downbeatFrame * SPF)),
-        effectsOf(clip.sound, clip.runs),
-      ])
+    ? mixOf(bed, clip, music)
     : join2(clip.runs.map((run) => soundOf(clip.sound, run)));
   const loops = Boolean(bed);
   const levelled = normalise(sound, {
@@ -839,7 +844,14 @@ async function makeClip(recipe) {
   const cuts = cutsOf(clip.runs);
   // The file's sound as a player decodes it, checked as a loop (1.46.3).
   const looped = bed
-    ? loopChecks({ heard: await decodedSound(browser, video), bed, music, frames: count, cuts })
+    ? loopChecks({
+        heard: await decodedSound(browser, video),
+        bed,
+        music,
+        frames: count,
+        cuts,
+        mix: sound,
+      })
     : null;
   // Measured to a hundredth, as the meters show them.
   const soundChecks = {
@@ -928,12 +940,12 @@ async function makeClip(recipe) {
 }
 
 /**
- * The sound checks of a clip's file (1.46.3), against its manifest entry: its
- * bed played again from the entry's music, its file decoded. A clip made
- * before the bed has none: its bed's checks fail. The names of the checks
- * that fail.
+ * The sound checks of a clip's file (1.46.3), against its manifest entry and
+ * the clip filmed again: its bed played again from the entry's music, its mix
+ * made again, its file decoded. A clip made before the bed has none: the
+ * checks that need one fail. The names of the checks that fail.
  */
-async function soundFailures(entry) {
+async function soundFailures(entry, clip) {
   const video = join(OUT, entry.video);
   if (!existsSync(video)) return ['no file'];
   const bed = entry.music ? await musicBed(entry.music) : null;
@@ -944,6 +956,7 @@ async function soundFailures(entry) {
     music,
     frames: entry.frames,
     cuts: entry.cuts ?? [],
+    mix: bed && clip.peak ? mixOf(bed, clip, music) : null,
   });
   return Object.entries(checks)
     .filter(([, ok]) => !ok)
@@ -963,11 +976,12 @@ async function checkFresh(recipes) {
   const { clips } = JSON.parse(readFileSync(file, 'utf8'));
   let stale = 0;
   for (const recipe of recipes) {
-    const { hash } = await filmed(recipe);
-    const entry = clips.find((clip) => clip.id === recipe.id);
+    const clip = await filmed(recipe);
+    const { hash } = clip;
+    const entry = clips.find((made) => made.id === recipe.id);
     const was = entry?.framesSha256;
     const verdict = !was ? 'new' : was === hash ? 'same' : 'different';
-    const failed = entry ? await soundFailures(entry) : [];
+    const failed = entry ? await soundFailures(entry, clip) : [];
     if (verdict !== 'same' || failed.length) stale++;
     console.log(
       `${recipe.id}: ${verdict}, ` +

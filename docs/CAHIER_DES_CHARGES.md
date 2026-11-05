@@ -3171,23 +3171,30 @@ exactement 10,000 s, 300 images et 480 000 échantillons.
     fichiers :
     - le lit : des mesures entières à l'échantillon près ; ses seules notes (la soustraction ne
       laisse que du silence avant elles, et leur résonance s'éteint avant la fin du rendu) ; ses
-      notes de basse sur la grille, régulières à travers la jointure (à ±5 ms de leur écart
-      médian) ; son niveau à la jointure du clip (100 ms avant, 100 ms après, à ±1,5 dB) ;
-    - le MP4 décodé : la longueur exacte ; aucun trou (le niveau ne tombe pas de plus de 20 dB
-      d'une fenêtre de 2 ms à la suivante pour revenir dans les 50 ms, à travers la jointure) ;
-      aucun clic (le saut d'un échantillon à la jointure et à chaque coupe au plus le double du
-      plus grand dans les ±5 ms) ; le niveau à la jointure (±1,5 dB) ; le lit à l'heure à la
-      jointure et à chaque coupe (décalage d'au plus 10 ms, corrélation d'au moins 0,25 sur
-      ±0,5 s) ;
+      notes de basse sur la grille, régulières à travers son temps fort (à ±5 ms de leur écart
+      médian) ;
+    - le MP4 décodé : la longueur exacte ; aucun trou (aucun silence numérique, sous −80 dBFS,
+      de 1 ms ou plus après du son, à travers la jointure) ; aucun clic (le saut d'un
+      échantillon à la jointure et à chaque coupe au plus le double du plus grand dans les
+      ±5 ms) ; le niveau à la jointure (son saut sur 100 ms de part et d'autre, à ±1,5 dB de
+      celui du mélange avant sa mise à niveau : ce que le limiteur et l'AAC y ajoutent) ; le lit
+      à l'heure à la jointure et à chaque coupe (décalage d'au plus 10 ms là où il s'entend sous
+      les effets, corrélation d'au moins 0,05, et au moins un tel endroit) ;
     - la comparaison des 400 premières et dernières millisecondes, proposée par la recherche,
       n'est pas gardée : la basse du temps fort, juste après la jointure du lit, lui ferait
       mesurer la musique plutôt que la jointure ;
-    - corrigés au premier rendu du mardi, mesures à l'appui : le niveau se compare sur 100 ms et
-      non 20 (dans le passage le plus calme du lit, vers −43 dB, le battement d'un pad fait
-      varier de ±1,4 dB des fenêtres de 20 ms ; le temps fort vient 167 ms après la jointure) ;
-      un trou est une chute soudaine qui revient, non une fenêtre sous la moyenne de ses voisines
-      (un effet qui s'éteint juste avant le suivant y descendait de 23,8 dB sans aucun trou).
-      Les anciens clips échouent toujours (le silence de 8 ms est un trou sans fond).
+    - corrigés aux premiers rendus du 05/11/2026, mesures à l'appui, parce qu'ils jugeaient la
+      musique et les effets et non la jointure :
+      - le niveau du lit seul à la jointure : sur deux lits, une note d'arpège qui s'éteint
+        146 ms avant la jointure le fait varier de −7 dB, sur un autre +0,5 ; le lit est continu
+        par construction (repli et rotation, testés) ;
+      - le niveau du clip comparé à lui-même : les effets y font −16,7 dB sous le combat du
+        Cœur ; on compare donc au saut du mélange ;
+      - un trou défini par rapport aux voisines : un effet qui s'éteint juste avant le suivant y
+        descendait de 23,8 dB sans aucun trou ; un trou est un silence numérique ;
+      - une corrélation d'au moins 0,25 : sous le combat du Cœur, le lit s'entend à 0,11, à
+        l'heure (décalage 0 ms) ; deux sons sans rapport restent vers 0,02.
+        Les anciens clips échouent toujours (le silence de 8 ms, le clic, la longueur, pas de lit).
   - **Porte** :
     - les cinq clips d'aujourd'hui échouent aux nouveaux contrôles (le silence, le clic, les
       16 échantillons, pas de lit), et les quatre clips refaits les passent ;
@@ -3202,6 +3209,32 @@ exactement 10,000 s, 300 images et 480 000 échantillons.
     sous la règle de chaleur ; le fichier du lundi, déjà publié, reste tel quel. La session
     marketing revérifie les images, et l'utilisateur écoute sur le haut-parleur d'un téléphone et
     au casque.
+
+## 9 undecies. L'étiquette des clips (lot 37, décidé le 05/11/2026)
+
+Le 05/11/2026 au matin, l'utilisateur a validé une stratégie d'engagement en quatre points
+(« Yes, all four », relayée par la session marketing). Pour la fabrique : une petite étiquette
+d'identité, « Lumirift Blocks · @adamrodwebdev », de la première à la dernière image de chaque
+clip. Elle remplace la salutation du script de l'utilisateur : qui regarde sait d'emblée quel
+jeu et quel compte il voit, sans que le crochet du clip perde sa place.
+
+- **Lot 37 · 1.46.3 L'étiquette**, avec la musique qui boucle (lot 36) : les quatre clips de la
+  semaine sont refaits une seule fois pour les deux.
+  - **Où** : centrée dans la largeur de la zone sûre (3 à 85 %), en haut de la zone sûre (son
+    milieu à 0,118 de la hauteur, sa boîte sous les 10 % des onglets), loin de la ligne de la
+    recette (0,2 au plus haut, celle du vendredi).
+  - **Comment** : petite et discrète, dans la police d'interface du jeu (Sora, graisse 600,
+    32 px pour 1 080 de large, soit environ 11 points sur un téléphone), blanche à 90 %, avec le
+    contour des mots du puits. Une police de secours arrête le rendu, comme pour la ligne.
+  - Sur chaque image du clip et sur sa couverture ; hors de l'empreinte `framesSha256`, comme la
+    ligne ; le contrôle `textClear` vérifie qu'elle ne couvre ni le pic, ni son étendue, ni une
+    lettre, ni la ligne. Le manifeste garde son texte, sa taille et sa hauteur.
+  - Les prises simples de `--set` n'en ont pas : ce ne sont pas des publications.
+  - **Porte** : l'étiquette tient dans la zone sûre de chaque clip, hors du pic et de la ligne,
+    dans la police du jeu ; les images du jeu (empreintes) ne changent pas.
+  - Hors du lot : la voix de l'utilisateur (une proposition, rien à construire) ; le moment de la
+    première publicité sur Playgama, les cadeaux aux spectateurs et la redirection
+    `/lumirift/play` du portfolio, étudiés à part et rapportés avant toute décision.
 
 ## 10. Hors périmètre (v1)
 
@@ -3288,3 +3321,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.46.1  | 03/11/2026 | § 6 : les parcours en CI dans trois moteurs, `E2E_ENGINE` ; la porte du lot 32 corrigée ; trois défauts corrigés (WellToast, cadeau, focus).                           |
 | 1.46.2  | 04/11/2026 | § 9 nonies, lot 35 : `--recipes`, `onScreen`, `--check`, `buildOf`, `ClipLine`, `checkFonts`, `settle`, `server.fs.allow` ; deux défauts du plateau ; mesures.         |
 | 1.46.3  | 05/11/2026 | § 9 decies, lot 36 : la musique qui boucle (96 BPM, quatre mesures, 10 s), `MusicBed`, le mélange en boucle, l'amorce AAC, les contrôles du son ; § 4.6 : 1.46.4.      |
+| 1.46.3  | 05/11/2026 | § 9 undecies, lot 37 : l'étiquette « Lumirift Blocks · @adamrodwebdev » sur chaque clip, en haut de la zone sûre, dans `textClear`.                                    |

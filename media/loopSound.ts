@@ -26,16 +26,19 @@ export const BASS_EVERY_BEATS = 2;
 export const LOOP_LIMITS = {
   /** A level step across the seam, in 100 ms either side (dB). */
   seamStepDb: 1.5,
-  /** A dropout: the level falling this far from one 2 ms window to the next, and coming back (dB). */
-  dropoutDb: 20,
+  /** Digital silence inside the sound: a stretch this long is a hole (ms). */
+  silenceMs: 1,
   /** A click: the step at a seam or a cut, against the largest within 5 ms (ratio). */
   clickRatio: 2,
   /** Bass notes: each one this close to their median offset from the grid (ms). */
   bassSpreadMs: 5,
   /** The bed in the clip: the best match this close to where it should be (ms)… */
   bedLagMs: 10,
-  /** …and at least this correlated, effects over it (the bed alone would be 1). */
-  bedCorrelation: 0.25,
+  /**
+   * …where it is heard: a correlation over this (the bed alone gives 1; effects over it lower
+   * it, to 0.11 under the Heart's fight; two unrelated sounds stay near 0.02).
+   */
+  bedCorrelation: 0.05,
   /** What the bed's two renders may differ by outside its own notes, and the ring left at the end (dB under its peak). */
   ownNotesDb: -80,
 } as const;
@@ -124,42 +127,43 @@ export function levelStepDb(channels: Channels, at: number, sampleRate: number, 
   return toDb(after / before);
 }
 
-/** A dropout found in a loop: where (ms) and how far the level fell into it (dB). */
-export interface Dropout {
+/** The longest stretch of digital silence inside a loop's sound: where it starts (ms), how long (ms). */
+export interface Silence {
   readonly atMs: number;
-  readonly depthDb: number;
+  readonly ms: number;
 }
 
+/** Under this, a sample is silence (dBFS): the bed never falls near it (its quietest is near −45). */
+const SILENT = 10 ** (-80 / 20);
+
 /**
- * The deepest dropout of a loop: a hole cut into the sound, where the level
- * falls at once from one 2 ms window to the next and comes back within 50 ms
- * (to 6 dB of where it was), round the loop. A sound that dies away before
- * the next one starts falls a little at a time: no hole. Sound under −60 dBFS
- * before the fall is silence, not sound with a hole in it.
+ * The longest stretch of digital silence inside a loop's sound, round the
+ * loop: every channel under −80 dBFS, after sound (the 20 ms before it over
+ * −60 dBFS). A codec's gap is such a hole (the old clips' first 8 ms); a
+ * sound that dies away over the music bed never is.
  */
-export function worstDropout(channels: Channels, sampleRate: number): Dropout {
-  const window = msToSamples(2, sampleRate);
-  const back = 25;
+export function longestSilence(channels: Channels, sampleRate: number): Silence {
   const length = channels[0]?.length ?? 0;
-  const count = Math.floor(length / window);
-  const powers = Float64Array.from({ length: count }, (_, k) =>
-    power(channels, k * window, (k + 1) * window),
-  );
-  const floor = 10 ** (-60 / 10);
-  const near = 10 ** (-6 / 10);
-  let worst: Dropout = { atMs: 0, depthDb: 0 };
-  for (let k = 0; k < count; k++) {
-    const before = powers[wrap(k - 1, count)] ?? 0;
-    const here = powers[k] ?? 0;
-    if (before < floor || here >= before) continue;
-    let returns = false;
-    for (let j = 1; j <= back && !returns; j++)
-      returns = (powers[wrap(k + j, count)] ?? 0) >= before * near;
-    if (!returns) continue;
-    const depthDb = here === 0 ? Infinity : toDb(before / here);
-    if (depthDb > worst.depthDb) worst = { atMs: (k * window * 1000) / sampleRate, depthDb };
+  const quiet = (i: number) =>
+    channels.every((samples) => Math.abs(samples[wrap(i, length)] ?? 0) < SILENT);
+  const before = msToSamples(20, sampleRate);
+  const audible = 10 ** (-60 / 10);
+  let longest: Silence = { atMs: 0, ms: 0 };
+  // Start where the sound is not silent, so that a stretch across the seam is counted whole.
+  let origin = 0;
+  while (origin < length && quiet(origin)) origin++;
+  if (origin === length) return longest;
+  for (let i = origin + 1; i < origin + length; i++) {
+    if (!quiet(i) || quiet(i - 1)) continue;
+    let end = i;
+    while (end < i + length && quiet(end)) end++;
+    const ms = ((end - i) * 1000) / sampleRate;
+    if (ms > longest.ms && power(channels, i - before, i) > audible) {
+      longest = { atMs: (wrap(i, length) * 1000) / sampleRate, ms };
+    }
+    i = end;
   }
-  return worst;
+  return longest;
 }
 
 /**
