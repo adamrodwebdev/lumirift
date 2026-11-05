@@ -24,9 +24,9 @@ export const BASS_EVERY_BEATS = 2;
 
 /** Thresholds of the checks (1.46.3), as the lot's spec sets them (CAHIER § 9 decies). */
 export const LOOP_LIMITS = {
-  /** A level step across the seam, in 20 ms either side (dB). */
+  /** A level step across the seam, in 100 ms either side (dB). */
   seamStepDb: 1.5,
-  /** A dropout: a 2 ms window this far under the 20 ms on both sides of it (dB). */
+  /** A dropout: the level falling this far from one 2 ms window to the next, and coming back (dB). */
   dropoutDb: 20,
   /** A click: the step at a seam or a cut, against the largest within 5 ms (ratio). */
   clickRatio: 2,
@@ -110,9 +110,12 @@ const msToSamples = (ms: number, sampleRate: number) => Math.round((ms / 1000) *
 /**
  * The level step across `at`, round the loop (dB): the `spanMs` after it
  * against the `spanMs` before it. At a seam that runs through, it is what the
- * sound does there anyway; a silence or a jump at the seam shows.
+ * sound does there anyway; a jump at the seam shows (a limiter's gain that
+ * differs at the two ends, sound from elsewhere in the take). 100 ms: in the
+ * bed's quietest stretches (−43 dB) a pad's beating moves the level of 20 ms
+ * windows by ±1.4 dB, and a clip's downbeat comes 167 ms after its seam.
  */
-export function levelStepDb(channels: Channels, at: number, sampleRate: number, spanMs = 20) {
+export function levelStepDb(channels: Channels, at: number, sampleRate: number, spanMs = 100) {
   const span = msToSamples(spanMs, sampleRate);
   const before = power(channels, at - span, at);
   const after = power(channels, at, at + span);
@@ -121,38 +124,39 @@ export function levelStepDb(channels: Channels, at: number, sampleRate: number, 
   return toDb(after / before);
 }
 
-/** A dropout found in a loop: where (ms) and how far under both sides (dB). */
+/** A dropout found in a loop: where (ms) and how far the level fell into it (dB). */
 export interface Dropout {
   readonly atMs: number;
   readonly depthDb: number;
 }
 
 /**
- * The deepest dropout of a loop: the 2 ms window furthest under the 20 ms on
- * each side of it, both sides (a window just before an onset is not a hole).
- * Sides quieter than −60 dBFS are silence, not sound with a hole in it.
+ * The deepest dropout of a loop: a hole cut into the sound, where the level
+ * falls at once from one 2 ms window to the next and comes back within 50 ms
+ * (to 6 dB of where it was), round the loop. A sound that dies away before
+ * the next one starts falls a little at a time: no hole. Sound under −60 dBFS
+ * before the fall is silence, not sound with a hole in it.
  */
 export function worstDropout(channels: Channels, sampleRate: number): Dropout {
   const window = msToSamples(2, sampleRate);
-  const side = 10;
+  const back = 25;
   const length = channels[0]?.length ?? 0;
   const count = Math.floor(length / window);
   const powers = Float64Array.from({ length: count }, (_, k) =>
     power(channels, k * window, (k + 1) * window),
   );
   const floor = 10 ** (-60 / 10);
+  const near = 10 ** (-6 / 10);
   let worst: Dropout = { atMs: 0, depthDb: 0 };
   for (let k = 0; k < count; k++) {
-    let before = 0;
-    let after = 0;
-    for (let j = 1; j <= side; j++) {
-      before += powers[wrap(k - j, count)] ?? 0;
-      after += powers[wrap(k + j, count)] ?? 0;
-    }
-    const around = Math.min(before, after) / side;
-    if (around < floor) continue;
+    const before = powers[wrap(k - 1, count)] ?? 0;
     const here = powers[k] ?? 0;
-    const depthDb = here === 0 ? Infinity : toDb(around / here);
+    if (before < floor || here >= before) continue;
+    let returns = false;
+    for (let j = 1; j <= back && !returns; j++)
+      returns = (powers[wrap(k + j, count)] ?? 0) >= before * near;
+    if (!returns) continue;
+    const depthDb = here === 0 ? Infinity : toDb(before / here);
     if (depthDb > worst.depthDb) worst = { atMs: (k * window * 1000) / sampleRate, depthDb };
   }
   return worst;

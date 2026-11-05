@@ -72,18 +72,34 @@ describe("the clips' music bed", () => {
 });
 
 describe("a loop's seam", () => {
-  // 480 Hz at 8 kHz: a period of 50/3 samples; 1 000 samples are 60 whole periods.
-  const whole = stereo(sine(1000, 480));
+  // 480 Hz at 8 kHz: a period of 50/3 samples; 8 000 samples (1 s) are 480 whole periods.
+  const whole = stereo(sine(8000, 480));
 
   it('keeps its level when the sound runs through it', () => {
     expect(Math.abs(levelStepDb(whole, 0, RATE))).toBeLessThan(0.5);
   });
 
-  it('shows the silence the old AAC start put after it', () => {
+  it('shows a level that jumps at the seam', () => {
+    // The head of the loop 3 dB down, as a limiter that does not know the loop leaves it.
+    const lower = whole.map((samples) =>
+      samples.map((value, i) => (i < 800 ? value * 0.7 : value)),
+    );
+    expect(levelStepDb(lower, 0, RATE)).toBeLessThan(-LOOP_LIMITS.seamStepDb);
+  });
+
+  it('shows the silence the old AAC start put after it as a dropout', () => {
     // 8 ms of digital silence at the start, as every clip of 4 November had.
     const muted = whole.map((samples) => samples.map((value, i) => (i < 64 ? 0 : value)));
-    expect(levelStepDb(muted, 0, RATE)).toBeLessThan(-LOOP_LIMITS.seamStepDb);
     expect(worstDropout(muted, RATE)).toEqual({ atMs: 0, depthDb: Infinity });
+  });
+
+  it('shows a hole of 20 ms cut into a sound', () => {
+    const holed = stereo(
+      noise(4000, 6, 0.3).map((value, i) => (i >= 1600 && i < 1760 ? value * 0.001 : value)),
+    );
+    const dropout = worstDropout(holed, RATE);
+    expect(dropout.atMs).toBe(200);
+    expect(dropout.depthDb).toBeGreaterThan(LOOP_LIMITS.dropoutDb);
   });
 
   it('finds no dropout in sound that runs on, nor before an onset', () => {
@@ -91,6 +107,15 @@ describe("a loop's seam", () => {
     // Quiet sound, then a burst 30 dB louder: the window before the burst is no hole.
     const onset = noise(4000, 2, 0.01).map((value, i) => (i >= 2000 ? value * 31.6 : value));
     expect(worstDropout(stereo(onset), RATE).depthDb).toBeLessThan(LOOP_LIMITS.dropoutDb);
+  });
+
+  it('finds no dropout where a sound dies away just before the next one', () => {
+    // Bursts that fade 40 dB over 20 ms, each straight into the next, as the game's effects do
+    // (Tuesday's clip at 3.92 s): the window before each burst is far under the 20 ms around it.
+    const bursts = noise(4000, 7, 0.3).map(
+      (value, i) => value * 10 ** ((-40 * (i % 160)) / 160 / 20),
+    );
+    expect(worstDropout(stereo(bursts), RATE).depthDb).toBeLessThan(LOOP_LIMITS.dropoutDb);
   });
 
   it('does not click where the wave runs on, and clicks where it jumps', () => {

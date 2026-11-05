@@ -3172,15 +3172,22 @@ exactement 10,000 s, 300 images et 480 000 échantillons.
     - le lit : des mesures entières à l'échantillon près ; ses seules notes (la soustraction ne
       laisse que du silence avant elles, et leur résonance s'éteint avant la fin du rendu) ; ses
       notes de basse sur la grille, régulières à travers la jointure (à ±5 ms de leur écart
-      médian) ; son niveau à la jointure du clip (20 ms avant, 20 ms après, à ±1,5 dB) ;
-    - le MP4 décodé : la longueur exacte ; aucun trou (aucune fenêtre de 2 ms à plus de 20 dB
-      sous ses ±20 ms, à travers la jointure) ; aucun clic (le saut d'un échantillon à la
-      jointure et à chaque coupe au plus le double du plus grand dans les ±5 ms) ; le niveau à la
-      jointure (±1,5 dB) ; le lit à l'heure à la jointure et à chaque coupe (décalage d'au plus
-      10 ms, corrélation d'au moins 0,25 sur ±1 s) ;
+      médian) ; son niveau à la jointure du clip (100 ms avant, 100 ms après, à ±1,5 dB) ;
+    - le MP4 décodé : la longueur exacte ; aucun trou (le niveau ne tombe pas de plus de 20 dB
+      d'une fenêtre de 2 ms à la suivante pour revenir dans les 50 ms, à travers la jointure) ;
+      aucun clic (le saut d'un échantillon à la jointure et à chaque coupe au plus le double du
+      plus grand dans les ±5 ms) ; le niveau à la jointure (±1,5 dB) ; le lit à l'heure à la
+      jointure et à chaque coupe (décalage d'au plus 10 ms, corrélation d'au moins 0,25 sur
+      ±0,5 s) ;
     - la comparaison des 400 premières et dernières millisecondes, proposée par la recherche,
       n'est pas gardée : la basse du temps fort, juste après la jointure du lit, lui ferait
-      mesurer la musique plutôt que la jointure.
+      mesurer la musique plutôt que la jointure ;
+    - corrigés au premier rendu du mardi, mesures à l'appui : le niveau se compare sur 100 ms et
+      non 20 (dans le passage le plus calme du lit, vers −43 dB, le battement d'un pad fait
+      varier de ±1,4 dB des fenêtres de 20 ms ; le temps fort vient 167 ms après la jointure) ;
+      un trou est une chute soudaine qui revient, non une fenêtre sous la moyenne de ses voisines
+      (un effet qui s'éteint juste avant le suivant y descendait de 23,8 dB sans aucun trou).
+      Les anciens clips échouent toujours (le silence de 8 ms est un trou sans fond).
   - **Porte** :
     - les cinq clips d'aujourd'hui échouent aux nouveaux contrôles (le silence, le clic, les
       16 échantillons, pas de lit), et les quatre clips refaits les passent ;
