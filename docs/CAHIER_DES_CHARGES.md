@@ -3342,6 +3342,11 @@ documentation officielle, les conditions des développeurs de bots, le SDK Playg
     - Le jeu ne demande pas le plein écran : pas de marges sûres à gérer, l'en-tête de Telegram
       reste hors de la page.
     - Le script de Telegram n'est chargé qu'une fois, par le SDK.
+    - Ajout au-delà de la spécification : un SDK qui n'a pas fini de démarrer au bout de 15 s
+      est laissé de côté, et le jeu démarre sans lui (sauvegarde en mémoire, sans pubs) au lieu
+      de rester sur son chargement. Sur Telegram, un lancement sans utilisateur laisse le SDK
+      attendre sans fin (référence `telegram.md`, piège 1) ; le garde-fou vaut pour toutes les
+      plateformes de Playgama.
     - Comment l'application de Playgama ouvre le jeu n'est pas documenté : si le jeu y tourne dans
       un cadre sans `Telegram.WebApp`, ce code reste sans effet. On le vérifie à la première
       publication.

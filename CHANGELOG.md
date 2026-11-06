@@ -3,6 +3,30 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.46.5] — 06/11/2026
+
+Prêt pour Telegram (§ 9 duodecies, lot 38) : Lumirift arrivera sur Telegram par l'application
+partenaire de Playgama, sans bot à nous (choix de l'utilisateur). La version Playgama s'y comporte
+comme Telegram le demande ; ailleurs, rien ne change.
+
+### Ajouté
+
+- **Des sauvegardes qui tiennent dans le nuage de Telegram** : quand le SDK Playgama dit tourner
+  sur Telegram, chaque clé passe sans « : » (`stackrift_records`), et une valeur de plus de
+  4 096 caractères est découpée en parties annoncées (`@parts:n`), puis relue d'un seul tenant.
+  Aucun record n'est élagué.
+- **Le jeu dans Telegram** (`TelegramShell`, seulement quand `Telegram.WebApp` est dans la page) :
+  l'application s'ouvre à sa pleine hauteur ; le glissement vers le bas qui la ferme est coupé
+  pendant la partie, rendu dans les menus (Telegram 7.7 ou plus) ; le jeu se met en pause quand
+  l'application est réduite, après avoir sauvé. Chaque appel est protégé : un vieux client qui
+  refuse ne casse rien.
+
+### Corrigé
+
+- **Un SDK qui ne finit pas de démarrer bloquait le jeu sur son chargement** (sur Telegram, un
+  lancement sans utilisateur) : au bout de 15 s, le jeu démarre sans lui, avec sa sauvegarde en
+  mémoire.
+
 ## [1.46.4] — 06/11/2026
 
 L'outillage à jour (§ 4.6) : `npm audit --include=dev` ne trouve plus rien. Le jeu ne change pas :
