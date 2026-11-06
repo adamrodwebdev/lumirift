@@ -408,7 +408,7 @@ const milestoneLine = computed(() => {
         <AppIcon name="restart" :size="20" />{{ t('campaign.retry') }}
       </button>
       <button type="button" class="btn btn--raised" @click="emit('campaign')">
-        <AppIcon name="map" :size="20" />{{ t('campaign.map') }}
+        <AppIcon name="map" :size="20" />{{ t('hub.tabs.map') }}
       </button>
     </div>
     <div v-else class="sheet-buttons sheet-buttons--lead results__right">
