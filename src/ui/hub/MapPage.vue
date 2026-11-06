@@ -5,6 +5,7 @@ import { useServices } from '@/app/AppServices';
 import { CHAPTERS, LEVELS, type CampaignLevel } from '@/campaign/Levels';
 import { allowsLevel } from '@/platform/Edition';
 import AppIcon from '../components/AppIcon.vue';
+import LoreLine from '../components/LoreLine.vue';
 import StarRow from '../components/StarRow.vue';
 import UpgradesDialog from '../components/UpgradesDialog.vue';
 import LevelDialog from './LevelDialog.vue';
@@ -194,6 +195,7 @@ const shopOpen = ref(false);
         <AppIcon name="right" />
       </button>
     </header>
+    <LoreLine class="map__lore" :text="t(`lore.chapter.${view.chapter}`)" />
     <div class="map__dots" aria-hidden="true">
       <i v-for="(chapter, i) in CHAPTERS" :key="chapter" :class="{ on: i === chapterIndex }" />
     </div>
@@ -303,6 +305,11 @@ const shopOpen = ref(false);
   color: var(--danger);
   font-size: 0.75rem;
   font-weight: 800;
+}
+
+/* The chapter's line of the world (1.46.6), under its title. */
+.map__lore {
+  padding: 0 var(--space-3) var(--space-2);
 }
 
 .map__dots {
@@ -579,6 +586,17 @@ const shopOpen = ref(false);
 
   .node__label {
     font-size: 0.8rem;
+  }
+}
+
+/*
+ * The chapter's line of the world takes up to 3.6rem the path needs below 38.5rem (616 px): on
+ * a phone of 320 × 568, the levels covered each other under it, even in two rows (1.46.6).
+ */
+@container hub (max-height: 38.5rem) {
+  /* `.map` first: the line's root rules sit in `LoreLine`, whose sheet may come later. */
+  .map .map__lore {
+    display: none;
   }
 }
 

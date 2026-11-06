@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { AdTuning } from '@/ads/AdPolicy';
 import { AdScheduler } from '@/ads/AdScheduler';
+import type { CampaignOutcome } from '@/campaign/CampaignRun';
 import { GuardianChallenge } from '@/campaign/GuardianChallenge';
 import { levelById } from '@/campaign/Levels';
 import { TRAINING } from '@/campaign/Training';
@@ -152,7 +153,10 @@ function setUp(
       total: progress.total * 2,
     })),
   };
-  const campaign = { record: vi.fn(() => 2), starsOf: vi.fn(() => 0) };
+  const campaign = {
+    record: vi.fn((_outcome: CampaignOutcome) => 2),
+    starsOf: vi.fn((_levelId: string) => 0),
+  };
   const ports: GameRunPorts = {
     catalog: {
       create: (_id, options) => {
@@ -310,6 +314,46 @@ describe('GameRun', () => {
     // A campaign game never counts as a record.
     expect(scores.best(level.modeId)).toBeNull();
     expect(platform.gameOver).toHaveBeenCalledWith(true);
+  });
+
+  it('announces the Guardian of the next fight when the duel before it is won, in words only', async () => {
+    const duel = levelById('3-6')!;
+    const { run, game } = setUp(new LevelRun(duel.modeId, duel, {}));
+    await run.start();
+    game().end('victory');
+    expect(run.last?.campaign?.teaser).toEqual({ boss: 'ceramicGolem', levelId: '3-7' });
+
+    // Lost, it announces nothing.
+    const lost = setUp(new LevelRun(duel.modeId, duel, {}));
+    await lost.run.start();
+    lost.game().end('topOut');
+    expect(lost.run.last?.campaign?.won).toBe(false);
+    expect(lost.run.last?.campaign?.teaser).toBeUndefined();
+  });
+
+  it('tells a Guardian’s first fall once, nothing for a rematch or a loss, and the finale last', async () => {
+    const play = async (id: string, { starsBefore = 0, reason = 'victory' } = {}) => {
+      const level = levelById(id)!;
+      const { run, campaign, game } = setUp(new LevelRun(level.modeId, level, {}));
+      // The stars as the campaign keeps them: the ending records its own, then reads them back.
+      let stars = starsBefore;
+      campaign.starsOf.mockImplementation(() => stars);
+      campaign.record.mockImplementation((outcome: CampaignOutcome) => {
+        const gained = Math.max(0, outcome.stars - stars);
+        stars = Math.max(stars, outcome.stars);
+        return gained;
+      });
+      await run.start();
+      game().end(reason);
+      return run.last?.campaign;
+    };
+    expect((await play('2-7'))?.milestone).toEqual({ kind: 'fall', boss: 'duneWorm' });
+    expect((await play('5-7'))?.milestone).toEqual({ kind: 'fall', boss: 'riftHeart' });
+    // Won before (its stars were there), a rematch, or lost: no line of the world.
+    expect((await play('2-7', { starsBefore: 2 }))?.milestone).toBeUndefined();
+    expect((await play('6-7'))?.milestone).toBeUndefined();
+    expect((await play('3-7', { reason: 'topOut' }))?.milestone).toBeUndefined();
+    expect((await play('10-7'))?.milestone).toEqual({ kind: 'finale' });
   });
 
   it('plays the training: no clock, no record, no ad; once won, the campaign comes next', async () => {

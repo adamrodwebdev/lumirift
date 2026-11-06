@@ -22,7 +22,7 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 | **Sable**     | Sable : les pièces se désagrègent en grains ; éléments, vent et combo jusqu'à ×10         | Grains          |
 | **Placement** | Mosaïque : grille 8 × 8, pièces à poser, cinq jokers                                      | Céramique       |
 | **Volume**    | Tour : le puits s'enroule en cylindre de verre                                            | Verre courbé    |
-| **Faille**    | Course de la faille : contre la montre, à travers le puits, le Sable et la Tour           | Celle du monde  |
+| **Faille**    | Course de la Faille : contre la montre, à travers le puits, le Sable et la Tour           | Celle du monde  |
 
 - **Campagne** : 69 niveaux en dix chapitres à travers tous les modes, des étoiles à
   gagner et **dix améliorations** à acheter avec elles. Sa courbe est mesurée : des joueurs
@@ -31,15 +31,15 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   Les chapitres 6 à 10 sont **générés** : un générateur par famille tire des niveaux d'une
   graine, et seuls ceux que les joueurs simulés trouvent dans leur bande, sur deux séries de
   parties, sont gardés ; chaque chapitre finit sur la revanche d'un Gardien, plus fort.
-- **Course de la faille** : un chrono parti de 1:30 (99 s au plus), et toutes les 40 s la
-  faille change de monde, du puits au Sable puis à la Tour, chaque fois sur un plateau neuf
+- **Course de la Faille** : un chrono parti de 1:30 (99 s au plus), et toutes les 40 s la
+  Faille change de monde, du puits au Sable puis à la Tour, chaque fois sur un plateau neuf
   qui rapporte 10 s. Les lignes rapportent du temps (double pendant l'annonce du changement),
   un débordement en coûte sans finir la partie ; un Gardien du monde peut entrer en jeu pour
   25 s, et chaque cycle accélère la chute et multiplie le score. Record personnel et record de
   la semaine ; le mode s'ouvre au niveau 4-4 de la campagne.
 - **Défi du jour** : chaque jour, un mode et les mêmes pièces pour tout le monde, deux
   minutes, résultat à partager.
-- **Défi des Gardiens** : chaque semaine, un Gardien de la faille ouvert à tous depuis
+- **Défi des Gardiens** : chaque semaine, l'un des quatre Gardiens, ouvert à tous depuis
   l'accueil ; ses points, multipliés par une victoire rapide, font le record de la semaine, et
   le premier essai de chaque jour rapporte de l'XP.
 - **Duel** contre une IA, cinq niveaux calés sur la vitesse de vrais joueurs.
@@ -51,6 +51,12 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   plus souvent et donne son objectif ; les points de chaque partie montent la piste de la
   saison (de l'expérience et des nouveautés, une couronne pour l'ensemble). Une avant-saison
   dès maintenant, la saison 1 « Braises » le 14 décembre, les suivantes prêtes en données.
+- **Les lignes du monde** (1.46.6) : la lumière tombe par la Faille et durcit en blocs, quatre
+  Gardiens gardent leur matière, et vous brisez les blocs pour la libérer. Le récit tient en
+  27 phrases, là où l'on regarde déjà : une par chapitre de la carte, à l'annonce et à la première
+  chute de chaque Gardien, à la finale, sur les trophées de l'Atelier et sur la page de la saison ;
+  jamais avant ni pendant la partie. Ce qu'il y a au-delà de la Faille reste un mystère. Sur les
+  écrans bas, la carte et la fenêtre de fin les taisent : leurs niveaux et leurs boutons d'abord.
 - **Dunes, à l'essai** (1.37) : le sable posé depuis une main de trois pièces, sur un plateau
   de 9 × 12 cases ; une couleur qui relie les murs s'efface, sans chrono ; les éléments et le
   Ver des dunes. Il ne vit que dans ses versions de test (voir « Version Playgama ») jusqu'à
@@ -61,7 +67,7 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 - **Un puits à soi** (1.43) : 10 colonnes, comme le genre, et 18 rangées ; chaque pièce est
   un seul cristal, d'un seul tenant dans la pile jusqu'à ce qu'une ligne la coupe ; un faisceau
   de lumière montre où elle se posera, et à son pied une constellation d'étincelles dessine la
-  pièce entière (1.45) ; les prochaines pièces sortent de la faille au-dessus du puits ; les
+  pièce entière (1.45) ; les prochaines pièces sortent de la Faille au-dessus du puits ; les
   rangées d'attaque du Duel montent en pierre de faille.
 - **Effets** : destructions physiques, sons synthétisés, vibrations ; réglables (complets,
   sobres, aucun), sans jamais plus de trois flashs par seconde. À la mesure du moment (1.41) :
@@ -76,7 +82,7 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   premières minutes d'un nouveau joueur ; une partie perdue peut reprendre contre une pub
   choisie, rarement (dix minutes d'écart) ; une apparence verrouillée s'essaie le temps d'une
   partie.
-- **La surcharge de la faille** : les lignes remplissent une jauge ; pleine, le joueur ralentit
+- **La surcharge de la Faille** : les lignes remplissent une jauge ; pleine, le joueur ralentit
   le temps au tiers pendant huit secondes pour sauver sa partie, et les points faits pendant
   sont multipliés à la sortie.
 - **Des gestes qui jouent la musique** : chaque rotation joue la note suivante de l'accord
@@ -84,7 +90,7 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
   plus fort. En Rythme, la musique suit la pulsation du mode.
 - **Écran titre vivant** : une boucle de vraies parties montre, avant même de jouer, ce
   qu'aucun autre jeu de blocs n'a : les éléments du Sable, les puits qui se retournent,
-  basculent et se reflètent, les quatre Gardiens de la faille.
+  basculent et se reflètent, les quatre Gardiens.
 - **Sur les portails** (CrazyGames, Playgama, Yandex Games) : un nouveau joueur arrive directement dans
   l'entraînement, une seule partie guidée et passable. Le premier éclair, tout près de l'eau,
   brise le sable dans les deux premières secondes ; une consigne de cinq mots au plus et son
@@ -103,7 +109,7 @@ Mesurer une version : [docs/PREUVE.md](docs/PREUVE.md).
 | Tourner / autre sens      | ↑ ou X / Z (W en AZERTY)               | Toucher la moitié droite / gauche         |
 | Réserve                   | C ou Maj                               | Un coup vers le haut, ou toucher la case  |
 | Capacité (Renversement)   | F                                      | Bouton à côté de la réserve               |
-| Surcharge de la faille    | V                                      | Toucher le sablier                        |
+| Surcharge de la Faille    | V                                      | Toucher le sablier                        |
 | Tourner la Tour           | Q / E (A / E en AZERTY)                | Glisser à deux doigts                     |
 | Mosaïque                  | 1, 2, 3 (4 : cube), flèches, Entrée, J | Glisser-déposer                           |
 | Pause                     | P                                      | Bouton en haut de l'écran                 |
@@ -299,10 +305,10 @@ ou en haut de la zone sûre quand la ligne est trop basse.
 - TypeScript strict, ESLint `strictTypeChecked`, Prettier.
 - Près de 700 tests unitaires : moteurs, modes, IA, effets et sons, services, progression,
   parité des traductions ; et un projet à part, `npm run test:curve`, où des joueurs simulés
-  jouent toute la campagne et 24 courses de la faille.
+  jouent toute la campagne et 24 courses de la Faille.
 - Parcours de bout en bout sur téléphone (390 × 844) et ordinateur (1280 × 800), dans
   Chrome, Firefox et WebKit (le moteur de Safari, où le téléphone est un iPhone 13) : les 14
-  modes, une partie complète, une course de la faille jusqu'à sa fin, défi du jour, le
+  modes, une partie complète, une course de la Faille jusqu'à sa fin, défi du jour, le
   calendrier des cadeaux sur une horloge réglée (minuit, retour en arrière), l'ouverture d'une
   saison à minuit UTC vue d'Auckland et de Los Angeles, réglages
   retenus, menu (onglets, glissement, carte, Atelier), clavier seul ; le premier lancement d'un portail, sur le build
@@ -318,7 +324,9 @@ ou en haut de la zone sûre quand la ligne est trop basse.
   Performance, 95 dans les trois autres).
 - Intégration continue : `.github/workflows/ci.yml` rejoue tout cela à chaque envoi sur
   `dev` et `main` et pour chaque pull request ; les parcours dans Firefox et dans WebKit
-  tournent chacun dans sa tâche, en parallèle.
+  tournent chacun dans sa tâche, en parallèle. Chaque tâche a un plafond (45 minutes, 30 pour
+  Firefox) et l'installation d'un moteur s'arrête à 10 minutes : si un miroir Ubuntu lent la
+  bloque, relancer la tâche échouée (`gh run rerun <id> --failed`).
 
 ## Architecture en bref
 

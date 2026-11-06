@@ -240,7 +240,7 @@
       "hot": "HOT!",
       "blazing": "BLAZING!",
       "inferno": "INFERNO!",
-      "riftbreaker": "RIFTBREAKER!"
+      "whiteHot": "WHITE-HOT!"
     }
   },
   "controls": {
@@ -1101,6 +1101,45 @@
       "lightning": "Lightning strikes down its column: aim at water for a shock.",
       "seed": "Water a seed: it grows into a bridge of its colour.",
       "acid": "Acid eats the sand under it."
+    }
+  },
+  "lore": {
+    "chapter": {
+      "1": "The Rift’s light falls as blocks. Break them and set it free.",
+      "2": "The wind crosses the dunes. Below, the Wyrm keeps its sand.",
+      "3": "Where the light sets into tiles, the Golem stands guard.",
+      "4": "The light rolls into a tower of glass, and the Eye opens.",
+      "5": "At the bottom of the well, the Heart of the Rift beats.",
+      "6": "The Wyrm is back, and the sand won’t hold still.",
+      "7": "The Golem stands again, harder than before.",
+      "8": "The Eye opens again, and its gaze grows wider.",
+      "9": "The Heart beats faster: the way through is near.",
+      "10": "The Heart, one last time. Past it, no one has looked."
+    },
+    "stirs": {
+      "duneWorm": "It keeps the sand by swallowing it. It knows you’re here.",
+      "ceramicGolem": "Born of broken tiles and mended in gold, it throws stones.",
+      "towerEye": "Its gaze sweeps the tower; where it stops, stones fall.",
+      "riftHeart": "It guards the way through the Rift. Every beat pushes matter up."
+    },
+    "fall": {
+      "duneWorm": "The Wyrm sinks back into the sand and leaves you its scales.",
+      "ceramicGolem": "The Golem breaks apart. Its golden seams are yours now.",
+      "towerEye": "The Eye closes. The light in its glass is yours.",
+      "riftHeart": "The Heart falls quiet. The Rift’s glow is yours to wear."
+    },
+    "finale": "The light keeps falling. Somewhere past the Rift, it lands.",
+    "trophy": {
+      "duneWorm": "Shed by the Dune Wyrm as it sank.",
+      "ceramicGolem": "The gold that sealed the Golem’s cracks.",
+      "towerEye": "Glass from the Eye of the Tower, still catching the light.",
+      "riftHeart": "The Rift’s glow, freed when the Heart fell quiet."
+    },
+    "season": {
+      "preseason": "The Rift wakes: each week it breathes another element.",
+      "embers": "The Rift runs hot: embers rise where lines break.",
+      "tides": "The Rift swells: water falls with the light.",
+      "storm": "The Rift rumbles: lightning falls with the light."
     }
   }
 }

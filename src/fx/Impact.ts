@@ -109,7 +109,7 @@ export const COMBO_SHOUTS: Readonly<Record<number, string>> = {
   3: 'hot',
   5: 'blazing',
   8: 'inferno',
-  10: 'riftbreaker',
+  10: 'whiteHot',
 };
 
 /** How a combo of ×`times` looks: the size of its word (cells), its heat, its shout. */

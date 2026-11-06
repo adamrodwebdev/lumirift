@@ -73,7 +73,7 @@ describe('the impact scale (1.41)', () => {
     expect(comboLook(5).heat).toBe('red');
     expect(comboLook(5).shout).toBe('blazing');
     expect(comboLook(8)).toMatchObject({ heat: 'white', shout: 'inferno' });
-    expect(comboLook(10)).toEqual({ size: 1.6, heat: 'white', shout: 'riftbreaker' });
+    expect(comboLook(10)).toEqual({ size: 1.6, heat: 'white', shout: 'whiteHot' });
     expect(comboLook(20).size).toBe(1.6);
     expect(comboLook(4).shout).toBeNull();
   });

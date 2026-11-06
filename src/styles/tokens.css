@@ -59,6 +59,16 @@
   /* The rift: its hot core, its glow. */
   --rift-core: #fff3d6;
   --rift-glow: #ff9a3c;
+  /* The world's lines (1.46.6): parchment, under a short mark of the rift's light. */
+  --lore: #e4d9c3;
+  --lore-mark: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-fill) 30%,
+    var(--rift-core) 50%,
+    var(--accent-fill) 70%,
+    transparent
+  );
 
   --well-bg: #0e0b2a;
   --well-grid: rgb(255 255 255 / 0.04);

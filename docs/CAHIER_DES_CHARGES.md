@@ -25,7 +25,7 @@
 | 1.46.3  | 06/11/2026 | La musique qui boucle et l'étiquette des clips : un lit de quatre mesures à 96 BPM, l'amorce AAC, les contrôles du son, « Lumirift Blocks · @adamrodwebdev » sur chaque clip (§ 9 decies et undecies, lots 36 et 37).                 |
 | 1.46.4  | 06/11/2026 | L'outillage sans alerte : le plugin i18n, `fast-uri` et `minimatch` à jour, `npm audit` vide (§ 4.6).                                                                                                                                 |
 | 1.46.5  | 06/11/2026 | Prêt pour Telegram : les sauvegardes taillées pour le nuage de Telegram, le comportement d'une Mini App, le SDK attendu 15 s au plus (§ 9 duodecies, lot 38).                                                                         |
-| 1.46.6  | 06/11/2026 | Les lignes du monde : 27 lignes du récit sur la carte, les fenêtres de fin, l'Atelier et la saison, en quatre langues ; le cri du ×10 renommé WHITE-HOT! ; la Faille en capitale (§ 9 terdecies, lot 39).                             |
+| 1.46.6  | 06/11/2026 | Les lignes du monde : 27 lignes du récit sur la carte, les fenêtres de fin, l'Atelier et la saison, en quatre langues ; le cri du ×10 renommé WHITE-HOT! ; la Faille en capitale ; plafonds de durée en CI (§ 9 terdecies, lot 39).   |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1789,7 +1789,9 @@ src/ui/  CampaignScreen, UpgradesDialog, CampaignCard, CampaignGoal, StarRow,
   `test:curve`, `test:e2e` et `lighthouse` à chaque envoi sur `dev` et `main` et pour chaque
   pull request, et les parcours dans Firefox et dans WebKit, une tâche par moteur, en
   parallèle. Jusqu'au 03/11/2026, elle ne lançait que Chrome : Firefox n'avait tourné nulle
-  part.
+  part. Depuis la 1.46.6, chaque tâche a un plafond d'environ deux fois sa plus longue
+  exécution verte (45 minutes, 30 pour Firefox) et l'installation d'un moteur s'arrête à
+  10 minutes (§ 9 terdecies).
 
 ## 7. Conventions Git
 
@@ -3425,8 +3427,9 @@ regardent déjà, jamais avant ni pendant la partie.
      (#e4d9c3). Contraste mesuré : de 7,7:1 (l'encadré du Gardien) à 13,8:1 (le fond). Le jeu n'a
      qu'un thème, sombre (§ 4.5) ;
    - centrée, sauf sur la page de la saison (à gauche, sous le titre) ; `text-wrap: balance` ;
-   - deux lignes au plus à 390 px, jamais coupée ; vérifiée à 320 px, au zoom de 400 % et dans
-     les quatre langues.
+   - deux lignes au plus à 390 px, jamais coupée ; vérifiée à 320 px (trois lignes au plus : la
+     ligne de la saison y partage sa rangée avec le bouton retour), au zoom de 400 % et dans les
+     quatre langues ; trois lignes indonésiennes de la carte et une russe resserrées pour tenir.
 3. **Le cri du ×10 renommé** : `riftbreaker` devient `whiteHot` (`COMBO_SHOUTS`, les quatre
    langues, le test) : WHITE-HOT!, INCANDESCENT !, РАСКАЛЕНО ДОБЕЛА!, PIJAR PUTIH!.
    - RIFTBREAKER! est le titre d'un jeu d'EXOR Studios, que son dossier de presse revendique
@@ -3442,11 +3445,34 @@ regardent déjà, jamais avant ni pendant la partie.
      faille » de ce cahier reste interne) ;
    - ni les mots de Dune : Shai-Hulud, l'épice, la monte des vers, les marteleurs, le signe du ver ;
    - ni « lidless » pour l'Œil, décrit par le verre et la lumière, jamais par le feu.
+6. **Des plafonds de durée en CI**, ajoutés au lot à la demande de l'utilisateur (« Ajoute les
+   timeout-minutes dans ce lot », 06/11/2026) :
+   - Le 06/11, l'installation des bibliothèques de Firefox et de WebKit (`--with-deps`) a rampé
+     trois fois sur le miroir Ubuntu d'Azure, vers 35 kB/s : 24, 27 et 62 minutes au lieu de
+     quelques secondes. La tâche WebKit a duré 84 minutes, et rien ne l'aurait arrêtée avant les
+     six heures de GitHub.
+   - La lenteur tient à la machine de la CI, pas au moment : deux exécutions lancées à 13 s
+     d'écart ont reçu les mêmes 139 Mo en 4 s et en 61 minutes. Une seconde tentative sur la
+     même machine aurait rampé de même ; relancer la tâche en prend une autre.
+   - Les plafonds valent environ deux fois la plus longue exécution verte, mesurée sur les
+     17 exécutions du 03 au 06/11 : 45 minutes pour la tâche principale (14 à 23 minutes) et pour
+     WebKit (17 à 26), 30 pour Firefox (9 à 13), et 10 minutes pour l'installation d'un moteur
+     (moins d'une minute et demie). Firefox et WebKit gardent `--with-deps` : leurs bibliothèques
+     ne sont pas sur l'image (30 bibliothèques de codecs pour Firefox, 176 paquets dont GStreamer
+     et GTK pour WebKit, en plus de neuf polices de secours).
 
 **Écarts proposés (à confirmer)** :
 
-- Sur les écrans bas (une carte de moins de 26 rem de haut : les téléphones couchés), la ligne du
-  chapitre se cache, comme les étoiles du chapitre : le chemin des niveaux garde sa place.
+- Sous 38,5 rem de haut de hub (616 px : les téléphones couchés, ceux de 568 px de haut), la ligne
+  du chapitre se cache. Sous elle, à 320 × 568, les niveaux de la carte se recouvraient dans les dix
+  chapitres, même en deux rangées : le chemin manquait de hauteur.
+- Sous 36 rem de haut d'écran (576 px : un téléphone de 320 × 568, ou couché), la fenêtre de fin
+  tait ses lignes du monde et resserre l'annonce du Gardien. Avec elles, elle défilait (jusqu'à
+  96 px à 640 × 360) et ses boutons passaient sous le pli ; avant le lot, elle ne défilait pas.
+- Le chemin d'un chapitre plus haut que large, mais trop court pour son zigzag (trois niveaux de
+  hauteur), passe en deux rangées (`isWide`, `mapPath.ts`). Sous la ligne, à 360 × 740, les étoiles
+  de chaque niveau se posaient sur le disque du niveau deux rangs plus bas ; à 320 × 640, le zigzag
+  se recouvrait déjà avant le lot.
 - L'annonce des 3-6, 4-6 et 5-6 revient à chaque victoire, comme celle du Ver au 1-1 : les
   revanches existent, le Gardien peut s'éveiller encore.
 
@@ -3458,12 +3484,19 @@ regardent déjà, jamais avant ni pendant la partie.
   - les langues : une ligne pour chaque chapitre, Gardien, trophée et saison, 12 mots au plus en
     anglais, les garde-fous ;
   - le cri du ×10.
-- Parcours (Playwright, les trois moteurs en CI) : la ligne de chaque chapitre, de la saison en
-  cours et d'un trophée, dans les quatre langues, à 390 et à 320 px : deux lignes au plus, jamais
-  coupée ; axe sans violation.
+- Parcours (Playwright, les trois moteurs en CI), dans les quatre langues :
+  - la ligne de chaque chapitre, de chaque saison et de chaque trophée : deux lignes au plus à
+    390 px, trois à 320 px, jamais coupée ;
+  - la carte à 320 × 568, 320 × 640, 360 × 740 et 390 × 844, dans les dix chapitres : aucun disque
+    de niveau sous un autre niveau, et la ligne cachée à 568 px de haut. Vu échouer sans les deux
+    correctifs (les niveaux recouverts à 320 × 568 et à 360 × 740).
 - Une sonde sur le serveur de développement pour les fenêtres de fin (annonce, première chute,
-  finale), qu'aucun parcours n'atteint sans jouer : à 360 × 640, 390 × 844, 640 × 360 et
-  844 × 390, dans les quatre langues, la fenêtre ne défile pas et chaque ligne tient en deux.
+  finale), qu'aucun parcours n'atteint sans jouer : à 320 × 568, 360 × 640, 390 × 844, 640 × 360
+  et 844 × 390, dans les quatre langues, la fenêtre ne défile pas et chaque ligne montrée tient en
+  deux (180 mesures).
+- Un balayage de la carte à 23 tailles, de 320 × 568 à 1920 × 1080, dans les dix chapitres :
+  aucun niveau sur un autre, sauf, comme avant le lot, les noms « Renversement » et « Ver des
+  dunes » du chapitre 6, dont les boîtes se touchent sur 8 px à 320 px de large.
 - Le balayage de 320 à 2560 px, la réorganisation à 320 × 256 et Lighthouse à 100 dans les
   quatre catégories (mobile, pire de trois passages).
 
@@ -3559,4 +3592,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.46.3  | 05/11/2026 | § 9 undecies, lot 37 : l'étiquette « Lumirift Blocks · @adamrodwebdev » sur chaque clip, en haut de la zone sûre, dans `textClear`.                                    |
 | 1.46.3  | 06/11/2026 | § 9 duodecies, lot 38 : Lumirift sur Telegram par la copie de Playgama (choix de l'utilisateur) ; prêt pour Telegram.                                                  |
 | 1.46.4  | 06/11/2026 | § 4.6 : l'outillage à jour (plugin i18n 11.2.8, `fast-uri` 3.1.9, `minimatch` 11 imposé), `npm audit` sans entrée.                                                     |
-| 1.46.6  | 06/11/2026 | § 9 terdecies, lot 39 : les lignes du monde (`lore.*`, `LoreLine`, `--lore`, `announces`, `storyMilestone`), WHITE-HOT!, la Faille en capitale.                        |
+| 1.46.6  | 06/11/2026 | § 9 terdecies, lot 39 : les lignes du monde (`lore.*`, `LoreLine`, `--lore`, `announces`, `storyMilestone`), WHITE-HOT!, la Faille en capitale, plafonds en CI.        |

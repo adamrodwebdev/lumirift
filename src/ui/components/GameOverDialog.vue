@@ -11,6 +11,7 @@ import type { ContinueCard, GameOutcome } from '../GameOutcome';
 import { useProgressText } from '../useProgressText';
 import { useCountUp, useXpReveal, XP_FILL_MS } from '../useReveal';
 import AppIcon from './AppIcon.vue';
+import LoreLine from './LoreLine.vue';
 import ModalDialog from './ModalDialog.vue';
 import StarRow from './StarRow.vue';
 
@@ -105,6 +106,13 @@ const lost = computed(() => {
 });
 /** No continue waits: the way on beats, the next game's heartbeat. */
 const beats = computed(() => !props.continueCard);
+
+/** The line of the world a level's first win earns (1.46.6): a Guardian's fall, or the finale. */
+const milestoneLine = computed(() => {
+  const milestone = props.outcome?.campaign?.milestone;
+  if (!milestone) return null;
+  return milestone.kind === 'finale' ? t('lore.finale') : t(`lore.fall.${milestone.boss}`);
+});
 </script>
 
 <template>
@@ -131,6 +139,7 @@ const beats = computed(() => !props.continueCard);
     </template>
     <template v-if="outcome && !outcome.training">
       <p class="results__reason results__left">{{ t(`over.reason.${outcome.reason}`) }}</p>
+      <LoreLine v-if="milestoneLine" class="results__left results__lore" :text="milestoneLine" />
 
       <div v-if="outcome.campaign" class="results__stars results__left">
         <StarRow
@@ -144,17 +153,18 @@ const beats = computed(() => !props.continueCard);
         <p v-else-if="outcome.campaign.won" class="results__gained">
           {{ t('campaign.noBetter') }}
         </p>
-        <i18n-t
-          v-if="outcome.campaign.teaser"
-          keypath="campaign.teaser"
-          tag="p"
-          class="results__teaser"
-        >
-          <template #name>{{ t(`bosses.${outcome.campaign.teaser.boss}.name`) }}</template>
-          <template #level>
-            <span class="results__level">{{ outcome.campaign.teaser.levelId }}</span>
-          </template>
-        </i18n-t>
+        <div v-if="outcome.campaign.teaser" class="results__teaser">
+          <i18n-t keypath="campaign.teaser" tag="p" class="results__promise">
+            <template #name>{{ t(`bosses.${outcome.campaign.teaser.boss}.name`) }}</template>
+            <template #level>
+              <span class="results__level">{{ outcome.campaign.teaser.levelId }}</span>
+            </template>
+          </i18n-t>
+          <LoreLine
+            class="results__stirs"
+            :text="t(`lore.stirs.${outcome.campaign.teaser.boss}`)"
+          />
+        </div>
       </div>
     </template>
     <template v-if="outcome">
@@ -882,15 +892,48 @@ const beats = computed(() => !props.continueCard);
   white-space: nowrap;
 }
 
-/* A Guardian's promise: the danger colour, a pulse of light. */
+/* A Guardian's promise: the danger colour, a pulse of light; its line of the world under it. */
 .results__teaser {
+  display: grid;
+  gap: var(--space-2);
   max-width: 22rem;
   padding: var(--space-2) var(--space-3);
   border: 1px solid color-mix(in srgb, var(--danger) 55%, transparent);
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.results__promise {
   font-size: 0.85rem;
   font-weight: 700;
   text-align: center;
+  text-wrap: balance;
+}
+
+/* A Guardian's first fall, or the finale: its line under the verdict. */
+.results__lore {
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+/*
+ * Short screens (under 36rem: a phone of 320 × 568, or one on its side): the window keeps its
+ * buttons in view without scrolling, as it did before the lines of the world (1.46.6). The lines
+ * give way and a Guardian's promise tightens; their root rules sit in `LoreLine`, hence `.results`.
+ */
+@media (max-height: 36rem) {
+  .results .results__stirs,
+  .results .results__lore {
+    display: none;
+  }
+
+  .results__teaser {
+    padding-block: var(--space-1);
+  }
+
+  .results__promise {
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
 }
 </style>

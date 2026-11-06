@@ -240,7 +240,7 @@
       "hot": "PANAS!",
       "blazing": "MEMBARA!",
       "inferno": "LAUTAN API!",
-      "riftbreaker": "PEMECAH RETAKAN!"
+      "whiteHot": "PIJAR PUTIH!"
     }
   },
   "controls": {
@@ -1101,6 +1101,45 @@
       "lightning": "Petir menyambar ke bawah kolomnya: bidik air untuk sengatan.",
       "seed": "Siram benih: ia tumbuh jadi jembatan warnanya.",
       "acid": "Asam menggerus pasir di bawahnya."
+    }
+  },
+  "lore": {
+    "chapter": {
+      "1": "Cahaya Retakan jatuh berupa balok. Pecahkan dan bebaskan cahayanya.",
+      "2": "Angin melintasi bukit pasir. Di bawah, sang Cacing menjaga pasirnya.",
+      "3": "Di tempat cahaya mengeras menjadi ubin, sang Golem berjaga.",
+      "4": "Cahaya melingkar menjadi menara kaca, dan sang Mata terbuka.",
+      "5": "Di dasar sumur, Jantung Retakan berdetak.",
+      "6": "Sang Cacing kembali, dan pasir tak mau diam.",
+      "7": "Sang Golem bangkit lagi, lebih keras dari sebelumnya.",
+      "8": "Sang Mata terbuka lagi, dan tatapannya makin luas.",
+      "9": "Sang Jantung berdetak makin cepat: jalan tembus sudah dekat.",
+      "10": "Sang Jantung, untuk terakhir kali. Di baliknya, belum ada yang menengok."
+    },
+    "stirs": {
+      "duneWorm": "Ia menjaga pasir dengan menelannya. Ia tahu kamu di sini.",
+      "ceramicGolem": "Lahir dari pecahan ubin yang disambung emas, ia melempar batu.",
+      "towerEye": "Tatapannya menyapu menara; di tempat ia berhenti, batu berjatuhan.",
+      "riftHeart": "Ia menjaga jalan tembus Retakan. Setiap detak mendorong materi ke atas."
+    },
+    "fall": {
+      "duneWorm": "Sang Cacing kembali menyelam ke pasir dan meninggalkan sisiknya untukmu.",
+      "ceramicGolem": "Sang Golem hancur berkeping-keping. Sambungan emasnya kini milikmu.",
+      "towerEye": "Sang Mata terpejam. Cahaya di kacanya kini milikmu.",
+      "riftHeart": "Sang Jantung terdiam. Pendar Retakan kini milikmu."
+    },
+    "finale": "Cahaya terus jatuh. Di suatu tempat di balik Retakan, ia mendarat.",
+    "trophy": {
+      "duneWorm": "Ditinggalkan sang Cacing Pasir saat ia kembali menyelam.",
+      "ceramicGolem": "Emas yang dulu menutup celah-celah sang Golem.",
+      "towerEye": "Kaca dari Mata Menara, yang masih menangkap cahaya.",
+      "riftHeart": "Pendar Retakan, yang terbebas saat sang Jantung terdiam."
+    },
+    "season": {
+      "preseason": "Retakan terbangun: setiap minggu, ia mengembuskan elemen yang lain.",
+      "embers": "Retakan memanas: bara beterbangan di tempat baris pecah.",
+      "tides": "Retakan meluap: air jatuh bersama cahaya.",
+      "storm": "Retakan bergemuruh: petir jatuh bersama cahaya."
     }
   }
 }

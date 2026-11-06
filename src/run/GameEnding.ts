@@ -1,6 +1,12 @@
 import type { AdScheduler } from '@/ads/AdScheduler';
 import type { CampaignOutcome } from '@/campaign/CampaignRun';
-import { guardianLevel, LEVELS, type CampaignLevel } from '@/campaign/Levels';
+import {
+  guardianLevel,
+  LEVELS,
+  storyMilestone,
+  type CampaignLevel,
+  type StoryMilestone,
+} from '@/campaign/Levels';
 import { nextTrainingStep, type TrainingStep, type TrainingStepId } from '@/campaign/Training';
 import { dayKey } from '@/core/Day';
 import { allowsLevel } from '@/platform/Edition';
@@ -22,8 +28,13 @@ export interface CampaignResult {
   readonly gained: number;
   /** The level after this one, open now that this one is won; null at the end. */
   readonly next: CampaignLevel | null;
-  /** A Guardian the won level teased, and the level where it waits. */
+  /**
+   * A Guardian the won level announces, and the level where it waits: once
+   * its show has passed (1-1), or in words only (the duels before a fight).
+   */
   readonly teaser?: { readonly boss: BossId; readonly levelId: string };
+  /** The step of the world's story the level's first win reached (1.46.6). */
+  readonly milestone?: StoryMilestone;
 }
 
 /** A training step's ending: won or not, and the way on (the next step, or the campaign). */
@@ -186,16 +197,23 @@ export class GameEnding {
     };
   }
 
-  /** The campaign's verdict, recorded; the next level once won, and a teased Guardian's lair. */
+  /**
+   * The campaign's verdict, recorded; the next level once won, an announced
+   * Guardian's lair, and the step of the story a first win reaches.
+   */
   private judge(
     decided: CampaignOutcome,
     teased: boolean,
     level: CampaignLevel | null,
   ): CampaignResult {
+    // Read before the verdict is recorded: the level's first win.
+    const firstWin = decided.won && this.ports.campaign.starsOf(decided.levelId) === 0;
     const gained = this.ports.campaign.record(decided);
     const index = LEVELS.findIndex((each) => each.id === decided.levelId);
-    const teaser = teased ? level?.teaser : undefined;
+    const teaser =
+      (teased ? level?.teaser : undefined) ?? (decided.won ? level?.announces : undefined);
     const lair = teaser ? guardianLevel(teaser) : undefined;
+    const milestone = firstWin && level ? storyMilestone(level) : undefined;
     return {
       levelId: decided.levelId,
       won: decided.won,
@@ -203,6 +221,7 @@ export class GameEnding {
       gained,
       next: decided.won ? this.nextLevel(index) : null,
       ...(teaser && lair ? { teaser: { boss: teaser, levelId: lair.id } } : {}),
+      ...(milestone ? { milestone } : {}),
     };
   }
 

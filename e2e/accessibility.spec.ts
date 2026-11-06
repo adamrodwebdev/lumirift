@@ -116,7 +116,7 @@ for (const theme of ['dark'] as const) {
       await page.reload();
       await page.getByRole('tab', { name: 'Modes' }).click();
       await modesPage(page)
-        .getByRole('button', { name: /^Course de la faille/ })
+        .getByRole('button', { name: /^Course de la Faille/ })
         .click();
       await modesPage(page).getByRole('button', { name: 'Jouer' }).click();
       await expect(page.locator('canvas[role="img"]').first()).toBeVisible();
