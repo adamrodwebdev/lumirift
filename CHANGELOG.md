@@ -47,6 +47,12 @@ a au-delà de la Faille reste un mystère (choix de l'utilisateur).
 - **Les niveaux de la carte ne se recouvrent plus** sur un téléphone de 320 × 640 : un chemin plus
   haut que large, mais trop court pour son zigzag (trois niveaux de hauteur), passe en deux rangées.
   Sous la ligne du chapitre, un téléphone de 360 × 740 en avait besoin aussi.
+- **Le Gardien en haut de la carte ne touche plus les points des chapitres** : sur les écrans
+  hauts, où le chemin monte en zigzag, une marge les sépare (son anneau les chevauchait d'environ
+  6 px, par exemple à 390 × 844).
+- **Le bouton de la carte à la fin d'un niveau** porte le nom de son onglet : « Carte » (Map,
+  Карта, Peta). « Carte de campagne » débordait de sa moitié de rangée à 640 × 360, coupé par le
+  bord de la fenêtre.
 
 ## [1.46.5] — 06/11/2026
 

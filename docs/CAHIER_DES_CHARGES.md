@@ -3460,6 +3460,15 @@ regardent déjà, jamais avant ni pendant la partie.
      (moins d'une minute et demie). Firefox et WebKit gardent `--with-deps` : leurs bibliothèques
      ne sont pas sur l'image (30 bibliothèques de codecs pour Firefox, 176 paquets dont GStreamer
      et GTK pour WebKit, en plus de neuf polices de secours).
+7. **Deux défauts d'avant le lot**, relevés pendant ses vérifications et corrigés à la demande de
+   l'utilisateur (« Effectuez cette tâche ici », 06/11/2026) :
+   - en zigzag, le Gardien du haut de la carte touchait les points des chapitres : sa boîte (disque,
+     nom, étoiles) est centrée sur le bord du champ, que l'encart d'un demi-niveau ne couvre pas
+     pour lui, et son anneau dépasse de 5 px. Sur un hub d'au moins 45 rem de haut, les seuls où le
+     chemin peut monter en zigzag, une marge de 0,875 rem sépare les points du chemin ;
+   - à la fin d'un niveau de campagne, « Carte de campagne » débordait de sa moitié de rangée à
+     640 × 360 (277 px pour deux boutons) : le bouton porte le nom de son onglet, « Carte » (Map,
+     Карта, Peta), et la clé `campaign.map` disparaît.
 
 **Écarts confirmés** (par l'utilisateur, le 06/11/2026 : « Je les valide tous ») :
 
@@ -3488,8 +3497,16 @@ regardent déjà, jamais avant ni pendant la partie.
   - la ligne de chaque chapitre, de chaque saison et de chaque trophée : deux lignes au plus à
     390 px, trois à 320 px, jamais coupée ;
   - la carte à 320 × 568, 320 × 640, 360 × 740 et 390 × 844, dans les dix chapitres : aucun disque
-    de niveau sous un autre niveau, et la ligne cachée à 568 px de haut. Vu échouer sans les deux
-    correctifs (les niveaux recouverts à 320 × 568 et à 360 × 740).
+    de niveau sous un autre niveau ni, anneau compris, sur les points des chapitres, et la ligne
+    cachée à 568 px de haut. Vu échouer sans les deux correctifs (les niveaux recouverts à
+    320 × 568 et à 360 × 740) ;
+  - chaque téléphone dans son propre contexte : en émulation mobile, Firefox ne termine jamais un
+    `setViewportSize` et WebKit garde l'ancienne largeur (premier passage de la CI de la PR #64) ;
+    et en mouvement réduit, où les pages et les chapitres se fondent sur place : la CI de WebKit
+    mesurait les lignes en plein glissement et deux chapitres superposés (second passage). La
+    carte n'est mesurée qu'une fois son chapitre seul à l'écran.
+- Le balayage des fenêtres (`journeys.spec.ts`, de 360 × 640 au bureau) perd aussi un niveau de
+  campagne (1-3) : chaque libellé tient dans son bouton.
 - Une sonde sur le serveur de développement pour les fenêtres de fin (annonce, première chute,
   finale), qu'aucun parcours n'atteint sans jouer : à 320 × 568, 360 × 640, 390 × 844, 640 × 360
   et 844 × 390, dans les quatre langues, la fenêtre ne défile pas et chaque ligne montrée tient en
