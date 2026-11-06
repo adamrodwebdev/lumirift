@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { devices, expect, test, type Browser, type Page, type TestInfo } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
+import { paced } from './engines';
 import { seedStorage } from './seed';
 
 /*
@@ -106,38 +107,75 @@ const SHORT_PHONES = [
 
 /**
  * The map's levels whose disc lies under another level (its disc, name or
- * stars), the page at rest: "Niveau 3-6 under Niveau 3-7". Each part is
+ * stars), or whose disc and ring reach the chapter dots, the page at rest:
+ * "Niveau 3-6 under Niveau 3-7", "Niveau 3-7 under the dots". Each part is
  * measured on its own: a button is as wide as its longest name, and its
  * empty corners may brush a neighbour's disc without covering anything.
+ * Discs and dots are round: they touch when their centres are closer than
+ * their radii (a Guardian's radius takes in its ring, its outline). Measured
+ * once `chapter` is the only one on the map: a turned chapter fades out while
+ * the next fades in, both in place, and Vue starts that fade two frames late
+ * (the CI's WebKit measured them on top of each other).
  */
-const covered = (page: Page): Promise<string[]> =>
-  page.evaluate(async () => {
-    await new Promise((frame) => requestAnimationFrame(() => requestAnimationFrame(frame)));
-    await Promise.all(
-      document
-        .getAnimations()
-        .filter((motion) => motion.playState === 'running')
-        .filter((motion) => motion.effect?.getComputedTiming().endTime !== Infinity)
-        .map((motion) => motion.finished.catch(() => motion)),
-    );
-    const levels = [...document.querySelectorAll<HTMLElement>('.path__levels .node__button')];
-    const name = (level: HTMLElement) => level.getAttribute('aria-label')?.split(' · ')[0] ?? '?';
-    return levels.flatMap((level) => {
-      const disc = level.querySelector('.node__disc')?.getBoundingClientRect();
-      if (!disc) return [];
-      return levels
-        .filter((other) => other !== level)
-        .filter((other) =>
-          [...other.querySelectorAll('.node__disc, .node__label, .node__stars')].some((part) => {
-            const box = part.getBoundingClientRect();
-            const across = Math.min(disc.right, box.right) - Math.max(disc.left, box.left);
-            const down = Math.min(disc.bottom, box.bottom) - Math.max(disc.top, box.top);
-            return across > 1 && down > 1;
-          }),
-        )
-        .map((other) => `${name(level)} under ${name(other)}`);
-    });
-  });
+const covered = (page: Page, chapter: number): Promise<string[]> =>
+  page.evaluate(
+    async ({ chapter, frames }) => {
+      const frame = () => new Promise((done) => requestAnimationFrame(done));
+      /** A level's id, from its name: "Niveau 3-1 · Mosaïque, 1 étoile" gives 3-1. */
+      const id = (label: string) => label.split(' · ')[0]?.split(' ').at(-1);
+      const alone = () => {
+        const fields = [...document.querySelectorAll('.path__field')];
+        const first = fields.at(0)?.querySelector('.node__button')?.getAttribute('aria-label');
+        return fields.length === 1 && id(first ?? '') === `${chapter}-1`;
+      };
+      for (let left = frames; left > 0 && !alone(); left--) await frame();
+      if (!alone()) return [`chapter ${chapter} never alone on the map`];
+      await frame();
+      await frame();
+      await Promise.all(
+        document
+          .getAnimations()
+          .filter((motion) => motion.playState === 'running')
+          .filter((motion) => motion.effect?.getComputedTiming().endTime !== Infinity)
+          .map((motion) => motion.finished.catch(() => motion)),
+      );
+      const levels = [...document.querySelectorAll<HTMLElement>('.path__levels .node__button')];
+      const name = (level: HTMLElement) => level.getAttribute('aria-label')?.split(' · ')[0] ?? '?';
+      const round = (element: Element, ring = 0) => {
+        const box = element.getBoundingClientRect();
+        const x = box.left + box.width / 2;
+        return { x, y: box.top + box.height / 2, radius: box.width / 2 + ring };
+      };
+      const dots = [...document.querySelectorAll('.map__dots i')].map((dot) => round(dot));
+      return levels.flatMap((level) => {
+        const disc = level.querySelector('.node__disc');
+        if (!disc) return [];
+        const box = disc.getBoundingClientRect();
+        const under = levels
+          .filter((other) => other !== level)
+          .filter((other) =>
+            [...other.querySelectorAll('.node__disc, .node__label, .node__stars')].some((part) => {
+              const them = part.getBoundingClientRect();
+              const across = Math.min(box.right, them.right) - Math.max(box.left, them.left);
+              const down = Math.min(box.bottom, them.bottom) - Math.max(box.top, them.top);
+              return across > 1 && down > 1;
+            }),
+          )
+          .map((other) => `${name(level)} under ${name(other)}`);
+        const style = getComputedStyle(disc);
+        const ring =
+          style.outlineStyle === 'none'
+            ? 0
+            : parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+        const reach = round(disc, ring);
+        const touched = dots.some(
+          (dot) => Math.hypot(dot.x - reach.x, dot.y - reach.y) < reach.radius + dot.radius - 1,
+        );
+        return touched ? [...under, `${name(level)} under the dots`] : under;
+      });
+    },
+    { chapter, frames: paced(600) },
+  );
 
 /**
  * Every level of the ten chapters won once but the finale (10-7): each shows
@@ -155,6 +193,10 @@ const PLAYED = Object.fromEntries(
  * A phone of this size, held as a player holds it (touch, a mobile page), in
  * the language's own locale. Each size has its own context, as the other
  * sweeps do: Firefox's mobile emulation never finishes a `setViewportSize`.
+ * Less motion, as the system can ask: the hub's pages then fade in place
+ * instead of sliding, so a line is measured where it rests (the CI's WebKit
+ * measured trophies and chapters mid-slide, its slide unseen by
+ * `getAnimations()`).
  */
 async function phoneAt(
   browser: Browser,
@@ -168,6 +210,7 @@ async function phoneAt(
     hasTouch: true,
     isMobile: true,
     locale: phone.locale,
+    reducedMotion: 'reduce',
   });
   const page = await context.newPage();
   await closeDailyGift(page);
@@ -183,7 +226,7 @@ for (const { code, locale } of LANGUAGES) {
       browser,
     }, info) => {
       test.skip(info.project.name !== 'desktop', 'Its own phones: once per engine');
-      test.setTimeout(120_000);
+      test.setTimeout(paced(120_000));
       for (const phone of PHONES) {
         const size = `${phone.width} × ${phone.height}`;
         const page = await phoneAt(browser, info, { ...phone, locale });
@@ -246,7 +289,7 @@ for (const { code, locale } of LANGUAGES) {
       browser,
     }, info) => {
       test.skip(info.project.name !== 'desktop', 'Its own phones: once per engine');
-      test.setTimeout(120_000);
+      test.setTimeout(paced(120_000));
       for (const phone of SHORT_PHONES) {
         const size = `${phone.width} × ${phone.height}`;
         const page = await phoneAt(browser, info, { ...phone, locale });
@@ -260,7 +303,7 @@ for (const { code, locale } of LANGUAGES) {
         // From the chapter the map opens on (the last), back to the first.
         const panel = page.getByRole('tabpanel', { name: say('hub.tabs.map') });
         for (let chapter = 10; chapter >= 1; chapter--) {
-          expect.soft(await covered(page), `${size}, chapter ${chapter}`).toEqual([]);
+          expect.soft(await covered(page, chapter), `${size}, chapter ${chapter}`).toEqual([]);
           if (chapter > 1) {
             await panel.getByRole('button', { name: say('hub.prevChapter') }).click();
           }
