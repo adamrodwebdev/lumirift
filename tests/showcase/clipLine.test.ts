@@ -1,12 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  LABEL,
+  LABEL_GAP,
   LINE_PAD,
   LINE_SIZE,
   OUTLINE,
+  boxesMeet,
   chooseLayout,
   fontFaces,
   lineBox,
+  labelY,
   lineChoices,
   lineCovers,
 } from '../../media/clipLine';
@@ -141,5 +145,70 @@ describe('the on-screen line of a clip', () => {
     expect(faces.every((face) => face.weight === '200 900')).toBe(true);
     expect(faces[0]?.unicodeRange).toMatch(/^U\+0000-00FF, U\+0131, .* U\+FFFD$/);
     expect(fontFaces(css, 'Sora Variable')).toHaveLength(3);
+  });
+});
+
+describe("the clips' identity label", () => {
+  /** The middle of the safe area's width (3 % to 85 %), where the label and the lines are centred. */
+  const middle = 0.44 * FRAME.width;
+  // Sora at 600: about 0.6 of the size a character.
+  const label = lineBox(
+    { lines: [LABEL.text], size: LABEL.size },
+    [LABEL.text.length * 0.6 * LABEL.size],
+    {
+      x: middle,
+      y: LABEL.y * FRAME.height,
+    },
+  );
+
+  it("stands in the apps' safe area, just under their tabs", () => {
+    expect(label.y / FRAME.height).toBeGreaterThanOrEqual(0.1);
+    expect((label.y + label.height) / FRAME.height).toBeLessThanOrEqual(0.15);
+    expect(label.x / FRAME.width).toBeGreaterThanOrEqual(0.03);
+    expect((label.x + label.width) / FRAME.width).toBeLessThanOrEqual(0.85);
+  });
+
+  it("stays clear of the highest line a recipe has set (Friday's, at 0.2)", () => {
+    const friday = lineBox(
+      { lines: ["This puzzle's final boss", 'hides under the floor'], size: 58 },
+      [24 * 0.7 * 58, 21 * 0.7 * 58],
+      { x: middle, y: 0.2 * FRAME.height },
+    );
+    expect(boxesMeet(label, friday)).toBe(false);
+  });
+
+  it('meets a line set at its own height', () => {
+    const line = lineBox({ lines: ['Fire meets oil'], size: 72 }, [14 * 0.7 * 72], {
+      x: middle,
+      y: 0.13 * FRAME.height,
+    });
+    expect(boxesMeet(label, line)).toBe(true);
+  });
+});
+
+describe("the label's place", () => {
+  const middle = 0.44 * FRAME.width;
+  const height = 48;
+  const safe = { frame: FRAME, safeBottom: 0.78 };
+  const question = lineBox(
+    { lines: ['A or B:', 'which burns more?'], size: 70 },
+    [7 * 0.7 * 70, 17 * 0.7 * 70],
+    { x: middle, y: 0.27 * FRAME.height },
+  );
+
+  it("signs the clip's line, right under it", () => {
+    const y = labelY(question, height, safe) * FRAME.height;
+    expect(y - height / 2).toBeCloseTo(question.y + question.height + LABEL_GAP, 6);
+  });
+
+  it('goes to the top of the safe area when the line is too low for it, or missing', () => {
+    // An answer's line, under its wells: no room left above the apps' caption.
+    const answer = lineBox(
+      { lines: ["Thursday's answer:", 'A or B?'], size: 67 },
+      [18 * 0.7 * 67, 7 * 0.7 * 67],
+      { x: middle, y: 0.735 * FRAME.height },
+    );
+    expect(labelY(answer, height, safe)).toBe(LABEL.y);
+    expect(labelY(null, height, safe)).toBe(LABEL.y);
   });
 });

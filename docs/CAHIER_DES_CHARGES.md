@@ -1146,6 +1146,20 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
 - Alertes `npm audit` (12/10/2026) : 5 alertes « high » sur `braces`, dépendance de
   l'outillage de développement uniquement (lint, plugin i18n), sans entrée non fiable ; rien
   n'est livré au joueur. À réévaluer à chaque mise à jour.
+- Alertes du 04/11/2026 (1.46.2) : 22 entrées `npm audit` (4 « high », 18 « moderate ») et
+  10 alertes Dependabot, toutes dans l'outillage de développement ; `npm audit --omit=dev` n'en
+  trouve aucune et rien n'est livré au joueur.
+  - `vue-i18n`, `@intlify/core-base` et `@intlify/shared` 10.0.8, la copie interne du plugin
+    i18n du build (`@intlify/vue-i18n-extensions` 8.0.0) : `escapeParameter` laisse passer du
+    XSS (GHSA-83rm-6c8r-g728 « high », GHSA-8rc2-428q-7ww3 « low »). Le jeu livre
+    `vue-i18n` 11.4.14, la version corrigée (vérifié dans le paquet Playgama), et n'emploie ni
+    `escapeParameter`, ni `v-html`, ni `innerHTML`, ni `srcdoc`.
+  - `fast-uri` 3.1.8 (Lighthouse, par `ajv`) et `minimatch` 10.2.6 (ESLint) : « moderate » et
+    « low », des outils lancés sur nos propres fichiers, sans entrée non fiable.
+  - Décision de l'utilisateur (04/11/2026) : acceptées pour l'envoi Playgama 1.46.2 ;
+    l'outillage est mis à jour à la 1.46.4 (la 1.46.3 est la musique des clips, § 9 decies). Les
+    alertes Dependabot sont activées
+    sur le dépôt depuis ce jour ; elles lisent la branche par défaut, `main`.
 
 ### 4.7 Compatibilité
 
@@ -3097,6 +3111,134 @@ Ce lot donne à la fabrique ce qu'il faut pour qu'une semaine tourne sans touche
     4,2 minutes ; le contrôle juste après, 5 clips sur 5 « même » ; une variante changée,
     « différent » (code 2) ; un fichier faux, refusé avant toute prise avec ses quatre problèmes.
 
+## 9 decies. La musique qui boucle (lot 36, décidé le 04/11/2026)
+
+Le 04/11/2026 au soir, après le premier clip publié, l'utilisateur a demandé : « The song should
+naturally loop for the video, not be cut right in the middle. » Le diagnostic, mesuré le même soir
+sur les cinq clips de la semaine du 2 novembre, sans rien rendre :
+
+- la musique est celle du jeu, générée en direct (`Music`) : ré mineur pentatonique, Dm, B♭, F
+  et C, deux mesures par accord, à 84 battements par minute dans les cinq prises, son intensité
+  montant de 0,15 (le pad seul) à 0,65–0,70 (basse et arpège, sans la batterie ni le cœur) ;
+- la coupe « au milieu » est celle du montage (2,67 s, le mardi 1,2 s) : la musique y revient à
+  sa première note, son niveau tombe de −16 à −58 dB et la basse ne revient que 1,4 s plus tard ;
+  la jointure de la boucle est continue, sauf le mardi (la musique y recule de 2,5 s) ;
+- chaque MP4 commence par 8 ms de silence numérique (l'encodeur AAC de Chrome n'a pas de trame
+  d'amorce), d'où un petit clic à chaque relecture ; le son perd 16 échantillons quand la durée ne
+  tombe pas sur une milliseconde entière (la liste d'édition compte en millisecondes) ; le
+  limiteur ne sait pas que le clip boucle.
+
+Trois réponses ont été proposées (4 mesures au plus court, 96 BPM pour tous, 3 mesures dans les
+images d'aujourd'hui). **L'utilisateur a choisi la deuxième** (04/11/2026, relayée par la session
+marketing) : un seul tempo pour tous les clips, 96 battements par minute, quatre mesures, soit
+exactement 10,000 s, 300 images et 480 000 échantillons.
+
+- **Lot 36 · 1.46.3 La musique qui boucle.** Le jeu ne change pas : seuls la fabrique, le plateau
+  (`media/`) et l'encodeur changent.
+  - **Un lit de musique à part** (`MusicBed`) : la musique du jeu jouée seule, sur le même moteur
+    (le bus de la musique, la salle), à 96 BPM et à l'intensité des prises (0,68 : le pad, la
+    basse et l'arpège ; la batterie commence à 0,72, le cœur avec le danger, à zéro ici).
+    - **Posé dès son premier échantillon**, sans montée : la musique joue d'abord huit mesures
+      (son intensité part de 0,15, celle des menus), puis les quatre gardées (Dm puis B♭). Un
+      second rendu, identique mais arrêté avant elles, est soustrait du premier : il ne reste que
+      leurs propres notes, avec ce qui en résonne après la fin (les pads, la salle), replié sur
+      le début. Le code de la musique du jeu ne change pas.
+    - L'arpège tire ses notes d'un hasard semé par clip (`bed:<id>`) : deux rendus d'un clip ont
+      le même lit, deux clips des arpèges différents sur les mêmes accords.
+    - **Tourné pour que son premier temps fort (Dm) tombe sur l'image 5 du clip**, où le zoom
+      arrive et le pic joue, dans chaque montage. Il passe tel quel la coupe du montage et la
+      jointure de la boucle.
+    - **En mesures entières** : une mesure dure 2,5 s. Un carton d'ouverture ou de fin, ou une
+      voix, viendra en mesures entières, et le lit prend le nombre de mesures du clip (un nombre
+      pair : chaque accord garde ses deux mesures).
+  - **Le montage sur 300 images** : le temps gagné va à la suite du pic (la course du crochet
+    dure 300 images moins la reprise ; `afterMs` devient son minimum, et un pic trop tardif pour
+    quatre mesures arrête le rendu) et à l'arrêt final de la question (le mardi : 4,8 s).
+  - **Les effets suivent l'image** : la musique de la prise est coupée mais joue toujours (le
+    hasard partagé garde les mêmes images) ; les prises simples de `--set` gardent la leur. À la
+    coupe du montage, les effets qui sortent s'éteignent en 0,1 s après la coupe, ceux qui
+    entrent commencent par un fondu de 5 ms. Une image figée (les arrêts de la question) porte le
+    lit seul : une image figée ne fait pas de bruit.
+  - **Le mélange** : le lit et les effets (ouvert à une piste de voix en mesures entières), à
+    l'équilibre du jeu (bus de la musique 0,25, des effets 0,49), mis à −14 LUFS et −2 dBTP **en
+    boucle** : la mesure de sonie, la crête vraie et le limiteur lisent le clip à travers sa
+    jointure.
+  - **L'AAC** : l'encodeur reçoit, avant le clip, ses 2 048 derniers échantillons (ce que la
+    boucle joue juste avant), que la liste d'édition saute avec l'amorce mesurée : la première
+    trame ne se décode plus en silence. Les durées du film se comptent en échantillons (48 000 par
+    seconde quand il a du son) : le son dure exactement 1 600 échantillons par image.
+  - **Les contrôles du son**, écrits dans `manifest.json` et refaits par `--check` sur les
+    fichiers :
+    - le lit : des mesures entières à l'échantillon près ; ses seules notes (la soustraction ne
+      laisse que du silence avant elles, et leur résonance s'éteint avant la fin du rendu) ; ses
+      notes de basse sur la grille, régulières à travers son temps fort (à ±5 ms de leur écart
+      médian) ;
+    - le MP4 décodé : la longueur exacte ; aucun trou (aucun silence numérique, sous −80 dBFS,
+      de 1 ms ou plus après du son, à travers la jointure) ; aucun clic (le saut d'un
+      échantillon à la jointure et à chaque coupe au plus le double du plus grand dans les
+      ±5 ms) ; le niveau à la jointure (son saut sur 100 ms de part et d'autre, à ±1,5 dB de
+      celui du mélange avant sa mise à niveau : ce que le limiteur et l'AAC y ajoutent) ; le lit
+      à l'heure à la jointure et à chaque coupe (décalage d'au plus 10 ms là où il s'entend sous
+      les effets, corrélation d'au moins 0,05, et au moins un tel endroit) ;
+    - la comparaison des 400 premières et dernières millisecondes, proposée par la recherche,
+      n'est pas gardée : la basse du temps fort, juste après la jointure du lit, lui ferait
+      mesurer la musique plutôt que la jointure ;
+    - corrigés aux premiers rendus du 05/11/2026, mesures à l'appui, parce qu'ils jugeaient la
+      musique et les effets et non la jointure :
+      - le niveau du lit seul à la jointure : sur deux lits, une note d'arpège qui s'éteint
+        146 ms avant la jointure le fait varier de −7 dB, sur un autre +0,5 ; le lit est continu
+        par construction (repli et rotation, testés) ;
+      - le niveau du clip comparé à lui-même : les effets y font −16,7 dB sous le combat du
+        Cœur ; on compare donc au saut du mélange ;
+      - un trou défini par rapport aux voisines : un effet qui s'éteint juste avant le suivant y
+        descendait de 23,8 dB sans aucun trou ; un trou est un silence numérique ;
+      - une corrélation d'au moins 0,25 : sous le combat du Cœur, le lit s'entend à 0,11, à
+        l'heure (décalage 0 ms) ; deux sons sans rapport restent vers 0,02.
+        Les anciens clips échouent toujours (le silence de 8 ms, le clic, la longueur, pas de lit).
+  - **Porte** :
+    - les cinq clips d'aujourd'hui échouent aux nouveaux contrôles (le silence, le clic, les
+      16 échantillons, pas de lit), et les quatre clips refaits les passent ;
+    - les images communes aux anciens et aux nouveaux clips restent les mêmes : seule la suite
+      du pic s'allonge ;
+    - les vidéos des portails ne changent pas, et la fabrique ne fait toujours qu'écrire des
+      fichiers.
+  - Hors du lot : l'étiquette à l'écran et la voix (après la leçon de l'utilisateur du
+    05/11/2026) ; la lumière au tempo (non retenue) ; la mise à jour de l'outillage, qui passe à
+    la 1.46.4 (§ 4.6).
+  - Après le lot : les clips du mardi, du jeudi, du vendredi et du dimanche refaits un par un,
+    sous la règle de chaleur ; le fichier du lundi, déjà publié, reste tel quel. La session
+    marketing revérifie les images, et l'utilisateur écoute sur le haut-parleur d'un téléphone et
+    au casque.
+
+## 9 undecies. L'étiquette des clips (lot 37, décidé le 05/11/2026)
+
+Le 05/11/2026 au matin, l'utilisateur a validé une stratégie d'engagement en quatre points
+(« Yes, all four », relayée par la session marketing). Pour la fabrique : une petite étiquette
+d'identité, « Lumirift Blocks · @adamrodwebdev », de la première à la dernière image de chaque
+clip. Elle remplace la salutation du script de l'utilisateur : qui regarde sait d'emblée quel
+jeu et quel compte il voit, sans que le crochet du clip perde sa place.
+
+- **Lot 37 · 1.46.3 L'étiquette**, avec la musique qui boucle (lot 36) : les quatre clips de la
+  semaine sont refaits une seule fois pour les deux.
+  - **Où** : centrée dans la largeur de la zone sûre (3 à 85 %), juste sous la ligne de la
+    recette, comme une signature (4 px sous sa boîte), quand elle y tient dans la zone sûre ;
+    sinon en haut de la zone sûre (son milieu à 0,118 de la hauteur, sa boîte sous les 10 % des
+    onglets) : la ligne basse d'une réponse côte à côte, ou un clip sans ligne. Choix de
+    l'utilisateur (05/11/2026) après le premier rendu, où l'étiquette en haut croisait la pièce
+    qui tombe (le mardi, pendant les 4,8 s d'arrêt de la question).
+  - **Comment** : petite et discrète, dans la police d'interface du jeu (Sora, graisse 600,
+    32 px pour 1 080 de large, soit environ 11 points sur un téléphone), blanche à 90 %, avec le
+    contour des mots du puits. Une police de secours arrête le rendu, comme pour la ligne.
+  - Sur chaque image du clip et sur sa couverture ; hors de l'empreinte `framesSha256`, comme la
+    ligne ; le contrôle `textClear` vérifie qu'elle ne couvre ni le pic, ni son étendue, ni une
+    lettre, ni la ligne. Le manifeste garde son texte, sa taille et sa hauteur.
+  - Les prises simples de `--set` n'en ont pas : ce ne sont pas des publications.
+  - **Porte** : l'étiquette tient dans la zone sûre de chaque clip, hors du pic et de la ligne,
+    dans la police du jeu ; les images du jeu (empreintes) ne changent pas.
+  - Hors du lot : la voix de l'utilisateur (une proposition, rien à construire) ; le moment de la
+    première publicité sur Playgama, les cadeaux aux spectateurs et la redirection
+    `/lumirift/play` du portfolio, étudiés à part et rapportés avant toute décision.
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
@@ -3181,3 +3323,5 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.46    | 03/11/2026 | Lot 33 livré : `landsIn`, `HOOK_LEVEL`, `HOOK_WYRM_MS`, `guideAt`, `goalInView`, `WellGesture`, `GuideKeys`, `toastParts`, `bootPlugin({ firstRun })` ; mesures.       |
 | 1.46.1  | 03/11/2026 | § 6 : les parcours en CI dans trois moteurs, `E2E_ENGINE` ; la porte du lot 32 corrigée ; trois défauts corrigés (WellToast, cadeau, focus).                           |
 | 1.46.2  | 04/11/2026 | § 9 nonies, lot 35 : `--recipes`, `onScreen`, `--check`, `buildOf`, `ClipLine`, `checkFonts`, `settle`, `server.fs.allow` ; deux défauts du plateau ; mesures.         |
+| 1.46.3  | 05/11/2026 | § 9 decies, lot 36 : la musique qui boucle (96 BPM, quatre mesures, 10 s), `MusicBed`, le mélange en boucle, l'amorce AAC, les contrôles du son ; § 4.6 : 1.46.4.      |
+| 1.46.3  | 05/11/2026 | § 9 undecies, lot 37 : l'étiquette « Lumirift Blocks · @adamrodwebdev » sur chaque clip, en haut de la zone sûre, dans `textClear`.                                    |

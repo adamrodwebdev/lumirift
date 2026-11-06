@@ -4,7 +4,8 @@
 // factory (1.39) sets every clip near −14 LUFS, a common level for video
 // online, so that one clip is never much louder than the next, with its true
 // peaks under −2 dBTP: the AAC encoder adds a little to them, and a decoder
-// clips what goes past 0 dBFS.
+// clips what goes past 0 dBFS. A clip that loops (1.46.3) is measured and
+// limited as a loop: every meter reads it through its seam, as it plays.
 
 /** A second-order filter (direct form I), its coefficients for 48 kHz. */
 function biquad(samples, [b0, b1, b2, a1, a2]) {
@@ -31,14 +32,45 @@ const SHELF = [
 ];
 const HIGH_PASS = [1.0, -2.0, 1.0, -1.99004745483398, 0.99007225036621];
 
-/** Integrated loudness (LUFS) of 48 kHz channels: 400 ms blocks, 75 % overlap, absolute and relative gates. */
-export function loudness(channels, sampleRate = 48_000) {
+/**
+ * How much of a loop's other end a meter reads on each side of it (samples at
+ * 48 kHz): the K-weighting, the interpolation and the limiter's 80 ms release
+ * have forgotten the edge long before 1 s.
+ */
+const LOOP_MARGIN = 48_000;
+
+/** A loop's channels with `margin` samples of its other end on each side: what plays around its seam. */
+function aroundLoop(channels, margin) {
+  return channels.map((samples) => {
+    const length = samples.length;
+    const out = new Float32Array(length + 2 * margin);
+    for (let i = 0; i < out.length; i++) {
+      out[i] = samples[(((i - margin) % length) + length) % length];
+    }
+    return out;
+  });
+}
+
+/** The margin a loop of `length` samples is read with (none for a sound that does not loop). */
+const marginOf = (length, loop) => (loop ? Math.min(LOOP_MARGIN, length) : 0);
+
+/**
+ * Integrated loudness (LUFS) of 48 kHz channels: 400 ms blocks, 75 % overlap,
+ * absolute and relative gates. A `loop`'s blocks run on through its seam.
+ */
+export function loudness(channels, { sampleRate = 48_000, loop = false } = {}) {
   if (sampleRate !== 48_000) throw new Error('The K-weighting here is for 48 kHz');
-  const weighted = channels.map((samples) => biquad(biquad(samples, SHELF), HIGH_PASS));
+  const length = channels[0].length;
+  const margin = marginOf(length, loop);
   const block = Math.round(0.4 * sampleRate);
   const hop = Math.round(0.1 * sampleRate);
+  // A loop: K-weighted from its end, and its blocks read its head again after its end.
+  const weighted = (loop ? aroundLoop(channels, margin) : channels).map((samples) =>
+    biquad(biquad(samples, SHELF), HIGH_PASS).subarray(margin),
+  );
   const powers = [];
-  for (let start = 0; start + block <= weighted[0].length; start += hop) {
+  const starts = loop ? length : weighted[0].length - block + 1;
+  for (let start = 0; start < starts && start + block <= weighted[0].length; start += hop) {
     let sum = 0;
     for (const samples of weighted) {
       for (let i = start; i < start + block; i++) sum += samples[i] * samples[i];
@@ -106,9 +138,17 @@ function peaksAround(channels) {
 const highest = (values) => values.reduce((top, value) => Math.max(top, value), 0);
 const toDb = (level) => 20 * Math.log10(level);
 
-/** The true peak (dBTP) of the channels. */
-export function truePeakDb(channels) {
-  return toDb(highest(peaksAround(channels)));
+/** The highest level at each sample of `channels` (peaksAround), a `loop` read through its seam. */
+function peaksOf(channels, loop) {
+  const length = channels[0].length;
+  const margin = marginOf(length, loop);
+  if (!margin) return peaksAround(channels);
+  return peaksAround(aroundLoop(channels, margin)).subarray(margin, margin + length);
+}
+
+/** The true peak (dBTP) of the channels; a `loop`'s between its last sample and its first too. */
+export function truePeakDb(channels, { loop = false } = {}) {
+  return toDb(highest(peaksOf(channels, loop)));
 }
 
 /** The peak (dBFS) of the channels' samples, as a decoder gives them. */
@@ -168,17 +208,25 @@ function limiterGain(peaks, limit) {
   return gain;
 }
 
-/** The channels with their true peaks under `ceiling` dBTP, turned down only around them. */
-function limited(channels, ceiling) {
-  const peaks = peaksAround(channels);
+/**
+ * The channels with their true peaks under `ceiling` dBTP, turned down only
+ * around them. A `loop` is limited with its other end on each side: the gain
+ * at its head comes from its end, as it plays, and the seam keeps one level.
+ */
+function limited(channels, ceiling, loop) {
+  const length = channels[0].length;
+  const margin = marginOf(length, loop);
+  const input = margin ? aroundLoop(channels, margin) : channels;
+  const middle = (samples) => samples.subarray(margin, margin + length);
+  const peaks = peaksAround(input);
   const target = 10 ** (ceiling / 20);
   let limit = target;
   for (let pass = 1; ; pass++) {
     const gain = limiterGain(peaks, limit);
-    const out = channels.map((samples) => samples.map((sample, i) => sample * gain[i]));
+    const out = input.map((samples) => samples.map((sample, i) => sample * gain[i]));
     // The gain moves within the interpolation's reach: measured again, tightened if need be.
-    const top = highest(peaksAround(out));
-    if (top <= target || pass === 4) return out;
+    const top = highest(middle(peaksAround(out)));
+    if (top <= target || pass === 4) return out.map((samples) => middle(samples).slice());
     limit *= target / top;
   }
 }
@@ -187,9 +235,10 @@ function limited(channels, ceiling) {
  * The channels at `target` LUFS, their true peaks held under `ceiling` dBTP
  * by a limiter that turns the sound down around a peak, never clips it. The
  * limiter takes a little loudness: the gain is made up, then limited again.
+ * A `loop` is measured and limited through its seam.
  */
-export function normalise(channels, { target = -14, ceiling = -2 } = {}) {
-  const level = loudness(channels);
+export function normalise(channels, { target = -14, ceiling = -2, loop = false } = {}) {
+  const level = loudness(channels, { loop });
   if (!Number.isFinite(level)) return channels;
   let gain = 10 ** ((target - level) / 20);
   let out = channels;
@@ -197,8 +246,9 @@ export function normalise(channels, { target = -14, ceiling = -2 } = {}) {
     out = limited(
       channels.map((samples) => samples.map((sample) => sample * gain)),
       ceiling,
+      loop,
     );
-    const reached = loudness(out);
+    const reached = loudness(out, { loop });
     if (Math.abs(target - reached) < 0.1) break;
     gain *= 10 ** ((target - reached) / 20);
   }

@@ -4,7 +4,7 @@
 // portals (Yandex Games) and the social apps take MP4. A video track at a
 // constant frame rate, no B-frames (Baseline profile), an optional AAC track
 // (the clip factory, 1.39), the index before the data ("fast start").
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 /** H.264 Constrained Baseline, level 4.0: up to 1920 × 1080 (or 1080 × 1920) at 30 frames a second. */
 const CODEC = 'avc1.42E028';
@@ -12,6 +12,14 @@ const CODEC = 'avc1.42E028';
 const AUDIO_CODEC = 'mp4a.40.2';
 /** An AAC frame holds this many samples per channel. */
 const AAC_FRAME = 1024;
+/**
+ * Samples the encoder gets before the sound (1.46.3), which the edit list
+ * skips: AAC decodes each frame with the one before it, so a first frame with
+ * none came out of Chrome's decoder as 8 ms of silence (a tick at each replay
+ * of a clip). For a loop, they are its last samples, as it plays them before
+ * its head; otherwise silence.
+ */
+const PRE_ROLL = 2 * AAC_FRAME;
 /** A key frame every two seconds: a portal's player can seek in the preview. */
 const KEY_EVERY_SECONDS = 2;
 /** Any localhost page is a secure context, where WebCodecs exists; no server answers it. */
@@ -60,7 +68,7 @@ const sampleTables = ({ entry, count, delta, sizes, offset, keys }) =>
 /** A track: its header, its media header and handler, its sample tables. */
 const track = ({
   id,
-  durationMs,
+  duration,
   header,
   timescale,
   mediaDuration,
@@ -80,7 +88,7 @@ const track = ({
       u32(0),
       u32(id),
       u32(0),
-      u32(durationMs),
+      u32(duration),
       Buffer.alloc(8),
       u16(0),
       u16(0),
@@ -125,14 +133,17 @@ const track = ({
 function mp4File({ width, height, fps, config, frames, audio = null }) {
   const timescale = fps * 1000;
   const delta = 1000;
-  const videoMs = Math.round((frames.length / fps) * 1000);
+  // The movie counts in samples when it has sound (1.46.3): a clip's 300 frames are 480 000 of
+  // them, exactly; in milliseconds, a length that is not whole lost up to a millisecond of sound.
+  const movieScale = audio ? audio.sampleRate : 1000;
+  const videoDuration = Math.round((frames.length / fps) * movieScale);
   // The sound plays as long as it went in: the padding of the last AAC frame is cut by the edit
   // list, so a clip's sound ends with its picture and loops with it.
   const audioSamples = audio
     ? Math.min(audio.samples, audio.chunks.length * AAC_FRAME - audio.delay)
     : 0;
-  const audioMs = audio ? Math.round((audioSamples / audio.sampleRate) * 1000) : 0;
-  const movieDuration = Math.max(videoMs, audioMs);
+  const audioDuration = audio ? Math.round((audioSamples / audio.sampleRate) * movieScale) : 0;
+  const movieDuration = Math.max(videoDuration, audioDuration);
   const ftyp = box(
     'ftyp',
     Buffer.from('isom', 'latin1'),
@@ -200,7 +211,7 @@ function mp4File({ width, height, fps, config, frames, audio = null }) {
         0,
         u32(0),
         u32(0),
-        u32(1000),
+        u32(movieScale),
         u32(movieDuration),
         u32(0x00010000), // rate 1.0
         u16(0x0100), // volume 1.0
@@ -211,7 +222,7 @@ function mp4File({ width, height, fps, config, frames, audio = null }) {
       ),
       track({
         id: 1,
-        durationMs: videoMs,
+        duration: videoDuration,
         header: { volume: u16(0), width, height },
         timescale,
         mediaDuration: frames.length * delta,
@@ -231,7 +242,7 @@ function mp4File({ width, height, fps, config, frames, audio = null }) {
         ? [
             track({
               id: 2,
-              durationMs: audioMs,
+              duration: audioDuration,
               header: { volume: u16(0x0100), width: 0, height: 0 },
               timescale: audio.sampleRate,
               mediaDuration: audio.chunks.length * AAC_FRAME,
@@ -245,10 +256,10 @@ function mp4File({ width, height, fps, config, frames, audio = null }) {
                 sizes: audio.chunks.map((chunk) => chunk.length),
                 offset: dataOffset + videoData.length,
               }),
-              // The encoder's priming samples are skipped: the sound starts with the picture.
+              // The pre-roll and the encoder's priming are skipped: the sound starts with the picture.
               edit: box(
                 'edts',
-                fullBox('elst', 0, 0, u32(1), u32(audioMs), u32(audio.delay), u16(1), u16(0)),
+                fullBox('elst', 0, 0, u32(1), u32(audioDuration), u32(audio.delay), u16(1), u16(0)),
               ),
             }),
           ]
@@ -458,21 +469,31 @@ export class Mp4Encoder {
 
   /**
    * The video's sound: `channels` of 32-bit float samples (Float32Array each)
-   * at `sampleRate`, encoded in AAC. The encoder's priming (the samples it
-   * puts before the sound) is measured: the AAC is decoded again and laid
-   * against what went in, and the file skips exactly that many samples (its
-   * edit list), so the sound starts with the picture. Returns the priming the
-   * encoder `reported` (its first timestamp) and the one `measured`, and the
-   * highest sample of the decoded sound (`decodedPeakDb`, dBFS): AAC adds a
-   * little to the peaks that went in.
+   * at `sampleRate`, encoded in AAC, after a pre-roll the file skips: the
+   * sound's last samples when it `loop`s, silence otherwise (1.46.3). The
+   * encoder's priming (the samples it puts before the sound) is measured: the
+   * AAC is decoded again and laid against what went in, and the file skips
+   * exactly the pre-roll and that many samples (its edit list), so the sound
+   * starts with the picture. Returns the priming the encoder `reported` (its
+   * first timestamp), the one `measured` and the pre-roll, and the highest
+   * sample of the decoded sound (`decodedPeakDb`, dBFS): AAC adds a little to
+   * the peaks that went in.
    */
-  async setAudio({ channels, sampleRate, bitrate = 192_000 }) {
+  async setAudio({ channels, sampleRate, bitrate = 192_000, loop = false }) {
+    const played = channels.map((samples) => {
+      const out = new Float32Array(PRE_ROLL + samples.length);
+      if (loop) {
+        for (let i = 0; i < PRE_ROLL; i++) {
+          out[i] = samples[(((i - PRE_ROLL) % samples.length) + samples.length) % samples.length];
+        }
+      }
+      out.set(samples, PRE_ROLL);
+      return out;
+    });
     const planar = Buffer.concat(
-      channels.map((samples) =>
-        Buffer.from(samples.buffer, samples.byteOffset, samples.byteLength),
-      ),
+      played.map((samples) => Buffer.from(samples.buffer, samples.byteOffset, samples.byteLength)),
     );
-    const frames = channels[0].length;
+    const frames = played[0].length;
     const info = await this.#page.evaluate(
       async ({ base64, frames, channels, sampleRate, bitrate, codec }) => {
         const config = { codec, sampleRate, numberOfChannels: channels, bitrate };
@@ -582,7 +603,7 @@ export class Mp4Encoder {
       {
         base64: planar.toString('base64'),
         frames,
-        channels: channels.length,
+        channels: played.length,
         sampleRate,
         bitrate,
         codec: AUDIO_CODEC,
@@ -592,11 +613,11 @@ export class Mp4Encoder {
       sampleRate,
       channels: channels.length,
       bitrate,
-      delay: info.measured,
-      samples: frames,
+      delay: PRE_ROLL + info.measured,
+      samples: channels[0].length,
     };
     return {
-      priming: { reported: info.delay, measured: info.measured },
+      priming: { reported: info.delay, measured: info.measured, preRoll: PRE_ROLL },
       decodedPeakDb: 20 * Math.log10(info.decodedPeak),
     };
   }
@@ -638,5 +659,44 @@ export class Mp4Encoder {
     });
     writeFileSync(file, bytes);
     return bytes.length;
+  }
+}
+
+/** A page for the sound of an MP4 file: any origin decodes it, none answers it. */
+const LISTENER_PAGE = 'http://clips.local/';
+
+/**
+ * The sound of an MP4 file as Chrome plays it (1.46.3): its AAC decoded by
+ * the browser's own reader, edit list applied, at `sampleRate` (the factory's
+ * check of what it wrote). Returns one Float32Array per channel.
+ */
+export async function decodedSound(browser, file, { sampleRate = 48_000 } = {}) {
+  const page = await browser.newPage();
+  try {
+    const video = readFileSync(file);
+    await page.route(`${LISTENER_PAGE}**`, (route) =>
+      route.request().url().endsWith('/clip.mp4')
+        ? route.fulfill({ contentType: 'video/mp4', body: video })
+        : route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Sound</title>' }),
+    );
+    await page.goto(LISTENER_PAGE);
+    const channels = await page.evaluate(async (rate) => {
+      const bytes = await (await fetch('/clip.mp4')).arrayBuffer();
+      const buffer = await new OfflineAudioContext(2, 1, rate).decodeAudioData(bytes);
+      return Array.from({ length: buffer.numberOfChannels }, (_, channel) => {
+        const data = buffer.getChannelData(channel);
+        const raw = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+        let binary = '';
+        for (let i = 0; i < raw.length; i += 0x8000) {
+          binary += String.fromCharCode(...raw.subarray(i, i + 0x8000));
+        }
+        return btoa(binary);
+      });
+    }, sampleRate);
+    return channels.map(
+      (text) => new Float32Array(new Uint8Array(Buffer.from(text, 'base64')).buffer),
+    );
+  } finally {
+    await page.close();
   }
 }
