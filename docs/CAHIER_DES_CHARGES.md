@@ -3271,8 +3271,9 @@ seulement, mené par la session marketing) et **ce lot : le jeu en Mini App Tele
 - Snapchat n'héberge plus de jeux web depuis le 05/09/2022 : ses jeux sont des filtres en réalité
   augmentée.
 - WhatsApp n'a pas de plateforme de jeux ouverte aux développeurs.
-- Le même jour, l'utilisateur a fixé une règle : un seul appareil, l'ordinateur. Le bot se crée
-  dans Telegram Desktop ou Web, et les essais s'y font.
+- Le même jour, l'utilisateur a précisé une règle : la gestion des comptes et les publications se
+  font sur l'ordinateur, et le jeu reste pensé d'abord pour le mobile. Le bot se crée donc dans
+  Telegram Desktop ou Web, et le jeu s'essaie aussi sur téléphone.
 
 Les règles de Telegram sont relevées dans la référence de la compétence de modération
 (`game-moderator-review/references/telegram.md`, lue le 06/11/2026). Ses sources : la
@@ -3324,24 +3325,24 @@ documentation officielle, les conditions des développeurs de bots, le SDK Playg
     - des clés sans « : » sur Telegram, et la reprise des valeurs déjà enregistrées ;
     - les records élagués ou découpés sous 4 096 caractères ;
     - la dernière sauvegarde gardée aussi sur l'appareil, car le nuage ne promet rien.
-  - **Hébergement gratuit en HTTPS, sans en-tête qui interdit l'encadrement** : GitHub Pages depuis
-    le dépôt public (proposé) ou Telegram Serverless (prix non publiés) ; jamais Netlify, à cause
-    des crédits. L'adresse de la Mini App est l'origine finale, sans redirection.
+  - **Hébergement gratuit en HTTPS, sans en-tête qui interdit l'encadrement : GitHub Pages**
+    depuis le dépôt public (choix de l'utilisateur, 06/11/2026). Jamais Netlify, à cause des
+    crédits. L'adresse de la Mini App est l'origine finale, sans redirection, et chaque mise en
+    ligne se fait sur l'accord de l'utilisateur.
   - **Le bot**, créé par l'utilisateur dans Telegram Desktop :
     - son nom d'utilisateur, définitif, lui est donné dans la conversation avant la création ;
     - description, description courte et nom dans les quatre langues ;
     - écran de chargement à nos couleurs, aperçus en images ;
     - une réponse à `/start` et `/help` avec un bouton qui ouvre le jeu ;
     - le jeton du bot reste un secret de l'utilisateur, jamais dans le dépôt.
-  - **Pubs** : aucune au lancement (proposé). Plus tard, au choix de l'utilisateur, AdsGram en un
-    seul format, avec :
+  - **Pubs : aucune au lancement** (choix de l'utilisateur, 06/11/2026). Plus tard, s'il le
+    décide, AdsGram en un seul format, avec :
     - les pubs de jeux d'argent et pour adultes coupées ;
     - une politique de confidentialité à nous, puisque la régie reçoit l'identifiant Telegram du
       joueur ;
     - le traitement des paiements en USD₮ revu par la compétence comptable.
-  - **Essais** : Telegram Desktop et Web (K et A) sur l'ordinateur, sur le serveur de test de
-    Telegram puis en vrai. Un essai sur téléphone (iOS, Android) reste à décider avec
-    l'utilisateur ; la règle d'un seul appareil passe avant.
+  - **Essais, mobile d'abord** : Telegram sur téléphone (iOS et Android) comme sur Telegram
+    Desktop et Web (K et A), sur le serveur de test de Telegram puis en vrai.
   - **Porte :**
     - la revue du build par la compétence de modération, avec `telegram.md` ;
     - la partie reprise sur un deuxième client (Desktop et Web) ;
@@ -3350,11 +3351,12 @@ documentation officielle, les conditions des développeurs de bots, le SDK Playg
     - Lighthouse inchangé sur notre site.
   - Hors du lot : la vente en Stars, les classements de Telegram, la publication par Playgama.
   - Coût estimé : un jour et demi à deux jours.
-  - **À valider par l'utilisateur, avant tout code :**
-    - notre bot ou la copie de Playgama ;
-    - l'hébergement ;
-    - les pubs au lancement ;
-    - l'essai sur téléphone.
+  - **À valider par l'utilisateur, avant tout code** : notre bot ou la copie de Playgama.
+    - Notre propre bot exige un compte Telegram : un bot appartient toujours au compte qui l'a
+      créé avec @BotFather, et l'inscription à Telegram demande un numéro de téléphone (un code
+      de confirmation), même depuis l'ordinateur.
+    - Sans compte Telegram, seule reste la copie publiée par Playgama, après son catalogue
+      principal.
 
 ## 10. Hors périmètre (v1)
 
