@@ -2,6 +2,8 @@ import type { KeyValueStorage } from '@/services/KeyValueStorage';
 import { FULL_EDITION, type Edition } from '../Edition';
 import type { AdHooks, Platform } from '../Platform';
 import { SAVED_KEYS } from '../savedKeys';
+import { PlainSaves, TelegramCloudSaves, type SaveLayout } from './SaveLayout';
+import { TelegramShell, type TelegramWebApp } from './TelegramShell';
 
 type InterstitialState = 'loading' | 'opened' | 'closed' | 'failed';
 type RewardedState = InterstitialState | 'rewarded';
@@ -16,6 +18,8 @@ export interface PlaygamaBridge {
     readonly REWARDED_STATE_CHANGED: string;
   };
   readonly platform: {
+    /** Where the game runs (`playgama`, `telegram`…): Playgama distributes to its partners (1.46.5). */
+    readonly id?: string;
     readonly language: string;
     readonly isAudioEnabled: boolean;
     sendMessage(message: string): void;
@@ -48,6 +52,29 @@ const SAVE_DELAY_MS = 300;
 const AD_START_TIMEOUT_MS = 1500;
 /** An ad that loads but never opens: the game goes on. */
 const AD_LOAD_TIMEOUT_MS = 8000;
+/**
+ * A Bridge still starting after this long never will (1.46.5): in Telegram, a
+ * launch without a user (a keyboard button, inline mode) leaves the SDK waiting
+ * for good. The game then starts without it rather than stay on its loading.
+ */
+const INIT_TIMEOUT_MS = 15_000;
+
+/** The promise, or a rejection once `ms` have passed without it. */
+function within<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Not settled within ${ms} ms`)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      },
+    );
+  });
+}
 /** The one rewarded ad: double the experience of the game just played. */
 export const REWARDED_PLACEMENT = 'double_xp';
 
@@ -55,7 +82,9 @@ export const REWARDED_PLACEMENT = 'double_xp';
  * The Bridge storage as the game's storage. Playgama asks for one read of
  * every key at start and saves through the SDK only (never the browser's
  * storage): the save follows the player, in the cloud when available. Reads
- * come from memory, writes are grouped and sent in one call.
+ * come from memory, writes are grouped and sent in one call. A layout says
+ * how the values sit in the storage (Telegram's cloud takes neither ":" in a
+ * key nor a value over 4,096 characters, 1.46.5).
  */
 export class BridgeStorage implements KeyValueStorage {
   private readonly pending = new Map<string, string>();
@@ -64,23 +93,44 @@ export class BridgeStorage implements KeyValueStorage {
   private constructor(
     private readonly bridge: PlaygamaBridge | null,
     private readonly values: Map<string, string>,
+    private readonly layout: SaveLayout,
   ) {}
 
-  /** Reads every saved key at once (an empty save when the SDK refuses). */
-  static async load(bridge: PlaygamaBridge | null): Promise<BridgeStorage> {
+  /**
+   * Reads every saved key at once, then the parts a long value announced, in
+   * a second call (an empty save when the SDK refuses; a value whose parts
+   * are missing is left out).
+   */
+  static async load(
+    bridge: PlaygamaBridge | null,
+    layout: SaveLayout = new PlainSaves(),
+  ): Promise<BridgeStorage> {
     const values = new Map<string, string>();
     if (bridge) {
       try {
-        const saved = await bridge.storage.get(SAVED_KEYS, false);
+        const saved = await bridge.storage.get(
+          SAVED_KEYS.map((key) => layout.storedKey(key)),
+          false,
+        );
+        const heads = new Map<string, string>();
         SAVED_KEYS.forEach((key, index) => {
           const value = saved[index];
-          if (typeof value === 'string') values.set(key, value);
+          if (typeof value === 'string') heads.set(key, value);
+        });
+        const partKeys = [...heads].flatMap(([key, head]) => layout.partKeys(key, head));
+        const partValues = partKeys.length ? await bridge.storage.get(partKeys, false) : [];
+        const parts = new Map(partKeys.map((key, index) => [key, partValues[index]]));
+        heads.forEach((head, key) => {
+          const pieces = layout.partKeys(key, head).map((part) => parts.get(part));
+          if (pieces.every((piece) => typeof piece === 'string')) {
+            values.set(key, layout.decode(head, pieces));
+          }
         });
       } catch {
         // No save yet, or the platform keeps none: the game starts fresh.
       }
     }
-    return new BridgeStorage(bridge, values);
+    return new BridgeStorage(bridge, values, layout);
   }
 
   get(key: string): string | null {
@@ -101,7 +151,10 @@ export class BridgeStorage implements KeyValueStorage {
     const keys = [...this.pending.keys()];
     const values = [...this.pending.values()];
     this.pending.clear();
-    this.bridge.storage.set(keys, values).catch(() => {
+    const stored = keys.map((key, index) => this.layout.encode(key, values[index] ?? ''));
+    const storedKeys = stored.flatMap((entry) => entry.keys);
+    const storedValues = stored.flatMap((entry) => entry.values);
+    this.bridge.storage.set(storedKeys, storedValues).catch(() => {
       // Kept in memory for this session; the next save tries again.
       keys.forEach((key, index) => {
         if (!this.pending.has(key)) this.pending.set(key, values[index] ?? '');
@@ -110,12 +163,23 @@ export class BridgeStorage implements KeyValueStorage {
   }
 }
 
+/** What the Playgama platform is made of, once the SDK is up. */
+interface PlaygamaParts {
+  readonly bridge: PlaygamaBridge | null;
+  readonly storage: BridgeStorage;
+  /** The whole game, or one mode alone (a sandbox test build, 1.37). */
+  readonly edition: Edition;
+  /** Telegram's Mini App object when the game runs in Telegram (1.46.5), else null. */
+  readonly telegram: TelegramWebApp | null;
+}
+
 /**
  * The game on Playgama (and the partners it distributes to): language, sound
  * and pause from the platform, the save through the Bridge, `game_ready` and
  * level messages, interstitials between games. The SDK is loaded by the
  * Playgama build only; when it is missing or fails, every call is a no-op and
- * the save lives in memory.
+ * the save lives in memory. In Telegram (a partner's copy, 1.46.5), the save
+ * fits Telegram's cloud and the game behaves as Telegram asks (TelegramShell).
  */
 export class PlaygamaPlatform implements Platform {
   readonly id = 'playgama';
@@ -143,15 +207,20 @@ export class PlaygamaPlatform implements Platform {
   private adsBlocked = false;
   /** Level messages said before `game_ready` (a first run plays at once): sent right after it. */
   private readonly early: string[] = [];
+  private readonly bridge: PlaygamaBridge | null;
+  readonly storage: BridgeStorage;
+  readonly edition: Edition;
+  /** Telegram's asks (full height, no swipe-close while playing, pause when minimised), in Telegram only. */
+  private readonly shell: TelegramShell | null;
 
-  private constructor(
-    private readonly bridge: PlaygamaBridge | null,
-    readonly storage: BridgeStorage,
-    /** The whole game, or one mode alone (a sandbox test build, 1.37). */
-    readonly edition: Edition,
-  ) {
+  private constructor({ bridge, storage, edition, telegram }: PlaygamaParts) {
+    this.bridge = bridge;
+    this.storage = storage;
+    this.edition = edition;
     this.locale = bridge?.platform.language || null;
     this.audioEnabled = bridge?.platform.isAudioEnabled ?? true;
+    this.shell = telegram ? new TelegramShell(telegram, (paused) => this.autoPause(paused)) : null;
+    this.shell?.start();
     if (!bridge) return;
     // The SDK has no documented way to unsubscribe: one listener each, fanned out.
     const { EVENT_NAME } = bridge;
@@ -159,10 +228,7 @@ export class PlaygamaPlatform implements Platform {
       this.audioEnabled = enabled;
       this.muteListeners.forEach((listener) => listener(!enabled));
     });
-    bridge.platform.on(EVENT_NAME.PAUSE_STATE_CHANGED, (paused) => {
-      if (paused) storage.flush();
-      this.pauseListeners.forEach((listener) => listener(paused));
-    });
+    bridge.platform.on(EVENT_NAME.PAUSE_STATE_CHANGED, (paused) => this.autoPause(paused));
     bridge.advertisement.on(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, (state) => {
       if (state !== 'rewarded') this.adListener?.(state);
     });
@@ -182,19 +248,42 @@ export class PlaygamaPlatform implements Platform {
     }
   }
 
+  /**
+   * Starts the SDK, then reads the save. In Telegram (the SDK says where the
+   * game runs), the save fits Telegram's cloud, and Telegram's Mini App object,
+   * which the SDK loads as it starts, is used when the page has it; `telegram`
+   * stands in for it in tests.
+   */
   static async create(
     bridge: PlaygamaBridge | null = typeof window === 'undefined' ? null : (window.bridge ?? null),
     edition: Edition = FULL_EDITION,
+    telegram?: TelegramWebApp | null,
   ): Promise<PlaygamaPlatform> {
     let sdk = bridge;
     if (sdk) {
       try {
-        await sdk.initialize();
+        await within(sdk.initialize(), INIT_TIMEOUT_MS);
       } catch {
         sdk = null;
       }
     }
-    return new PlaygamaPlatform(sdk, await BridgeStorage.load(sdk), edition);
+    const inTelegram = sdk?.platform.id === 'telegram';
+    const storage = await BridgeStorage.load(
+      sdk,
+      inTelegram ? new TelegramCloudSaves() : new PlainSaves(),
+    );
+    const webApp =
+      telegram !== undefined
+        ? telegram
+        : typeof window === 'undefined'
+          ? null
+          : (window.Telegram?.WebApp ?? null);
+    return new PlaygamaPlatform({
+      bridge: sdk,
+      storage,
+      edition,
+      telegram: inTelegram ? webApp : null,
+    });
   }
 
   get muted(): boolean {
@@ -224,18 +313,21 @@ export class PlaygamaPlatform implements Platform {
   loadingStop(): void {}
 
   gameplayStart(): void {
+    this.shell?.playing(true);
     if (this.level === 'playing') return;
     this.tell(this.level === 'paused' ? 'level_resumed' : 'level_started');
     this.level = 'playing';
   }
 
   gameplayStop(): void {
+    this.shell?.playing(false);
     if (this.level !== 'playing') return;
     this.level = 'paused';
     this.tell('level_paused');
   }
 
   gameOver(won: boolean): void {
+    this.shell?.playing(false);
     if (this.level === 'none') return;
     this.level = 'none';
     this.tell(won ? 'level_completed' : 'level_failed');
@@ -325,6 +417,12 @@ export class PlaygamaPlatform implements Platform {
         done();
       }
     });
+  }
+
+  /** A pause the player did not ask for (the platform's, or Telegram minimised): the save leaves first. */
+  private autoPause(paused: boolean): void {
+    if (paused) this.storage.flush();
+    this.pauseListeners.forEach((listener) => listener(paused));
   }
 
   /** A level message: never before `game_ready`. */
