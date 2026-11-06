@@ -3461,7 +3461,7 @@ regardent déjà, jamais avant ni pendant la partie.
      ne sont pas sur l'image (30 bibliothèques de codecs pour Firefox, 176 paquets dont GStreamer
      et GTK pour WebKit, en plus de neuf polices de secours).
 
-**Écarts proposés (à confirmer)** :
+**Écarts confirmés** (par l'utilisateur, le 06/11/2026 : « Je les valide tous ») :
 
 - Sous 38,5 rem de haut de hub (616 px : les téléphones couchés, ceux de 568 px de haut), la ligne
   du chapitre se cache. Sous elle, à 320 × 568, les niveaux de la carte se recouvraient dans les dix
