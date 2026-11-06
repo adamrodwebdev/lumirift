@@ -1818,44 +1818,47 @@ gamme reste à faire sur un appareil réel.
 Tous les modes sortent ensemble en **version 1.0** (décision du 12/10/2026). Les lots sont
 ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichisse.
 
-| Lot | Contenu                                                                                                    | Statut                                                       |
-| --- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| 0   | Cadrage, outillage, cahier des charges                                                                     | Livré                                                        |
-| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                | Livré                                                        |
-| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                | Livré                                                        |
-| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse | Livré                                                        |
-| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages      | Livré                                                        |
-| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                         | Livré                                                        |
-| 6   | Duel contre l'IA                                                                                           | Livré                                                        |
-| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                        | Livré                                                        |
-| 8   | Sable (grains) et ses éléments                                                                             | Livré                                                        |
-| 9   | Volume : Tour (verre courbé)                                                                               | Livré                                                        |
-| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                         | Livré                                                        |
-| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                   | Livré                                                        |
-| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                 | Livré (1.3)                                                  |
-| 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                            | CrazyGames (1.2), Playgama (1.4), Yandex Games (1.30) livrés |
-| 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                            | Livré                                                        |
-| 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, essai                            | Livré (1.31)                                                 |
-| 16  | Accroche et courbe (1.33) : entraînement 2.0, bot de courbe, clémence                                      | Livré (1.33)                                                 |
-| 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                      | Livré (1.35)                                                 |
-| 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                             | Livré (1.36)                                                 |
-| 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                  | Livré (1.37), en test                                        |
-| 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                             | Livré (1.38) : 69 niveaux                                    |
-| 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                | Prévu                                                        |
-| 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                     | Prévu                                                        |
-| 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                            | Livré (1.32)                                                 |
-| 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                       | Livré (1.34)                                                 |
-| 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                       | Livré (1.39)                                                 |
-| 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos           | Livré (1.40)                                                 |
-| 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage             | Livré (1.41)                                                 |
-| 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                         | Livré (1.42)                                                 |
-| 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre              | Livré (1.43)                                                 |
-| 30  | La faille qui casse (1.44) : l'effacement des lignes à la manière de la faille                             | Livré (1.44)                                                 |
-| 31  | La constellation d'atterrissage (1.45) : toute la pièce là où elle se posera                               | Livré (1.45)                                                 |
-| 32  | Corrections (1.45.2) : la carte du guide sur les téléphones couchés                                        | Livré (1.45.2)                                               |
-| 33  | Les 30 premières secondes (1.46) : la décharge tout de suite, une consigne de cinq mots, le Ver vers 15 s  | Livré (1.46)                                                 |
-| 34  | Prêt pour Yandex (1.47) : le build remis à niveau, la revue modérateur, la fiche, un brouillon             | Prévu                                                        |
-| 35  | La fabrique sans retouche (1.46.2) : recettes en fichier, ligne incrustée, polices et images contrôlées    | Livré (1.46.2)                                               |
+| Lot | Contenu                                                                                                     | Statut                                                       |
+| --- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 0   | Cadrage, outillage, cahier des charges                                                                      | Livré                                                        |
+| 1   | Moteur Chute : puits, pièces, rotation, sac, score, gravité                                                 | Livré                                                        |
+| 2   | `GameSession`, registre ; Défi du jour, Marée, Renversement, Chroma, Miroir                                 | Livré                                                        |
+| 3   | Interface Vue jouable : accueil, écran de jeu, rendu Cristal, clavier et tactile, i18n, thèmes, Lighthouse  | Livré                                                        |
+| 4   | Matière et effets : particules, destructions, moments des modes, son synthétisé, vibrations, réglages       | Livré                                                        |
+| 5   | Chute avancée : Fusion, Bascule, Silhouette (bibliothèque), Rythme                                          | Livré                                                        |
+| 6   | Duel contre l'IA                                                                                            | Livré                                                        |
+| 7   | Placement : Mosaïque (céramique) et ses cinq jokers                                                         | Livré                                                        |
+| 8   | Sable (grains) et ses éléments                                                                              | Livré                                                        |
+| 9   | Volume : Tour (verre courbé)                                                                                | Livré                                                        |
+| 10  | Progression et personnalisation : expérience, objectifs, matières, ambiances, bris                          | Livré                                                        |
+| 11  | Accessibilité complète, SEO, tests de bout en bout, documentation, 1.0.0                                    | Livré                                                        |
+| 12  | Démo pour le portfolio (adamrodwebdev.com)                                                                  | Livré (1.3)                                                  |
+| 13  | Versions portails : abstraction `Platform`, SDK, builds, fiches de présentation                             | CrazyGames (1.2), Playgama (1.4), Yandex Games (1.30) livrés |
+| 14  | Campagne (30 niveaux), dix améliorations, nouvel accueil et carrousel des modes                             | Livré                                                        |
+| 15  | Preuve et pubs (1.31) : politique de pubs, reprise, défaite par ambiance, essai                             | Livré (1.31)                                                 |
+| 16  | Accroche et courbe (1.33) : entraînement 2.0, bot de courbe, clémence                                       | Livré (1.33)                                                 |
+| 17  | Cadeaux et collections (1.35) : calendrier de sept jours, collections, série affichée                       | Livré (1.35)                                                 |
+| 18  | Événements et saison 1 (1.36) : élément de la semaine, saisons de six semaines                              | Livré (1.36)                                                 |
+| 19  | Dunes, le test web (1.37) : sable posé, trois pièces en main, sans chrono                                   | Livré (1.37), en test                                        |
+| 20  | Niveaux générés (1.38) : générateur par famille, chapitres 6 à 10, 300 niveaux                              | Livré (1.38) : 69 niveaux                                    |
+| 21  | Google Play (2.0) : application Android hors ligne, fiche testée, Indonésie                                 | Prévu                                                        |
+| 22  | Après 2.0 : la cadence (une version par quinzaine, une saison toutes les six semaines)                      | Prévu                                                        |
+| 23  | Commandes au doigt (1.32) : module tactile, gestes précis, vibrations, réglages                             | Livré (1.32)                                                 |
+| 24  | Course contre la montre (1.34) : le monde change toutes les 40 s, Gardiens surprises                        | Livré (1.34)                                                 |
+| 25  | La fabrique de clips (1.39) : les clips de la semaine filmés par le jeu, son compris                        | Livré (1.39)                                                 |
+| 26  | La prise en main (1.40) : gestes au doigt qui suivent le doigt, temps de lire, compte des combos            | Livré (1.40)                                                 |
+| 27  | Le poids et l'éclat (1.41) : chaque bloc pèse, chaque explosion frappe, chaque combo encourage              | Livré (1.41)                                                 |
+| 28  | Des menus qui s'enchaînent (1.42) : une transition à chaque changement d'affichage                          | Livré (1.42)                                                 |
+| 29  | Un puits à nous (1.43) : puits de 10 × 18, pièces d'un seul cristal, faisceau, faille, pierre               | Livré (1.43)                                                 |
+| 30  | La faille qui casse (1.44) : l'effacement des lignes à la manière de la faille                              | Livré (1.44)                                                 |
+| 31  | La constellation d'atterrissage (1.45) : toute la pièce là où elle se posera                                | Livré (1.45)                                                 |
+| 32  | Corrections (1.45.2) : la carte du guide sur les téléphones couchés                                         | Livré (1.45.2)                                               |
+| 33  | Les 30 premières secondes (1.46) : la décharge tout de suite, une consigne de cinq mots, le Ver vers 15 s   | Livré (1.46)                                                 |
+| 34  | Prêt pour Yandex (1.47) : le build remis à niveau, la revue modérateur, la fiche, un brouillon              | Prévu                                                        |
+| 35  | La fabrique sans retouche (1.46.2) : recettes en fichier, ligne incrustée, polices et images contrôlées     | Livré (1.46.2)                                               |
+| 36  | La musique qui boucle (1.46.3) : un lit de quatre mesures à 96 BPM, l'amorce AAC, les contrôles du son      | Livré (1.46.3), PR #60                                       |
+| 37  | L'étiquette des clips (1.46.3) : « Lumirift Blocks · @adamrodwebdev » sous la ligne de chaque clip          | Livré (1.46.3), PR #60                                       |
+| 38  | Prêt pour Telegram (1.46.5) : la copie de Playgama, les sauvegardes du nuage, le comportement dans Telegram | En cours                                                     |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -3259,6 +3262,104 @@ jeu et quel compte il voit, sans que le crochet du clip perde sa place.
     première publicité sur Playgama, les cadeaux aux spectateurs et la redirection
     `/lumirift/play` du portfolio, étudiés à part et rapportés avant toute décision.
 
+## 9 duodecies. Lumirift sur Telegram (lot 38, demandé le 06/11/2026)
+
+Le 06/11/2026, l'utilisateur a demandé si Telegram, Snapchat ou WhatsApp pouvaient héberger le
+jeu. Sur recommandation, il a choisi deux choses : un test de Snapchat Spotlight (promotion
+seulement, mené par la session marketing) et **ce lot : le jeu en Mini App Telegram**.
+
+- Snapchat n'héberge plus de jeux web depuis le 05/09/2022 : ses jeux sont des filtres en réalité
+  augmentée.
+- WhatsApp n'a pas de plateforme de jeux ouverte aux développeurs.
+- Le même jour, l'utilisateur a précisé une règle : la gestion des comptes et les publications se
+  font sur l'ordinateur, et le jeu reste pensé d'abord pour le mobile. Le bot se crée donc dans
+  Telegram Desktop ou Web, et le jeu s'essaie aussi sur téléphone.
+
+Les règles de Telegram sont relevées dans la référence de la compétence de modération
+(`game-moderator-review/references/telegram.md`, lue le 06/11/2026). Ses sources : la
+documentation officielle, les conditions des développeurs de bots, le SDK Playgama et les régies.
+
+- **Aucune revue, aucun frais.** Un bot créé avec @BotFather et une Mini App en HTTPS sont en
+  ligne aussitôt. Telegram sanctionne après coup : avertissement, retrait des versions des boutiques
+  d'applications, mention SCAM, suppression du bot et du compte.
+- **Le nom d'utilisateur du bot ne change jamais** (5 à 32 caractères, finit par `bot`). Ni la
+  marque Telegram ni celle d'un autre jeu dans le nom ou la fiche.
+- **Les biens numériques se vendent en Telegram Stars seulement.** Lumirift ne vend rien et ne
+  doit jamais renvoyer vers une boutique extérieure.
+- **Telegram n'a pas de régie dans les Mini Apps** : sa part de 50 % ne couvre que les pubs du chat
+  du bot. Le SDK Playgama ne branche qu'AdsGram, une régie tierce :
+  - payée en USD₮, une cryptomonnaie ;
+  - un seul bloc pour deux formats ;
+  - les pubs de jeux d'argent et pour adultes actives par défaut.
+- **Le SDK Playgama gère Telegram** depuis le 02/10/2024. La même intégration que la version
+  Playgama suffit pour la langue, le joueur, la pause et le son.
+  - Il enregistre dans le nuage de Telegram (CloudStorage) : 1 024 clés au plus, clés en
+    `A–Z a–z 0–9 _ -`, valeurs de 4 096 caractères au plus.
+  - Quand le nuage refuse, il retombe sans le dire sur la mémoire du navigateur de l'appareil.
+- **Ce qui casse aujourd'hui chez nous :**
+  - nos clés (`stackrift:records`, `stackrift:profile`…) contiennent « : », que le nuage refuse :
+    la partie resterait sur un seul appareil ;
+  - la valeur des records grandit sans limite, une entrée par défi du jour joué : elle dépasserait
+    4 096 caractères après 150 à 170 entrées environ ;
+  - le SDK ne fait rien de ce que Telegram attend du jeu lui-même : `expand()` ; couper le
+    glissement vers le bas, qui ferme l'application pendant la partie ; les marges sûres du plein
+    écran ; la pause quand l'application est réduite ; la protection des méthodes récentes, qui
+    lèvent une erreur sur les vieux clients.
+- **Le bot doit répondre à `/start` et `/help`** (règle de Telegram). Sans serveur, il ne répond
+  rien ; une petite fonction sans serveur (Telegram Serverless ou un équivalent gratuit) le fait.
+- **Distribution par Playgama** : le formulaire de Playgama ne fait exclure que Yandex Games.
+  - Ses partenaires comptent une application Telegram. Elle pourrait publier une copie de
+    Lumirift une fois le jeu au catalogue principal ; il n'est encore qu'au bac à sable.
+  - Playgama ne publie jamais là où le jeu est déjà en ligne.
+
+- **Décision de l'utilisateur (06/11/2026) : la copie de Playgama**, sans compte Telegram ni bot
+  à nous. Notre propre bot exigeait un compte Telegram : un bot appartient au compte qui l'a créé
+  avec @BotFather, et l'inscription demande un numéro de téléphone. Lumirift arrivera donc sur
+  Telegram par l'application partenaire de Playgama, une fois le jeu dans son catalogue principal.
+  - Cela veut dire : pas de bot ni de lien `t.me` à nous, pas d'hébergement (GitHub Pages n'est
+    plus utile), et les pubs relèvent de Playgama.
+  - Le partenaire Telegram de Playgama doit rester coché dans le formulaire de distribution (seul
+    Yandex Games en est exclu).
+- **Lot 38 · 1.46.5 Prêt pour Telegram**, lancé par l'utilisateur le 06/11/2026. Il est réduit
+  en conséquence et passe dans la version Playgama, avant l'envoi en revue au catalogue de
+  Playgama. C'est une version de correction (1.46.5) : la 1.47 reste au lot 34, Yandex.
+  - **Des sauvegardes qui suivent le joueur**, quand le SDK Playgama rapporte `telegram` et
+    enregistre donc dans le nuage de Telegram :
+    - chaque clé passe sans « : » (`stackrift:records` devient `stackrift_records`) ;
+    - une valeur de plus de 4 096 caractères est découpée en parties (`stackrift_records_1`…),
+      annoncées en tête de la valeur (`@parts:3`), puis relue d'un seul tenant. Aucun record n'est
+      élagué, et ce sont les données du jeu, ailleurs, qui restent telles quelles.
+    - Pas de copie à part dans le stockage du navigateur : Playgama interdit d'y écrire hors de son
+      SDK, et le SDK y retombe déjà quand le nuage refuse.
+    - Pas de reprise d'anciennes valeurs : aucune copie de Lumirift n'a encore tourné sur Telegram.
+  - **Ce que Telegram attend du jeu**, seulement quand l'objet `Telegram.WebApp` est là dans la
+    page du jeu, chargé par le SDK (`TelegramShell`, derrière la plateforme Playgama) :
+    - agrandir l'application à sa pleine hauteur ;
+    - couper le glissement vers le bas, qui ferme l'application, pendant la partie seulement, et le
+      rendre dans les menus (Telegram 7.7 ou plus) ;
+    - mettre le jeu en pause quand l'application est réduite, et le reprendre au retour ;
+    - protéger chaque appel : un vieux client qui refuse ne casse rien.
+    - Le jeu ne demande pas le plein écran : pas de marges sûres à gérer, l'en-tête de Telegram
+      reste hors de la page.
+    - Le script de Telegram n'est chargé qu'une fois, par le SDK.
+    - Ajout au-delà de la spécification : un SDK qui n'a pas fini de démarrer au bout de 15 s
+      est laissé de côté, et le jeu démarre sans lui (sauvegarde en mémoire, sans pubs) au lieu
+      de rester sur son chargement. Sur Telegram, un lancement sans utilisateur laisse le SDK
+      attendre sans fin (référence `telegram.md`, piège 1) ; le garde-fou vaut pour toutes les
+      plateformes de Playgama.
+    - Comment l'application de Playgama ouvre le jeu n'est pas documenté : si le jeu y tourne dans
+      un cadre sans `Telegram.WebApp`, ce code reste sans effet. On le vérifie à la première
+      publication.
+  - **Essais, mobile d'abord** : des tests avec un faux SDK et un faux Telegram (clés, parties,
+    hauteur, glissement, pause, vieux client), puis sur téléphone et sur l'ordinateur dès que la
+    copie de Playgama existe.
+  - **Porte :**
+    - la revue de la compétence de modération avec `telegram.md` ;
+    - une partie reprise après fermeture ;
+    - aucun appel de méthode non gérée ;
+    - les autres versions inchangées (e2e, Lighthouse).
+  - Coût estimé : une demi-journée.
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
@@ -3345,4 +3446,5 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.46.2  | 04/11/2026 | § 9 nonies, lot 35 : `--recipes`, `onScreen`, `--check`, `buildOf`, `ClipLine`, `checkFonts`, `settle`, `server.fs.allow` ; deux défauts du plateau ; mesures.         |
 | 1.46.3  | 05/11/2026 | § 9 decies, lot 36 : la musique qui boucle (96 BPM, quatre mesures, 10 s), `MusicBed`, le mélange en boucle, l'amorce AAC, les contrôles du son ; § 4.6 : 1.46.4.      |
 | 1.46.3  | 05/11/2026 | § 9 undecies, lot 37 : l'étiquette « Lumirift Blocks · @adamrodwebdev » sur chaque clip, en haut de la zone sûre, dans `textClear`.                                    |
+| 1.46.3  | 06/11/2026 | § 9 duodecies, lot 38 : Lumirift sur Telegram par la copie de Playgama (choix de l'utilisateur) ; prêt pour Telegram.                                                  |
 | 1.46.4  | 06/11/2026 | § 4.6 : l'outillage à jour (plugin i18n 11.2.8, `fast-uri` 3.1.9, `minimatch` 11 imposé), `npm audit` sans entrée.                                                     |
