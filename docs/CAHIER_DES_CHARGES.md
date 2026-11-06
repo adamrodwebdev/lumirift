@@ -1160,6 +1160,26 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
     l'outillage est mis à jour à la 1.46.4 (la 1.46.3 est la musique des clips, § 9 decies). Les
     alertes Dependabot sont activées
     sur le dépôt depuis ce jour ; elles lisent la branche par défaut, `main`.
+- **1.46.4, l'outillage à jour** (demandé par l'utilisateur le 06/11/2026). Le but : que la
+  prochaine version envoyée à Playgama, la première idée de joueur de la série « You asked, I built
+  it », parte sans nouvelle acceptation. Le 06/11/2026, `npm audit --include=dev` trouvait
+  17 entrées (4 « high », 13 « moderate »).
+  - **Le plugin i18n du build** passe de 11.2.5 à 11.2.8. Son extension 9.0.0 n'embarque plus
+    `vue-i18n` 10.0.8 et ses paquets `@intlify` 10.0.8 : ce sont les 4 « high ».
+  - **`fast-uri`** passe de 3.1.8 à 3.1.9 (Lighthouse, par `ajv`), dans la plage que demande
+    `ajv`.
+  - **`minimatch`** passe de 10.2.6 à 11.0.x, imposé par `overrides` dans `package.json`. ESLint,
+    sa configuration et TypeScript-ESLint attendent la 10.x, et aucune 10.x n'est corrigée (l'alerte
+    couvre de 7.0.0 à 11.0.0). npm proposait de redescendre ESLint en 9.39.5 : refusé, c'est une
+    régression.
+  - Le jeu livré ne change pas de dépendance (`vue-i18n` 11.4.14 reste) ; seuls ses messages
+    peuvent être compilés par le plugin plus récent.
+  - **Porte :**
+    - `npm audit --include=dev` sans aucune entrée ;
+    - lint, formatage, types, tests unitaires, builds du site et des portails ;
+    - les parcours dans les trois moteurs et Lighthouse en CI.
+    - Les alertes Dependabot ne se ferment que lorsque `main` reçoit la mise à jour, à la
+      publication.
 
 ### 4.7 Compatibilité
 
@@ -3325,3 +3345,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.46.2  | 04/11/2026 | § 9 nonies, lot 35 : `--recipes`, `onScreen`, `--check`, `buildOf`, `ClipLine`, `checkFonts`, `settle`, `server.fs.allow` ; deux défauts du plateau ; mesures.         |
 | 1.46.3  | 05/11/2026 | § 9 decies, lot 36 : la musique qui boucle (96 BPM, quatre mesures, 10 s), `MusicBed`, le mélange en boucle, l'amorce AAC, les contrôles du son ; § 4.6 : 1.46.4.      |
 | 1.46.3  | 05/11/2026 | § 9 undecies, lot 37 : l'étiquette « Lumirift Blocks · @adamrodwebdev » sur chaque clip, en haut de la zone sûre, dans `textClear`.                                    |
+| 1.46.4  | 06/11/2026 | § 4.6 : l'outillage à jour (plugin i18n 11.2.8, `fast-uri` 3.1.9, `minimatch` 11 imposé), `npm audit` sans entrée.                                                     |

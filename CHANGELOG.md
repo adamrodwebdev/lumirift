@@ -3,6 +3,22 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.46.4] — 06/11/2026
+
+L'outillage à jour (§ 4.6) : `npm audit --include=dev` ne trouve plus rien. Le jeu ne change pas :
+ses dépendances livrées restent les mêmes (`vue-i18n` 11.4.14).
+
+### Sécurité
+
+- **Le plugin i18n du build** (`@intlify/unplugin-vue-i18n`) passe de 11.2.5 à 11.2.8. Son
+  extension 9.0.0 n'embarque plus `vue-i18n` 10.0.8, dont `escapeParameter` laissait passer du XSS
+  (GHSA-83rm-6c8r-g728, GHSA-8rc2-428q-7ww3) : les 4 alertes « high ».
+- **`fast-uri`** passe de 3.1.8 à 3.1.9, sous Lighthouse et `ajv` (GHSA-w74x-v6f9-j3xg,
+  GHSA-xhq7-xmqj-769h).
+- **`minimatch`** passe de 10.2.6 à 11.0.5, sous ESLint et TypeScript-ESLint (GHSA-g3hv-75wg-m249).
+  Il est imposé par `overrides`, car aucune 10.x n'est corrigée ; npm proposait de redescendre
+  ESLint en 9, ce qui aurait été une régression.
+
 ## [1.46.3] — 05/11/2026
 
 La musique qui boucle (§ 9 decies, lot 36) : la musique des clips n'est plus coupée au milieu.
