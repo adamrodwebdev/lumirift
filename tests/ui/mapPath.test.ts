@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pathPoints, rowSpread } from '@/ui/hub/mapPath';
+import { isWide, pathPoints, rowSpread } from '@/ui/hub/mapPath';
 
 /** A level as drawn on a phone: its disc, name and stars. */
 const node = { width: 68, height: 107 };
@@ -26,6 +26,23 @@ describe('The map’s path (1.38)', () => {
     const points = pathPoints(7, field, node);
     const apart = ((points[0]![1] - points[1]![1]) / 100) * field.height;
     expect(apart).toBeCloseTo(node.height + 8);
+  });
+
+  it('crosses a tall field in two rows when its zigzag would lay a level on the one two rows below', () => {
+    // As the zigzag draws a level on a phone: the Guardian's name on one line (1.46.6).
+    const zigzagged = { width: 120, height: 104 };
+    // 360 × 740 under the chapter's line, and 320 × 640: three levels' height is missing.
+    expect(isWide(7, { width: 245, height: 255 }, zigzagged)).toBe(true);
+    expect(isWide(7, { width: 205, height: 215 }, zigzagged)).toBe(true);
+    expect(pathPoints(7, { width: 245, height: 255 }, zigzagged).map(([, y]) => y)).toEqual([
+      78, 22, 78, 22, 78, 22, 78,
+    ]);
+    // In two rows the names wrap and the levels grow taller: the field stays in two rows.
+    expect(isWide(7, { width: 245, height: 255 }, { width: 68, height: 121 })).toBe(true);
+    // 360 × 800 under the line: two rows apart is a level's height, the zigzag stays.
+    expect(isWide(7, { width: 245, height: 315 }, zigzagged)).toBe(false);
+    // Before its levels are measured, a field keeps its own shape.
+    expect(isWide(7, { width: 245, height: 255 }, { width: 0, height: 0 })).toBe(false);
   });
 
   it('keeps the wave when the levels fit side by side, or when the field is too short to part', () => {

@@ -8,7 +8,7 @@ import AppIcon from '../components/AppIcon.vue';
 import StarRow from '../components/StarRow.vue';
 import UpgradesDialog from '../components/UpgradesDialog.vue';
 import LevelDialog from './LevelDialog.vue';
-import { pathPoints, type Size } from './mapPath';
+import { isWide, pathPoints, type Size } from './mapPath';
 
 /**
  * The campaign as a map: one chapter at a time, its six or seven levels
@@ -125,7 +125,9 @@ onMounted(observe);
 watch(() => view.value.chapter, observe, { flush: 'post' });
 onBeforeUnmount(() => observer.disconnect());
 
-const wide = computed(() => measured.value.field.width > measured.value.field.height);
+const wide = computed(() =>
+  isWide(view.value.levels.length, measured.value.field, measured.value.node),
+);
 const points = computed(() =>
   pathPoints(view.value.levels.length, measured.value.field, measured.value.node),
 );
