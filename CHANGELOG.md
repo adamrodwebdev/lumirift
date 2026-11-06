@@ -3,6 +3,51 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [1.46.6] — 06/11/2026
+
+Les lignes du monde (§ 9 terdecies, lot 39) : le jeu dit son monde en 27 phrases, là où les
+joueurs regardent déjà, jamais avant ni pendant la partie. La lumière tombe par la Faille et durcit
+en blocs ; quatre Gardiens gardent leur matière ; vous brisez les blocs pour la libérer. Ce qu'il y
+a au-delà de la Faille reste un mystère (choix de l'utilisateur).
+
+### Ajouté
+
+- **Une ligne du monde à chaque chapitre** de la carte, sous son titre ; celle du chapitre 1 est la
+  prémisse. Sous 616 px de haut (téléphones couchés, petits téléphones), la carte la cache : sous
+  elle, ses niveaux se recouvraient.
+- **Les Gardiens annoncés** : le Golem, l'Œil et le Cœur s'éveillent à la victoire du duel qui
+  précède leur combat (3-6, 4-6, 5-6), dans le même encadré que le Ver à la fin du 1-1, en texte
+  seul. Chaque annonce porte sa ligne du monde.
+- **La première chute de chaque Gardien** (2-7, 3-7, 4-7, 5-7) et **la finale** (la première
+  victoire du 10-7) ont leur ligne sous le verdict. Les revanches n'en ont pas. Sous 576 px de
+  haut, la fenêtre de fin tait ses lignes et resserre l'annonce : ses boutons restent en vue, sans
+  défilement, comme avant.
+- **Les trophées des Gardiens** disent leur ligne dans l'Atelier une fois gagnés, et **chaque
+  saison** la sienne sous son titre.
+- **Le style des lignes** (`LoreLine`) : un trait d'ambre, la lumière de la Faille, puis la phrase
+  en Sora dans un ton parchemin (`--lore`), deux lignes au plus, contraste de 7,7:1 au moins. En
+  quatre langues : le russe et l'indonésien écrits pour le lot.
+
+### Modifié
+
+- **Le cri du combo ×10** devient WHITE-HOT! (INCANDESCENT !, РАСКАЛЕНО ДОБЕЛА!, PIJAR PUTIH!) :
+  l'ancien était le titre d'un jeu d'un autre studio, que ce studio revendique comme marque. Un
+  test des langues refuse désormais ce nom, ses traductions et les mots d'autres mondes que la
+  revue des noms a relevés.
+- **La Faille prend sa capitale** partout en français : Cœur, Course, Surcharge et Étincelles de
+  la Faille.
+- **Des plafonds de durée en CI** (demande de l'utilisateur) : 45 minutes pour la tâche principale
+  et pour WebKit, 30 pour Firefox, environ deux fois leur plus longue exécution verte, au lieu des
+  six heures de GitHub ; 10 minutes pour installer un moteur, qui en prend moins de deux. Le
+  06/11, le miroir Ubuntu a servi trois installations à 35 kB/s environ (24, 27 et 62 minutes) :
+  une tâche arrêtée ainsi se relance.
+
+### Corrigé
+
+- **Les niveaux de la carte ne se recouvrent plus** sur un téléphone de 320 × 640 : un chemin plus
+  haut que large, mais trop court pour son zigzag (trois niveaux de hauteur), passe en deux rangées.
+  Sous la ligne du chapitre, un téléphone de 360 × 740 en avait besoin aussi.
+
 ## [1.46.5] — 06/11/2026
 
 Prêt pour Telegram (§ 9 duodecies, lot 38) : Lumirift arrivera sur Telegram par l'application
