@@ -1856,6 +1856,9 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 33  | Les 30 premières secondes (1.46) : la décharge tout de suite, une consigne de cinq mots, le Ver vers 15 s  | Livré (1.46)                                                 |
 | 34  | Prêt pour Yandex (1.47) : le build remis à niveau, la revue modérateur, la fiche, un brouillon             | Prévu                                                        |
 | 35  | La fabrique sans retouche (1.46.2) : recettes en fichier, ligne incrustée, polices et images contrôlées    | Livré (1.46.2)                                               |
+| 36  | La musique qui boucle (1.46.3) : un lit de quatre mesures à 96 BPM, l'amorce AAC, les contrôles du son     | Livré (1.46.3), PR #60                                       |
+| 37  | L'étiquette des clips (1.46.3) : « Lumirift Blocks · @adamrodwebdev » sous la ligne de chaque clip         | Livré (1.46.3), PR #60                                       |
+| 38  | Lumirift sur Telegram : le jeu en Mini App, son bot, ses sauvegardes dans le nuage de Telegram             | Spécifié, à valider                                          |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -3259,6 +3262,100 @@ jeu et quel compte il voit, sans que le crochet du clip perde sa place.
     première publicité sur Playgama, les cadeaux aux spectateurs et la redirection
     `/lumirift/play` du portfolio, étudiés à part et rapportés avant toute décision.
 
+## 9 duodecies. Lumirift sur Telegram (lot 38, demandé le 06/11/2026)
+
+Le 06/11/2026, l'utilisateur a demandé si Telegram, Snapchat ou WhatsApp pouvaient héberger le
+jeu. Sur recommandation, il a choisi deux choses : un test de Snapchat Spotlight (promotion
+seulement, mené par la session marketing) et **ce lot : le jeu en Mini App Telegram**.
+
+- Snapchat n'héberge plus de jeux web depuis le 05/09/2022 : ses jeux sont des filtres en réalité
+  augmentée.
+- WhatsApp n'a pas de plateforme de jeux ouverte aux développeurs.
+- Le même jour, l'utilisateur a fixé une règle : un seul appareil, l'ordinateur. Le bot se crée
+  dans Telegram Desktop ou Web, et les essais s'y font.
+
+Les règles de Telegram sont relevées dans la référence de la compétence de modération
+(`game-moderator-review/references/telegram.md`, lue le 06/11/2026). Ses sources : la
+documentation officielle, les conditions des développeurs de bots, le SDK Playgama et les régies.
+
+- **Aucune revue, aucun frais.** Un bot créé avec @BotFather et une Mini App en HTTPS sont en
+  ligne aussitôt. Telegram sanctionne après coup : avertissement, retrait des versions des boutiques
+  d'applications, mention SCAM, suppression du bot et du compte.
+- **Le nom d'utilisateur du bot ne change jamais** (5 à 32 caractères, finit par `bot`). Ni la
+  marque Telegram ni celle d'un autre jeu dans le nom ou la fiche.
+- **Les biens numériques se vendent en Telegram Stars seulement.** Lumirift ne vend rien et ne
+  doit jamais renvoyer vers une boutique extérieure.
+- **Telegram n'a pas de régie dans les Mini Apps** : sa part de 50 % ne couvre que les pubs du chat
+  du bot. Le SDK Playgama ne branche qu'AdsGram, une régie tierce :
+  - payée en USD₮, une cryptomonnaie ;
+  - un seul bloc pour deux formats ;
+  - les pubs de jeux d'argent et pour adultes actives par défaut.
+- **Le SDK Playgama gère Telegram** depuis le 02/10/2024. La même intégration que la version
+  Playgama suffit pour la langue, le joueur, la pause et le son.
+  - Il enregistre dans le nuage de Telegram (CloudStorage) : 1 024 clés au plus, clés en
+    `A–Z a–z 0–9 _ -`, valeurs de 4 096 caractères au plus.
+  - Quand le nuage refuse, il retombe sans le dire sur la mémoire du navigateur de l'appareil.
+- **Ce qui casse aujourd'hui chez nous :**
+  - nos clés (`stackrift:records`, `stackrift:profile`…) contiennent « : », que le nuage refuse :
+    la partie resterait sur un seul appareil ;
+  - la valeur des records grandit sans limite, une entrée par défi du jour joué : elle dépasserait
+    4 096 caractères après 150 à 170 entrées environ ;
+  - le SDK ne fait rien de ce que Telegram attend du jeu lui-même : `expand()` ; couper le
+    glissement vers le bas, qui ferme l'application pendant la partie ; les marges sûres du plein
+    écran ; la pause quand l'application est réduite ; la protection des méthodes récentes, qui
+    lèvent une erreur sur les vieux clients.
+- **Le bot doit répondre à `/start` et `/help`** (règle de Telegram). Sans serveur, il ne répond
+  rien ; une petite fonction sans serveur (Telegram Serverless ou un équivalent gratuit) le fait.
+- **Distribution par Playgama** : le formulaire de Playgama ne fait exclure que Yandex Games.
+  - Ses partenaires comptent une application Telegram. Elle pourrait publier une copie de
+    Lumirift une fois le jeu au catalogue principal ; il n'est encore qu'au bac à sable.
+  - Playgama ne publie jamais là où le jeu est déjà en ligne.
+
+- **Lot 38 · Lumirift sur Telegram.** Version : la mineure suivante à la livraison. Ce sera la
+  1.47 si le lot 34 (Yandex) attend toujours son contrat ; ce lot prendra alors la suivante.
+  - **Notre propre bot** (proposé), plutôt que la copie de Playgama : notre nom, nos textes, nos
+    visuels, et un lien direct (`t.me/<bot>?startapp`) qui ouvre le jeu depuis les profils des
+    réseaux, en un geste.
+  - **Un mode de build `telegram`**, derrière l'abstraction `Platform`. C'est la version Playgama :
+    son SDK, l'entraînement d'abord, sans lien sortant ni partage. S'y ajoute ce que Telegram attend
+    du jeu : agrandir, couper le glissement pendant la partie, les marges sûres, la pause à la
+    réduction, les méthodes protégées. Le script de Telegram n'est chargé qu'une fois.
+  - **Des sauvegardes qui suivent le joueur :**
+    - des clés sans « : » sur Telegram, et la reprise des valeurs déjà enregistrées ;
+    - les records élagués ou découpés sous 4 096 caractères ;
+    - la dernière sauvegarde gardée aussi sur l'appareil, car le nuage ne promet rien.
+  - **Hébergement gratuit en HTTPS, sans en-tête qui interdit l'encadrement** : GitHub Pages depuis
+    le dépôt public (proposé) ou Telegram Serverless (prix non publiés) ; jamais Netlify, à cause
+    des crédits. L'adresse de la Mini App est l'origine finale, sans redirection.
+  - **Le bot**, créé par l'utilisateur dans Telegram Desktop :
+    - son nom d'utilisateur, définitif, lui est donné dans la conversation avant la création ;
+    - description, description courte et nom dans les quatre langues ;
+    - écran de chargement à nos couleurs, aperçus en images ;
+    - une réponse à `/start` et `/help` avec un bouton qui ouvre le jeu ;
+    - le jeton du bot reste un secret de l'utilisateur, jamais dans le dépôt.
+  - **Pubs** : aucune au lancement (proposé). Plus tard, au choix de l'utilisateur, AdsGram en un
+    seul format, avec :
+    - les pubs de jeux d'argent et pour adultes coupées ;
+    - une politique de confidentialité à nous, puisque la régie reçoit l'identifiant Telegram du
+      joueur ;
+    - le traitement des paiements en USD₮ revu par la compétence comptable.
+  - **Essais** : Telegram Desktop et Web (K et A) sur l'ordinateur, sur le serveur de test de
+    Telegram puis en vrai. Un essai sur téléphone (iOS, Android) reste à décider avec
+    l'utilisateur ; la règle d'un seul appareil passe avant.
+  - **Porte :**
+    - la revue du build par la compétence de modération, avec `telegram.md` ;
+    - la partie reprise sur un deuxième client (Desktop et Web) ;
+    - le jeu ne se ferme pas en jouant ;
+    - aucun appel de méthode non gérée sur un vieux client ;
+    - Lighthouse inchangé sur notre site.
+  - Hors du lot : la vente en Stars, les classements de Telegram, la publication par Playgama.
+  - Coût estimé : un jour et demi à deux jours.
+  - **À valider par l'utilisateur, avant tout code :**
+    - notre bot ou la copie de Playgama ;
+    - l'hébergement ;
+    - les pubs au lancement ;
+    - l'essai sur téléphone.
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
@@ -3345,4 +3442,5 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.46.2  | 04/11/2026 | § 9 nonies, lot 35 : `--recipes`, `onScreen`, `--check`, `buildOf`, `ClipLine`, `checkFonts`, `settle`, `server.fs.allow` ; deux défauts du plateau ; mesures.         |
 | 1.46.3  | 05/11/2026 | § 9 decies, lot 36 : la musique qui boucle (96 BPM, quatre mesures, 10 s), `MusicBed`, le mélange en boucle, l'amorce AAC, les contrôles du son ; § 4.6 : 1.46.4.      |
 | 1.46.3  | 05/11/2026 | § 9 undecies, lot 37 : l'étiquette « Lumirift Blocks · @adamrodwebdev » sur chaque clip, en haut de la zone sûre, dans `textClear`.                                    |
+| 1.46.3  | 06/11/2026 | § 9 duodecies, lot 38 spécifié : Lumirift sur Telegram (Mini App, bot, sauvegardes du nuage, hébergement, pubs), à valider.                                            |
 | 1.46.4  | 06/11/2026 | § 4.6 : l'outillage à jour (plugin i18n 11.2.8, `fast-uri` 3.1.9, `minimatch` 11 imposé), `npm audit` sans entrée.                                                     |
