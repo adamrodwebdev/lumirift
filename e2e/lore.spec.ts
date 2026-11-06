@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import { devices, expect, test, type Browser, type Page, type TestInfo } from '@playwright/test';
 import { closeDailyGift } from './dailyGift';
 import { seedStorage } from './seed';
 
@@ -25,10 +25,10 @@ const message = (tree: Tree, path: string): string =>
   String(path.split('.').reduce<unknown>((node, key) => (node as Tree)[key], tree));
 
 const LANGUAGES = [
-  { code: 'fr', browser: 'fr-FR' },
-  { code: 'en', browser: 'en-US' },
-  { code: 'ru', browser: 'ru-RU' },
-  { code: 'id', browser: 'id-ID' },
+  { code: 'fr', locale: 'fr-FR' },
+  { code: 'en', locale: 'en-US' },
+  { code: 'ru', locale: 'ru-RU' },
+  { code: 'id', locale: 'id-ID' },
 ] as const;
 const SEASONS = ['preseason', 'embers', 'tides', 'storm'] as const;
 const GUARDIANS = ['duneWorm', 'ceramicGolem', 'towerEye', 'riftHeart'] as const;
@@ -151,33 +151,55 @@ const PLAYED = Object.fromEntries(
     .filter(([id]) => id !== '10-7'),
 );
 
-for (const { code, browser } of LANGUAGES) {
+/**
+ * A phone of this size, held as a player holds it (touch, a mobile page), in
+ * the language's own locale. Each size has its own context, as the other
+ * sweeps do: Firefox's mobile emulation never finishes a `setViewportSize`.
+ */
+async function phoneAt(
+  browser: Browser,
+  info: TestInfo,
+  phone: { readonly width: number; readonly height: number; readonly locale: string },
+): Promise<Page> {
+  const context = await browser.newContext({
+    baseURL: info.project.use.baseURL,
+    viewport: { width: phone.width, height: phone.height },
+    deviceScaleFactor: devices['Pixel 7'].deviceScaleFactor,
+    hasTouch: true,
+    isMobile: true,
+    locale: phone.locale,
+  });
+  const page = await context.newPage();
+  await closeDailyGift(page);
+  return page;
+}
+
+for (const { code, locale } of LANGUAGES) {
   test.describe(code, () => {
-    test.use({ locale: browser });
     const words = messages(code);
     const say = (path: string) => message(words, path);
 
     test(`${code}: every line of the world fits its place, from 390 to 320 px`, async ({
-      page,
+      browser,
     }, info) => {
-      test.skip(info.project.name !== 'mobile', 'The phone sizes are set here');
-      test.setTimeout(90_000);
-      // A day of the preseason: its page has a season to tell, whenever the suite runs.
-      await page.clock.setFixedTime(new Date('2026-11-06T12:00:00Z'));
-      await closeDailyGift(page);
-      // Every Guardian defeated: each trophy is owned, the Dune scales worn.
-      await seedStorage(page, {
-        'stackrift:profile': {
-          games: 3,
-          bosses: [...GUARDIANS],
-          equipment: { material: 'dunes', ambiance: 'night', shatter: 'shards' },
-        },
-      });
-      const tab = (name: string) => page.getByRole('tab', { name: say(`hub.tabs.${name}`) });
-      const panel = (name: string) => page.getByRole('tabpanel', { name: say(`hub.tabs.${name}`) });
+      test.skip(info.project.name !== 'desktop', 'Its own phones: once per engine');
+      test.setTimeout(120_000);
       for (const phone of PHONES) {
         const size = `${phone.width} × ${phone.height}`;
-        await page.setViewportSize({ width: phone.width, height: phone.height });
+        const page = await phoneAt(browser, info, { ...phone, locale });
+        // A day of the preseason: its page has a season to tell, whenever the suite runs.
+        await page.clock.setFixedTime(new Date('2026-11-06T12:00:00Z'));
+        // Every Guardian defeated: each trophy is owned, the Dune scales worn.
+        await seedStorage(page, {
+          'stackrift:profile': {
+            games: 3,
+            bosses: [...GUARDIANS],
+            equipment: { material: 'dunes', ambiance: 'night', shatter: 'shards' },
+          },
+        });
+        const tab = (name: string) => page.getByRole('tab', { name: say(`hub.tabs.${name}`) });
+        const panel = (name: string) =>
+          page.getByRole('tabpanel', { name: say(`hub.tabs.${name}`) });
         await page.goto('/');
 
         // The map: the line of each chapter, under its title.
@@ -216,34 +238,34 @@ for (const { code, browser } of LANGUAGES) {
             phone.lines,
           );
         }
-        await page.keyboard.press('Escape');
+        await page.context().close();
       }
     });
 
     test(`${code}: the chapter's line leaves the map's levels their room`, async ({
-      page,
+      browser,
     }, info) => {
-      test.skip(info.project.name !== 'mobile', 'The phone sizes are set here');
-      test.setTimeout(90_000);
-      await closeDailyGift(page);
-      await seedStorage(page, {
-        'stackrift:profile': { games: 3 },
-        'stackrift:campaign': { stars: PLAYED, ranks: {} },
-      });
-      const panel = page.getByRole('tabpanel', { name: say('hub.tabs.map') });
+      test.skip(info.project.name !== 'desktop', 'Its own phones: once per engine');
+      test.setTimeout(120_000);
       for (const phone of SHORT_PHONES) {
         const size = `${phone.width} × ${phone.height}`;
-        await page.setViewportSize({ width: phone.width, height: phone.height });
+        const page = await phoneAt(browser, info, { ...phone, locale });
+        await seedStorage(page, {
+          'stackrift:profile': { games: 3 },
+          'stackrift:campaign': { stars: PLAYED, ranks: {} },
+        });
         await page.goto('/');
         await page.getByRole('tab', { name: say('hub.tabs.map') }).click();
         await expect.soft(page.locator('.map__lore')).toBeVisible({ visible: phone.line });
         // From the chapter the map opens on (the last), back to the first.
+        const panel = page.getByRole('tabpanel', { name: say('hub.tabs.map') });
         for (let chapter = 10; chapter >= 1; chapter--) {
           expect.soft(await covered(page), `${size}, chapter ${chapter}`).toEqual([]);
           if (chapter > 1) {
             await panel.getByRole('button', { name: say('hub.prevChapter') }).click();
           }
         }
+        await page.context().close();
       }
     });
   });
