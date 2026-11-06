@@ -319,6 +319,17 @@ const shopOpen = ref(false);
   padding-bottom: var(--space-1);
 }
 
+/*
+ * Tall hubs, where the path can zigzag: the Guardian then sits at the top, its disc half a level
+ * above its point and its ring 5 px beyond; the field's inset (half a level) left it touching the
+ * chapter dots (1.46.6). Shorter hubs cross in two rows, whose top levels clear the dots.
+ */
+@container hub (min-height: 45rem) {
+  .map__dots {
+    padding-bottom: 0.875rem;
+  }
+}
+
 .map__dots i {
   width: 0.45rem;
   height: 0.45rem;
