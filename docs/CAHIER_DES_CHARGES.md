@@ -22,6 +22,10 @@
 | 1.46    | 03/11/2026 | Les 30 premières secondes : la décharge en 1,3 s, une consigne de cinq mots sur le puits et son geste, la récompense sans attente, le Ver vers 15 s, l'objectif avec lui, un chargement plus court (§ 9 octies, lot 33).              |
 | 1.46.1  | 03/11/2026 | Trois moteurs en CI (Chrome, Firefox, WebKit) et les défauts qu'ils ont montrés : une boucle d'observateurs de taille, le cadeau sur un lecteur d'écran, le focus des fenêtres fermées (§ 6).                                         |
 | 1.46.2  | 04/11/2026 | La fabrique sans retouche : recettes en fichier, ligne à l'écran, contrôle de fraîcheur, polices contrôlées ; l'image noire à la coupe des clips corrigée (§ 9 nonies, lot 35).                                                       |
+| 1.46.3  | 06/11/2026 | La musique qui boucle et l'étiquette des clips : un lit de quatre mesures à 96 BPM, l'amorce AAC, les contrôles du son, « Lumirift Blocks · @adamrodwebdev » sur chaque clip (§ 9 decies et undecies, lots 36 et 37).                 |
+| 1.46.4  | 06/11/2026 | L'outillage sans alerte : le plugin i18n, `fast-uri` et `minimatch` à jour, `npm audit` vide (§ 4.6).                                                                                                                                 |
+| 1.46.5  | 06/11/2026 | Prêt pour Telegram : les sauvegardes taillées pour le nuage de Telegram, le comportement d'une Mini App, le SDK attendu 15 s au plus (§ 9 duodecies, lot 38).                                                                         |
+| 1.46.6  | 06/11/2026 | Les lignes du monde : 27 lignes du récit sur la carte, les fenêtres de fin, l'Atelier et la saison, en quatre langues ; le cri du ×10 renommé WHITE-HOT! ; la Faille en capitale (§ 9 terdecies, lot 39).                             |
 
 Document vivant : il est mis à jour à chaque étape livrée (voir § 12, journal).
 
@@ -1858,7 +1862,8 @@ ordonnés pour qu'une version **jouable** existe dès le lot 3, puis s'enrichiss
 | 35  | La fabrique sans retouche (1.46.2) : recettes en fichier, ligne incrustée, polices et images contrôlées     | Livré (1.46.2)                                               |
 | 36  | La musique qui boucle (1.46.3) : un lit de quatre mesures à 96 BPM, l'amorce AAC, les contrôles du son      | Livré (1.46.3), PR #60                                       |
 | 37  | L'étiquette des clips (1.46.3) : « Lumirift Blocks · @adamrodwebdev » sous la ligne de chaque clip          | Livré (1.46.3), PR #60                                       |
-| 38  | Prêt pour Telegram (1.46.5) : la copie de Playgama, les sauvegardes du nuage, le comportement dans Telegram | En cours                                                     |
+| 38  | Prêt pour Telegram (1.46.5) : la copie de Playgama, les sauvegardes du nuage, le comportement dans Telegram | Livré (1.46.5), PR #63                                       |
+| 39  | Les lignes du monde (1.46.6) : 27 lignes en quatre langues, `--lore`, les Gardiens annoncés, WHITE-HOT!     | En cours                                                     |
 
 Ordre de sortie (décidé le 26/10/2026, revu le même jour) : lot 15 (1.31), lot 23 (1.32),
 lot 16 (1.33), lot 24 (1.34), puis lots 17 à 20 (1.35 à 1.38), lot 21 (2.0) et lot 22.
@@ -2450,7 +2455,7 @@ des effets à la mesure du moment.
     - « COMBO ×N » grandit (1,05 case à ×2, plus 0,08 par pas, 1,6 au plus) et chauffe : or à
       ×2, orange à ×3 et ×4, rouge de ×5 à ×7, blanc brûlant dès ×8 ;
     - aux paliers, un mot de chaleur au-dessus, dit une fois (choix de l'utilisateur, le
-      29/10/2026) : HOT! à ×3, BLAZING! à ×5, INFERNO! à ×8, RIFTBREAKER! à ×10 ; traduits en
+      29/10/2026) : HOT! à ×3, BLAZING! à ×5, INFERNO! à ×8, RIFTBREAKER! à ×10 (WHITE-HOT! depuis la 1.46.6, § 9 terdecies) ; traduits en
       français, indonésien et russe avec le même ton (cris courts, la chaleur qui monte) ;
     - le cadre du puits rougeoie avec le combo : une lueur sur ses bords, qui monte d'un pas à
       chaque effacement et s'éteint 1,5 s après le dernier ;
@@ -3360,6 +3365,112 @@ documentation officielle, les conditions des développeurs de bots, le SDK Playg
     - les autres versions inchangées (e2e, Lighthouse).
   - Coût estimé : une demi-journée.
 
+## 9 terdecies. Les lignes du monde (lot 39, validé le 06/11/2026)
+
+Le 06/11/2026, l'utilisateur a demandé : « What about creating a lore and background to the game
+and add more depth to it ? ». La session marketing a recommandé un récit léger, qu'il a choisi
+(« Yes, write it ») : dire en quelques lignes le monde que le jeu a déjà, là où les joueurs
+regardent déjà, jamais avant ni pendant la partie.
+
+- Le récit et ses 27 lignes, en français et en anglais, sont dans l'onglet « World » du document
+  « Lumirift New Mechanics » (https://claude.ai/artifact/SkKcoqnzxbnvpVqGrD6LXP).
+- Approuvé le même jour (« Approve it ») avec ses recommandations : ce qu'il y a au-delà de la
+  Faille reste un mystère, et le cri du ×10 devient WHITE-HOT!.
+- La maquette « Lignes du monde Lumirift » (https://claude.ai/artifact/8dJGJaGGqzvbbnfgNmEtkS,
+  cinq écrans de téléphone en français) est validée (« Validate it »).
+- La session marketing a remis le lot à la session de code le même après-midi.
+
+**Les règles du récit** (onglet World) :
+
+- Une ligne, une image : 12 mots au plus en anglais ; le français fait environ 20 % de plus.
+- Fidèle à l'écran : une ligne ne dit que ce que le jeu montre, jamais une règle qu'il n'a pas.
+- Rien avant de jouer, rien pendant : les avis de la partie restent des règles.
+- Le joueur, c'est « vous » (« вы » en russe, « kamu » en indonésien), jamais un héros nommé ni
+  un Gardien.
+- Doux : les Gardiens sont vaincus, replongent ou se taisent. Rien ne meurt, rien ne saigne.
+- Des phrases entières par langue : aucun nom de Gardien n'a à s'accorder dans une phrase.
+
+**Ce que le lot livre (1.46.6)** :
+
+1. **Les 27 lignes en quatre langues** (108 chaînes, clés `lore.*`). Le français est la
+   référence et l'anglais est donné. Le russe et l'indonésien sont écrits avec la compétence de
+   traduction et le glossaire de l'onglet : Faille, Rift, Разлом, Retakan ; Gardien, Guardian,
+   Страж, Penjaga ; la lumière, свет et cahaya (confirmés).
+   - **La carte de campagne** (`lore.chapter.1` à `10`) : une ligne par chapitre, sous
+     l'en-tête ; celle du chapitre 1 est la prémisse.
+   - **La fenêtre de fin, un Gardien s'éveille** (`lore.stirs.<Gardien>`) : sous la phrase
+     d'annonce, dans le même encadré.
+     - Le Ver garde l'annonce du 1-1, après son passage sous le sable.
+     - Le Golem, l'Œil et le Cœur sont annoncés à chaque victoire du duel qui précède leur
+       combat (3-6, 4-6, 5-6), en texte seul, sans passage : un nouveau champ `announces` des
+       niveaux.
+   - **La fenêtre de fin, la première chute d'un Gardien** (`lore.fall.<Gardien>`) : sous
+     « Victoire : le Gardien est vaincu ! », à la première victoire de son premier combat (2-7,
+     3-7, 4-7, 5-7). Les revanches des chapitres 6 à 9 n'en ont pas.
+   - **La fenêtre de fin, la finale** (`lore.finale`) : à la même place, à la première victoire
+     du 10-7.
+   - **L'Atelier** (`lore.trophy.<Gardien>`) : un trophée de Gardien possédé (Écailles des
+     dunes, Kintsugi, Éclats d'iris, l'ambiance la Faille) dit sa ligne à la place de la note
+     sous son nom.
+   - **La page de la saison** (`lore.season.<saison>`) : sous le titre (Avant-saison, Braises,
+     Marées, Orage).
+   - La fin d'une partie le dit dans `CampaignResult` : `teaser`, le Gardien annoncé (avec ou
+     sans passage), et `milestone`, la chute d'un Gardien ou la finale. `GameEnding` en décide
+     avec `storyMilestone()` (une règle pure de `Levels.ts`), les étoiles du niveau lues avant
+     d'être enregistrées.
+2. **Le style**, dans un composant `LoreLine` :
+   - un trait d'ambre de 1,75 × 0,125 rem (28 × 2 px), la lumière de la Faille : le jeton
+     `--lore-mark`, fait de `--accent-fill` et `--rift-core` ;
+   - la ligne en Sora 400, 0,875 rem, interligne 1,45, dans un nouveau jeton parchemin `--lore`
+     (#e4d9c3). Contraste mesuré : de 7,7:1 (l'encadré du Gardien) à 13,8:1 (le fond). Le jeu n'a
+     qu'un thème, sombre (§ 4.5) ;
+   - centrée, sauf sur la page de la saison (à gauche, sous le titre) ; `text-wrap: balance` ;
+   - deux lignes au plus à 390 px, jamais coupée ; vérifiée à 320 px, au zoom de 400 % et dans
+     les quatre langues.
+3. **Le cri du ×10 renommé** : `riftbreaker` devient `whiteHot` (`COMBO_SHOUTS`, les quatre
+   langues, le test) : WHITE-HOT!, INCANDESCENT !, РАСКАЛЕНО ДОБЕЛА!, PIJAR PUTIH!.
+   - RIFTBREAKER! est le titre d'un jeu d'EXOR Studios, que son dossier de presse revendique
+     comme marque aux États-Unis et dans l'Union européenne. La demande américaine 87749503 est
+     abandonnée depuis le 30/08/2021 ; le registre européen n'est pas vérifié.
+   - Aucun clip ne le montre : la scène de combo de la fabrique s'arrête à ×5.
+4. **Le glossaire français** : « la Faille » prend sa capitale partout, comme dans les lignes du
+   monde (Cœur, Course, Surcharge et Étincelles de la Faille, et chaque phrase où la Faille agit) :
+   15 chaînes. Le russe et l'indonésien la portent déjà.
+5. **Les garde-fous de la revue des noms**, dans le test des langues et dans les quatre langues :
+   - ni « Riftbreaker » ni ses traductions ;
+   - ni « Rift Guardian », le boss de fin des failles néphalem de Diablo III (le « Gardien de la
+     faille » de ce cahier reste interne) ;
+   - ni les mots de Dune : Shai-Hulud, l'épice, la monte des vers, les marteleurs, le signe du ver ;
+   - ni « lidless » pour l'Œil, décrit par le verre et la lumière, jamais par le feu.
+
+**Écarts proposés (à confirmer)** :
+
+- Sur les écrans bas (une carte de moins de 26 rem de haut : les téléphones couchés), la ligne du
+  chapitre se cache, comme les étoiles du chapitre : le chemin des niveaux garde sa place.
+- L'annonce des 3-6, 4-6 et 5-6 revient à chaque victoire, comme celle du Ver au 1-1 : les
+  revanches existent, le Gardien peut s'éveiller encore.
+
+**Essais** :
+
+- Tests unitaires :
+  - la fin de partie : l'annonce sans passage des 3-6, 4-6 et 5-6, la première chute de chaque
+    Gardien une seule fois, rien pour une revanche ni pour une défaite, la finale au 10-7 ;
+  - les langues : une ligne pour chaque chapitre, Gardien, trophée et saison, 12 mots au plus en
+    anglais, les garde-fous ;
+  - le cri du ×10.
+- Parcours (Playwright, les trois moteurs en CI) : la ligne de chaque chapitre, de la saison en
+  cours et d'un trophée, dans les quatre langues, à 390 et à 320 px : deux lignes au plus, jamais
+  coupée ; axe sans violation.
+- Une sonde sur le serveur de développement pour les fenêtres de fin (annonce, première chute,
+  finale), qu'aucun parcours n'atteint sans jouer : à 360 × 640, 390 × 844, 640 × 360 et
+  844 × 390, dans les quatre langues, la fenêtre ne défile pas et chaque ligne tient en deux.
+- Le balayage de 320 à 2560 px, la réorganisation à 320 × 256 et Lighthouse à 100 dans les
+  quatre catégories (mobile, pire de trois passages).
+
+**Porte** : la CI verte dans les trois moteurs, Lighthouse à 100 et le balayage responsive, puis
+la parole de l'utilisateur pour la fusion. Version 1.46.6 : la 1.47 reste réservée à Yandex
+(lot 34). Coût estimé : une journée.
+
 ## 10. Hors périmètre (v1)
 
 Comptes et classements en ligne, multijoueur en ligne, manette. La monétisation (publicités,
@@ -3448,3 +3559,4 @@ achats) arrive avec les versions portails, après la 1.0 (§ 3.7). Voir § 11.
 | 1.46.3  | 05/11/2026 | § 9 undecies, lot 37 : l'étiquette « Lumirift Blocks · @adamrodwebdev » sur chaque clip, en haut de la zone sûre, dans `textClear`.                                    |
 | 1.46.3  | 06/11/2026 | § 9 duodecies, lot 38 : Lumirift sur Telegram par la copie de Playgama (choix de l'utilisateur) ; prêt pour Telegram.                                                  |
 | 1.46.4  | 06/11/2026 | § 4.6 : l'outillage à jour (plugin i18n 11.2.8, `fast-uri` 3.1.9, `minimatch` 11 imposé), `npm audit` sans entrée.                                                     |
+| 1.46.6  | 06/11/2026 | § 9 terdecies, lot 39 : les lignes du monde (`lore.*`, `LoreLine`, `--lore`, `announces`, `storyMilestone`), WHITE-HOT!, la Faille en capitale.                        |
