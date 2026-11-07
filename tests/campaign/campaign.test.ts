@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { CampaignProgress } from '@/campaign/CampaignProgress';
 import { CampaignRun } from '@/campaign/CampaignRun';
 import type { LiveState } from '@/campaign/Goals';
-import { CHAPTERS, guardianLevel, LEVELS, levelById, MAX_STARS } from '@/campaign/Levels';
+import {
+  CHAPTERS,
+  guardianLevel,
+  LEVELS,
+  levelById,
+  MAX_STARS,
+  storyMilestone,
+} from '@/campaign/Levels';
 import { boostsFor, nextRankCost, timeBonusMs, UPGRADES } from '@/campaign/Upgrades';
 import { MemoryStorage } from '@/services/KeyValueStorage';
 import { CAMPAIGN_KEY, CampaignService } from '@/services/CampaignService';
@@ -53,6 +60,36 @@ describe('Campaign levels', () => {
   it('keeps the first fight of each Guardian for its weekly challenge, not its rematch', () => {
     expect(guardianLevel('duneWorm')!.id).toBe('2-7');
     expect(guardianLevel('riftHeart')!.id).toBe('5-7');
+  });
+
+  it('announces each Guardian before its first fight: the Wyrm with its show, the others in words', () => {
+    expect(levelById('1-1')).toMatchObject({ teaser: 'duneWorm' });
+    const announced = LEVELS.filter((level) => level.announces);
+    expect(announced.map(({ id, announces }) => [id, announces])).toEqual([
+      ['3-6', 'ceramicGolem'],
+      ['4-6', 'towerEye'],
+      ['5-6', 'riftHeart'],
+    ]);
+    // Each one is the duel right before the fight it announces.
+    for (const level of announced) {
+      expect(level.modeId).toBe('duel');
+      expect(LEVELS[LEVELS.indexOf(level) + 1]).toBe(guardianLevel(level.announces!));
+    }
+  });
+
+  it('tells a step of the world’s story at each Guardian’s first fight and at the very last level', () => {
+    const steps = LEVELS.flatMap((level) => {
+      const step = storyMilestone(level);
+      return step ? [[level.id, step] as const] : [];
+    });
+    expect(steps).toEqual([
+      ['2-7', { kind: 'fall', boss: 'duneWorm' }],
+      ['3-7', { kind: 'fall', boss: 'ceramicGolem' }],
+      ['4-7', { kind: 'fall', boss: 'towerEye' }],
+      ['5-7', { kind: 'fall', boss: 'riftHeart' }],
+      // The rematches tell nothing; the Heart's last fight is the finale.
+      ['10-7', { kind: 'finale' }],
+    ]);
   });
 
   it('visits every mode of the game, or opens it (the race, once its three worlds were seen)', () => {

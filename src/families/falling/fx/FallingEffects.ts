@@ -161,7 +161,7 @@ export interface Popup {
 /** The words the well writes, translated: a combo (« COMBO ×3 »), its shouts (1.41). */
 export interface WellWords {
   combo(times: number): string;
-  /** `hot`, `blazing`, `inferno` or `riftbreaker` (`COMBO_SHOUTS`). */
+  /** `hot`, `blazing`, `inferno` or `whiteHot` (`COMBO_SHOUTS`). */
   shout(key: string): string;
 }
 

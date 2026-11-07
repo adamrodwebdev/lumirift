@@ -47,7 +47,7 @@ async function openRace(page: Page) {
   await page.locator('main').waitFor();
   await tab(page, 'Modes').click();
   await panel(page, 'Modes')
-    .getByRole('button', { name: /^Course de la faille/ })
+    .getByRole('button', { name: /^Course de la Faille/ })
     .click();
   await panel(page, 'Modes').getByRole('button', { name: 'Jouer' }).click();
   await expect(page.locator('canvas[role="img"]').first()).toBeAttached();
@@ -214,7 +214,7 @@ test('no sideways scroll from 320 to 2560 px, every 20 px, in the menu and every
     await quitGame(page);
   }
   await openRace(page);
-  await sweep('Course de la faille');
+  await sweep('Course de la Faille');
   await quitGame(page);
 });
 
@@ -374,7 +374,7 @@ for (const size of KEY_SIZES)
     }
     // The race (1.34): its clock, its worlds and the well of the world played.
     await openRace(page);
-    await checkGame(`${size.name}, Course de la faille`);
+    await checkGame(`${size.name}, Course de la Faille`);
     await context.close();
   });
 

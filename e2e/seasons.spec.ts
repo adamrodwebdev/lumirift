@@ -117,7 +117,7 @@ test('the Atelier shows a season’s looks from its start, never months ahead', 
   await tab(page, 'Atelier').click();
   const atelier = panel(page, 'Atelier');
   await atelier.getByRole('button', { name: 'Éclats', exact: true }).click();
-  await expect(atelier.getByRole('button', { name: /^Étincelles de la faille/ })).toBeVisible();
+  await expect(atelier.getByRole('button', { name: /^Étincelles de la Faille/ })).toBeVisible();
   await expect(atelier.getByRole('button', { name: /^Flammèches/ })).toHaveCount(0);
   await atelier.getByRole('button', { name: 'Ensembles' }).click();
   await expect(atelier.getByRole('button', { name: /^Braises/ })).toHaveCount(0);

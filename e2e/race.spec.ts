@@ -19,7 +19,7 @@ const WON = [
 ];
 
 const modes = (page: Page) => page.getByRole('tabpanel', { name: 'Modes' });
-const banner = (page: Page) => modes(page).getByRole('button', { name: /^Course de la faille/ });
+const banner = (page: Page) => modes(page).getByRole('button', { name: /^Course de la Faille/ });
 
 test.beforeEach(async ({ page }) => {
   await closeDailyGift(page);
@@ -62,7 +62,7 @@ test('a run of the race: the clock, the worlds, the shift seen coming, the weekâ
   const shift = page.locator('.shift');
   await play(page, 35_000);
   await playUntil(page, 5_000, () => shift.isVisible());
-  await expect(page.getByText('La faille change de monde : Sable.')).toBeAttached();
+  await expect(page.getByText('La Faille change de monde : Sable.')).toBeAttached();
   await expect(shift).toContainText('Les lignes comptent double');
   // The wipe, then the Sand on a fresh board, 10 s on the clock for reaching it.
   const current = worlds.locator('[aria-current="step"]');

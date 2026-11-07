@@ -35,6 +35,11 @@ export interface CampaignLevel {
   readonly bossHealth?: number;
   /** A Guardian of a later chapter shows itself once this level is won (a teaser). */
   readonly teaser?: BossId;
+  /**
+   * The Guardian the win window announces once this level is won, in words
+   * only (1.46.6): the duel before its fight, which cannot show it.
+   */
+  readonly announces?: BossId;
   readonly timeLimitMs: number | null;
   readonly goal: Goal;
   readonly stars: StarRule;
@@ -138,7 +143,8 @@ const HANDMADE: readonly CampaignLevel[] = [
     stars: { kind: 'fast', twoMs: 2 * MIN, threeMs: 1.2 * MIN },
   },
   timed('3-5', 'chroma', 4, { kind: 'lines', target: 20 }),
-  duel('3-6', 'normal'),
+  // Won, the duel announces the chapter's Guardian (1.46.6), as 1-1 shows the Wyrm.
+  { ...duel('3-6', 'normal'), announces: 'ceramicGolem' },
   // The second Guardian: the Ceramic Golem, whose armour is the Mosaic's board.
   {
     ...timed('3-7', 'mosaic', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
@@ -150,7 +156,7 @@ const HANDMADE: readonly CampaignLevel[] = [
   timed('4-3', 'tower', 3, { kind: 'lines', target: 5 }),
   timed('4-4', 'tower', 4, { kind: 'lines', target: 10 }),
   timed('4-5', 'sand', 4, { kind: 'lines', target: 6 }),
-  duel('4-6', 'normal'),
+  { ...duel('4-6', 'normal'), announces: 'towerEye' },
   // The third Guardian: the Eye of the Tower, blinded by the bombs of its gaze.
   {
     ...timed('4-7', 'tower', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
@@ -172,7 +178,7 @@ const HANDMADE: readonly CampaignLevel[] = [
       three: 25,
     },
   ),
-  duel('5-6', 'hard'),
+  { ...duel('5-6', 'hard'), announces: 'riftHeart' },
   // The last Guardian: the Heart of the Rift, wounded by its own shards.
   {
     ...timed('5-7', 'classic', 4, { kind: 'boss', target: GUARDIAN_HEALTH }),
@@ -230,6 +236,23 @@ export const MAX_STARS = LEVELS.length * 3;
 /** The level where a Guardian waits first (its rematches come later). */
 export function guardianLevel(boss: BossId): CampaignLevel | undefined {
   return LEVELS.find((level) => level.boss === boss);
+}
+
+/** A step of the world's story (1.46.6): a Guardian's first fall, or the campaign's end. */
+export type StoryMilestone =
+  { readonly kind: 'fall'; readonly boss: BossId } | { readonly kind: 'finale' };
+
+/**
+ * The step of the story a level's first win reaches: the campaign's last
+ * level is its finale, a Guardian's first fight its fall; a rematch, like
+ * any other level, none.
+ */
+export function storyMilestone(level: CampaignLevel): StoryMilestone | undefined {
+  if (level.id === LEVELS.at(-1)?.id) return { kind: 'finale' };
+  if (level.boss && guardianLevel(level.boss)?.id === level.id) {
+    return { kind: 'fall', boss: level.boss };
+  }
+  return undefined;
 }
 
 export function levelById(id: string): CampaignLevel | undefined {

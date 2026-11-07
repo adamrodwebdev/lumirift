@@ -27,11 +27,24 @@ export function rowSpread(count: number, field: Size, node: Size): number {
 }
 
 /**
+ * Whether a chapter's levels cross the field in two rows rather than zigzag
+ * up it: a wide field does, and a tall one too short for its zigzag (1.46.6).
+ * A zigzag puts every other level in the same column, two rows apart: the
+ * field needs about three levels' height, or each level's name and stars
+ * sit on the disc of the one two rows below (a phone of 320 × 640, or of
+ * 360 × 740 under the chapter's line of the world).
+ */
+export function isWide(count: number, field: Size, node: Size): boolean {
+  const rise = field.height / Math.max(1, count - 1);
+  return field.width > field.height || 2 * rise < node.height - 1;
+}
+
+/**
  * Where a chapter's levels sit (six, or seven with a Guardian): zigzagging
  * up a tall field, across a wide one in two rows that never cover each other.
  */
 export function pathPoints(count: number, field: Size, node: Size): PathPoint[] {
-  const wide = field.width > field.height;
+  const wide = isWide(count, field, node);
   // Half the rows' distance, in % of the field, to the hundredth.
   const half = Math.round(rowSpread(count, field, node) * 5000) / 100;
   return Array.from({ length: count }, (_, i): PathPoint => {

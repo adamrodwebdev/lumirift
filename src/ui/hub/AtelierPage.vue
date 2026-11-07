@@ -16,6 +16,7 @@ import {
 } from '@/progression/Cosmetics';
 import { newCosmetics } from '@/progression/Profile';
 import AppIcon from '../components/AppIcon.vue';
+import LoreLine from '../components/LoreLine.vue';
 import { useProgressText } from '../useProgressText';
 import { MOTION, transitionMs } from '../motion';
 import { isTouchScreen } from '../useOrientation';
@@ -108,6 +109,14 @@ const note = (item: ShelfItem): string =>
       : item.shown
         ? again
         : t('cosmetics.wear');
+
+/** A Guardian's trophy, once owned, tells its line of the world in its note's place (1.46.6). */
+const trophyLine = computed(() => {
+  const { cosmetic, unlocked } = shown.value;
+  return unlocked && cosmetic.unlock.by === 'boss'
+    ? t(`lore.trophy.${cosmetic.unlock.value}`)
+    : null;
+});
 
 /** What a screen reader says of an item: its name, new or not, its note. */
 const itemLabel = (item: ShelfItem): string =>
@@ -326,6 +335,10 @@ watch([material, shatter, ambiance], async () => {
           <b>{{ collectionName(card) }}</b>
           <span>{{ collectionNote(card) }}</span>
         </p>
+        <div v-else-if="trophyLine" class="showcase__label showcase__label--lore">
+          <b>{{ text.cosmeticName(shown.cosmetic) }}</b>
+          <LoreLine :text="trophyLine" />
+        </div>
         <p v-else class="showcase__label">
           <b>{{ text.cosmeticName(shown.cosmetic) }}</b>
           <span>{{ note(shown) }}</span>
@@ -548,6 +561,13 @@ watch([material, shatter, ambiance], async () => {
   color: var(--accent);
   font-size: 0.72rem;
   font-weight: 700;
+}
+
+/* A trophy's line of the world, under its name. */
+.showcase__label--lore {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
 }
 
 .shelf {

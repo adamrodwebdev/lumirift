@@ -7,9 +7,13 @@ on:
     branches: [dev, main]
   pull_request:
 
+# Every job has a cap, about twice its longest green run (GitHub's own limit is six hours): a
+# run that hangs fails within the hour. When green runs come close to it, raise it.
 jobs:
   quality:
     runs-on: ubuntu-latest
+    # 14 to 23 minutes from 3 to 6 Nov 2026.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,10 +44,16 @@ jobs:
   engines:
     name: e2e (${{ matrix.engine }})
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ matrix.minutes }}
     strategy:
       fail-fast: false
       matrix:
-        engine: [firefox, webkit]
+        # From 3 to 6 Nov 2026, with a normal install: Firefox 9 to 13 minutes, WebKit 17 to 26.
+        include:
+          - engine: firefox
+            minutes: 30
+          - engine: webkit
+            minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,8 +61,12 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # The engine, and the system libraries it needs.
+      # The engine, and the system libraries it needs: under a minute and a half, usually. On
+      # 6 Nov 2026 Ubuntu's mirror served three runners at about 35 kB/s (24, 27 and 62 minutes
+      # instead of seconds), each runner on its own: two runs started 13 s apart fetched the same
+      # 139 MB in 4 s and in 61 minutes. A crawl stops here; re-run the failed job (a new runner).
       - run: npx playwright install --with-deps ${{ matrix.engine }}
+        timeout-minutes: 10
       # The production build the journeys play (the first job checks its types).
       - run: npx vite build
       - run: npm run test:e2e

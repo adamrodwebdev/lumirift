@@ -699,16 +699,36 @@ test('every window fits the screen, without scrolling, from 360 × 640 to the de
     }
     await expect(over).toBeVisible({ timeout: 5000 });
     expect(await overflow(), `${size}: end of the game`).toBe(0);
-    // Every label fits its button, and a tall neighbour never stretches them into discs.
-    const buttons = await over.locator('.sheet-buttons .btn').evaluateAll((all) =>
-      all.map((button) => ({
-        cut: button.scrollWidth - button.clientWidth,
-        height: button.getBoundingClientRect().height,
-      })),
-    );
-    for (const button of buttons) {
-      expect(button.cut, `${size}: a label overflows its button`).toBeLessThanOrEqual(0);
-      expect(button.height, `${size}: a button is stretched`).toBeLessThan(64);
+    await buttonsFit(over, `${size}: end of the game`);
+    // A campaign level lost (1-3, Classic, piled up): Again and the map share a row (1.46.6:
+    // "Carte de campagne" overflowed its half at 640 × 360).
+    await page.goto('/');
+    await tab(page, 'Carte').click();
+    await panel(page, 'Carte').getByRole('button', { name: /1-3/ }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Jouer' }).click();
+    const lost = page.getByRole('dialog', { name: 'Niveau échoué' });
+    for (let i = 0; i < 80 && !(await lost.isVisible()); i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(60);
     }
+    await expect(lost).toBeVisible({ timeout: 5000 });
+    expect(await overflow(), `${size}: a level lost`).toBe(0);
+    await buttonsFit(lost, `${size}: a level lost`);
   }
 });
+
+/** Every label fits its button, and a tall neighbour never stretches them into discs. */
+async function buttonsFit(window: Locator, where: string): Promise<void> {
+  const buttons = await window.locator('.sheet-buttons .btn').evaluateAll((all) =>
+    all.map((button) => ({
+      label: button.textContent.trim(),
+      cut: button.scrollWidth - button.clientWidth,
+      height: button.getBoundingClientRect().height,
+    })),
+  );
+  expect(buttons.length, `${where}: its buttons`).toBeGreaterThan(0);
+  for (const button of buttons) {
+    expect(button.cut, `${where}: “${button.label}” overflows its button`).toBeLessThanOrEqual(0);
+    expect(button.height, `${where}: “${button.label}” is stretched`).toBeLessThan(64);
+  }
+}

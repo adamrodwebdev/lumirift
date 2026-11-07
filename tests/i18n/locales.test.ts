@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { CHAPTERS, LEVELS } from '@/campaign/Levels';
 import { detectLocale, isLocale } from '@/i18n/locales';
+import { COSMETICS } from '@/progression/Cosmetics';
+import { SEASONS } from '@/seasons/SeasonData';
 import { FALLING_MODE_IDS, MODE_IDS } from '@/session/ModeId';
 
 type Tree = { readonly [key: string]: string | Tree };
@@ -101,6 +104,62 @@ describe('translations', () => {
       }
     },
   );
+
+  // The review of names of 6 Nov 2026 (CAHIER § 9 terdecies): another studio's game title (the
+  // ×10 shout RIFTBREAKER!, renamed), Diablo III's Rift Guardian, Dune's own words and Sauron's
+  // lidless eye never enter the game's texts, in any language.
+  it.each(Object.keys(LOCALES))('%s never names another game or borrows its world', (locale) => {
+    const borrowed = new RegExp(
+      [
+        'rift\\s*-?\\s*breaker',
+        'brise.?faille',
+        'крушитель разлома',
+        'pemecah retakan',
+        'rift guardian',
+        'gardiens? de (la )?faille',
+        'стражи? разлома',
+        'penjaga retakan',
+        'shai.?hulud',
+        'wormsign',
+        'worm.?riding',
+        'thumper',
+        '\\bspice\\b',
+        'épice',
+        'lidless',
+      ].join('|'),
+      'iu',
+    );
+    for (const [key, message] of messages(locale)) expect(message, key).not.toMatch(borrowed);
+  });
+
+  it('tells a line of the world in each place the lore lot names, and nowhere else', () => {
+    const bosses = [...new Set(LEVELS.flatMap((level) => (level.boss ? [level.boss] : [])))];
+    const trophies = COSMETICS.flatMap(({ unlock }) =>
+      unlock.by === 'boss' ? [unlock.value] : [],
+    );
+    const places = [
+      ...CHAPTERS.map((chapter) => `lore.chapter.${chapter}`),
+      ...bosses.flatMap((boss) => [`lore.stirs.${boss}`, `lore.fall.${boss}`]),
+      'lore.finale',
+      ...trophies.map((boss) => `lore.trophy.${boss}`),
+      ...SEASONS.map((season) => `lore.season.${season.id}`),
+    ];
+    expect(places).toHaveLength(27);
+    expect(
+      keys(fr)
+        .filter((key) => key.startsWith('lore.'))
+        .sort(),
+    ).toEqual([...places].sort());
+  });
+
+  it('keeps every line of the world to twelve words in English (one line, one image)', () => {
+    const lines = messages('en').filter(([key]) => key.startsWith('lore.'));
+    expect(lines).toHaveLength(27);
+    for (const [key, line] of lines) {
+      const words = line.split(/\s+/).filter((word) => /\p{L}/u.test(word));
+      expect(words.length, `${key}: ${line}`).toBeLessThanOrEqual(12);
+    }
+  });
 
   it('names and pitches every mode', () => {
     for (const mode of MODE_IDS) {

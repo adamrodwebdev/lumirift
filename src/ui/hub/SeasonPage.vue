@@ -9,6 +9,7 @@ import { findCosmeticByKey, type MaterialId, type ShatterId } from '@/progressio
 import type { SeasonTierView } from '@/services/SeasonService';
 import AppIcon from '../components/AppIcon.vue';
 import ElementIcon from '../components/ElementIcon.vue';
+import LoreLine from '../components/LoreLine.vue';
 import { useProgressText } from '../useProgressText';
 import { ELEMENT_TINTS, useSeasonText } from '../useSeasonText';
 import GemCanvas from './GemCanvas.vue';
@@ -149,6 +150,12 @@ const onKey = (event: KeyboardEvent) => {
         <h2 :id="titleId" ref="heading" tabindex="-1">
           {{ span ? words.title(span) : t('seasons.soon') }}
         </h2>
+        <LoreLine
+          v-if="span"
+          class="season__lore"
+          align="start"
+          :text="t(`lore.season.${span.season.id}`)"
+        />
         <p v-if="span">{{ words.seasonLeft(span, clock()) }}</p>
       </div>
     </header>
@@ -387,6 +394,11 @@ const onKey = (event: KeyboardEvent) => {
 .season__titles p {
   color: var(--text-muted);
   font-size: 0.85rem;
+}
+
+/* The season's line of the world (1.46.6), between its title and the time left. */
+.season__lore {
+  margin-block: 0.3rem 0.2rem;
 }
 
 .season__body {
