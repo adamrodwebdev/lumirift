@@ -704,7 +704,6 @@ const milestoneLine = computed(() => {
 
 .cont__btn:disabled {
   opacity: 0.55;
-  cursor: default;
 }
 
 .cont__ring {
@@ -849,7 +848,6 @@ const milestoneLine = computed(() => {
 
 .reward:disabled {
   opacity: 0.55;
-  cursor: default;
 }
 
 .reward__badge {

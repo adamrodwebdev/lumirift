@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SeededRandom } from '@/core/Random';
 import { CHROMA_TONES, Tone } from '@/core/Tone';
 import { DunesSession } from '@/families/dunes';
+import { DunesController } from '@/families/dunes/DunesController';
 import {
   CellMap,
   dunesGrid,
@@ -324,6 +325,19 @@ describe('a game of Dunes', () => {
     dunes.place(1, 1, 2);
     expect(dunes.grid.grainCount()).toBeLessThan(before);
     expect(deeds).toEqual(['water', 'fire']);
+  });
+});
+
+describe('the controller of Dunes', () => {
+  it('says a tap puts the piece picked down only where it fits (the board shows the hand there)', () => {
+    const dunes = game([piece('#'), piece('##'), piece('###')]);
+    dunes.start();
+    dunes.place(0, 0, 0);
+    const controller = new DunesController(dunes, () => false);
+    expect(controller.actsAt(4, 4)).toBe(false);
+    controller.selectSlot(1);
+    expect(controller.actsAt(0, 0)).toBe(false);
+    expect(controller.actsAt(4, 4)).toBe(true);
   });
 });
 

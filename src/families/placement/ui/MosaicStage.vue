@@ -409,10 +409,18 @@ const hideGhost = () => {
   if (ghostCanvas.value) ghostCanvas.value.style.visibility = 'hidden';
 };
 
+/** The board shows the pointer only where a tap would do something (a piece picked, a joker waiting). */
+const showPointer = (cell: { x: number; y: number } | null) => {
+  if (!canvas.value) return;
+  const acts = cell !== null && props.active && controller.actsAt(cell.x, cell.y);
+  canvas.value.style.cursor = acts ? 'pointer' : '';
+};
+
 const onBoardMove = (event: PointerEvent) => {
   // The pointer takes over from the keyboard: previews follow it again.
   keyboardMode = false;
   hoverCell = cellAt(event.clientX, event.clientY);
+  showPointer(hoverCell);
 };
 
 const onBoardTap = (event: PointerEvent) => {
@@ -423,6 +431,7 @@ const onBoardTap = (event: PointerEvent) => {
   if (!cell || !props.active) return;
   controller.tapCell(cell.x, cell.y);
   refresh();
+  showPointer(cell);
 };
 
 // --- Jokers and keyboard ---------------------------------------------------------------
@@ -609,7 +618,6 @@ onBeforeUnmount(() => {
     0 0 3rem var(--well-glow),
     0 0 0 7px var(--well-halo);
   touch-action: none;
-  cursor: pointer;
 }
 
 .mosaic__prompt {

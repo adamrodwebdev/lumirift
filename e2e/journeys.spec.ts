@@ -387,6 +387,38 @@ test('the language is remembered; the game has one look, the Rift', async ({ pag
   await expect(page).toHaveTitle('Lumirift Blocks — the falling-blocks game, reinvented');
 });
 
+test('the cursor tells what can be clicked: the arrow on text, the hand on controls', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'A mouse: the desktop');
+  await expect(page.locator('h1, h2').first()).toHaveCSS('cursor', 'default');
+  await expect(tab(page, 'Modes')).toHaveCSS('cursor', 'pointer');
+  await page.getByRole('button', { name: 'Réglages' }).click();
+  const settings = page.getByRole('dialog', { name: 'Réglages' });
+  await expect(settings.getByRole('heading', { name: 'Réglages' })).toHaveCSS('cursor', 'default');
+  await expect(settings.getByLabel('Langue')).toHaveCSS('cursor', 'pointer');
+  const shake = settings.getByRole('switch', { name: 'Secousses de l’écran' });
+  await expect(shake).toHaveCSS('cursor', 'pointer');
+  const calm = settings.getByRole('radio', { name: 'Sobres' });
+  await expect(calm).toHaveCSS('cursor', 'pointer');
+  await calm.check();
+  await expect(shake).toBeDisabled();
+  await expect(shake).toHaveCSS('cursor', 'not-allowed');
+});
+
+test('the Mosaic board shows the hand only where a tap would put the piece picked', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'A mouse: the desktop');
+  await openMode(page, 'Mosaïque');
+  const board = page.getByRole('img', { name: 'Plateau de la Mosaïque' });
+  await board.hover();
+  await expect(board).toHaveCSS('cursor', 'default');
+  await page.getByRole('group', { name: 'Pièces à poser' }).getByRole('button').first().click();
+  await board.hover();
+  await expect(board).toHaveCSS('cursor', 'pointer');
+});
+
 test('the Atelier shows the collection; locked items say how to earn them', async ({ page }) => {
   // The player's chip leads to the Atelier.
   await page.getByRole('button', { name: /^Niveau 1,/ }).click();

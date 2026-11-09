@@ -159,7 +159,6 @@ const detail = computed(() => {
 
 .play:disabled {
   opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Wide screens: the picture and the facts on the left; the stars' rule and Play on the right. */

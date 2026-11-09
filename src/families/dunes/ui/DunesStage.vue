@@ -293,9 +293,17 @@ const cellAt = (clientX: number, clientY: number) => {
   return x >= 0 && y >= 0 && x < board.columns && y < board.rows ? { x, y } : null;
 };
 
-const onBoardMove = () => {
+/** The board shows the pointer only where a tap would put the piece picked down. */
+const showPointer = (cell: { x: number; y: number } | null) => {
+  if (!canvas.value) return;
+  const acts = cell !== null && props.active && controller.actsAt(cell.x, cell.y);
+  canvas.value.style.cursor = acts ? 'pointer' : '';
+};
+
+const onBoardMove = (event: PointerEvent) => {
   // The pointer takes over from the keyboard.
   keyboardMode = false;
+  showPointer(cellAt(event.clientX, event.clientY));
 };
 
 /** A piece picked, then a cell tapped: it goes down there. */
@@ -306,6 +314,7 @@ const onBoardTap = (event: PointerEvent) => {
   if (!cell || !props.active) return;
   controller.tapCell(cell.x, cell.y);
   refresh();
+  showPointer(cell);
 };
 
 const swap = () => {
@@ -495,7 +504,6 @@ onBeforeUnmount(() => {
     0 0 3rem var(--well-glow),
     0 0 0 7px var(--well-halo);
   touch-action: none;
-  cursor: pointer;
 }
 
 /* The danger of a hand, as a pill: only one piece fits, or none (swap). */
@@ -547,7 +555,6 @@ onBeforeUnmount(() => {
   border-style: dashed;
   border-color: var(--border);
   color: var(--text-muted);
-  cursor: default;
 }
 
 /* Stuck with a swap in hand: the button calls. */
