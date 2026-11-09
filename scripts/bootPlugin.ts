@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import type { Plugin, Rollup } from 'vite';
+import { SAVE_LIMITS } from '../src/core/limits.ts';
 import { LOCALES } from '../src/i18n/locales.ts';
 
 type OutputBundle = Rollup.OutputBundle;
@@ -126,26 +127,35 @@ function firstRunFiles(
  * as needed for the first paint. A hidden page (a tab in the background)
  * starts at once; a browser without paint timing waits a frame; a report
  * that never comes, a second.
+ *
+ * The saves are read at the door as the game reads them (9 Nov 2026): a
+ * stored text no longer than its save's limit, a language looked up in a
+ * map (an inherited name such as `constructor` finds nothing), a count of
+ * games that must be a whole number. What does not fit counts as no save.
  */
 function startAfterFirstPaint(html: string, bundle: OutputBundle, options: BootOptions): string {
   const entry = ENTRY.exec(html)?.[1];
   if (!entry) throw new Error('bootPlugin: the entry script was not found');
   const modules = [...html.matchAll(MODULE_PRELOAD)].map((match) => match[1]!);
   const first = firstRunFiles(bundle, options.firstRun ?? [], new Set([entry, ...modules]));
+  const save = (key: string, limit: number) => `j(${JSON.stringify(key)},${limit})`;
   const script =
-    `<script type="module">const f=${JSON.stringify(localeFiles(bundle))};let l;` +
-    `try{l=JSON.parse(localStorage.getItem(${JSON.stringify(SETTINGS_KEY)})||'{}').locale}catch(e){}` +
-    `if(!f[l]){l='en';for(const t of navigator.languages||[navigator.language]){` +
-    `let c=String(t).toLowerCase().split('-')[0];if(c==='in')c='id';if(f[c]){l=c;break}}}` +
-    `let n=1;try{const p=JSON.parse(localStorage.getItem(${JSON.stringify(PROFILE_KEY)})||'{}');` +
-    `n=p.trained!==true&&!(p.games>0)}catch(e){}` +
+    `<script type="module">const f=new Map(${JSON.stringify(Object.entries(localeFiles(bundle)))});` +
+    `const j=(k,n)=>{const v=localStorage.getItem(k);` +
+    `return typeof v==='string'&&v.length<=n?JSON.parse(v):null};let l;` +
+    `try{l=${save(SETTINGS_KEY, SAVE_LIMITS.settings)}.locale}catch(e){}` +
+    `if(!f.has(l)){l='en';for(const t of navigator.languages||[navigator.language]){` +
+    `if(typeof t!=='string')continue;let c=t.toLowerCase().split('-')[0];if(c==='in')c='id';` +
+    `if(f.has(c)){l=c;break}}}` +
+    `let n=1;try{const p=${save(PROFILE_KEY, SAVE_LIMITS.profile)};` +
+    `n=p.trained!==true&&!(Number.isSafeInteger(p.games)&&p.games>0)}catch(e){}` +
     `const m=${JSON.stringify(modules)},g=n?${JSON.stringify(first.scripts)}:[],` +
     `c=n?${JSON.stringify(first.styles)}:[];let s=0;` +
     // In the order they are needed: the language, the entry and what it imports, then the
     // first run's files, at a low priority, so that they never hold up the code before them.
     `const add=(r,h,p)=>{const k=document.createElement('link');k.rel=r;k.crossOrigin='';k.href=h;` +
     `if(r==='preload')k.as='style';if(p)k.fetchPriority='low';document.head.append(k)};` +
-    `const go=()=>{if(s)return;s=1;for(const h of [f[l],'${entry}',...m])add('modulepreload',h);` +
+    `const go=()=>{if(s)return;s=1;for(const h of [f.get(l),'${entry}',...m])add('modulepreload',h);` +
     `for(const h of g)add('modulepreload',h,1);for(const h of c)add('preload',h,1);` +
     `import('${entry}')};` +
     `if(document.visibilityState==='hidden')go();` +

@@ -3,6 +3,7 @@ import { FULL_EDITION } from '@/platform/Edition';
 import { PlaygamaPlatform, type PlaygamaBridge } from '@/platform/playgama/PlaygamaPlatform';
 import type { TelegramWebApp } from '@/platform/playgama/TelegramShell';
 import { SAVED_KEYS } from '@/platform/savedKeys';
+import { ProfileService } from '@/services/ProfileService';
 
 type Listener = (value: never) => void;
 
@@ -370,5 +371,114 @@ describe('PlaygamaPlatform in Telegram (a partner copy, 1.46.5)', () => {
     expect(telegram.calls).toEqual([]);
     expect(fake.get).toHaveBeenCalledWith(SAVED_KEYS, false);
     expect(platform.storage.get('stackrift:settings')).toBe('{}');
+  });
+
+  it('reads every other save when one head announces more parts than an array holds', async () => {
+    const fake = fakeBridge(
+      { stackrift_records: '@parts:99999999999', stackrift_profile: '{"xp":5}' },
+      false,
+      'telegram',
+    );
+    const platform = await PlaygamaPlatform.create(fake.bridge, FULL_EDITION, null);
+    expect(platform.storage.get('stackrift:profile')).toBe('{"xp":5}');
+    expect(platform.storage.get('stackrift:records')).toBe('@parts:99999999999');
+  });
+
+  it('keeps a long value whose parts are missing as it is, and never starts it over', async () => {
+    const fake = fakeBridge(
+      { stackrift_profile: '@parts:2', stackrift_profile_1: '{"xp":5,' },
+      false,
+      'telegram',
+    );
+    const platform = await PlaygamaPlatform.create(fake.bridge, FULL_EDITION, null);
+    const profiles = new ProfileService(platform.storage, () => ({
+      modes: ['classic'],
+      daily: true,
+    }));
+    profiles.visit('20261109');
+    profiles.objectivesFor('20261109');
+    vi.advanceTimersByTime(300);
+    expect(platform.storage.get('stackrift:profile')).toBe('@parts:2');
+    expect(fake.writes).toEqual([]);
+  });
+});
+
+describe('PlaygamaPlatform, reading what the Bridge tells at the door (9 Nov 2026)', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  /** A Bridge whose platform tells these values. */
+  const telling = (told: Partial<PlaygamaBridge['platform']>) => {
+    const fake = fakeBridge();
+    return { ...fake, bridge: { ...fake.bridge, platform: { ...fake.bridge.platform, ...told } } };
+  };
+
+  it.each([
+    { name: 'a number', language: 42 },
+    { name: 'an object', language: { lang: 'fr' } },
+    { name: 'a list', language: ['fr'] },
+    { name: 'markup', language: '<img src=x onerror=alert(1)>' },
+    { name: 'an empty text', language: '' },
+  ])('takes no language from the Bridge for $name', async ({ language }) => {
+    const platform = await PlaygamaPlatform.create(telling({ language }).bridge);
+    expect(platform.locale).toBeNull();
+  });
+
+  it('takes a language tag from the Bridge, cleaned', async () => {
+    const platform = await PlaygamaPlatform.create(telling({ language: ' pt-BR​' }).bridge);
+    expect(platform.locale).toBe('pt-BR');
+  });
+
+  it.each([
+    { name: 'the text false', value: 'false' },
+    { name: 'the number 0', value: 0 },
+    { name: 'nothing', value: undefined },
+  ])('keeps the sound on when the Bridge tells it as $name', async ({ value }) => {
+    const platform = await PlaygamaPlatform.create(telling({ isAudioEnabled: value }).bridge);
+    expect(platform.muted).toBe(false);
+  });
+
+  it.each([
+    { name: 'the text true', value: 'true' },
+    { name: 'the number 1', value: 1 },
+    { name: 'null', value: null },
+  ])('changes neither sound nor pause on an event telling $name', async ({ value }) => {
+    const fake = fakeBridge();
+    const platform = await PlaygamaPlatform.create(fake.bridge);
+    const told: boolean[] = [];
+    platform.onMuteChange((muted) => told.push(muted));
+    platform.onPauseChange((paused) => told.push(paused));
+    fake.fire('audio', value);
+    fake.fire('pause', value);
+    expect(told).toEqual([]);
+    expect(platform.muted).toBe(false);
+  });
+
+  it.each([
+    { name: 'a word it does not know', state: 'pending' },
+    { name: 'a number', state: 3 },
+    { name: 'nothing', state: undefined },
+  ])('lets the game go on when an ad tells $name', async ({ state }) => {
+    const fake = fakeBridge();
+    const platform = await PlaygamaPlatform.create(fake.bridge);
+    const hooks = { onStart: vi.fn(), onEnd: vi.fn() };
+    const ad = platform.midgameAd(hooks);
+    fake.fire('interstitial', state);
+    await ad;
+    const watched = platform.rewardedAd(hooks);
+    fake.fire('rewarded', state);
+    await expect(watched).resolves.toBe(false);
+    expect(hooks.onStart).not.toHaveBeenCalled();
+  });
+
+  it('asks for no ad when the Bridge says it supports them in other words than true', async () => {
+    const fake = fakeBridge();
+    const bridge = {
+      ...fake.bridge,
+      advertisement: { ...fake.bridge.advertisement, isInterstitialSupported: 'yes' },
+    };
+    const platform = await PlaygamaPlatform.create(bridge);
+    await platform.midgameAd({ onStart: vi.fn(), onEnd: vi.fn() });
+    expect(fake.ads).toEqual([]);
   });
 });

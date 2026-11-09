@@ -387,6 +387,60 @@ test('the language is remembered; the game has one look, the Rift', async ({ pag
   await expect(page).toHaveTitle('Lumirift Blocks — the falling-blocks game, reinvented');
 });
 
+/** The settings as the game saved them. */
+const savedSettings = (page: Page) =>
+  page.evaluate(() => JSON.parse(localStorage.getItem('stackrift:settings') ?? '{}') as unknown);
+
+test('the sliders keep each step the browser gives them: a volume, a key’s repeat', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'The keys window: a keyboard');
+  await page.getByRole('button', { name: 'Réglages' }).click();
+  const settings = page.getByRole('dialog', { name: 'Réglages' });
+  await settings.getByRole('slider', { name: 'Effets sonores' }).press('ArrowLeft');
+  await settings.getByRole('button', { name: 'Personnaliser' }).click();
+  await page
+    .getByRole('dialog', { name: 'Commandes au clavier' })
+    .getByRole('slider', { name: /DAS/ })
+    .press('ArrowRight');
+  await expect.poll(() => savedSettings(page)).toMatchObject({ volume: 0.65, das: 180 });
+});
+
+test('the drag speed keeps each step the browser gives it', async ({ page }, info) => {
+  test.skip(info.project.name !== 'mobile', 'Touch screens only');
+  await page.getByRole('button', { name: 'Réglages' }).click();
+  await page
+    .getByRole('dialog', { name: 'Réglages' })
+    .getByRole('button', { name: 'Régler' })
+    .click();
+  await page
+    .getByRole('dialog', { name: 'Commandes tactiles' })
+    .getByRole('slider', { name: /^Vitesse du glissé/ })
+    .press('ArrowRight');
+  await expect.poll(() => savedSettings(page)).toMatchObject({ dragSpeed: 1.1 });
+});
+
+test('a tampered save opens the game on its defaults, and none of its markup reaches the page', async ({
+  page,
+}) => {
+  await seedStorage(page, {
+    'stackrift:settings': {
+      locale: '__proto__',
+      volume: '0.5',
+      keys: { left: ['<img src=x onerror=window.tampered=1>', null] },
+    },
+    'stackrift:profile': JSON.parse(
+      '{"__proto__":{"trained":true},"xp":"9999","games":[3]}',
+    ) as unknown,
+    'stackrift:records': { '<b>classic</b>': 5, classic: '12' },
+  });
+  await page.reload();
+  await expect(tab(page, 'Accueil')).toBeVisible();
+  await expect(page.locator('img[src="x"]')).toHaveCount(0);
+  expect(await page.evaluate(() => 'tampered' in window)).toBe(false);
+  await expect(page.getByRole('button', { name: /^Niveau 1,/ })).toBeVisible();
+});
+
 test('the cursor tells what can be clicked: the arrow on text, the hand on controls', async ({
   page,
 }, info) => {

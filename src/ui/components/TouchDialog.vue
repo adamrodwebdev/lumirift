@@ -5,6 +5,7 @@ import { useServices } from '@/app/AppServices';
 import { useFormat } from '@/app/useFormat';
 import { DRAG_SPEED } from '@/families/falling/input/phone/GestureTuning';
 import { CONTROL_SCHEMES, type ControlScheme } from '@/services/SettingsService';
+import { sliderValue } from '../sliderValue';
 import GestureGuide from './GestureGuide.vue';
 import ModalDialog from './ModalDialog.vue';
 
@@ -48,8 +49,11 @@ const feel = haptics.supported
   : { label: 'touch.glow', note: 'touch.glowNote' };
 
 const checked = (event: Event) => (event.target as HTMLInputElement).checked;
-const onSpeed = (event: Event) =>
-  settings.setDragSpeed(Number((event.target as HTMLInputElement).value));
+/** The drag speed's slider moved: its value, read at the door (a value that is not one changes nothing). */
+const onSpeed = (event: Event) => {
+  const speed = sliderValue(event, DRAG_SPEED);
+  if (speed !== null) settings.setDragSpeed(speed);
+};
 </script>
 
 <template>

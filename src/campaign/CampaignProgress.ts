@@ -1,3 +1,4 @@
+import { InputRecord, orElse } from '@/core/input';
 import { LEVELS, type CampaignLevel } from './Levels';
 import {
   MAX_RANK,
@@ -18,6 +19,10 @@ export const EMPTY_CAMPAIGN: CampaignData = { stars: {}, ranks: {} };
 
 /** Stars spent to reach a rank (1 to 3). */
 const spentFor = (rank: number) => RANK_COSTS.slice(0, rank).reduce((sum, cost) => sum + cost, 0);
+
+/** A level won keeps one to three stars; an upgrade bought, one rank to the top. */
+const STARS = { min: 1, max: 3, integer: true } as const;
+const RANK = { min: 1, max: MAX_RANK, integer: true } as const;
 
 /**
  * The player's campaign: stars won level by level (the best result counts),
@@ -92,29 +97,31 @@ export class CampaignProgress {
     this.data = { ...this.data, ranks: {} };
   }
 
-  /** Reads saved data, keeping only what is valid. */
-  static parse(value: unknown): CampaignProgress {
-    if (typeof value !== 'object' || value === null) return new CampaignProgress();
-    const { stars, ranks } = value as Record<string, unknown>;
+  /**
+   * Reads a save by the levels and upgrades the game has: each a whole
+   * number in its range, or left out (the others stay).
+   */
+  static read(save: InputRecord | null): CampaignProgress {
+    const stars = save && orElse(() => save.record('stars'), null);
+    const ranks = save && orElse(() => save.record('ranks'), null);
     const cleanStars: Record<string, number> = {};
-    if (typeof stars === 'object' && stars !== null) {
-      for (const [id, n] of Object.entries(stars)) {
-        if (LEVELS.some((level) => level.id === id) && typeof n === 'number' && n >= 1 && n <= 3) {
-          cleanStars[id] = Math.floor(n);
-        }
-      }
+    for (const { id } of LEVELS) {
+      const n = stars && orElse(() => stars.number(id, STARS), null);
+      if (n !== null) cleanStars[id] = n;
     }
     const cleanRanks: Partial<Record<UpgradeId, number>> = {};
-    if (typeof ranks === 'object' && ranks !== null) {
-      for (const [id, n] of Object.entries(ranks)) {
-        const known = UPGRADE_IDS.find((u) => u === id);
-        if (known && typeof n === 'number' && n >= 1)
-          cleanRanks[known] = Math.min(MAX_RANK, Math.floor(n));
-      }
+    for (const id of UPGRADE_IDS) {
+      const n = ranks && orElse(() => ranks.number(id, RANK), null);
+      if (n !== null) cleanRanks[id] = n;
     }
     const progress = new CampaignProgress({ stars: cleanStars, ranks: cleanRanks });
     // Ranks bought with stars that are no longer there (corrupt save): give them back.
     if (progress.availableStars < 0) progress.refund();
     return progress;
+  }
+
+  /** Reads any value as a save (see `read`). */
+  static parse(value: unknown): CampaignProgress {
+    return CampaignProgress.read(orElse(() => InputRecord.from(value, 'campaign'), null));
   }
 }

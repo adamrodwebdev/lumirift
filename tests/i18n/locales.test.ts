@@ -282,6 +282,18 @@ describe('detectLocale', () => {
     expect(detectLocale([])).toBe('en');
   });
 
+  it.each([
+    { name: 'a number', tag: 42 },
+    { name: 'nothing', tag: undefined },
+    { name: 'an object', tag: { lang: 'ru' } },
+    { name: 'a list', tag: ['ru'] },
+    { name: 'an inherited name', tag: 'constructor' },
+    { name: 'markup', tag: '<b>ru</b>' },
+    { name: 'a tag one character over its limit', tag: `ru${'-aaaaaaaa'.repeat(3)}-aaaaaa` },
+  ])('passes over $name among the preferences instead of failing the start', ({ tag }) => {
+    expect(detectLocale([tag, 'fr-FR'])).toBe('fr');
+  });
+
   it('recognises supported locales only', () => {
     expect(isLocale('fr')).toBe(true);
     expect(isLocale('de')).toBe(false);

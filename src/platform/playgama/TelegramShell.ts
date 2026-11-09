@@ -4,7 +4,8 @@
  * the game never loads it a second time.
  */
 export interface TelegramWebApp {
-  isVersionAtLeast(version: string): boolean;
+  /** Telegram's answer, trusted only when it is a real `true`. */
+  isVersionAtLeast(version: string): unknown;
   expand(): void;
   disableVerticalSwipes(): void;
   enableVerticalSwipes(): void;
@@ -45,7 +46,7 @@ export class TelegramShell {
   /** While the player plays, a downward drag moves a piece and never closes the app; menus get it back. */
   playing(playing: boolean): void {
     this.attempt(() => {
-      if (!this.webApp.isVersionAtLeast(SWIPES_FROM)) return;
+      if (this.webApp.isVersionAtLeast(SWIPES_FROM) !== true) return;
       if (playing) this.webApp.disableVerticalSwipes();
       else this.webApp.enableVerticalSwipes();
     });

@@ -260,12 +260,13 @@ describe('A player’s season', () => {
       deeds: 3.7,
       done: 'yes',
     }).snapshot;
+    // A count that is not a whole number is refused, never rounded (9 Nov 2026).
     expect(odd).toEqual({
       season: null,
       points: 0,
       claimed: [],
       week: null,
-      deeds: 3,
+      deeds: 0,
       done: false,
     });
     const kept = SeasonProgress.parse({ season: 'embers', claimed: [1, 1, 30, 31] }).snapshot;

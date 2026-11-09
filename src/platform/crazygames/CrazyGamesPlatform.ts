@@ -1,3 +1,4 @@
+import { readLanguageTag } from '@/i18n/locales';
 import { BrowserStorage, type KeyValueStorage } from '@/services/KeyValueStorage';
 import { FULL_EDITION } from '../Edition';
 import type { AdHooks, Platform } from '../Platform';
@@ -19,7 +20,8 @@ interface CrazyGamesSdk {
       listener: (settings: { readonly muteAudio?: boolean }) => void,
     ): void;
   };
-  readonly user: { readonly systemInfo?: { readonly locale?: string } };
+  /** The player's language: whatever the SDK gives, read at the door as a language tag. */
+  readonly user: { readonly systemInfo?: { readonly locale?: unknown } };
   readonly data: {
     getItem(key: string): string | null;
     setItem(key: string, value: string): void;
@@ -97,7 +99,7 @@ export class CrazyGamesPlatform implements Platform {
   private playing = false;
 
   private constructor(private readonly sdk: CrazyGamesSdk | null) {
-    this.locale = sdk?.user.systemInfo?.locale ?? null;
+    this.locale = readLanguageTag(sdk?.user.systemInfo?.locale);
     this.storage = sdk ? new CrazyGamesStorage(sdk.data) : null;
   }
 

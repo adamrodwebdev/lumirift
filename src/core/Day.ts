@@ -1,3 +1,6 @@
+import { orElse, type InputRecord } from './input';
+import { TEXT_LIMITS } from './limits';
+
 /** A local date as YYYYMMDD: the key of a day (daily challenge, objectives, streak). */
 export function dayKey(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -33,4 +36,18 @@ export function previousDay(key: string): string {
   const date = new Date(Number(key.slice(0, 4)), Number(key.slice(4, 6)) - 1, Number(key.slice(6)));
   date.setDate(date.getDate() - 1);
   return dayKey(date);
+}
+
+/** A day's key as the saves write it: eight digits. */
+const DAY_TEXT = { maxLength: TEXT_LIMITS.dayKey, required: true, pattern: /^\d{8}$/ } as const;
+
+/**
+ * A day's key read from a save's field, or null: eight digits that make a
+ * real date, checked by a round trip (20261109, never 20261399 or 20260230).
+ */
+export function savedDay(save: InputRecord, key: string): string | null {
+  return orElse(() => {
+    const day = save.text(key, DAY_TEXT);
+    return dayKey(dateOf(day)) === day ? day : null;
+  }, null);
 }

@@ -9,24 +9,31 @@ import {
   type ProfileData,
 } from '@/progression/Profile';
 import type { SeasonReward } from '@/seasons/SeasonTrack';
-import { readJson, type KeyValueStorage } from './KeyValueStorage';
+import { SAVE_LIMITS } from '@/core/limits';
+import type { KeyValueStorage } from './KeyValueStorage';
+import { SaveSlot } from './SaveSlot';
 
 export const PROFILE_KEY = 'stackrift:profile';
 
 /**
  * The player's progression, kept on the device only. The interface reads the
- * reactive snapshot; every change goes through the profile, then is saved.
+ * reactive snapshot; every change goes through the profile, then is saved:
+ * written for the player's progress, noted for what the game marks by itself
+ * (a visit, the day's objectives, a look seen), which never replaces a
+ * profile it could not read.
  */
 export class ProfileService {
+  private readonly slot: SaveSlot;
   private readonly profile: Profile;
   private readonly state: Ref<ProfileData>;
 
   constructor(
-    private readonly storage: KeyValueStorage,
+    storage: KeyValueStorage,
     /** Where the objectives are played: the open modes, a daily challenge or not. */
     private readonly place: () => ObjectivePlace,
   ) {
-    this.profile = Profile.parse(readJson(storage, PROFILE_KEY));
+    this.slot = new SaveSlot(storage, PROFILE_KEY, SAVE_LIMITS.profile);
+    this.profile = Profile.read(this.slot.saved);
     this.state = shallowRef(this.profile.snapshot);
   }
 
@@ -57,13 +64,13 @@ export class ProfileService {
   /** The player comes to the menu on `day` (1.35): a week away brings a gift of welcome. */
   visit(day: string): void {
     this.profile.visit(day);
-    this.save();
+    this.note();
   }
 
   /** The gift calendar opened by itself on `day`. */
   markGiftShown(day: string): void {
     this.profile.markGiftShown(day);
-    this.save();
+    this.note();
   }
 
   /** The gift of `day` is claimed: its experience twice when an ad was watched. */
@@ -80,7 +87,7 @@ export class ProfileService {
 
   objectivesFor(day: string): readonly ObjectiveProgress[] {
     const objectives = this.profile.objectivesFor(day, this.place());
-    this.save();
+    this.note();
     return objectives;
   }
 
@@ -105,11 +112,18 @@ export class ProfileService {
 
   /** The player has looked at these cosmetics in the Atelier. */
   markSeen(cosmetics: readonly Cosmetic[]): void {
-    if (this.profile.markSeen(cosmetics)) this.save();
+    if (this.profile.markSeen(cosmetics)) this.note();
   }
 
+  /** The player's progress: saved, even over a profile that could not be read. */
   private save(): void {
     this.state.value = this.profile.snapshot;
-    this.storage.set(PROFILE_KEY, JSON.stringify(this.profile.snapshot));
+    this.slot.write(this.profile.snapshot);
+  }
+
+  /** What the game marks by itself: saved, never over a profile that could not be read. */
+  private note(): void {
+    this.state.value = this.profile.snapshot;
+    this.slot.note(this.profile.snapshot);
   }
 }

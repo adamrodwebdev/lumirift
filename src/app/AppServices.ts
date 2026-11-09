@@ -97,7 +97,7 @@ export function createBrowserServices(
   });
   // A portal's language wins at each launch over the saved one (Playgama and
   // CrazyGames both check that the game follows it).
-  if (platform.locale) settings.chooseLocale(detectLocale([platform.locale], platform));
+  if (platform.locale) settings.followLocale(detectLocale([platform.locale], platform));
   const catalog = new ModeCatalog();
   const campaign = new CampaignService(storage);
   // Objectives only ask for modes the player can reach (in this edition, open in the

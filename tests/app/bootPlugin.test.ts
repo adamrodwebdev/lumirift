@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
+import { SAVE_LIMITS } from '@/core/limits';
 import { bootPlugin } from '../../scripts/bootPlugin';
 
 /** A language's page title, read raw (the i18n plugin compiles imports). */
@@ -59,10 +60,10 @@ describe('bootPlugin', () => {
   it('fetches the code and the language once the first paint is reported, then runs it', () => {
     expect(page).not.toContain('<link rel="modulepreload"');
     expect(page).not.toContain('src="./assets/index-1.js"');
-    expect(page).toContain('"en":"./assets/a.js"');
-    expect(page).toContain('"fr":"./assets/b.js"');
-    expect(page).toContain('"id":"./assets/c.js"');
-    expect(page).toContain('"ru":"./assets/d.js"');
+    expect(page).toContain('["en","./assets/a.js"]');
+    expect(page).toContain('["fr","./assets/b.js"]');
+    expect(page).toContain('["id","./assets/c.js"]');
+    expect(page).toContain('["ru","./assets/d.js"]');
     expect(page).toContain('["./assets/vendor-2.js"]');
     expect(page).toContain("import('./assets/index-1.js')");
     // The browser's report of the first paint, not a frame: requests ending
@@ -201,5 +202,83 @@ describe('bootPlugin, in a portal build (1.46)', () => {
       handler: Handler;
     };
     expect(() => missing.handler(html, { bundle: portal })).toThrow(/no chunk for the first run/);
+  });
+});
+
+/** The links the page's script appends with these values stored, for a browser asking for Russian. */
+function linksFor(page: string, stored: Readonly<Record<string, unknown>>): string[] {
+  const script = /<script type="module">(.*?)<\/script>/s.exec(page)?.[1] ?? '';
+  const links: { rel: string; href: unknown }[] = [];
+  runInNewContext(script.replace(/\bimport\(/g, 'load('), {
+    document: {
+      visibilityState: 'hidden',
+      createElement: () => ({}),
+      head: { append: (link: (typeof links)[number]) => links.push(link) },
+    },
+    localStorage: { getItem: (key: string) => (Object.hasOwn(stored, key) ? stored[key] : null) },
+    navigator: { languages: ['ru-RU'] },
+    PerformanceObserver: { supportedEntryTypes: [] },
+    setTimeout: () => {},
+    requestAnimationFrame: () => {},
+    load: () => {},
+  });
+  return links.map(({ rel, href }) => `${rel} ${String(href)}`);
+}
+
+/** A save's text padded to exactly `length` characters with a field the game ignores. */
+const padded = (fields: object, length: number): string => {
+  const bare = JSON.stringify({ ...fields, pad: '' });
+  return JSON.stringify({ ...fields, pad: 'x'.repeat(length - bare.length) });
+};
+
+describe('bootPlugin, reading the saves at the door (9 Nov 2026)', () => {
+  const plugin = bootPlugin({ firstRun: ['src/ui/screens/GameScreen.vue', 'src/families/sand/'] });
+  const page = (plugin.transformIndexHtml as { handler: Handler }).handler(html, {
+    bundle: portal,
+  });
+  const languageFor = (settings: unknown) => linksFor(page, { 'stackrift:settings': settings })[0];
+  const firstRunFor = (profile: unknown) =>
+    linksFor(page, { 'stackrift:profile': profile }).some((link) => link.includes('Game-5.js'));
+  const RUSSIAN = 'modulepreload ./assets/d.js';
+
+  it.each([
+    { name: 'an inherited method name', settings: '{"locale":"constructor"}' },
+    { name: 'the prototype key', settings: '{"locale":"__proto__"}' },
+    { name: 'another inherited name', settings: '{"locale":"toString"}' },
+    { name: 'a list holding a language', settings: '{"locale":["fr"]}' },
+    { name: 'a number', settings: '{"locale":42}' },
+    { name: 'another case', settings: '{"locale":"FR"}' },
+    { name: 'text that is not JSON', settings: '{not json' },
+    { name: 'a save that is null', settings: 'null' },
+    { name: 'a value that is not text', settings: 7 },
+    {
+      name: 'a save one character over its limit',
+      settings: padded({ locale: 'fr' }, SAVE_LIMITS.settings + 1),
+    },
+  ])('fetches the browser’s language for $name as the saved one', ({ settings }) => {
+    expect(languageFor(settings)).toBe(RUSSIAN);
+  });
+
+  it('fetches the saved language from a save exactly as long as its limit', () => {
+    const settings = padded({ locale: 'fr' }, SAVE_LIMITS.settings);
+    expect(settings).toHaveLength(SAVE_LIMITS.settings);
+    expect(languageFor(settings)).toBe('modulepreload ./assets/b.js');
+  });
+
+  it.each([
+    { name: 'games counted as text', profile: '{"games":"3"}' },
+    { name: 'games that are not a whole number', profile: '{"games":3.5}' },
+    { name: 'games past any number', profile: '{"games":1e999}' },
+    { name: 'a training flag as text', profile: '{"trained":"true"}' },
+    {
+      name: 'a profile one character over its limit',
+      profile: padded({ trained: true }, SAVE_LIMITS.profile + 1),
+    },
+  ])('fetches a new player’s first game for a profile with $name', ({ profile }) => {
+    expect(firstRunFor(profile)).toBe(true);
+  });
+
+  it('leaves the first game to a trained player whose profile is exactly as long as its limit', () => {
+    expect(firstRunFor(padded({ trained: true }, SAVE_LIMITS.profile))).toBe(false);
   });
 });

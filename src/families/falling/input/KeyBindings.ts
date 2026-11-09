@@ -1,3 +1,5 @@
+import { InputRecord, orElse, readText } from '@/core/input';
+import { TEXT_LIMITS } from '@/core/limits';
 import type { FallingAction } from './FallingInput';
 
 /**
@@ -61,10 +63,32 @@ export const DEFAULT_KEYS: KeyMap = {
 const RESERVED =
   /^(Escape|Tab|Delete|CapsLock|NumLock|ScrollLock|Pause|PrintScreen|ContextMenu|Help|Fn|FnLock|Power|Sleep|WakeUp|Eject|Unidentified|(Control|Alt|Meta|OS)(Left|Right)?|F\d{1,2}|(Browser|Audio|Media|Launch|Volume|Lang)\w*)$/;
 
-export const isBindable = (code: string): boolean => code.length > 0 && !RESERVED.test(code);
-
 /** Both Shift keys are one key to the player. */
 const place = (code: string): string => (code === 'ShiftRight' ? 'ShiftLeft' : code);
+
+/** A key's place as `KeyboardEvent.code` names it: a letter, then letters and digits (`Digit1`). */
+const KEY_CODE = {
+  maxLength: TEXT_LIMITS.keyCode,
+  required: true,
+  pattern: /^[A-Za-z][A-Za-z0-9]*$/,
+} as const;
+
+/**
+ * A key from outside (a save, a key pressed) as the bindings keep it, or
+ * null: a name such as `KeyboardEvent.code` gives, within its length, and
+ * not one the player may not take; the right Shift is the left one.
+ */
+function bindableKey(value: unknown): string | null {
+  return orElse(() => {
+    const code = readText(value, KEY_CODE, 'key');
+    return RESERVED.test(code) ? null : place(code);
+  }, null);
+}
+
+export const isBindable = (code: string): boolean => bindableKey(code) !== null;
+
+/** An action's keys in a save: its two slots, each a key or empty. */
+const SAVED_SLOTS = { maxItems: KEY_SLOTS, item: bindableKey } as const;
 
 /** Where a key is bound. */
 export interface KeySlot {
@@ -90,31 +114,34 @@ export class KeyBindings {
   static readonly DEFAULT = new KeyBindings(DEFAULT_KEYS);
 
   /**
-   * Bindings read from a save. Anything invalid falls back: a reserved or
-   * repeated key is dropped, an action the save does not know (added since)
-   * takes its default keys, unless another action already uses them.
+   * Bindings read from a save. Anything invalid falls back: a key that is
+   * not one, reserved or repeated is dropped; an action the save does not
+   * know (added since), or whose list is not two slots at most, takes its
+   * default keys, unless another action already uses them.
    */
-  static parse(value: unknown): KeyBindings {
-    if (typeof value !== 'object' || value === null) return KeyBindings.DEFAULT;
-    const record = value as Partial<Record<string, unknown>>;
+  static read(save: InputRecord | null): KeyBindings {
+    if (!save) return KeyBindings.DEFAULT;
     const used = new Set<string>();
-    const take = (code: unknown): string | null => {
-      if (typeof code !== 'string' || !isBindable(code)) return null;
-      const key = place(code);
-      if (used.has(key)) return null;
+    const take = (key: string | null): string | null => {
+      if (key === null || used.has(key)) return null;
       used.add(key);
       return key;
     };
-    const slots = (codes: readonly unknown[]): (string | null)[] =>
-      Array.from({ length: KEY_SLOTS }, (_, slot) => take(codes[slot]));
+    const slots = (keys: readonly (string | null)[]): (string | null)[] =>
+      Array.from({ length: KEY_SLOTS }, (_, slot) => take(keys[slot] ?? null));
     const map: Partial<Record<KeyAction, (string | null)[]>> = {};
     // The saved actions first, so that a new default never steals one of the player's keys.
     for (const action of KEY_ACTIONS) {
-      const saved = record[action];
-      if (Array.isArray(saved)) map[action] = slots(saved);
+      const saved = orElse(() => save.list(action, SAVED_SLOTS), null);
+      if (saved) map[action] = slots(saved);
     }
     for (const action of KEY_ACTIONS) map[action] ??= slots(DEFAULT_KEYS[action]);
     return new KeyBindings(map as KeyMap);
+  }
+
+  /** Bindings from any value: the settings' own map, or a save's field (see `read`). */
+  static parse(value: unknown): KeyBindings {
+    return KeyBindings.read(orElse(() => InputRecord.from(value, 'keys'), null));
   }
 
   /** The action of a key pressed, if it has one. */
@@ -145,8 +172,8 @@ export class KeyBindings {
    * nothing.
    */
   with(action: KeyAction, slot: number, code: string): KeyBindings {
-    const key = place(code);
-    if (!isBindable(key) || slot < 0 || slot >= KEY_SLOTS) return this;
+    const key = bindableKey(code);
+    if (key === null || slot < 0 || slot >= KEY_SLOTS) return this;
     const found = this.find(key);
     if (found?.action === action && found.slot === slot) return this;
     const map = this.copy();

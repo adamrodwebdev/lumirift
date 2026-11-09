@@ -36,5 +36,12 @@ export default defineConfigWithVueTs(
     files: ['**/*.mjs', 'scripts/**'],
     extends: [vueTsConfigs.disableTypeChecked],
   },
+  {
+    // The shared readers (`.helpers/input-validation`, copied unchanged, 9 Nov 2026) walk a
+    // text by code points on purpose: a length counts them as databases do, and an emoji
+    // joined by zero-width joiners is put back whole.
+    files: ['src/core/input.ts'],
+    rules: { '@typescript-eslint/no-misused-spread': 'off' },
+  },
   skipFormatting,
 );
