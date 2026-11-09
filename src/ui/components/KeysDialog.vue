@@ -11,6 +11,7 @@ import {
   type KeySlot,
 } from '@/families/falling/input/KeyBindings';
 import { ARR_RANGE, DAS_RANGE } from '@/families/falling/input/RepeatTiming';
+import { sliderValue } from '../sliderValue';
 import { useKeyBindings } from '../useKeyBindings';
 import { useKeyLabels } from '../useKeyLabels';
 import ModalDialog from './ModalDialog.vue';
@@ -167,10 +168,15 @@ const onKeyUp = (event: KeyboardEvent) => {
 const arrText = () =>
   settings.current.arr === 0 ? t('keymap.instant') : format.milliseconds(settings.current.arr);
 
-const onDas = (event: Event) =>
-  settings.setRepeat({ das: Number((event.target as HTMLInputElement).value) });
-const onArr = (event: Event) =>
-  settings.setRepeat({ arr: Number((event.target as HTMLInputElement).value) });
+/** A repeat slider moved: its value, read at the door (a value that is not one changes nothing). */
+const onDas = (event: Event) => {
+  const das = sliderValue(event, DAS_RANGE);
+  if (das !== null) settings.setRepeat({ das });
+};
+const onArr = (event: Event) => {
+  const arr = sliderValue(event, ARR_RANGE);
+  if (arr !== null) settings.setRepeat({ arr });
+};
 
 const reset = () => {
   stop();

@@ -80,6 +80,21 @@ export class MosaicController {
     return this.actAt(x, y);
   }
 
+  /**
+   * Whether a tap on this cell would do something: fire the joker waiting for
+   * a cell, or put the piece picked down there (where it fits). The board's
+   * pointer shows it.
+   */
+  actsAt(x: number, y: number): boolean {
+    const joker = this.pendingJokerId;
+    if (joker && JOKERS[joker].target === 'cell') return true;
+    if (this.selected === null) return false;
+    const piece = this.view.pieceAt(this.selected);
+    if (!piece) return false;
+    const at = this.anchor(piece.shape, x, y);
+    return this.view.canPlace(this.selected, at.x, at.y);
+  }
+
   /** A piece dragged and dropped with its top-left cell at (x, y). */
   drop(slot: SlotId, x: number, y: number): boolean {
     const placed = this.execute({ type: 'place', slot, x, y });

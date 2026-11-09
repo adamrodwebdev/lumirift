@@ -66,15 +66,20 @@ describe('KeyBindings', () => {
     expect(KeyBindings.parse(JSON.parse(JSON.stringify(saved))).toJSON()).toEqual(saved);
     expect(KeyBindings.parse('nonsense').toJSON()).toEqual(DEFAULT_KEYS);
     const broken = KeyBindings.parse({
-      left: ['Escape', 'KeyA', 'KeyB'],
+      left: ['Escape', 'KeyA'],
       right: ['KeyA', 42],
       hold: 'KeyC',
     });
-    // A reserved key and a third slot dropped; a key used twice stays with its first action.
+    // A reserved key dropped; a key used twice stays with its first action.
     expect(broken.codes('left')).toEqual(['KeyA']);
     expect(broken.codes('right')).toEqual([]);
     // An action the save got wrong takes its defaults.
     expect(broken.codes('hold')).toEqual(['KeyC', 'ShiftLeft']);
+  });
+
+  it('gives its defaults to an action saved with more keys than its two slots, never cut', () => {
+    const parsed = KeyBindings.parse({ left: ['KeyJ', 'KeyK', 'KeyL'] });
+    expect(parsed.codes('left')).toEqual(DEFAULT_KEYS.left);
   });
 
   it('gives an action added since the save its defaults, unless the player uses them', () => {

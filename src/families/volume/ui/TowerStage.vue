@@ -295,7 +295,6 @@ onBeforeUnmount(() => {
 .stage__box--hold {
   flex-direction: column;
   gap: 0.15rem;
-  cursor: pointer;
 }
 
 .stage__box--hold:active {

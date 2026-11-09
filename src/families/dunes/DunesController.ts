@@ -76,6 +76,12 @@ export class DunesController {
     return this.drop(slot, at.x, at.y);
   }
 
+  /** Whether a tap on this cell would put the piece picked down (where it fits): the board's pointer shows it. */
+  actsAt(x: number, y: number): boolean {
+    const slot = this.selected;
+    return slot !== null && (this.previewAt(slot, x, y)?.valid ?? false);
+  }
+
   cancel(): void {
     this._selected = null;
   }

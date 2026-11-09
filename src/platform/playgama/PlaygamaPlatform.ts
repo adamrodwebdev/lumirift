@@ -1,3 +1,5 @@
+import { orElse, readBoolean, readChoice } from '@/core/input';
+import { readLanguageTag } from '@/i18n/locales';
 import type { KeyValueStorage } from '@/services/KeyValueStorage';
 import { FULL_EDITION, type Edition } from '../Edition';
 import type { AdHooks, Platform } from '../Platform';
@@ -8,7 +10,20 @@ import { TelegramShell, type TelegramWebApp } from './TelegramShell';
 type InterstitialState = 'loading' | 'opened' | 'closed' | 'failed';
 type RewardedState = InterstitialState | 'rewarded';
 
-/** The part of the Playgama Bridge SDK (v2) the game uses. */
+const AD_STATES: readonly RewardedState[] = ['loading', 'opened', 'closed', 'failed', 'rewarded'];
+
+/** An ad's state as the Bridge tells it: a word the game does not know ends the wait, as a failure. */
+const adState = (value: unknown): RewardedState =>
+  orElse(() => readChoice(value, AD_STATES, 'adState'), 'failed');
+
+/** A yes or no the Bridge tells, or null when it is neither. */
+const flag = (value: unknown, field: string): boolean | null =>
+  orElse(() => readBoolean(value, field), null);
+
+/**
+ * The part of the Playgama Bridge SDK (v2) the game uses. What it tells is
+ * typed `unknown`: read at the door (a language tag, a boolean, an ad state).
+ */
 export interface PlaygamaBridge {
   initialize(): Promise<void>;
   readonly EVENT_NAME: {
@@ -19,24 +34,24 @@ export interface PlaygamaBridge {
   };
   readonly platform: {
     /** Where the game runs (`playgama`, `telegram`…): Playgama distributes to its partners (1.46.5). */
-    readonly id?: string;
-    readonly language: string;
-    readonly isAudioEnabled: boolean;
+    readonly id?: unknown;
+    readonly language: unknown;
+    readonly isAudioEnabled: unknown;
     sendMessage(message: string): void;
-    on(event: string, listener: (value: boolean) => void): void;
+    on(event: string, listener: (value: unknown) => void): void;
   };
   readonly storage: {
     get(keys: readonly string[], tryParseJson: boolean): Promise<readonly unknown[]>;
     set(keys: readonly string[], values: readonly string[]): Promise<void>;
   };
   readonly advertisement: {
-    readonly isInterstitialSupported: boolean;
-    readonly isRewardedSupported: boolean;
-    on(event: string, listener: (state: RewardedState) => void): void;
+    readonly isInterstitialSupported: unknown;
+    readonly isRewardedSupported: unknown;
+    on(event: string, listener: (state: unknown) => void): void;
     showInterstitial(placement?: string): void;
     showRewarded(placement?: string): void;
     /** An ad blocker stops the portal's ads: Bridge would wait on them forever (absent before 2.x). */
-    checkAdBlock?(): Promise<boolean>;
+    checkAdBlock?(): Promise<unknown>;
   };
 }
 
@@ -98,8 +113,9 @@ export class BridgeStorage implements KeyValueStorage {
 
   /**
    * Reads every saved key at once, then the parts a long value announced, in
-   * a second call (an empty save when the SDK refuses; a value whose parts
-   * are missing is left out).
+   * a second call (an empty save when the SDK refuses). A value whose parts
+   * are missing stays as its head: a value the game cannot read, which it
+   * keeps rather than start that save over (see SaveSlot).
    */
   static async load(
     bridge: PlaygamaBridge | null,
@@ -124,6 +140,8 @@ export class BridgeStorage implements KeyValueStorage {
           const pieces = layout.partKeys(key, head).map((part) => parts.get(part));
           if (pieces.every((piece) => typeof piece === 'string')) {
             values.set(key, layout.decode(head, pieces));
+          } else {
+            values.set(key, head);
           }
         });
       } catch {
@@ -217,28 +235,35 @@ export class PlaygamaPlatform implements Platform {
     this.bridge = bridge;
     this.storage = storage;
     this.edition = edition;
-    this.locale = bridge?.platform.language || null;
-    this.audioEnabled = bridge?.platform.isAudioEnabled ?? true;
+    this.locale = readLanguageTag(bridge?.platform.language);
+    this.audioEnabled = flag(bridge?.platform.isAudioEnabled, 'isAudioEnabled') ?? true;
     this.shell = telegram ? new TelegramShell(telegram, (paused) => this.autoPause(paused)) : null;
     this.shell?.start();
     if (!bridge) return;
-    // The SDK has no documented way to unsubscribe: one listener each, fanned out.
+    // The SDK has no documented way to unsubscribe: one listener each, fanned out. An event
+    // whose value is not a boolean changes nothing.
     const { EVENT_NAME } = bridge;
-    bridge.platform.on(EVENT_NAME.AUDIO_STATE_CHANGED, (enabled) => {
+    bridge.platform.on(EVENT_NAME.AUDIO_STATE_CHANGED, (value) => {
+      const enabled = flag(value, 'audioState');
+      if (enabled === null) return;
       this.audioEnabled = enabled;
       this.muteListeners.forEach((listener) => listener(!enabled));
     });
-    bridge.platform.on(EVENT_NAME.PAUSE_STATE_CHANGED, (paused) => this.autoPause(paused));
-    bridge.advertisement.on(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, (state) => {
+    bridge.platform.on(EVENT_NAME.PAUSE_STATE_CHANGED, (value) => {
+      const paused = flag(value, 'pauseState');
+      if (paused !== null) this.autoPause(paused);
+    });
+    bridge.advertisement.on(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, (value) => {
+      const state = adState(value);
       if (state !== 'rewarded') this.adListener?.(state);
     });
-    bridge.advertisement.on(EVENT_NAME.REWARDED_STATE_CHANGED, (state) =>
-      this.rewardedListener?.(state),
+    bridge.advertisement.on(EVENT_NAME.REWARDED_STATE_CHANGED, (value) =>
+      this.rewardedListener?.(adState(value)),
     );
     // Asked once, the answer stable for the visit: ads come minutes later, never at start.
     bridge.advertisement
       .checkAdBlock?.()
-      .then((blocked) => (this.adsBlocked = blocked))
+      .then((blocked) => (this.adsBlocked = flag(blocked, 'adBlock') ?? false))
       .catch(() => undefined);
     // Hidden page: the save leaves now, the player may never come back.
     if (typeof document !== 'undefined') {
@@ -344,7 +369,9 @@ export class PlaygamaPlatform implements Platform {
   /** An interstitial at every break, towards a game or a menu: Playgama allows both. */
   midgameAd(hooks: AdHooks): Promise<void> {
     const bridge = this.bridge;
-    if (!bridge?.advertisement.isInterstitialSupported || this.adsBlocked) return Promise.resolve();
+    if (bridge?.advertisement.isInterstitialSupported !== true || this.adsBlocked) {
+      return Promise.resolve();
+    }
     return new Promise((resolve) => {
       let opened = false;
       let timer = setTimeout(() => done(), AD_START_TIMEOUT_MS);

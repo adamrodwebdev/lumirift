@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { SAVE_LIMITS } from '@/core/limits';
 import { PlainSaves, TelegramCloudSaves } from '@/platform/playgama/SaveLayout';
 import { SAVED_KEYS } from '@/platform/savedKeys';
 
 /** Telegram's CloudStorage keys: 1 to 128 characters of A–Z a–z 0–9 _ - (Mini Apps docs, 2026-11-06). */
 const TELEGRAM_KEY = /^[A-Za-z0-9_-]{1,128}$/;
+
+/** The parts of the longest save the game reads back (SAVE_LIMITS) in Telegram's cloud: 64. */
+const MOST_PARTS = Math.ceil(
+  Math.max(...Object.values(SAVE_LIMITS)) / TelegramCloudSaves.MAX_VALUE,
+);
 
 describe("the save's layout in Telegram's cloud", () => {
   const cloud = new TelegramCloudSaves();
@@ -39,6 +45,29 @@ describe("the save's layout in Telegram's cloud", () => {
     const head = values[0] ?? '';
     expect(cloud.partKeys('stackrift:records', head)).toEqual(keys.slice(1));
     expect(cloud.decode(head, values.slice(1))).toBe(value);
+  });
+
+  it('never cuts the longest save the game writes into more parts than a head may announce', () => {
+    const longest = 'x'.repeat(Math.max(...Object.values(SAVE_LIMITS)));
+    const head = cloud.encode('stackrift:records', longest).values[0] ?? '';
+    expect(cloud.partKeys('stackrift:records', head)).toHaveLength(MOST_PARTS);
+  });
+
+  it.each([
+    { name: 'no part', head: '@parts:0' },
+    { name: 'one part more than the longest save takes', head: `@parts:${MOST_PARTS + 1}` },
+    { name: 'a count of twenty digits', head: '@parts:99999999999999999999' },
+    { name: 'a count past what an array holds', head: '@parts:99999999999' },
+  ])(
+    'takes a head announcing $name for a value the game cannot read, kept as it is',
+    ({ head }) => {
+      expect(cloud.partKeys('stackrift:records', head)).toEqual([]);
+      expect(cloud.decode(head, [])).toBe(head);
+    },
+  );
+
+  it('reads a head announcing as many parts as the longest save takes', () => {
+    expect(cloud.partKeys('stackrift:records', `@parts:${MOST_PARTS}`)).toHaveLength(MOST_PARTS);
   });
 });
 

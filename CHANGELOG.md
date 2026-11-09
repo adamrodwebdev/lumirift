@@ -3,6 +3,65 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions
 [SemVer](https://semver.org/lang/fr/).
 
+## [Non publié]
+
+Deux règles de l'utilisateur pour toute application (09/11/2026) : ce qui vient du dehors est lu
+à la porte, et le curseur dit ce qui se clique.
+
+### Sécurité
+
+- **Chaque donnée venue du dehors passe un lecteur à la porte** (`src/core/input.ts`, les
+  lecteurs partagés copiés tels quels, avec leurs tables d'entrées hostiles) : un nombre doit être
+  un vrai nombre, fini, dans sa plage, entier quand il compte ; un texte, une chaîne nettoyée des
+  caractères invisibles, de longueur bornée ; un choix, l'un de sa liste, lu dans les seuls champs
+  propres de l'objet (jamais `__proto__` ni `toString`). Rien n'est converti, coupé ni deviné : un
+  rang au-delà du sommet, un objectif de la semaine avancé d'une fraction, une liste de touches
+  plus longue que ses deux cases sont refusés, et reprennent leur valeur par défaut.
+- **Les sauvegardes, champ par champ** (réglages, records, profil, campagne, saison) : un champ
+  falsifié (un nombre en texte, `1e999`, une liste, `__proto__`, un jour qui n'existe pas) reprend
+  sa valeur par défaut et le reste demeure. Tout ce que le jeu a jamais écrit se relit, des
+  réglages de la 0.1 aux saisons de la 1.36.
+- **Une sauvegarde illisible est gardée** (`SaveSlot`) : trop longue, pas du JSON ou pas un objet,
+  le jeu la laisse telle quelle et joue sur ses défauts ; seul un progrès du joueur (une partie, un
+  cadeau, un choix) la remplace, jamais ce que le jeu note seul (une visite, les objectifs du
+  jour, le calendrier, la langue du portail). Le jeu n'écrit jamais une sauvegarde plus longue
+  qu'il ne la relirait.
+- **Des limites en un seul endroit** (`src/core/limits.ts`) : la taille de chaque sauvegarde,
+  vérifiée avant sa lecture (réglages et saison 8 192 caractères, campagne 32 768, profil 65 536,
+  records 262 144, une vingtaine d'années de défis du jour) ; le nombre d'éléments de chaque liste
+  (512 cosmétiques, 16 Gardiens, 16 objectifs, 100 paliers, 20 000 records) ; la longueur de
+  chaque texte (étiquette de langue 35, touche 32, nom de record 32, jour 8).
+- **Les portails** : la langue que donne le SDK (CrazyGames, Playgama, Yandex) doit être une
+  étiquette de langue ; le son, la pause, l'anti-pub et l'état d'une pub de Playgama, de vrais
+  booléens et des états connus ; l'en-tête `@parts:n` du nuage de Telegram, un nombre de parties
+  que le jeu a pu écrire.
+- **Le script de démarrage** lit ses deux sauvegardes comme le jeu : bornées en taille, la langue
+  cherchée dans une `Map`, le nombre de parties entier. Les curseurs des réglages (volumes,
+  répétition, vitesse du glissé) sont lus strictement.
+
+### Corrigé
+
+- **Une seule valeur Telegram abîmée effaçait toutes les sauvegardes** : un en-tête `@parts:` d'un
+  nombre immense faisait échouer la lecture de toutes les clés, et les premières écritures les
+  remplaçaient. Seule cette clé est désormais illisible, et gardée.
+- **Une valeur Telegram dont une partie manquait** était oubliée, puis réécrite dès le menu : elle
+  est gardée jusqu'au premier progrès du joueur.
+- **Une langue de portail qui n'était pas du texte** (un nombre, un objet) bloquait le jeu sur son
+  écran-titre : elle est ignorée.
+- **Une langue enregistrée `constructor`, `toString` ou `__proto__`** passait la table des langues
+  du script de démarrage, qui préchargeait une adresse absurde ; une liste `["fr"]` y valait le
+  français.
+- **Une série de défis infinie** (`1e999`), des objectifs du jour à la cible infinie, négative ou
+  fractionnaire, ou d'un mode inconnu étaient acceptés : ils sont refusés.
+
+### Modifié
+
+- **Le curseur dit ce qui se clique** : la flèche sur les textes, titres, images et cartes ; la
+  main sur les liens, boutons et commandes ; le signe d'interdiction sur une commande désactivée.
+  Un seul bloc dans `base.css` remplace les règles éparses. Sur les plateaux de la Mosaïque et de
+  Dunes, la main n'apparaît que là où un toucher poserait la pièce choisie (ou lancerait le joker
+  qui attend une case).
+
 ## [1.46.6] — 06/11/2026
 
 Les lignes du monde (§ 9 terdecies, lot 39) : le jeu dit son monde en 27 phrases, là où les

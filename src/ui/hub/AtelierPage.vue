@@ -519,7 +519,6 @@ watch([material, shatter, ambiance], async () => {
 
 .showcase__try:disabled {
   opacity: 0.8;
-  cursor: default;
 }
 
 .showcase__ad {

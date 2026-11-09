@@ -160,7 +160,6 @@ const buy = () => campaign.buy(selected.value.upgrade.id);
 
 .wallet__refund:disabled {
   opacity: 0.45;
-  cursor: default;
 }
 
 .grid {
@@ -280,7 +279,6 @@ const buy = () => campaign.buy(selected.value.upgrade.id);
 
 .detail__buy:disabled {
   opacity: 0.55;
-  cursor: default;
 }
 
 /* Wide screens: the ten on the left; the stars and the chosen upgrade on the right. */

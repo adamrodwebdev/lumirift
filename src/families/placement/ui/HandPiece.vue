@@ -135,6 +135,7 @@ const onClick = (event: MouseEvent) => {
     opacity 160ms ease;
 }
 
+/* An empty slot of the hand (its piece is on the board): no control refused, the arrow. */
 .hand-piece:disabled {
   cursor: default;
   opacity: 0.35;

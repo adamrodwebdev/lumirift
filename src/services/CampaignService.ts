@@ -2,7 +2,9 @@ import { shallowRef, type Ref } from 'vue';
 import { CampaignProgress, type CampaignData } from '@/campaign/CampaignProgress';
 import type { CampaignOutcome } from '@/campaign/CampaignRun';
 import type { UpgradeId } from '@/campaign/Upgrades';
-import { readJson, type KeyValueStorage } from './KeyValueStorage';
+import { SAVE_LIMITS } from '@/core/limits';
+import type { KeyValueStorage } from './KeyValueStorage';
+import { SaveSlot } from './SaveSlot';
 
 export const CAMPAIGN_KEY = 'stackrift:campaign';
 
@@ -12,11 +14,13 @@ export const CAMPAIGN_KEY = 'stackrift:campaign';
  * the progress, then is saved.
  */
 export class CampaignService {
+  private readonly slot: SaveSlot;
   private readonly progress: CampaignProgress;
   private readonly state: Ref<CampaignData>;
 
-  constructor(private readonly storage: KeyValueStorage) {
-    this.progress = CampaignProgress.parse(readJson(storage, CAMPAIGN_KEY));
+  constructor(storage: KeyValueStorage) {
+    this.slot = new SaveSlot(storage, CAMPAIGN_KEY, SAVE_LIMITS.campaign);
+    this.progress = CampaignProgress.read(this.slot.saved);
     this.state = shallowRef(this.progress.snapshot);
   }
 
@@ -51,6 +55,6 @@ export class CampaignService {
 
   private save(): void {
     this.state.value = this.progress.snapshot;
-    this.storage.set(CAMPAIGN_KEY, JSON.stringify(this.progress.snapshot));
+    this.slot.write(this.progress.snapshot);
   }
 }

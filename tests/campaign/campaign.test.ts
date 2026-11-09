@@ -199,8 +199,16 @@ describe('CampaignProgress', () => {
       stars: { '1-1': 2, '9-9': 3, '1-2': 7 },
       ranks: { phoenix: 9, nope: 1, prism: 1 },
     });
-    // 2 stars cannot pay for phoenix 3 + prism 1: the ranks are given back.
+    // A rank past the top is refused, never brought down to it (9 Nov 2026): prism stays.
     expect(progress.snapshot.stars).toEqual({ '1-1': 2 });
+    expect(progress.snapshot.ranks).toEqual({ prism: 1 });
+  });
+
+  it('gives back the ranks the saved stars cannot pay for', () => {
+    const progress = CampaignProgress.parse({
+      stars: { '1-1': 2 },
+      ranks: { phoenix: 3, prism: 1 },
+    });
     expect(progress.snapshot.ranks).toEqual({});
   });
 });

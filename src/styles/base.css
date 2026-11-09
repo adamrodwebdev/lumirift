@@ -49,8 +49,64 @@ input {
   color: inherit;
 }
 
-button {
+/*
+ * The cursor tells what can be clicked (the user's rule, 9 Nov 2026): text,
+ * headings, pictures and cards keep the arrow; links, buttons and the other
+ * controls get the hand; text fields the I-beam; a disabled control says it
+ * cannot be used. The game's boards set theirs over what a tap would do.
+ */
+html {
+  cursor: default;
+}
+
+a[href],
+area[href],
+button:not(:disabled),
+select:not(:disabled),
+summary,
+label[for],
+[role='button'],
+[role='link'],
+[role='tab'],
+[role='menuitem'],
+[role='option'],
+[role='switch'],
+input:is(
+    [type='checkbox'],
+    [type='radio'],
+    [type='submit'],
+    [type='button'],
+    [type='reset'],
+    [type='file'],
+    [type='color'],
+    [type='range']
+  ):not(:disabled) {
   cursor: pointer;
+}
+
+/* Its own rule: a browser without :has() drops only this one, not the list above. */
+label:has(> input:not(:disabled)) {
+  cursor: pointer;
+}
+
+input:is(
+    :not([type]),
+    [type='text'],
+    [type='email'],
+    [type='search'],
+    [type='password'],
+    [type='number'],
+    [type='tel'],
+    [type='url']
+  ):not(:disabled),
+textarea:not(:disabled),
+[contenteditable='true'] {
+  cursor: text;
+}
+
+:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
 }
 
 :focus-visible {
@@ -180,7 +236,6 @@ button {
 
 .btn--raised:disabled {
   opacity: 0.5;
-  cursor: not-allowed;
   transform: none;
 }
 
@@ -194,7 +249,6 @@ button {
 
 .btn--square:disabled {
   opacity: 0.35;
-  cursor: default;
 }
 
 @media (prefers-reduced-motion: reduce) {

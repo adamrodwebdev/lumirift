@@ -1,3 +1,6 @@
+import { savedDay } from '@/core/Day';
+import { InputRecord, orElse, readNumber } from '@/core/input';
+import { COUNT, LIST_LIMITS } from '@/core/limits';
 import { advance } from '@/progression/Objectives';
 import type { GameReport } from '@/progression/GameReport';
 import { seasonAt, weekEventAt } from './EventCalendar';
@@ -30,6 +33,22 @@ export const EMPTY_SEASON_PROGRESS: SeasonProgressData = {
 };
 
 const seasonById = (id: SeasonId) => SEASONS.find((season) => season.id === id)!;
+
+const SEASON_IDS: readonly SeasonId[] = SEASONS.map((season) => season.id);
+
+/** The tiers a save says were claimed, each one of the track's (one that is not is left out, once each). */
+function claimedTiers(save: InputRecord, tiers: number): number[] {
+  const tier = { min: 1, max: tiers, integer: true };
+  const claimed = orElse(
+    () =>
+      save.list('claimed', {
+        maxItems: LIST_LIMITS.seasonTiers,
+        item: (value, field) => orElse(() => readNumber(value, tier, field), null),
+      }),
+    [],
+  );
+  return [...new Set(claimed.filter((each) => each !== null))];
+}
 
 /**
  * A player's season (1.36): the points of play climb its track; each tier
@@ -104,33 +123,22 @@ export class SeasonProgress {
     );
   }
 
-  /** Reads saved data, keeping only what is valid. */
-  static parse(value: unknown): SeasonProgress {
-    if (typeof value !== 'object' || value === null) return new SeasonProgress();
-    const record = value as Record<string, unknown>;
-    const season = SEASONS.find((each) => each.id === record.season)?.id ?? null;
-    const count = (n: unknown) =>
-      typeof n === 'number' && Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
-    const tiers = season === null ? 0 : seasonById(season).track.tiers;
-    const claimed = Array.isArray(record.claimed)
-      ? [
-          ...new Set(
-            record.claimed.filter(
-              (tier: unknown): tier is number =>
-                typeof tier === 'number' && Number.isInteger(tier) && tier >= 1 && tier <= tiers,
-            ),
-          ),
-        ]
-      : [];
-    const week =
-      typeof record.week === 'string' && /^\d{8}$/.test(record.week) ? record.week : null;
+  /** Reads a save field by field: a field that does not fit falls back to its default, the rest stays. */
+  static read(save: InputRecord | null): SeasonProgress {
+    if (!save) return new SeasonProgress();
+    const season = orElse(() => save.choice('season', SEASON_IDS), null);
     return new SeasonProgress({
       season,
-      points: count(record.points),
-      claimed,
-      week,
-      deeds: count(record.deeds),
-      done: record.done === true,
+      points: orElse(() => save.number('points', COUNT), 0),
+      claimed: season === null ? [] : claimedTiers(save, seasonById(season).track.tiers),
+      week: savedDay(save, 'week'),
+      deeds: orElse(() => save.number('deeds', COUNT), 0),
+      done: orElse(() => save.boolean('done'), false),
     });
+  }
+
+  /** Reads any value as a save (see `read`). */
+  static parse(value: unknown): SeasonProgress {
+    return SeasonProgress.read(orElse(() => InputRecord.from(value, 'season'), null));
   }
 }

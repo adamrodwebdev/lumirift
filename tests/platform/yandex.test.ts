@@ -17,7 +17,7 @@ function fakeYandex({
   lang = 'ru',
   data = {},
   playerFails = false,
-}: { lang?: string; data?: Record<string, unknown>; playerFails?: boolean } = {}) {
+}: { lang?: unknown; data?: Record<string, unknown>; playerFails?: boolean } = {}) {
   const calls: string[] = [];
   const writes: Record<string, string>[] = [];
   const listeners = new Map<string, () => void>();
@@ -114,6 +114,17 @@ describe('YandexPlatform (1.30)', () => {
     const noPlayer = await create(fakeYandex({ playerFails: true }));
     expect(noPlayer.storage).toBeNull();
     expect(noPlayer.locale).toBe('ru');
+  });
+
+  it.each([
+    { name: 'a number', lang: 7 },
+    { name: 'an object', lang: { code: 'ru' } },
+    { name: 'a list', lang: ['ru'] },
+    { name: 'markup', lang: '<b>ru</b>' },
+  ])('takes no language from Yandex for $name, and still starts with the SDK', async ({ lang }) => {
+    const platform = await create(fakeYandex({ lang }));
+    expect(platform.locale).toBeNull();
+    expect(platform.supportsRewarded).toBe(true);
   });
 
   it('says ready once, then marks the gameplay only on a change, never before ready', async () => {

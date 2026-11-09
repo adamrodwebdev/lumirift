@@ -1,3 +1,4 @@
+import { readLanguageTag } from '@/i18n/locales';
 import type { KeyValueStorage } from '@/services/KeyValueStorage';
 import { FULL_EDITION } from '../Edition';
 import type { AdHooks, Platform } from '../Platform';
@@ -24,7 +25,8 @@ export interface YandexSdk {
     readonly LoadingAPI?: { ready(): void };
     readonly GameplayAPI?: { start(): void; stop(): void };
   };
-  readonly environment: { readonly i18n: { readonly lang: string } };
+  /** The player's language: whatever the SDK gives, read at the door as a language tag. */
+  readonly environment: { readonly i18n: { readonly lang: unknown } };
   readonly adv: {
     showFullscreenAdv(options: { callbacks: YandexAdCallbacks }): void;
     showRewardedVideo(options: { callbacks: YandexAdCallbacks }): void;
@@ -172,7 +174,7 @@ export class YandexPlatform implements Platform {
     private readonly sdk: YandexSdk | null,
     readonly storage: PlayerDataStorage | null,
   ) {
-    this.locale = sdk?.environment.i18n.lang || null;
+    this.locale = readLanguageTag(sdk?.environment.i18n.lang);
     if (!sdk) return;
     const tell = (paused: boolean) => {
       if (paused) storage?.flush();

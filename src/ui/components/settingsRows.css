@@ -19,23 +19,22 @@
   background: var(--highlight);
   font-size: 0.85rem;
   font-weight: 700;
-  cursor: pointer;
 }
+
+/*
+ * The cursor comes from the base styles: a row that is the label of its
+ * switch or slider takes the hand, unless that control is disabled; a row
+ * holding a button or a set of choices (`row--static`, `row--wrap`) keeps the
+ * arrow, its controls the hand.
+ */
 
 /* A label and a long control: the control goes under the label when it lacks room. */
 .row--wrap {
   flex-wrap: wrap;
-  cursor: default;
 }
 
 .row--off {
   color: var(--text-muted);
-  cursor: default;
-}
-
-/* A row whose control is a button: the row itself is not one. */
-.row--static {
-  cursor: default;
 }
 
 .row__button {
@@ -90,7 +89,6 @@
   inset: 0;
   margin: 0;
   opacity: 0;
-  cursor: pointer;
 }
 
 .segmented__option span {
@@ -124,7 +122,6 @@
   margin: 0;
   border-radius: 999px;
   background: var(--border);
-  cursor: pointer;
   transition: background-color 200ms ease;
 }
 
@@ -151,7 +148,6 @@
 
 .switch:disabled {
   opacity: 0.45;
-  cursor: default;
 }
 
 .range {

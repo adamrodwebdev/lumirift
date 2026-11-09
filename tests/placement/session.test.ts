@@ -132,6 +132,25 @@ describe('MosaicController', () => {
     expect(controller.selected).toBeNull();
     expect(controller.pendingJoker).toBeNull();
   });
+
+  it('says a tap on the board does nothing while no piece is picked (the board keeps the arrow)', () => {
+    const { controller } = setup(null, ['##', '#', '#']);
+    expect(controller.actsAt(3, 3)).toBe(false);
+  });
+
+  it('says a tap puts the piece picked down only where it fits (the board shows the hand there)', () => {
+    const { controller } = setup(['##......', ...Array<string>(7).fill(EMPTY)], ['##', '#', '#']);
+    controller.selectSlot(0);
+    expect(controller.actsAt(0, 0)).toBe(false);
+    expect(controller.actsAt(4, 4)).toBe(true);
+  });
+
+  it('says a tap anywhere fires the joker waiting for a cell', () => {
+    const { controller, game } = setup(null, ['#', '#', '#']);
+    giveJoker(game, 'bomb');
+    controller.chooseJoker(0);
+    expect(controller.actsAt(0, 7)).toBe(true);
+  });
 });
 
 describe('MosaicEffects', () => {

@@ -1,7 +1,9 @@
-import { daysBetween, previousDay } from '@/core/Day';
+import { daysBetween, previousDay, savedDay } from '@/core/Day';
+import { InputRecord, orElse, readChoice } from '@/core/input';
+import { COUNT, LIST_LIMITS } from '@/core/limits';
 import { achievementsOf } from './Achievements';
 import { BOSS_IDS, type BossId } from '@/session/GameSession';
-import type { ModeId } from '@/session/ModeId';
+import { MODE_IDS } from '@/session/ModeId';
 import {
   AMBIANCES,
   COSMETICS,
@@ -123,8 +125,6 @@ export const EMPTY_PROFILE: ProfileData = {
   welcomeBack: false,
   graceFromMs: 0,
 };
-
-const COSMETIC_KEYS = new Set(COSMETICS.map(cosmeticKey));
 
 /**
  * The cosmetics earned and not looked at yet: the Atelier marks them new.
@@ -372,120 +372,116 @@ export class Profile {
     return true;
   }
 
-  /** Reads saved data, keeping only what is valid. */
-  static parse(value: unknown): Profile {
-    if (typeof value !== 'object' || value === null) return new Profile();
-    const record = value as Record<string, unknown>;
-    const count = (key: string) => {
-      const n = record[key];
-      return typeof n === 'number' && Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
-    };
+  /**
+   * Reads a save field by field: a field that does not fit (a wrong type, a
+   * number out of its range, a day that is no date, a look the game does not
+   * have) falls back to its default, and the rest stays.
+   */
+  static read(save: InputRecord | null): Profile {
+    if (!save) return new Profile();
+    const count = (key: string) => orElse(() => save.number(key, COUNT), 0);
+    const playedMs = count('playedMs');
     const data: ProfileData = {
       xp: count('xp'),
       games: count('games'),
       objectivesDone: count('objectivesDone'),
-      streak: parseStreak(record.streak),
-      objectivesDay: typeof record.objectivesDay === 'string' ? record.objectivesDay : null,
-      objectives: parseObjectives(record.objectives),
-      equipment: parseEquipment(record.equipment),
+      streak: orElse(() => readStreak(save.record('streak')), EMPTY_PROFILE.streak),
+      objectivesDay: savedDay(save, 'objectivesDay'),
+      objectives: known(orElse(() => save.list('objectives', OBJECTIVES), [])),
+      equipment: orElse(() => readEquipment(save.record('equipment')), DEFAULT_EQUIPMENT),
       seen: [],
-      bosses: parseBosses(record.bosses),
-      guardianDay:
-        typeof record.guardianDay === 'string' && /^\d{8}$/.test(record.guardianDay)
-          ? record.guardianDay
-          : null,
-      trained: record.trained === true,
-      playedMs: count('playedMs'),
-      gifts: parseGifts(record.gifts),
-      gifted: Array.isArray(record.gifted)
-        ? [
-            ...new Set(
-              record.gifted.filter(
-                (key: unknown): key is string => typeof key === 'string' && COSMETIC_KEYS.has(key),
-              ),
-            ),
-          ]
-        : [],
-      lastVisit: dayOrNull(record.lastVisit),
-      welcomeBack: record.welcomeBack === true,
-      graceFromMs: Math.min(count('graceFromMs'), count('playedMs')),
+      bosses: [...new Set(known(orElse(() => save.list('bosses', BOSSES), [])))],
+      guardianDay: savedDay(save, 'guardianDay'),
+      trained: orElse(() => save.boolean('trained'), false),
+      playedMs,
+      gifts: orElse(() => readGifts(save.record('gifts')), EMPTY_PROFILE.gifts),
+      gifted: [...new Set(known(orElse(() => save.list('gifted', LOOKS), [])))],
+      lastVisit: savedDay(save, 'lastVisit'),
+      welcomeBack: orElse(() => save.boolean('welcomeBack'), false),
+      graceFromMs: Math.min(count('graceFromMs'), playedMs),
     };
     // Saved before the Atelier marked its new looks: what was earned then is not new.
-    const seen = Array.isArray(record.seen)
-      ? record.seen.filter(
-          (key: unknown): key is string => typeof key === 'string' && COSMETIC_KEYS.has(key),
-        )
-      : COSMETICS.filter((cosmetic) => isUnlocked(cosmetic, achievementsOf(data))).map(cosmeticKey);
+    const seen =
+      orElse(() => known(save.list('seen', LOOKS)), null) ??
+      COSMETICS.filter((cosmetic) => isUnlocked(cosmetic, achievementsOf(data))).map(cosmeticKey);
     return new Profile({ ...data, seen: [...new Set(seen)] });
+  }
+
+  /** Reads any value as a save (see `read`). */
+  static parse(value: unknown): Profile {
+    return Profile.read(orElse(() => InputRecord.from(value, 'profile'), null));
   }
 }
 
-/** A day's key (YYYYMMDD), or null. */
-function dayOrNull(value: unknown): string | null {
-  return typeof value === 'string' && /^\d{8}$/.test(value) ? value : null;
-}
+/** What a day's objective asks (see Objectives): 1 to 60 of something, a size of 2 or 3. */
+const OBJECTIVE_TARGET = { min: 1, max: 1_000, integer: true } as const;
+const OBJECTIVE_SIZE = { min: 1, max: 100, integer: true } as const;
+/** The day of the gift calendar's cycle given next. */
+const GIFT_DAY = { min: 0, max: GIFT_DAYS - 1, integer: true } as const;
 
-function parseGifts(value: unknown): GiftCycle {
-  if (typeof value !== 'object' || value === null) return EMPTY_PROFILE.gifts;
-  const { next, lastDay, shownDay } = value as Record<string, unknown>;
+const COSMETIC_KEYS: readonly string[] = COSMETICS.map(cosmeticKey);
+
+/** The items a list could read, the others left out. */
+const known = <T>(items: readonly (T | null)[]): T[] =>
+  items.filter((item): item is T => item !== null);
+
+/** A list of looks (seen, given): each one the game has, or left out. */
+const LOOKS = {
+  maxItems: LIST_LIMITS.cosmetics,
+  item: (value: unknown, field: string) =>
+    orElse(() => readChoice(value, COSMETIC_KEYS, field), null),
+};
+
+/** The Guardians defeated: each one of the rift's, or left out. */
+const BOSSES = {
+  maxItems: LIST_LIMITS.bosses,
+  item: (value: unknown, field: string) => orElse(() => readChoice(value, BOSS_IDS, field), null),
+};
+
+/** The day's objectives: each one read whole, or left out. */
+const OBJECTIVES = {
+  maxItems: LIST_LIMITS.objectives,
+  item: (value: unknown, field: string) =>
+    orElse(() => readObjective(InputRecord.from(value, field)), null),
+};
+
+function readGifts(gifts: InputRecord): GiftCycle {
   return {
-    next:
-      typeof next === 'number' && Number.isInteger(next) && next >= 0 && next < GIFT_DAYS
-        ? next
-        : 0,
-    lastDay: dayOrNull(lastDay),
-    shownDay: dayOrNull(shownDay),
+    next: orElse(() => gifts.number('next', GIFT_DAY), 0),
+    lastDay: savedDay(gifts, 'lastDay'),
+    shownDay: savedDay(gifts, 'shownDay'),
   };
 }
 
-function parseBosses(value: unknown): BossId[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((id): id is BossId => BOSS_IDS.includes(id as BossId));
-}
-
-function parseStreak(value: unknown): Streak {
-  if (typeof value !== 'object' || value === null) return EMPTY_PROFILE.streak;
-  const { count, best, lastDay } = value as Record<string, unknown>;
-  const ok = (n: unknown) => (typeof n === 'number' && n >= 0 ? Math.floor(n) : 0);
+function readStreak(streak: InputRecord): Streak {
   return {
-    count: ok(count),
-    best: ok(best),
-    lastDay: typeof lastDay === 'string' && /^\d{8}$/.test(lastDay) ? lastDay : null,
+    count: orElse(() => streak.number('count', COUNT), 0),
+    best: orElse(() => streak.number('best', COUNT), 0),
+    lastDay: savedDay(streak, 'lastDay'),
   };
 }
 
-function parseObjectives(value: unknown): ObjectiveProgress[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((entry: unknown) => {
-    if (typeof entry !== 'object' || entry === null) return [];
-    const { objective, progress, done } = entry as Record<string, unknown>;
-    if (typeof objective !== 'object' || objective === null) return [];
-    const o = objective as Record<string, unknown>;
-    const kind = OBJECTIVE_KINDS.find((k) => k === o.kind);
-    const tier = OBJECTIVE_TIERS.find((t) => t === o.tier);
-    if (!kind || !tier || typeof o.target !== 'number') return [];
-    return [
-      {
-        objective: {
-          kind,
-          tier,
-          target: o.target,
-          ...(typeof o.mode === 'string' ? { mode: o.mode as ModeId } : {}),
-          ...(typeof o.size === 'number' ? { size: o.size } : {}),
-        },
-        progress: typeof progress === 'number' ? progress : 0,
-        done: done === true,
-      },
-    ];
-  });
+/** One objective and its progress; refused (InvalidInput) when the objective itself does not fit. */
+function readObjective(entry: InputRecord): ObjectiveProgress {
+  const objective = entry.record('objective');
+  const target = objective.number('target', OBJECTIVE_TARGET);
+  return {
+    objective: {
+      kind: objective.choice('kind', OBJECTIVE_KINDS),
+      tier: objective.choice('tier', OBJECTIVE_TIERS),
+      target,
+      ...(objective.has('mode') ? { mode: objective.choice('mode', MODE_IDS) } : {}),
+      ...(objective.has('size') ? { size: objective.number('size', OBJECTIVE_SIZE) } : {}),
+    },
+    progress: orElse(() => entry.number('progress', { min: 0, max: target, integer: true }), 0),
+    done: orElse(() => entry.boolean('done'), false),
+  };
 }
 
-function parseEquipment(value: unknown): Equipment {
-  if (typeof value !== 'object' || value === null) return DEFAULT_EQUIPMENT;
-  const { material, ambiance, shatter } = value as Record<string, unknown>;
+function readEquipment(equipment: InputRecord): Equipment {
   return {
-    material: MATERIALS.find((id) => id === material) ?? DEFAULT_EQUIPMENT.material,
-    ambiance: AMBIANCES.find((id) => id === ambiance) ?? DEFAULT_EQUIPMENT.ambiance,
-    shatter: SHATTERS.find((id) => id === shatter) ?? DEFAULT_EQUIPMENT.shatter,
+    material: orElse(() => equipment.choice('material', MATERIALS), DEFAULT_EQUIPMENT.material),
+    ambiance: orElse(() => equipment.choice('ambiance', AMBIANCES), DEFAULT_EQUIPMENT.ambiance),
+    shatter: orElse(() => equipment.choice('shatter', SHATTERS), DEFAULT_EQUIPMENT.shatter),
   };
 }

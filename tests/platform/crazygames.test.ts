@@ -4,8 +4,11 @@ import { WebPlatform } from '@/platform/Platform';
 
 type Callbacks = { adStarted(): void; adFinished(): void; adError(error: unknown): void };
 
-/** A fake CrazyGames SDK (v3), recording what the game calls. */
-function fakeSdk(environment: 'local' | 'crazygames' | 'disabled' = 'crazygames') {
+/** A fake CrazyGames SDK (v3), recording what the game calls; `locale` is the player's language. */
+function fakeSdk(
+  environment: 'local' | 'crazygames' | 'disabled' = 'crazygames',
+  locale: unknown = 'id-ID',
+) {
   const calls: string[] = [];
   const store = new Map<string, string>();
   let settingsListener: ((settings: { muteAudio?: boolean }) => void) | null = null;
@@ -24,7 +27,7 @@ function fakeSdk(environment: 'local' | 'crazygames' | 'disabled' = 'crazygames'
         (settingsListener = listener),
       removeSettingsChangeListener: () => (settingsListener = null),
     },
-    user: { systemInfo: { locale: 'id-ID' } },
+    user: { systemInfo: { locale } },
     data: {
       getItem: (key: string) => store.get(key) ?? null,
       setItem: (key: string, value: string) => store.set(key, value),
@@ -83,6 +86,17 @@ describe('CrazyGamesPlatform', () => {
     expect(platform.firstRun).toBe('training');
     // English for the languages the game lacks: Russian is for Yandex's players (1.30.1).
     expect(platform.russianForNeighbours).toBe(false);
+  });
+
+  it.each([
+    { name: 'a number', locale: 42 },
+    { name: 'an object', locale: { code: 'fr' } },
+    { name: 'a list', locale: ['fr'] },
+    { name: 'markup', locale: '<img src=x onerror=alert(1)>' },
+  ])('takes no language from the portal for $name', async ({ locale }) => {
+    fakeSdk('crazygames', locale);
+    const platform = await CrazyGamesPlatform.create();
+    expect(platform.locale).toBeNull();
   });
 
   it('stops the sound only while an ad really plays, and goes on after it', async () => {

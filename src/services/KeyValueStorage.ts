@@ -50,14 +50,3 @@ export class BrowserStorage implements KeyValueStorage {
     }
   }
 }
-
-/** Reads a JSON value, or null when it is missing or corrupt. */
-export function readJson(storage: KeyValueStorage, key: string): unknown {
-  const raw = storage.get(key);
-  if (raw === null) return null;
-  try {
-    return JSON.parse(raw) as unknown;
-  } catch {
-    return null;
-  }
-}

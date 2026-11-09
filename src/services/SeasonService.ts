@@ -1,4 +1,5 @@
 import { shallowRef, type Ref } from 'vue';
+import { SAVE_LIMITS } from '@/core/limits';
 import type { GameReport } from '@/progression/GameReport';
 import {
   nextSeasonAfter,
@@ -14,8 +15,9 @@ import {
 } from '@/seasons/SeasonProgress';
 import { tierProgress, tierReached, tiersOf, type SeasonTier } from '@/seasons/SeasonTrack';
 import { WEEKLY_GOAL_POINTS, WEEKLY_TARGETS } from '@/seasons/WeeklyGoals';
-import { readJson, type KeyValueStorage } from './KeyValueStorage';
+import type { KeyValueStorage } from './KeyValueStorage';
 import type { ProfileService } from './ProfileService';
+import { SaveSlot } from './SaveSlot';
 
 export const SEASON_KEY = 'stackrift:season';
 
@@ -96,15 +98,17 @@ export function seasonView(saved: SeasonProgressData, at: Date): SeasonView {
  * saved progress, the time read at each call.
  */
 export class SeasonService {
+  private readonly slot: SaveSlot;
   private readonly progress: SeasonProgress;
   private readonly state: Ref<SeasonProgressData>;
 
   constructor(
-    private readonly storage: KeyValueStorage,
+    storage: KeyValueStorage,
     private readonly profile: Pick<ProfileService, 'receive'>,
     private readonly clock: () => Date,
   ) {
-    this.progress = SeasonProgress.parse(readJson(storage, SEASON_KEY));
+    this.slot = new SaveSlot(storage, SEASON_KEY, SAVE_LIMITS.season);
+    this.progress = SeasonProgress.read(this.slot.saved);
     this.state = shallowRef(this.progress.snapshot);
   }
 
@@ -113,12 +117,17 @@ export class SeasonService {
     return seasonView(this.state.value, this.clock());
   }
 
-  /** The season follows the calendar: a season over gives what was left unclaimed; a new one starts. */
+  /**
+   * The season follows the calendar: a season over gives what was left
+   * unclaimed; a new one starts. The game notes it by itself: never saved
+   * over a season it could not read.
+   */
   catchUp(): void {
     const now = this.clock();
     for (const reward of this.progress.leftBehind(now)) this.profile.receive(reward);
     this.progress.catchUp(now);
-    this.save();
+    this.state.value = this.progress.snapshot;
+    this.slot.note(this.progress.snapshot);
   }
 
   /** A finished game: its experience as season points, its deeds for the week's goal. */
@@ -146,6 +155,6 @@ export class SeasonService {
 
   private save(): void {
     this.state.value = this.progress.snapshot;
-    this.storage.set(SEASON_KEY, JSON.stringify(this.progress.snapshot));
+    this.slot.write(this.progress.snapshot);
   }
 }

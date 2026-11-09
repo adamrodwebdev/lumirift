@@ -1147,6 +1147,16 @@ Maquettes validées le 14/10/2026 (écran-titre, écran de jeu, covers), puis ap
   bannière de consentement. Les versions portails (§ 3.7) embarqueront le SDK du portail, qui
   gère lui-même le consentement ; Lumirift n'ajoute jamais de traceur.
 - Messages i18n précompilés au build (pas d'`eval`).
+- **Données du dehors lues à la porte** (règle de l'utilisateur du 09/11/2026, pour toute
+  application) : sauvegardes du navigateur et des portails, valeurs des SDK, langue du
+  navigateur, touches et curseurs des réglages passent chacun un lecteur
+  (`src/core/input.ts`, copié de `.helpers/input-validation`) ; un nombre est un vrai nombre dans
+  sa plage, un texte une chaîne nettoyée et bornée, un choix l'un de sa liste. Les limites de
+  taille, de longueur et de nombre sont toutes dans `src/core/limits.ts`. Une sauvegarde
+  illisible est gardée telle quelle et n'est remplacée que par un progrès du joueur
+  (`SaveSlot`). Le seul texte venu du dehors que le jeu affiche est le nom d'une touche (lettres
+  et chiffres vérifiés à la porte, ou le caractère que le navigateur dit imprimé dessus),
+  toujours échappé par Vue.
 - Alertes `npm audit` (12/10/2026) : 5 alertes « high » sur `braces`, dépendance de
   l'outillage de développement uniquement (lint, plugin i18n), sans entrée non fiable ; rien
   n'est livré au joueur. À réévaluer à chaque mise à jour.

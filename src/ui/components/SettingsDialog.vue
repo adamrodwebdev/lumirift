@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useServices } from '@/app/AppServices';
 import { EFFECT_LEVELS, type EffectsLevel } from '@/fx/EffectsProfile';
 import { isLocale, LOCALES } from '@/i18n/locales';
+import { PERCENT, sliderValue } from '../sliderValue';
 import { isTouchScreen } from '../useOrientation';
 import KeysDialog from './KeysDialog.vue';
 import ModalDialog from './ModalDialog.vue';
@@ -38,12 +39,16 @@ const onLocale = (event: Event) => {
   if (isLocale(value)) settings.chooseLocale(value);
 };
 const checked = (event: Event) => (event.target as HTMLInputElement).checked;
-const percent = (event: Event) => Number((event.target as HTMLInputElement).value) / 100;
+/** A volume slider moved: its per cent, read at the door (a value that is not one changes nothing). */
+const percent = (event: Event, set: (volume: number) => void) => {
+  const value = sliderValue(event, PERCENT);
+  if (value !== null) set(value / 100);
+};
 const onGhost = (event: Event) => settings.showGhost(checked(event));
 const onEffects = (value: EffectsLevel) => settings.chooseEffects(value);
 const onShake = (event: Event) => settings.allowShake(checked(event));
-const onVolume = (event: Event) => settings.setVolume(percent(event));
-const onMusic = (event: Event) => settings.setMusicVolume(percent(event));
+const onVolume = (event: Event) => percent(event, (volume) => settings.setVolume(volume));
+const onMusic = (event: Event) => percent(event, (volume) => settings.setMusicVolume(volume));
 </script>
 
 <template>
