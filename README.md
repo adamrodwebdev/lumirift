@@ -160,7 +160,7 @@ npm run dev
 | `npm run dev`             | Serveur de développement avec rechargement à chaud                                                 |
 | `npm run dev:dunes`       | Le même, Dunes seul (la version de son test, sur notre site)                                       |
 | `npm run build`           | Vérification des types puis build de production (`dist/`)                                          |
-| `npm run preview`         | Sert le build de production (port 4173)                                                            |
+| `npm run preview`         | Sert le build de production (port 4174)                                                            |
 | `npm test`                | Tests unitaires (Vitest)                                                                           |
 | `npm run test:curve`      | Courbe de la campagne : des bots jouent chaque niveau (quelques minutes)                           |
 | `npm run generate:levels` | Réécrit les chapitres générés (6 à 10, dans l'ordre) et leurs rapports, à la main (une demi-heure) |
